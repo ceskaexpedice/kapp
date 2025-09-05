@@ -1,0 +1,38 @@
+<div class="app-loading">@if(loading){<mat-progress-bar mode="indeterminate"></mat-progress-bar>}</div>
+<as-split direction="horizontal" [unit]="'pixel'">
+    <as-split-area [size]="320" >
+      <div style="flex: 1 30%;" class="app-filters">
+        @if(solrResponse?.facets) { 
+          <app-facets [fields]="['authors', 'public', 'physical_locations']" 
+          [facets]="solrResponse.facets" (onFiltersChanged)="onFiltersChanged($event)"></app-facets> 
+        }
+  </div>
+    </as-split-area>
+    <as-split-area >
+      <div class="app-content app-fill-w app-fill-h">
+    <div class="app-timeline">
+      
+      <div class="app-fxLayout app-row">
+        <div style="flex: 1 30%;">
+          <h4>Počet dopisů: {{ numFound }} </h4>
+        </div>
+
+        <mat-paginator #paginator class="demo-paginator" (page)="handlePageEvent($event)" [length]="numFound"
+          [pageSize]="rows" [showFirstLastButtons]="false" [pageSizeOptions]="pageSizeOptions" [pageIndex]="pageIndex"
+          aria-label="Select page">
+        </mat-paginator>
+
+
+      </div>
+      <div >
+        @for(doc of docs(); track $index){
+            <app-result-item [doc]="doc"></app-result-item>
+        }
+      </div>
+
+    </div>
+  </div>
+    </as-split-area>
+  </as-split>
+  
+  

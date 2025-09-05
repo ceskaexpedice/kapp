@@ -1,0 +1,14 @@
+<mat-card appearance="outlined" >
+        <mat-card-header>
+            <mat-card-title> {{ doc()['root.title']}} </mat-card-title>
+        </mat-card-header>
+        <mat-card-content>
+            <div><span>{{ 'field.authors' | translate }}: </span>{{ doc()['authors']}}</div>
+            <div><span>{{ 'field.last_author' | translate }}: </span>{{ doc()['last_author']}}</div>
+            <div><span>{{ 'field.year_of_death_last_author' | translate }}: </span>{{ doc()['year_of_death_last_author']}}</div>
+            <div><span>{{ 'field.pid' | translate }}: </span>{{ doc()['pid']}}</div>
+        </mat-card-content>
+        <mat-card-actions align="end" class="app-mat-card-actions">
+            <button mat-raised-button (click)="checkAutor()" >{{ 'check' | translate }}</button>
+        </mat-card-actions>
+    </mat-card>

@@ -1,0 +1,92 @@
+// --- VARIABLES ---
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+:root {
+
+ // colors
+ --app-color-lightnes: #ffffff;
+ --app-color-lightnes-rgb: 255, 255, 255;
+ --app-color-darknes: #000000;
+ --app-color-darknes-rgb: 0, 0, 0;
+ --app-color-warning: #f44336;
+
+ --app-color-info: #ff6f00;
+ --app-color-selected: #007;
+
+ 
+ --app-color-success: #2e7d32;
+
+ --app-color-map-link: #7a80ec;
+ --app-color-map-link-active: #c41f27;
+
+   // color markings
+   --app-color-block: #2e7d32;
+   --app-color-line: #9c27b0;
+   --app-color-word: #ffd600;
+
+
+  --app-color-lightnes: #ffffff;
+  --app-color-lightnes-rgb: 255, 255, 255;
+  --app-color-darknes: #000000;
+  --app-color-darknes-rgb: 0, 0, 0;
+
+  // gray pallete
+  --app-color-gray-0: #FAFAFA;
+  --app-color-gray-1: #F5F5F5;
+  --app-color-gray-2: #EEEEEE;
+  --app-color-gray-3: #E0E0E0;
+  --app-color-gray-4: #BDBDBD;
+  --app-color-gray-5: #9E9E9E;
+  --app-color-gray-6: #757575;
+  --app-color-gray-7: #616161;
+  --app-color-gray-8: #424242;
+  --app-color-gray-9: #212121;
+
+  // bars
+  --app-topbar-height: 50px;
+  --app-topbar-border-color: var(--app-gray-3);
+  --app-controlbar-height: 45px;
+  --app-controlbar-bg-color: var(--app-gray-1);
+  --app-controlbar-border-color: var(--app-gray-3);
+
+  // components
+  --app-footer-bg-color: var(--app-color-darknes);
+  --app-footer-color: var(--app-gray-2);
+
+  --app-paginator-form-field-height: 28px;
+
+  // layout
+  --app-container: 1280px;
+
+  // mat override
+  --app-button-height: 32px;
+  --app-checkbox-size: 14px;
+  --mat-paginator-container-background-color: transparent;
+  --mat-paginator-container-size: 44px;
+  --mdc-secondary-navigation-tab-container-height: 48px;
+  //--mat-toolbar-standard-height: 80px;
+  --mat-table-row-item-container-height: 36px;
+
+  --mat-sys-body-large-size: .9rem;
+}
+
+// gaps
+$gaps: (
+  "0": 0,
+  "1": 4,
+  "2": 8,
+  "3": 12,
+  "4": 16,
+  "5": 20,
+  "6": 24,
+  "7": 28,
+  "8": 32,
+);
+
+// alerts
+$alerts: (
+  warning: var(--app-color-warning),
+  info: var(--app-color-info),
+  success: var(--app-color-success)
+);

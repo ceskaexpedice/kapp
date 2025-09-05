@@ -1,0 +1,13 @@
+{
+  
+  "view": "Zobrazení",
+  "views": "Typy zobrazení",
+  "clearSelection": "Zrušit výběr",
+  "usedFilters": "Vybrané filtry",
+  "field": {
+    "author": "Autor"
+  },
+  "action": {
+    "view_in_hiko": "Zobrazit v HIKO"
+  }
+}

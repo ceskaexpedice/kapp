@@ -1,0 +1,13 @@
+{
+  "view": "View",
+  "views": "Views",
+  "clearSelection": "Clear selection",
+  "usedFilters": "Used filters",
+  "field": {
+    "letter_id": "Id",
+    "author": "Autor"
+  },
+  "action": {
+    "view_in_hiko": "View in HIKO DB"
+  }
+}
