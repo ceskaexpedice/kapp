@@ -3,11 +3,16 @@
   "views": "Views",
   "clearSelection": "Clear selection",
   "usedFilters": "Used filters",
+  "numFound": "num. found",
   "field": {
-    "letter_id": "Id",
-    "author": "Autor"
+    "query": "Query",
+    "author": "AutHor",
+    "authors": "AutHoS",
+    "last_author": "lAST AUTHOR",
+    "year_of_death_last_author": "Last author death",
+    "pid": "PID"
   },
   "action": {
-    "view_in_hiko": "View in HIKO DB"
+    "search": "Search"
   }
 }

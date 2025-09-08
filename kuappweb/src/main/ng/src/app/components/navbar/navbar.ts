@@ -22,6 +22,10 @@ export class Navbar {
     public state: AppState
   ) { }
 
+  ngOnInit(): void {
+    this.onLanguageChanged('cs');
+  }
+
   onLanguageChanged(lang: string) {
     this.translator.use(lang);
   }

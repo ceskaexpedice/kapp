@@ -1,14 +1,21 @@
-<mat-card appearance="outlined" >
-        <mat-card-header>
-            <mat-card-title> {{ doc()['root.title']}} </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <div><span>{{ 'field.authors' | translate }}: </span>{{ doc()['authors']}}</div>
-            <div><span>{{ 'field.last_author' | translate }}: </span>{{ doc()['last_author']}}</div>
-            <div><span>{{ 'field.year_of_death_last_author' | translate }}: </span>{{ doc()['year_of_death_last_author']}}</div>
-            <div><span>{{ 'field.pid' | translate }}: </span>{{ doc()['pid']}}</div>
-        </mat-card-content>
-        <mat-card-actions align="end" class="app-mat-card-actions">
-            <button mat-raised-button (click)="checkAutor()" >{{ 'check' | translate }}</button>
-        </mat-card-actions>
-    </mat-card>
+<mat-card appearance="outlined">
+    <mat-card-header>
+        <mat-card-title> {{ doc()['root.title']}} </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="app-result-item-content">
+        <div><label>{{ 'field.authors' | translate }}: </label>{{ doc()['authors']}}</div>
+        <div><label>{{ 'field.last_author' | translate }}: </label>{{ doc()['last_author']}}</div>
+        <div><label>{{ 'field.year_of_death_last_author' | translate }}: </label>{{ doc()['year_of_death_last_author']}}
+        </div>
+        <div><label>{{ 'field.pid' | translate }}: </label>{{ doc()['pid']}}</div>
+        <div><label>{{ 'field.physical_locations' | translate }}: </label>{{ doc()['physical_locations']}}</div>
+        <div><label>{{ 'field.public' | translate }}: </label>{{ doc()['public']}}
+            @if(doc()['public']) {
+            <label>{{ 'field.public_since' | translate }}: </label>{{ doc()['public_since']}}
+            }
+        </div>
+    </mat-card-content>
+    <mat-card-actions align="end" class="app-mat-card-actions">
+        <button mat-raised-button (click)="checkAutor()">{{ 'check' | translate }}</button>
+    </mat-card-actions>
+</mat-card>

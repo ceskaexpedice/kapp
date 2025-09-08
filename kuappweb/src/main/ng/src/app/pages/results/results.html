@@ -14,7 +14,7 @@
       
       <div class="app-fxLayout app-row">
         <div style="flex: 1 30%;">
-          <h4>Počet dopisů: {{ numFound }} </h4>
+          <h4>{{ 'numFound' | translate}}: {{ numFound }} </h4>
         </div>
 
         <mat-paginator #paginator class="demo-paginator" (page)="handlePageEvent($event)" [length]="numFound"

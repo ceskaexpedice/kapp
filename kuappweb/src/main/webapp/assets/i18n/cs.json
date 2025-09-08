@@ -4,10 +4,19 @@
   "views": "Typy zobrazení",
   "clearSelection": "Zrušit výběr",
   "usedFilters": "Vybrané filtry",
+  "numFound": "Nalezeno",
   "field": {
-    "author": "Autor"
+    "query": "dotaz",
+    "author": "Autor",
+    "authors": "Autoři",
+    "last_author": "Poslední autor",
+    "year_of_death_last_author": "Rok úmrtí posledního autora",
+    "physical_locations": "Umisteni",
+    "public": "Veřejný",
+    "public_since": "Veřejný od",
+    "pid": "PID"
   },
   "action": {
-    "view_in_hiko": "Zobrazit v HIKO"
+    "search": "Hledat"
   }
 }
