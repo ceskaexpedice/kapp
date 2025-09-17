@@ -1,0 +1,6 @@
+nb-configuration.xml
+nbactions.xml
+target/
+
+# system files
+.DS_Store

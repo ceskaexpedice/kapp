@@ -22,15 +22,17 @@ import { AppService } from '../../app.service';
 import { JSONFacet } from '../../shared/facet';
 import { HttpParams } from '@angular/common/http';
 import { ResultItem } from "../../components/result-item/result-item";
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-results',
   imports: [
     TranslateModule, FormsModule,
     AngularSplitModule,
-    MatProgressBarModule, MatFormFieldModule, MatSelectModule,
+    MatProgressBarModule, MatSelectModule,
     MatButtonModule, MatTableModule, MatPaginatorModule,
-    MatListModule, MatIconModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
+    MatFormFieldModule, MatIconModule, MatInputModule,
+    MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem
   ],
   templateUrl: './results.html',
@@ -80,16 +82,23 @@ export class Results {
     p.physical_locations = usedFacets.filter(k => k.field === 'physical_locations').map(k => k.value);
   }
 
+
+  doSearch() {
+    this.getData();
+  }
+
   getData() {
     const p: any = {};
     p.rows = this.rows;
     p.offset = this.pageIndex * p.rows;
+    if (this.state.q) {
+      p.q = this.state.q;
+    }
     this.addFilters(p, this.usedFacets);
     this.service.search(p as HttpParams).subscribe((resp: any) => {
       this.solrResponse = resp;
       this.numFound = this.solrResponse.response.numFound;
       this.docs.set(this.solrResponse.response.docs);
-      console.log(resp)
     });
   }
 

@@ -1,5 +1,5 @@
 import { HttpParams } from '@angular/common/http';
-import { Component, input } from '@angular/core';
+import { Component, effect, input, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { RouterModule } from '@angular/router';
@@ -16,12 +16,30 @@ import { AppService } from '../../app.service';
 })
 export class ResultItem {
   doc = input<any>();
+  links = signal<{[key: string]:{ident: string, url: string}[]}>({});
+  linkTypes = signal<string[]>([]);
   
   constructor(
     public state: AppState,
     private service: AppService,
     private config: AppConfiguration
-  ) { }
+  ) { 
+    effect(() => {
+      this.links.set({});
+      this.linkTypes.set([]);
+      if (this.doc()['last_author_nameIdentifier']) {
+        const p: any = {};
+        p.id= this.doc()['last_author_nameIdentifier'];
+        this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
+          console.log(resp)
+          if (resp.links) {
+            this.links.set(resp.links);
+            this.linkTypes.set(Object.keys(resp.links));
+          }
+        });
+      }
+    })
+  }
 
   checkAutor() {
     const p: any = {};

@@ -1,17 +1,26 @@
 <div class="app-loading">@if(loading){<mat-progress-bar mode="indeterminate"></mat-progress-bar>}</div>
 <as-split direction="horizontal" [unit]="'pixel'">
-    <as-split-area [size]="320" >
-      <div style="flex: 1 30%;" class="app-filters">
-        @if(solrResponse?.facets) { 
-          <app-facets [fields]="['authors', 'public', 'physical_locations']" 
-          [facets]="solrResponse.facets" (onFiltersChanged)="onFiltersChanged($event)"></app-facets> 
-        }
-  </div>
-    </as-split-area>
-    <as-split-area >
-      <div class="app-content app-fill-w app-fill-h">
-    <div class="app-timeline">
-      
+  <as-split-area [size]="320">
+    <div style="flex: 1 30%;" class="app-filters">
+      @if(solrResponse?.facets) {
+      <app-facets [fields]="['authors', 'public', 'physical_locations']" [facets]="solrResponse.facets"
+        (onFiltersChanged)="onFiltersChanged($event)"></app-facets>
+      }
+    </div>
+  </as-split-area>
+  <as-split-area>
+    <div class="app-content app-fill-w app-fill-h">
+      <div class="app-fxLayout app-row">
+        <div style="margin-top: 15px;">
+          <mat-form-field appearance="outline">
+            <mat-label>{{ 'action.search' | translate }}</mat-label>
+            <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
+              (keyup.enter)="doSearch()">
+            <mat-icon matSuffix (click)="doSearch()">search</mat-icon>
+          </mat-form-field>
+        </div>
+      </div>
+
       <div class="app-fxLayout app-row">
         <div style="flex: 1 30%;">
           <h4>{{ 'numFound' | translate}}: {{ numFound }} </h4>
@@ -21,18 +30,13 @@
           [pageSize]="rows" [showFirstLastButtons]="false" [pageSizeOptions]="pageSizeOptions" [pageIndex]="pageIndex"
           aria-label="Select page">
         </mat-paginator>
-
-
       </div>
-      <div >
+      <div>
         @for(doc of docs(); track $index){
-            <app-result-item [doc]="doc"></app-result-item>
+        <app-result-item [doc]="doc"></app-result-item>
         }
       </div>
 
     </div>
-  </div>
-    </as-split-area>
-  </as-split>
-  
-  
+  </as-split-area>
+</as-split>

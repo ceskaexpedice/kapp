@@ -69,5 +69,9 @@ export class AppService {
     return this.get('index/check_autor', params)
   }
 
+  getLinks(params: HttpParams): Observable<any> {
+    return this.get('index/get_links', params)
+  }
+
   
 }

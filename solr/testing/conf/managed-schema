@@ -228,8 +228,7 @@
   <fieldType name="tlong" class="solr.TrieLongField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
   <fieldType name="tlongs" class="solr.TrieLongField" positionIncrementGap="0" docValues="true" multiValued="true" precisionStep="8"/>
   <field name="_version_" type="long" indexed="true" stored="true"/>
-  <field name="authors" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="authors.facet" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
+  <field name="authors" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="authors.search" type="text_fgs" docValues="false" multiValued="true" indexed="true" stored="true"/>
   <field name="checked_by" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="check_NK" type="boolean" docValues="true" multiValued="false" indexed="true" stored="true"/>
@@ -256,6 +255,7 @@
   <field name="id_sysno" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
   <field name="id_urnnbn" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
   <field name="id_uuid" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
+  <field name="id_barcode" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
   <field name="imported" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="in_collections" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="in_collections.direct" type="string" multiValued="true" indexed="true" stored="true"/>
@@ -266,6 +266,7 @@
   <field name="keywords.facet" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="keywords.search" type="text_fgs" docValues="false" multiValued="true" indexed="true" stored="true"/>
   <field name="last_author" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
+  <field name="last_author_nameIdentifier" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="level" type="int" indexed="true" stored="true"/>
   <field name="licenses" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="licenses.facet" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>

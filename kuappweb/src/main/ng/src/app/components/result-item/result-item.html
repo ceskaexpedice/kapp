@@ -4,8 +4,13 @@
     </mat-card-header>
     <mat-card-content class="app-result-item-content">
         <div><label>{{ 'field.authors' | translate }}: </label>{{ doc()['authors']}}</div>
-        <div><label>{{ 'field.last_author' | translate }}: </label>{{ doc()['last_author']}}</div>
+        <div><label>{{ 'field.last_author' | translate }}: </label>{{ doc()['last_author']}} </div>
         <div><label>{{ 'field.year_of_death_last_author' | translate }}: </label>{{ doc()['year_of_death_last_author']}}
+            @for(w of linkTypes(); track $index) {
+                @for(l of links()[w]; track $index) {
+                    <a target="_blank" [href]="l.url">{{ w }}</a>&#160;
+                }
+            }
         </div>
         <div><label>{{ 'field.pid' | translate }}: </label>{{ doc()['pid']}}</div>
         <div><label>{{ 'field.physical_locations' | translate }}: </label>{{ doc()['physical_locations']}}</div>

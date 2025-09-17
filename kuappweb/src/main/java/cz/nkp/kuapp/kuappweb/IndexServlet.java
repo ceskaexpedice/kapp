@@ -100,8 +100,7 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    IndexSearcher fh = new IndexSearcher();
-                    json = fh.search(req); 
+                    json = IndexSearcher.search(req); 
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -113,8 +112,19 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    IndexSearcher fh = new IndexSearcher();
-                    json = fh.checkAutor(req); 
+                    json = IndexSearcher.checkAutor(req); 
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        GET_LINKS{
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getLinks(req.getParameter("id")); 
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

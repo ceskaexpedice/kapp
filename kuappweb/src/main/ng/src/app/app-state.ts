@@ -6,5 +6,6 @@ import { Injectable, signal } from "@angular/core";
 }) export class AppState {
 
     public showInfo = signal<boolean>(false);
+    public q: string = '';
     
 }
