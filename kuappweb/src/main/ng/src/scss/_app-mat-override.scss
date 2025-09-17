@@ -33,8 +33,9 @@
   ));
 
   @include mat.card-overrides((
-    elevated-container-shape: 0px,
-    outlined-container-shape: 0px
+    elevated-container-shape: 2px,
+    outlined-container-shape: 2px
+  
   ));
 
 }

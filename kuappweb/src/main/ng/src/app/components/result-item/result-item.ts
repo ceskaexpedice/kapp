@@ -7,10 +7,13 @@ import { TranslateModule } from '@ngx-translate/core';
 import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
+import { MatIconModule } from '@angular/material/icon';
 
 @Component({
   selector: 'app-result-item',
-  imports: [RouterModule, TranslateModule, MatCardModule, MatButtonModule],
+  imports: [RouterModule, TranslateModule, MatCardModule, MatButtonModule,
+    MatIconModule
+  ],
   templateUrl: './result-item.html',
   styleUrl: './result-item.scss'
 })

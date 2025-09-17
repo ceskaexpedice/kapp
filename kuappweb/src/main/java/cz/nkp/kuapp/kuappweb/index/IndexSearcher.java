@@ -37,6 +37,11 @@ public class IndexSearcher {
             if (rowsP != null && !rowsP.isBlank()) {
                 rows = Integer.valueOf(rowsP);
             }
+            
+            int offset = 0;
+            if (request.getParameter("offset") != null) {
+                offset = Integer.valueOf(request.getParameter("offset"));
+            }
             String q = "*";
             if (request.getParameter("q") != null) {
                 q = request.getParameter("q");
@@ -53,6 +58,7 @@ public class IndexSearcher {
                     .withFacet("physical_locations", new TermsFacetMap("physical_locations.facet")
                             .setLimit(1000)
                             .setMinCount(1))
+                    .setOffset(offset)
                     .setLimit(rows);
 
             if (request.getParameter("author") != null) {

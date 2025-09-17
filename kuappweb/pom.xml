@@ -148,10 +148,10 @@
                                   <token>&lt;!doctype html&gt;</token> 
                                   <value>&lt;%@page contentType="text/html" pageEncoding="UTF-8"%&gt;&lt;!doctype html&gt;</value> 
                                 </replacement>
-                                <replacement> 
+<!--                                <replacement> 
                                   <token>base href="/"</token> 
                                   <value>base href="${context.name}"</value> 
-                                </replacement> 
+                                </replacement> -->
                             </replacements> 
                         </configuration> 
                     </execution> 

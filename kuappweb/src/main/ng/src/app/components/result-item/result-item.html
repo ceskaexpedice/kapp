@@ -1,4 +1,4 @@
-<mat-card appearance="outlined">
+<mat-card appearance="outlined" style="margin: 3px;">
     <mat-card-header>
         <mat-card-title> {{ doc()['root.title']}} </mat-card-title>
     </mat-card-header>
@@ -8,7 +8,7 @@
         <div><label>{{ 'field.year_of_death_last_author' | translate }}: </label>{{ doc()['year_of_death_last_author']}}
             @for(w of linkTypes(); track $index) {
                 @for(l of links()[w]; track $index) {
-                    <a target="_blank" [href]="l.url">{{ w }}</a>&#160;
+                    <a target="_blank" [href]="l.url">{{ w }}<mat-icon matSuffix class="app-small-icon" >open_in_new</mat-icon></a>
                 }
             }
         </div>
