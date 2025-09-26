@@ -11,8 +11,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
+import java.text.Normalizer;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.stream.Stream;
 
@@ -24,8 +28,9 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.math.NumberUtils;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
+import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONObject;
 import org.w3c.dom.Document;
@@ -74,40 +79,45 @@ import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
  */
 public class TsvToSolrIndexer {
-    private static class AutorData{
+
+    private static class AutorData {
+
         String full;
         String family;
         String given;
         String date;
         String termsOfAddress;
         String nameIdentifier;
+        List<String> role;
+        boolean isLast;
 
-        public AutorData(String full, String family, String given, String date, String termsOfAddress, String nameIdentifier) {
+        public AutorData(String full, String family, String given, String date, String termsOfAddress, String nameIdentifier, List<String> role) {
             this.full = full;
             this.family = family;
             this.given = given;
             this.date = date;
             this.termsOfAddress = termsOfAddress;
             this.nameIdentifier = nameIdentifier;
+            this.role = role;
         }
+
         public String toJsonString() {
             JSONObject json = new JSONObject();
             json.put("full", full);
             json.put("family", family);
             json.put("given", given);
             json.put("date", date);
+            json.put("role", role);
             json.put("termsOfAddress", termsOfAddress);
             json.put("nameIdentifier", nameIdentifier);
+            json.put("isLast", isLast);
             return json.toString();
         }
     }
 
-
-
-
-
-    private static final String SOLR_URL = "http://localhost:8983/solr/testing";
-    private static final String DIRECTORY_PATH = "../Data";  // change this
+    private static final String SOLR_URL = "http://localhost:8983/solr";
+    private static String DIRECTORY_PATH = "../Data";  // change this 
+    // private static final String DIRECTORY_PATH = "c:\\Users\\alber\\Projects\\KuratorskaAplikace\\tsv\\";  // change this
 
     static void add_year_range(String year_start, boolean confirmed_start, String year_end, boolean confirmed_end, SolrInputDocument doc) {
 
@@ -144,6 +154,9 @@ public class TsvToSolrIndexer {
     }
 
     public static void main(String[] args) throws ParserConfigurationException {
+        if (args.length > 0) {
+            DIRECTORY_PATH = args[0];
+        }
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         HttpClient client = HttpClient.newHttpClient();
         Builder httpBuilder = HttpRequest.newBuilder();
@@ -161,7 +174,7 @@ public class TsvToSolrIndexer {
             return;
         }
 
-        try (SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).build()) {
+        try (SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
             File[] tsvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".tsv"));
 
             if (tsvFiles == null || tsvFiles.length == 0) {
@@ -261,7 +274,7 @@ public class TsvToSolrIndexer {
                                     switch (header) {
                                         case "authors" -> {
                                             authorArray = value.split("  |\\|");
-                                            if(authorArray.length > 0 && !authorArray[0].isEmpty()){
+                                            if (authorArray.length > 0 && !authorArray[0].isEmpty()) {
                                                 doc.addField(header, authorArray);
                                             }
                                             /*if(authors.length > 1) {
@@ -309,6 +322,14 @@ public class TsvToSolrIndexer {
                                                 doc.addField(header, uuid);
                                                 pid = uuid;
                                             }
+                                            // NDK. K5
+                                            Document xml = GetBiblioMods(client, builder, pid, "https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS");
+                                            if (xml == null) {
+                                                // MZK. K7
+                                                // https://api.kramerius.mzk.cz/search/api/client/v7.0/items/uuid:4f0d2790-37d6-11e6-8746-005056825209/metadata/mods
+                                                xml = GetBiblioMods(client, builder, pid, "https://api.kramerius.mzk.cz/search/api/client/v7.0/items/" + pid + "/metadata/mods");
+                                            }
+                                            nameIDArray = processBiblioMods(xml, doc);
                                         }
                                         case "public" -> {
                                             String val = entry.getValue().toLowerCase();
@@ -339,75 +360,6 @@ public class TsvToSolrIndexer {
                                         case "source" -> {
                                             String val = entry.getValue();
                                             doc.addField(header, val);
-                                            if (val != null && !val.isEmpty() && val.contains("AUT")) {
-                                                try {
-                                                    HttpResponse<String> response = client.send(httpBuilder.uri(URI.create("https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS"))
-                                                            .GET().build(), HttpResponse.BodyHandlers.ofString());
-                                                    Thread.sleep(80);
-                                                    //System.out.println("Status code: " + response.statusCode());
-                                                    if (response == null) {
-                                                        System.out.println("Null response when fetching AUT data for pid " + pid);
-                                                    } else if (response.statusCode() != 200) {
-                                                        System.out.println("Failed to fetch AUT data, response code: " + response.statusCode() + " for pid " + pid);
-                                                    } else {
-                                                        //System.out.println("Response body: " + response.body());
-                                                        Document xml = getXml(builder, response);
-                                                        if (xml == null) {
-                                                            System.out.println("Failed to parse XML for pid " + pid);
-                                                            continue;
-                                                        }
-                                                        nameIDArray = ProcessNameIdentifier(xml, builder, client, secondPid);
-                                                        if(nameIDArray!=null){
-                                                            for(AutorData autor : nameIDArray){
-                                                                if(autor.nameIdentifier != null && !autor.nameIdentifier.isEmpty()){
-                                                                    doc.addField("nameIdentifier", autor.nameIdentifier);
-                                                                    doc.addField("authors_kramerius", autor.toJsonString());
-                                                                }
-                                                            }
-                                                        }
-                                                        
-                                                        
-                                                        NodeList nodes = xml.getElementsByTagName("mods:identifier");
-                                                        for (int i = 0; i < nodes.getLength(); i++) {
-                                                            String type = ((Element) nodes.item(i)).getAttribute("type");
-                                                            switch (type) {
-                                                                case "uuid" -> {
-                                                                    //skip, we already have uuid in pid
-                                                                }
-                                                                case "ccnb" ->
-                                                                    doc.addField("id_ccnb", nodes.item(i).getTextContent());
-                                                                case "isbn" ->
-                                                                    doc.addField("id_isbn", nodes.item(i).getTextContent());
-                                                                case "ismn" ->
-                                                                    doc.addField("id_ismn", nodes.item(i).getTextContent());
-                                                                case "issn" ->
-                                                                    doc.addField("id_issn", nodes.item(i).getTextContent());
-                                                                case "oclc" ->
-                                                                    doc.addField("id_oclc", nodes.item(i).getTextContent());
-                                                                case "other" ->
-                                                                    doc.addField("id_other", nodes.item(i).getTextContent());
-                                                                case "sysno" ->
-                                                                    doc.addField("id_sysno", nodes.item(i).getTextContent());
-                                                                case "urnnbn" ->
-                                                                    doc.addField("id_urnnbn", nodes.item(i).getTextContent());
-                                                                case "barCode" ->
-                                                                    doc.addField("id_barcode", nodes.item(i).getTextContent());
-                                                                case "barcode" ->
-                                                                    doc.addField("id_barcode", nodes.item(i).getTextContent());
-                                                                default -> {
-                                                                    System.out.println("Unknown identifier type: " + type);
-                                                                }
-                                                            }
-                                                        }
-
-                                                    }
-
-                                                } catch (ConnectException e) {
-                                                    System.out.println("Failed to connect to server while processing: " + tsvFile.getName() + "  pid: " + pid + ": " + e.getMessage());
-                                                } catch (IOException | InterruptedException e) {
-                                                    System.out.println("Critical Exception occured in:source " + tsvFile.getName() + ": " + e.getClass() + " - " + e.getMessage());
-                                                }
-                                            }
                                         }
                                         case "last_author" -> {
                                             last_author = entry.getValue();
@@ -424,24 +376,54 @@ public class TsvToSolrIndexer {
                         if (secondPid != null) {
                             SolrInputDocument seconddoc = doc.deepCopy();
                             seconddoc.setField("pid", secondPid);
-                            solrClient.add(seconddoc);
+                            solrClient.add("titles", seconddoc);
                         }
                         //System.out.println("Processing last_author: '" + last_author + "'");
 
                         try {
-                            if (last_author != null && (nameIDArray != null) && (authorArray != null)) {
-                                for (int i = 0; i < nameIDArray.length && i < authorArray.length; i++) {
+                            if (last_author != null && (nameIDArray != null)) {
+                                for (AutorData autor : nameIDArray) {
                                     //System.out.println("Comparing last_author: '" + last_author + "' with author: '" + authorArray[i] + "' having nameID: '" + nameIDArray[i] + "'");
-                                    if (last_author.contains(authorArray[i])) {
-                                        doc.addField("last_author_nameIdentifier", nameIDArray[i].nameIdentifier);
-                                        break;
+//                                    if (last_author.contains(authorArray[i])) {
+//                                        doc.addField("last_author_nameIdentifier", nameIDArray[i].nameIdentifier);
+//                                    }
+                                    if (similartyMatch(normalize(last_author), normalize(autor.full), .5)) {
+                                        autor.isLast = true;
+                                        doc.setField("last_author_nameIdentifier", autor.nameIdentifier);
                                     }
                                 }
                             }
                         } catch (Exception e) {
                             System.out.println("Critical Exception occured in:last_author_nameIdentifier " + tsvFile.getName() + ": " + e.getMessage());
                         }
-                        solrClient.add(doc);
+                        if (nameIDArray != null) {
+                            for (AutorData autor : nameIDArray) {
+                                doc.addField("authors_kramerius", autor.toJsonString());
+                                if (autor.nameIdentifier != null && !autor.nameIdentifier.isEmpty()) {
+                                    doc.addField("nameIdentifier", autor.nameIdentifier);
+                                }
+                                
+                                SolrInputDocument aDoc = new SolrInputDocument();
+                                aDoc.addField("nameIdentifier", autor.nameIdentifier);
+                                if (autor.nameIdentifier != null) {
+                                    aDoc.addField("id", autor.nameIdentifier);
+                                } else {
+                                    aDoc.addField("id", normalize(autor.full+autor.date));
+                                }
+                                aDoc.addField("full", autor.full);
+                                aDoc.addField("family", autor.family);
+                                aDoc.addField("given", autor.given);
+                                //aDoc.addField("date", autor.date);
+                                aDoc.addField("termsOfAddress", autor.termsOfAddress);
+//                                aDoc.addField("birth", autor.family);
+//                                aDoc.addField("death", autor.family);
+                                
+                                ParseDates(aDoc, "date", autor.date, recordNumber, autor.date, show_comma_info);
+                                        
+                                solrClient.add("authors", aDoc);
+                            }
+                        }
+                        solrClient.add("titles", doc);
                     }
 
                 } catch (Exception e) {
@@ -450,7 +432,8 @@ public class TsvToSolrIndexer {
                 }
             }
 
-            solrClient.commit();
+            solrClient.commit("titles");
+            solrClient.commit("authors");
             System.out.println("All TSV files indexed successfully.");
 
         } catch (Exception e) {
@@ -478,34 +461,62 @@ public class TsvToSolrIndexer {
         System.err.println(message + " on row: " + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
 
+    private static Document GetBiblioMods(HttpClient client, DocumentBuilder builder, String pid, String url) throws IOException, InterruptedException {
+        if (pid == null || pid.isBlank()) {
+            return null;
+        }
+        HttpResponse<String> response = client.send(HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build(), HttpResponse.BodyHandlers.ofString());
+        if (response != null && response.statusCode() == 200) {
+            return getXml(builder, response);
+        } else {
+            System.out.println("Failed to fetch MODS for second pid " + pid + ", response code: " + (response != null ? response.statusCode() : "null response"));
+            return null;
+        }
+    }
 
-    private static AutorData[] ProcessNameIdentifier(Document xml) throws IOException, InterruptedException{
+    private static AutorData[] processBiblioMods(Document xml, SolrInputDocument doc) throws IOException, InterruptedException {
+        if (xml == null) {
+            return null;
+        }
+        AutorData[] nameIDArray = ProcessNameIdentifier(xml);
+
+        NodeList nodes = xml.getElementsByTagName("mods:identifier");
+        for (int i = 0; i < nodes.getLength(); i++) {
+            String type = ((Element) nodes.item(i)).getAttribute("type");
+            doc.addField("id_" + type, nodes.item(i).getTextContent());
+        }
+        return nameIDArray;
+    }
+
+    private static AutorData[] ProcessNameIdentifier(Document xml) throws IOException, InterruptedException {
         NodeList modsName = xml.getElementsByTagName("mods:name");
         AutorData[] nameIDArr = new AutorData[modsName.getLength()];
 
-        for(int x=0;x < nameIDArr.length; x++){
+        for (int x = 0; x < nameIDArr.length; x++) {
             Element name = (Element) modsName.item(x);
 
-
-            String full =null;
+            String full = null;
             String family = null;
             String given = null;
             String date = null;
-            String termsOfAddress =null;
+            String termsOfAddress = null;
             String nameIdentifier = null;
+            List<String> role = new ArrayList<>();
 
-
-            NodeList nameParts = name.getElementsByTagName("mods:namePart");                                            
+            NodeList nameParts = name.getElementsByTagName("mods:namePart");
             if (nameParts != null && nameParts.getLength() > 0) {
                 for (int i = 0; i < nameParts.getLength(); i++) {
                     Node item = nameParts.item(i);
                     String type = ((Element) item).getAttribute("type");
                     if (type == null || type.equals("")) {
-                        full=item.getTextContent();
+                        full = item.getTextContent();
                         String[] splitName = item.getTextContent().split(",");
-                        if(splitName.length ==2){
-                            family=splitName[0].trim();
-                            given= splitName[1].trim();
+                        if (splitName.length == 2) {
+                            family = splitName[0].trim();
+                            given = splitName[1].trim();
                         }
                     } else if (type.equals("family") || type.equals("given")) {
                         String fam = "";
@@ -533,31 +544,40 @@ public class TsvToSolrIndexer {
                             }
 
                         }
-                        family=fam;
-                        given=giv;
+                        family = fam;
+                        given = giv;
                     } else if (type.equals("date")) {
-                        date=item.getTextContent();
-                    } else if (type.equals("termsOfAddress")){
-                        termsOfAddress=item.getTextContent();
-                    } else{
+                        date = item.getTextContent();
+                    } else if (type.equals("termsOfAddress")) {
+                        termsOfAddress = item.getTextContent();
+                    } else {
                         System.out.println("Disregarded namePart type: " + type + " :" + item.getTextContent());
                     }
                 }
-                
-            }
-            
-            Element nameIDx = (Element) name.getElementsByTagName("mods:nameIdentifier").item(0);
-            if(nameIDx != null)
-                nameIdentifier =nameIDx.getTextContent();
 
-            nameIDArr[x] = new AutorData(full, family, given, date, termsOfAddress, nameIdentifier);
+            }
+
+            Element nameIDx = (Element) name.getElementsByTagName("mods:nameIdentifier").item(0);
+            if (nameIDx != null) {
+                nameIdentifier = nameIDx.getTextContent();
+            }
+
+            Element rolEl = (Element) name.getElementsByTagName("mods:role").item(0);
+            if (rolEl != null) {
+                NodeList roles = name.getElementsByTagName("mods:roleTerm");
+                for (int i = 0; i < roles.getLength(); i++) {
+                    role.add(roles.item(i).getTextContent());
+                }
+            }
+
+            nameIDArr[x] = new AutorData(full, family, given, date, termsOfAddress, nameIdentifier, role);
         }
         return nameIDArr;
     }
 
     private static AutorData[] ProcessNameIdentifier(Document xml, DocumentBuilder builder, HttpClient client, String secondPid) throws IOException, InterruptedException {
         AutorData[] nameIDArray = ProcessNameIdentifier(xml);
-        
+
         if (secondPid != null) {
             HttpResponse<String> response2 = client.send(HttpRequest.newBuilder()
                     .uri(URI.create("https://ndk.cz/search/api/v5.0/item/" + secondPid + "/streams/BIBLIO_MODS"))
@@ -783,5 +803,28 @@ public class TsvToSolrIndexer {
         }
 
         return false;
+    }
+
+    public static String normalize(String input) {
+        if (input == null) {
+            return "";
+        }
+        String result = input.toLowerCase(Locale.ROOT);
+        result = Normalizer.normalize(result, Normalizer.Form.NFD);
+        result = result.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
+        result = result.replaceAll("[^a-z0-9]", "");
+        return result;
+    }
+
+    public static boolean similartyMatch(String catalogNormalizedTitle, String distriNormalizedTitle, double shoda) {
+        LevenshteinDistance dist = LevenshteinDistance.getDefaultInstance();
+        Integer calculatedDistance = dist.apply(catalogNormalizedTitle, distriNormalizedTitle);
+        double maxDistance = Math.round((1 - shoda) * ((double) distriNormalizedTitle.length()));
+
+        if (maxDistance >= calculatedDistance) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

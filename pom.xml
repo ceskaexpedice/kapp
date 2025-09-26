@@ -38,7 +38,12 @@
             <artifactId>json</artifactId>
             <version>20240303</version>
         </dependency>
-
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-text</artifactId>
+            <version>1.14.0</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     <build>
         <plugins>
