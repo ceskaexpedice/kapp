@@ -13,6 +13,10 @@
     "pid": "PID"
   },
   "action": {
-    "search": "Search"
+    "search": "Search",
+    "close": "Close",
+    "save": "Save",
+    "set_as_last": "Set as last",
+    "ok": "OK"
   }
 }

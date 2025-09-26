@@ -35,12 +35,12 @@ public class IndexSearcher {
             String rowsP = request.getParameter("rows");
             int rows = 0;
             if (rowsP != null && !rowsP.isBlank()) {
-                rows = Integer.valueOf(rowsP);
+                rows = Integer.parseInt(rowsP);
             }
             
             int offset = 0;
             if (request.getParameter("offset") != null) {
-                offset = Integer.valueOf(request.getParameter("offset"));
+                offset = Integer.parseInt(request.getParameter("offset"));
             }
             String q = "*";
             if (request.getParameter("q") != null) {
@@ -48,7 +48,7 @@ public class IndexSearcher {
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
-                    .withParam("df", "root.title")
+                    .withParam("df", "full_text") 
                     .withFacet("authors", new TermsFacetMap("authors")
                             .setLimit(1000)
                             .setMinCount(1))
@@ -59,6 +59,8 @@ public class IndexSearcher {
                             .setLimit(1000)
                             .setMinCount(1))
                     .setOffset(offset)
+                    .setSort("indextime desc")
+                    .returnFields("*,authors_kramerius:[json]")
                     .setLimit(rows);
 
             if (request.getParameter("author") != null) {
@@ -74,7 +76,7 @@ public class IndexSearcher {
             }
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
-            NamedList<Object> resp = solr.request(jrequest, "testing");
+            NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
             ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
 
@@ -93,7 +95,7 @@ public class IndexSearcher {
             String rowsP = request.getParameter("rows");
             int rows = 10;
             if (rowsP != null && !rowsP.isBlank()) {
-                rows = Integer.valueOf(rowsP);
+                rows = Integer.parseInt(rowsP);
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(request.getParameter("author"))

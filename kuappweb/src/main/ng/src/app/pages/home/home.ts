@@ -7,6 +7,7 @@ import {MatFormFieldModule} from '@angular/material/form-field';
 import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { AppState } from '../../app-state';
 
 @Component({
   selector: 'app-home',
@@ -18,10 +19,10 @@ import { FormsModule } from '@angular/forms';
 })
 export class Home {
 
-  q: string;
 
   constructor(
-    private router: Router
+    private router: Router,
+    public state: AppState
   ){}
 doSearch() {
   this.router.navigate(['/results'])

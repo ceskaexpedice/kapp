@@ -8,6 +8,9 @@ import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
 import { MatIconModule } from '@angular/material/icon';
+import { Author } from '../../shared/author';
+import { AuthorDialog } from '../author-dialog/author-dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-result-item',
@@ -23,6 +26,7 @@ export class ResultItem {
   linkTypes = signal<string[]>([]);
   
   constructor(
+    private dialog: MatDialog,
     public state: AppState,
     private service: AppService,
     private config: AppConfiguration
@@ -42,6 +46,20 @@ export class ResultItem {
         });
       }
     })
+  }
+
+  infoAuthor(a: Author) {
+    const dialogRef = this.dialog.open(AuthorDialog, {
+      data: a,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log('The dialog was closed');
+      if (result !== undefined) {
+        
+      }
+    });
+
   }
 
   checkAutor() {

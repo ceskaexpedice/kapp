@@ -6,7 +6,8 @@
         <mat-card-content>
             <mat-form-field appearance="outline">
                 <mat-label>{{ 'action.search' | translate }}</mat-label>
-                <input [(ngModel)]="q" matInput placeholder="{{ 'field.query' | translate }}">
+                <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
+              (keyup.enter)="doSearch()">
                 <mat-icon matSuffix (click)="doSearch()">search</mat-icon>
             </mat-form-field>
         </mat-card-content>

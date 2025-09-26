@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>{{data.full}}</h2>
+<mat-dialog-content class="app-author">
+    <div><label>{{ 'field.datum' | translate }}: </label>{{ data.date }}</div>
+    <div><label>{{ 'field.role' | translate }}: </label>{{ data.role }}</div>
+    <div><label>{{ 'field.id' | translate }}: </label>
+    <a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+data.nameIdentifier">{{ data.nameIdentifier }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+    </div>
+    <div><label>{{ 'field.links' | translate }}: </label>
+    @for(w of linkTypes(); track $index) {
+    @for(l of links()[w]; track $index) {
+    <a target="_blank" [href]="l.url">{{ w }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+    }
+    }
+</div>
+    <!-- <mat-form-field>
+    <mat-label>Favorite Animal</mat-label>
+    <input matInput [(ngModel)]="animal" />
+  </mat-form-field> -->
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button matButton (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
+    <button matButton (click)="save()">{{ 'action.save' | translate }}</button>
+    <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+</mat-dialog-actions>

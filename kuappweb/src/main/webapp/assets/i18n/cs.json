@@ -17,6 +17,10 @@
     "pid": "PID"
   },
   "action": {
-    "search": "Hledat"
+    "search": "Hledat",
+    "close": "Zavřít",
+    "save": "Uložit",
+    "set_as_last": "Nastavit jako poslední",
+    "ok": "OK"
   }
 }
