@@ -8,8 +8,12 @@
     "query": "Query",
     "author": "AutHor",
     "authors": "AutHoS",
+    "date": "Date",
+    "role": "Role",
+    "id": "Identifier",
     "last_author": "lAST AUTHOR",
     "year_of_death_last_author": "Last author death",
+    "note": "Note",
     "pid": "PID"
   },
   "action": {
@@ -17,6 +21,7 @@
     "close": "Close",
     "save": "Save",
     "set_as_last": "Set as last",
+    "set_state": "Set state",
     "ok": "OK"
   }
 }

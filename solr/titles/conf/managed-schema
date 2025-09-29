@@ -277,20 +277,8 @@
   <field name="authors_raw" type="string" docValues="true" multiValued="true" indexed="false" stored="true"/>
   <field name="authors" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   
-  <!--
-  <field name="authors" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_aut" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_ccnb" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_isbn" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_ismn" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_issn" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_oclc" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_other" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_sysno" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_urnnbn" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_uuid" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="id_barcode" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  -->
+  <field name="labels" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
+  
   <dynamicField name="id_*" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>  
   
   

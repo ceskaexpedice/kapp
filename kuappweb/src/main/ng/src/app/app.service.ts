@@ -73,5 +73,9 @@ export class AppService {
     return this.get('index/get_links', params)
   }
 
+  getLabels(): Observable<any> {
+    return this.get('index/labels')
+  }
+
   
 }

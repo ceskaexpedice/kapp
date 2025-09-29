@@ -1,0 +1,20 @@
+<h2 mat-dialog-title>{{ 'configuration.labels' | translate}}</h2>
+<mat-dialog-content class="app-author">
+    
+        @if (loading()) {
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        }
+    
+    <div>
+    @for(l of labels(); track $index) {
+        <div [style.background-color]="l.color" [style.color]="l.text_color" >
+            {{ l.name }}
+        </div>
+    }
+    </div>
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button matButton (click)="save()">{{ 'action.save' | translate }}</button>
+    <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+</mat-dialog-actions>

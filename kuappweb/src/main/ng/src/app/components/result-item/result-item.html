@@ -5,18 +5,23 @@
     <mat-card-content class="app-result-item-content">
         <div><label>{{ 'field.authors' | translate }}: </label>
             @for(a of doc()['authors_kramerius']; track $index) {
-                <div [class.app-is-last]="a.isLast">
-                <a (click)="infoAuthor(a)">{{ a.full }}  {{ a.date }} ({{ a.role }})<mat-icon matSuffix class="app-small-icon">info</mat-icon></a>
+            <div [class.app-is-last]="a.isLast">
+                <a (click)="infoAuthor(a)">{{ a.full }} {{ a.date }} ({{ a.role }})<mat-icon matSuffix
+                        class="app-small-icon">info</mat-icon></a>
                 @for(l of a.links; track $index) {
-                    <a target="_blank" [href]="l.url">{{ l }}<mat-icon matSuffix class="app-small-icon" >open_in_new</mat-icon></a>
-                }</div>
+                <a target="_blank" [href]="l.url">{{ l }}<mat-icon matSuffix
+                        class="app-small-icon">open_in_new</mat-icon></a>
+                }
+            </div>
             }
             <!-- {{ doc()['authors']}} -->
         </div>
         <div><label>{{ 'field.last_author' | translate }}: </label>{{ doc()['last_author']}} </div>
-        <div><label>{{ 'field.year_of_death_last_author' | translate }}: </label>{{ doc()['year_of_death_last_author']}}</div>
+        <div><label>{{ 'field.year_of_death_last_author' | translate }}: </label>{{ doc()['year_of_death_last_author']}}
+        </div>
         <div><label>{{ 'field.pid' | translate }}: </label>
-            <a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+doc()['pid']">{{ doc()['pid']}}<mat-icon matSuffix class="app-small-icon" >open_in_new</mat-icon></a>
+            <a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+doc()['pid']">{{
+                doc()['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
         </div>
         <div><label>{{ 'field.physical_locations' | translate }}: </label>{{ doc()['physical_locations']}}</div>
         <div><label>{{ 'field.public' | translate }}: </label>{{ doc()['public']}}
@@ -24,8 +29,22 @@
             <label>{{ 'field.public_since' | translate }}: </label>{{ doc()['public_since']}}
             }
         </div>
+        <div><label>{{ 'field.note' | translate }}: </label>{{ doc()['note']}} <a mat-icon-button
+                (click)="editNote()"><mat-icon matSuffix class="app-small-icon">edit</mat-icon></a></div>
     </mat-card-content>
     <mat-card-actions align="end" class="app-mat-card-actions">
-        <button mat-raised-button (click)="checkAutor()">{{ 'check' | translate }}</button>
+        <mat-chip-set>
+            @for(l of doc()['labels']; track $index) {
+            <mat-chip>{{ l }}</mat-chip>
+            }
+        </mat-chip-set>
+        <a mat-icon-button (click)="editLabels()"><mat-icon matSuffix class="app-small-icon" >more</mat-icon></a>
+        <button mat-raised-button [matMenuTriggerFor]="stateMenu" (click)="checkAutor()">{{ 'action.set_state' |
+            translate }}</button>
+        <mat-menu #stateMenu="matMenu">
+            @for(a of states; track $index) {
+            <button mat-menu-item (click)="setState(a)">{{ a }}</button>
+            }
+        </mat-menu>
     </mat-card-actions>
 </mat-card>

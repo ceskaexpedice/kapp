@@ -9,11 +9,15 @@
     "query": "dotaz",
     "author": "Autor",
     "authors": "Autoři",
+    "date": "Datum",
+    "role": "Role",
+    "id": "Identifikator",
     "last_author": "Poslední autor",
     "year_of_death_last_author": "Rok úmrtí posledního autora",
     "physical_locations": "Umisteni",
     "public": "Veřejný",
     "public_since": "Veřejný od",
+    "note": "Komentář",
     "pid": "PID"
   },
   "action": {
@@ -21,6 +25,7 @@
     "close": "Zavřít",
     "save": "Uložit",
     "set_as_last": "Nastavit jako poslední",
+    "set_state": "Nastavit stav",
     "ok": "OK"
   }
 }

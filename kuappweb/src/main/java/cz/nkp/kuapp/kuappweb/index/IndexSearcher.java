@@ -55,6 +55,9 @@ public class IndexSearcher {
                     .withFacet("public", new TermsFacetMap("public")
                             .setLimit(1000)
                             .setMinCount(1))
+                    .withFacet("labels", new TermsFacetMap("labels")
+                            .setLimit(1000)
+                            .setMinCount(1))
                     .withFacet("physical_locations", new TermsFacetMap("physical_locations.facet")
                             .setLimit(1000)
                             .setMinCount(1))
@@ -78,7 +81,7 @@ public class IndexSearcher {
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -108,6 +111,27 @@ public class IndexSearcher {
             NamedList<Object> resp = solr.request(jrequest, "aut");
             InputStream is = (InputStream) resp.get("stream");
             ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
+    public static JSONObject getLabels() {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery("id:labels")
+                    .returnFields("value:[json]")
+                    .setLimit(1);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> resp = solr.request(jrequest, "configuration");
+            InputStream is = (InputStream) resp.get("stream");
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs").getJSONObject(0);
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);

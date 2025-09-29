@@ -11,11 +11,15 @@ import { MatIconModule } from '@angular/material/icon';
 import { Author } from '../../shared/author';
 import { AuthorDialog } from '../author-dialog/author-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { MatMenuModule } from '@angular/material/menu';
+import {MatChipsModule} from '@angular/material/chips';
+import { LabelsDialog } from '../labels-dialog/labels-dialog';
 
 @Component({
   selector: 'app-result-item',
-  imports: [RouterModule, TranslateModule, MatCardModule, MatButtonModule,
-    MatIconModule
+  imports: [RouterModule, TranslateModule, 
+    MatCardModule, MatButtonModule, MatMenuModule,
+    MatIconModule, MatChipsModule
   ],
   templateUrl: './result-item.html',
   styleUrl: './result-item.scss'
@@ -24,6 +28,8 @@ export class ResultItem {
   doc = input<any>();
   links = signal<{[key: string]:{ident: string, url: string}[]}>({});
   linkTypes = signal<string[]>([]);
+
+  states = ['public', 'public1', 'nonpublic']
   
   constructor(
     private dialog: MatDialog,
@@ -38,7 +44,6 @@ export class ResultItem {
         const p: any = {};
         p.id= this.doc()['last_author_nameIdentifier'];
         this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
-          console.log(resp)
           if (resp.links) {
             this.links.set(resp.links);
             this.linkTypes.set(Object.keys(resp.links));
@@ -54,7 +59,18 @@ export class ResultItem {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      console.log('The dialog was closed');
+      if (result !== undefined) {
+        
+      }
+    });
+
+  }
+
+  editLabels() {
+    const dialogRef = this.dialog.open(LabelsDialog, {
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
       if (result !== undefined) {
         
       }
@@ -69,5 +85,13 @@ export class ResultItem {
     this.service.checkAutor(p as HttpParams).subscribe((resp: any) => {
       console.log(resp)
     });
+  }
+
+  setState(state: string) {
+
+  }
+
+  editNote() {
+
   }
 }

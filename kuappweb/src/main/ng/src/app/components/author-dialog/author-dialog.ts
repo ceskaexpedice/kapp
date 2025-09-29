@@ -6,13 +6,15 @@ import { AppService } from '../../app.service';
 import { HttpParams } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
+import { MatProgressBar } from "@angular/material/progress-bar";
 
 @Component({
   selector: 'app-author-dialog',
   imports: [
     TranslateModule,
-    MatDialogModule, MatIconModule, MatButtonModule
-  ],
+    MatDialogModule, MatIconModule, MatButtonModule,
+    MatProgressBar
+],
   templateUrl: './author-dialog.html',
   styleUrl: './author-dialog.scss'
 })
@@ -25,13 +27,15 @@ export class AuthorDialog {
   
   links = signal<{[key: string]:{ident: string, url: string}[]}>({});
   linkTypes = signal<string[]>([]);
+  loadingLinks = signal<boolean>(false);
 
   ngOnInit() {
     if (this.data.nameIdentifier) {
         const p: any = {};
         p.id= this.data.nameIdentifier;
+        this.loadingLinks.set(true);
         this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
-          console.log(resp)
+        this.loadingLinks.set(false);
           if (resp.links) {
             this.links.set(resp.links);
             this.linkTypes.set(Object.keys(resp.links));
