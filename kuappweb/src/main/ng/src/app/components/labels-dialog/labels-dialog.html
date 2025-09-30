@@ -14,9 +14,7 @@
             <mat-label>Color</mat-label>
             <input matInput [(ngModel)]="l.color" />
         </mat-form-field>
-        <button (click)="edit(l)" matIconButton [style.background-color]="l.color" [style.color]="l.text_color">
-            <mat-icon matSuffix iconPositionEnd (click)="editColor($event, l)">save</mat-icon>
-        </button> 
+        <button mat-flat-button [style.background-color]="l.color" [style.color]="l.text_color">{{ l.name }}</button> 
     </div>
     }
 

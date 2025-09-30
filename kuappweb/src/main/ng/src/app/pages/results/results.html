@@ -32,7 +32,7 @@
         </mat-paginator>
       </div>
       <div>
-        @for(doc of docs(); track $index){
+        @for(doc of docs(); track doc.pid){
         <app-result-item [doc]="doc"></app-result-item>
         }
       </div>

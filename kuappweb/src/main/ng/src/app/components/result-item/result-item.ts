@@ -12,12 +12,13 @@ import { Author } from '../../shared/author';
 import { AuthorDialog } from '../author-dialog/author-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
-import {MatChipsModule} from '@angular/material/chips';
+import { MatChipsModule } from '@angular/material/chips';
 import { LabelsDialog } from '../labels-dialog/labels-dialog';
+import { Label } from '../../shared/label';
 
 @Component({
   selector: 'app-result-item',
-  imports: [RouterModule, TranslateModule, 
+  imports: [RouterModule, TranslateModule,
     MatCardModule, MatButtonModule, MatMenuModule,
     MatIconModule, MatChipsModule
   ],
@@ -26,28 +27,36 @@ import { LabelsDialog } from '../labels-dialog/labels-dialog';
 })
 export class ResultItem {
   doc = input<any>();
-  links = signal<{[key: string]:{ident: string, url: string}[]}>({});
+  links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
 
   states = ['public', 'public1', 'nonpublic']
-  
+  labels: Label[] = [];
+
   constructor(
     private dialog: MatDialog,
     public state: AppState,
     private service: AppService,
     private config: AppConfiguration
-  ) { 
+  ) {
     effect(() => {
       this.links.set({});
       this.linkTypes.set([]);
       if (this.doc()['last_author_nameIdentifier']) {
         const p: any = {};
-        p.id= this.doc()['last_author_nameIdentifier'];
+        p.id = this.doc()['last_author_nameIdentifier'];
         this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
           if (resp.links) {
             this.links.set(resp.links);
             this.linkTypes.set(Object.keys(resp.links));
           }
+        });
+      }
+      this.labels = [];
+      if (this.doc()['labels']) {
+        this.doc()['labels'].forEach((name: string) => {
+          const l = this.state.labels().find(la => la.name === name);
+          this.labels.push({ name: name, color: l.color, text_color: l.text_color });
         });
       }
     })
@@ -60,21 +69,36 @@ export class ResultItem {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result !== undefined) {
-        
+
       }
     });
 
   }
 
-  editLabels() {
-    const dialogRef = this.dialog.open(LabelsDialog, {
-    });
+  addLabel(l: Label) {
+    if (!this.labels.find(la => la.name === l.name)) {
+      this.labels.push(l);
+      this.saveLabels();
+    }
+  }
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result !== undefined) {
-        
-      }
-    });
+  removeLabel(l: Label) {
+    const index = this.labels.indexOf(l);
+    if (index > -1) {
+      this.labels.splice(index, 1);
+      this.saveLabels();
+    }
+
+    // if (!this.labels.find(la => la.name === l.name)) {
+    //   this.labels.push(l);
+    //   this.saveLabels();
+    // }
+  }
+
+  saveLabels() {
+    this.service.saveDocLabels(this.doc()['pid'], this.labels.map(l => l.name)).subscribe((res: any) => {
+      console.log(res)
+    })
 
   }
 

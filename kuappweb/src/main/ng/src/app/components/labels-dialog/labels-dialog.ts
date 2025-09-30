@@ -7,7 +7,7 @@ import { MatProgressBar } from '@angular/material/progress-bar';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppService } from '../../app.service';
 import { AuthorDialog } from '../author-dialog/author-dialog';
-import {MatChipEditedEvent, MatChipInput, MatChipInputEvent, MatChipsModule} from '@angular/material/chips';
+import { MatChipEditedEvent, MatChipInput, MatChipInputEvent, MatChipsModule } from '@angular/material/chips';
 import { AppState } from '../../app-state';
 import { Label } from '../../shared/label';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -31,23 +31,17 @@ export class LabelsDialog {
   readonly dialogRef = inject(MatDialogRef<AuthorDialog>);
   readonly state = inject(AppState);
   loading = signal<boolean>(false);
+  labels: Label[];
 
   ngOnInit() {
     const p: any = {};
-    
-  }
-
-  edit(l: Label) {
-console.log('A')
-  }
-
-  editColor(e: any, l: Label) {
-console.log('B')
-e.stopPropagation();
-
+    this.labels = this.state.labels();
   }
 
   save() {
-
+    this.state.labels.set(this.labels);
+    this.service.saveLabels(this.state.labels()).subscribe(resp => {
+      console.log(resp)
+    });
   }
 }

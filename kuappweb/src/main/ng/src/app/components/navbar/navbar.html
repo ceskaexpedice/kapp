@@ -11,5 +11,6 @@
     <button mat-menu-item (click)="onLanguageChanged('en')">English</button>
   </mat-menu>
   <button mat-flat-button>{{ 'login' | translate}}</button>
+  <button [routerLink]="['admin']" mat-flat-button>{{ 'admin' | translate}}</button>
 </div>
 </mat-toolbar>

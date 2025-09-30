@@ -1,6 +1,7 @@
 import { HttpClient, HttpHeaders, HttpErrorResponse, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Observable, map, finalize, catchError, of } from 'rxjs';
+import { Label } from './shared/label';
 
 @Injectable({
   providedIn: 'root'
@@ -18,6 +19,19 @@ export class AppService {
       .pipe(map((r: any) => {
         if (r.response?.status === -1) {
           r.response.errors = { path: [{ errorMessage: r.response.errorMessage }] };
+        }
+        return r;
+
+      }))
+      .pipe(finalize(() => this.stopLoading()))
+      .pipe(catchError(err => this.handleError(err, this)));
+  }
+
+  private post(path: string, body: any, options: any = {}): Observable<Object> {
+    return this.http.post(encodeURI(`api/${path}`), body, options)
+      .pipe(map((r: any) => {
+        if (r.response?.status === -1) {
+          r.response.errors = [{ errorMessage: r.response.errorMessage }];
         }
         return r;
 
@@ -73,9 +87,12 @@ export class AppService {
     return this.get('index/get_links', params)
   }
 
-  getLabels(): Observable<any> {
-    return this.get('index/labels')
+  saveLabels(labels: Label[]): Observable<any> {
+    return this.post('index/save_labels', labels);
   }
 
+  saveDocLabels(pid: string, labels: string[]): Observable<any> {
+    return this.post('index/save_doc_labels', {pid,labels});
+  }
   
 }

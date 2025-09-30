@@ -2,6 +2,7 @@ package cz.nkp.kuapp.kuappweb;
 
 import cz.nkp.kuapp.kuappweb.index.AUTIndexer;
 import cz.nkp.kuapp.kuappweb.index.IndexSearcher;
+import cz.nkp.kuapp.kuappweb.index.SolrIndexer;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.logging.Level;
@@ -12,6 +13,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import org.apache.commons.io.IOUtils;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -113,6 +116,32 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     json = IndexSearcher.getLabels(); 
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        SAVE_LABELS{
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexLabels(js); 
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        SAVE_DOC_LABELS{
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexDocLabels(js); 
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

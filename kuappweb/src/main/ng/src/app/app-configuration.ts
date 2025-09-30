@@ -34,10 +34,13 @@ import { Label } from './shared/label';
                     
                     const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels').value;
                     labelsC.forEach(l => {
-                        const c = parseInt(l.color.substring(1), 16);
-                        l.text_color = c > 128 ? '#000' : '#fff';
+                        const r = parseInt(l.color.substring(1,3), 16);
+                        const g = parseInt(l.color.substring(3,5), 16);
+                        const b = parseInt(l.color.substring(5,7), 16);
+                        // const c = parseInt(l.color.substring(1), 16);
+                        const c = r+g+b;
+                        l.text_color = c > 256 ? '#000' : '#fff';
                     });
-                    console.log(labelsC)
                     this.state.labels.set(labelsC);
 
                 }));

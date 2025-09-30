@@ -1,6 +1,30 @@
 <mat-card appearance="outlined" style="margin: 3px;">
     <mat-card-header>
-        <mat-card-title> {{ doc()['root.title']}} </mat-card-title>
+        <mat-card-title>
+            <div class="app-labels-header app-mat-card-actions"><mat-chip-set>
+                    @for(l of labels; track $index) {
+                    <mat-chip [style.background-color]="l.color" (removed)="removeLabel(l)"
+                        style="--mat-chip-label-text-color: {{l.text_color}};">{{ l.name }}
+                        <button matChipRemove [attr.aria-label]="'remove ' + l.name">
+                            <mat-icon>cancel</mat-icon>
+                        </button></mat-chip>
+                    }
+                    <mat-chip>
+                        <button mat-icon-button [matMenuTriggerFor]="labelsMenu"><mat-icon matSuffix
+                                class="app-small-icon">new_label</mat-icon></button>
+                        <mat-menu #labelsMenu="matMenu">
+                            @for(a of state.labels(); track $index) {
+                            <button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
+                            }
+                        </mat-menu>
+
+                    </mat-chip>
+                </mat-chip-set>
+
+            </div>
+            {{ doc()['root.title']}}
+
+        </mat-card-title>
     </mat-card-header>
     <mat-card-content class="app-result-item-content">
         <div><label>{{ 'field.authors' | translate }}: </label>
@@ -23,7 +47,7 @@
             <a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+doc()['pid']">{{
                 doc()['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
         </div>
-        <div><label>{{ 'field.physical_locations' | translate }}: </label>{{ doc()['physical_locations']}}</div>
+        <div><label>{{ 'field.physical_locations' | translate }}: </label>{{ doc()['physical_locations.facet']}}</div>
         <div><label>{{ 'field.public' | translate }}: </label>{{ doc()['public']}}
             @if(doc()['public']) {
             <label>{{ 'field.public_since' | translate }}: </label>{{ doc()['public_since']}}
@@ -33,13 +57,7 @@
                 (click)="editNote()"><mat-icon matSuffix class="app-small-icon">edit</mat-icon></a></div>
     </mat-card-content>
     <mat-card-actions align="end" class="app-mat-card-actions">
-        <mat-chip-set>
-            @for(l of doc()['labels']; track $index) {
-            <mat-chip [style.background-color]="l.color">{{ l }}</mat-chip>
-            }
-        </mat-chip-set>
-        <a mat-icon-button (click)="editLabels()"><mat-icon matSuffix class="app-small-icon" >more</mat-icon></a>
-        <button mat-raised-button [matMenuTriggerFor]="stateMenu" (click)="checkAutor()">{{ 'action.set_state' |
+        <button mat-raised-button [matMenuTriggerFor]="stateMenu">{{ 'action.set_state' |
             translate }}</button>
         <mat-menu #stateMenu="matMenu">
             @for(a of states; track $index) {
