@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <schema name="kuapp-configuration" version="1.6">
+  
   <uniqueKey>id</uniqueKey>
   
   <field name="_version_" type="plong" indexed="false" stored="false"/>

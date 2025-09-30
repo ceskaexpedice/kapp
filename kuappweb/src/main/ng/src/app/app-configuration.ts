@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { catchError, of, switchMap, tap } from 'rxjs';
 import { AppState } from './app-state';
 import { Configuration } from './shared/config';
+import { Label } from './shared/label';
 
 @Injectable({
     providedIn: 'root'
@@ -29,8 +30,16 @@ import { Configuration } from './shared/config';
         return this.http.get('assets/config.json').pipe(
             switchMap((cfg: any) => {
                 this.config = cfg as Configuration;
-                return this.http.get('api/data/get_tenants').pipe(tap((res: any) => {
+                return this.http.get('api/index/config').pipe(tap((resp: any) => {
                     
+                    const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels').value;
+                    labelsC.forEach(l => {
+                        const c = parseInt(l.color.substring(1), 16);
+                        l.text_color = c > 128 ? '#000' : '#fff';
+                    });
+                    console.log(labelsC)
+                    this.state.labels.set(labelsC);
+
                 }));
             }),
             catchError((err) => {

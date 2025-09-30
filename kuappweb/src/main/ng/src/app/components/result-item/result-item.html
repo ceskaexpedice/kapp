@@ -35,7 +35,7 @@
     <mat-card-actions align="end" class="app-mat-card-actions">
         <mat-chip-set>
             @for(l of doc()['labels']; track $index) {
-            <mat-chip>{{ l }}</mat-chip>
+            <mat-chip [style.background-color]="l.color">{{ l }}</mat-chip>
             }
         </mat-chip-set>
         <a mat-icon-button (click)="editLabels()"><mat-icon matSuffix class="app-small-icon" >more</mat-icon></a>

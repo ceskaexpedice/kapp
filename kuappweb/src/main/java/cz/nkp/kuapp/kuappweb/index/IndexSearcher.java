@@ -140,6 +140,27 @@ public class IndexSearcher {
         return ret;
     }
 
+    public static JSONObject getConfig() {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery("*")
+                    .returnFields("id,value:[json]")
+                    .setLimit(1);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> resp = solr.request(jrequest, "configuration");
+            InputStream is = (InputStream) resp.get("stream");
+            ret.put("config", new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs"));
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
     public static JSONObject getLinks(String autid) {
 
             JSONObject ret = new JSONObject();
