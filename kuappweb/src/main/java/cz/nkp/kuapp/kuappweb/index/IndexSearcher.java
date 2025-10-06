@@ -58,6 +58,9 @@ public class IndexSearcher {
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(1000)
                             .setMinCount(1))
+                    .withFacet("state", new TermsFacetMap("state")
+                            .setLimit(1000)
+                            .setMinCount(1)) 
                     .withFacet("physical_locations", new TermsFacetMap("physical_locations.facet")
                             .setLimit(1000)
                             .setMinCount(1))
@@ -70,8 +73,12 @@ public class IndexSearcher {
                 jrequest = jrequest.withFilter("{!tag=ffauthors}authors:(\"" + String.join("\" OR \"", request.getParameterValues("author")) + "\")");
             }
 
-            if (request.getParameter("public") != null) {
-                jrequest = jrequest.withFilter("public:" + request.getParameter("public"));
+            if (request.getParameter("state") != null) {
+                jrequest = jrequest.withFilter("state:" + request.getParameter("state"));
+            }
+
+            if (request.getParameter("labels") != null) {
+                jrequest = jrequest.withFilter("labels:" + request.getParameter("labels"));
             }
 
             if (request.getParameter("physical_locations") != null) {

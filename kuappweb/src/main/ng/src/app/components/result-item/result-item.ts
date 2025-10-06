@@ -30,7 +30,7 @@ export class ResultItem {
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
 
-  states = ['public', 'public1', 'nonpublic']
+  states = ['controlled_public', 'controlled', 'new_imported']
   labels: Label[] = [];
 
   constructor(
@@ -40,18 +40,18 @@ export class ResultItem {
     private config: AppConfiguration
   ) {
     effect(() => {
-      this.links.set({});
-      this.linkTypes.set([]);
-      if (this.doc()['last_author_nameIdentifier']) {
-        const p: any = {};
-        p.id = this.doc()['last_author_nameIdentifier'];
-        this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
-          if (resp.links) {
-            this.links.set(resp.links);
-            this.linkTypes.set(Object.keys(resp.links));
-          }
-        });
-      }
+      // this.links.set({});
+      // this.linkTypes.set([]);
+      // if (this.doc()['last_author_nameIdentifier']) {
+      //   const p: any = {};
+      //   p.id = this.doc()['last_author_nameIdentifier'];
+      //   this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
+      //     if (resp.links) {
+      //       this.links.set(resp.links);
+      //       this.linkTypes.set(Object.keys(resp.links));
+      //     }
+      //   });
+      // }
       this.labels = [];
       if (this.doc()['labels']) {
         this.doc()['labels'].forEach((name: string) => {

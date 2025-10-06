@@ -78,7 +78,8 @@ export class Results {
 
   addFilters(p: any, usedFacets: { field: string, value: string }[]) {
     p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
-    p.public = usedFacets.filter(k => k.field === 'public').map(k => k.value);
+    p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
+    p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
     p.physical_locations = usedFacets.filter(k => k.field === 'physical_locations').map(k => k.value);
   }
 

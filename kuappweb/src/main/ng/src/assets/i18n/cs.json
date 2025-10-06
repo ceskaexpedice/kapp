@@ -8,6 +8,8 @@
   "field": {
     "query": "dotaz",
     "author": "Autor",
+    "labels": "Label",
+    "state": "Stav",
     "authors": "Autoři",
     "date": "Datum",
     "role": "Role",

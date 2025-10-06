@@ -6,8 +6,10 @@
   "numFound": "num. found",
   "field": {
     "query": "Query",
-    "author": "AutHor",
-    "authors": "AutHoS",
+    "author": "Author",
+    "authors": "Authors",
+    "labels": "Label",
+    "state": "State",
     "date": "Date",
     "role": "Role",
     "id": "Identifier",
