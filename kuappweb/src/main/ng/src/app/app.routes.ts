@@ -7,5 +7,6 @@ export const routes: Routes = [
     { path: '', component: Home},
     { path: 'home', component: Home},
     { path: 'admin', component: Admin},
-    { path: 'results', component: Results}
+    { path: 'titles', component: Results},
+    { path: 'authors', component: Results}
 ];

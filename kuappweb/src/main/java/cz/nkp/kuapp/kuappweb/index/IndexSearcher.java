@@ -29,7 +29,7 @@ public class IndexSearcher {
     public static final Logger LOGGER = Logger.getLogger(IndexSearcher.class.getName());
     final static SimpleDateFormat dtformatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
-    public static JSONObject search(HttpServletRequest request) {
+    public static JSONObject searchTitles(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             String rowsP = request.getParameter("rows");
@@ -87,6 +87,58 @@ public class IndexSearcher {
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "titles");
+            InputStream is = (InputStream) resp.get("stream");
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
+    public static JSONObject searchAuthors(HttpServletRequest request) {
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            String rowsP = request.getParameter("rows");
+            int rows = 0;
+            if (rowsP != null && !rowsP.isBlank()) {
+                rows = Integer.parseInt(rowsP);
+            }
+            
+            int offset = 0;
+            if (request.getParameter("offset") != null) {
+                offset = Integer.parseInt(request.getParameter("offset"));
+            }
+            String q = "*";
+            if (request.getParameter("q") != null) {
+                q = request.getParameter("q");
+            }
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery(q)
+                    .withParam("df", "full_text") 
+                    .withFacet("labels", new TermsFacetMap("labels")
+                            .setLimit(1000)
+                            .setMinCount(1))
+                    .withFacet("state", new TermsFacetMap("state")
+                            .setLimit(1000)
+                            .setMinCount(1)) 
+                    .setOffset(offset)
+                    .setSort("indextime desc")
+                    .returnFields("*,authors_kramerius:[json]")
+                    .setLimit(rows);
+
+
+            if (request.getParameter("state") != null) {
+                jrequest = jrequest.withFilter("state:" + request.getParameter("state"));
+            }
+
+            if (request.getParameter("labels") != null) {
+                jrequest = jrequest.withFilter("labels:" + request.getParameter("labels"));
+            }
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> resp = solr.request(jrequest, "authors");
             InputStream is = (InputStream) resp.get("stream");
             ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
 

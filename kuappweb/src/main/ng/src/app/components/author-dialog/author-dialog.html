@@ -1,24 +1,38 @@
-<h2 mat-dialog-title>{{data.full}}</h2>
+<h2 mat-dialog-title>{{data.full}}
+
+</h2>
 <mat-dialog-content class="app-author">
-    <div><label>{{ 'field.date' | translate }}: </label>{{ data.date }}</div>
+    <div><label>{{ 'field.date' | translate }}: </label>{{ data.date }}
+    </div>
+
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'field.date_death' | translate }}</mat-label>
+            <input matInput [disabled]="!editing()" [(ngModel)]="data.date_death" />
+        </mat-form-field><mat-button-toggle (click)="toggleEdit()"
+            [checked]="editing()"><mat-icon>edit</mat-icon></mat-button-toggle>
+
+        <!-- <label>{{ 'field.date' | translate }}: </label>{{ data.date }} -->
+    </div>
+
     <div><label>{{ 'field.role' | translate }}: </label>{{ data.role }}</div>
+    @if (data.nameIdentifier) {
     <div><label>{{ 'field.id' | translate }}: </label>
-    <a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+data.nameIdentifier">{{ data.nameIdentifier }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+        <a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+data.nameIdentifier">{{ data.nameIdentifier }}<mat-icon
+                matSuffix class="app-small-icon">open_in_new</mat-icon></a>
     </div>
     <div><label>{{ 'field.links' | translate }}: </label>
         @if (loadingLinks()) {
-            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
         }
-    @for(w of linkTypes(); track $index) {
-    @for(l of links()[w]; track $index) {
-    <a target="_blank" [href]="l.url">{{ w }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+        @for(w of linkTypes(); track $index) {
+        @for(l of links()[w]; track $index) {
+        <a target="_blank" [href]="l.url">{{ w }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+        }
+        }
+    </div>
     }
-    }
-</div>
-    <!-- <mat-form-field>
-    <mat-label>Favorite Animal</mat-label>
-    <input matInput [(ngModel)]="animal" />
-  </mat-form-field> -->
+
 
 </mat-dialog-content>
 <mat-dialog-actions>

@@ -1,16 +1,18 @@
 <mat-toolbar color="primary" class="app-fxLayout-row">
   <div class="app-fxFlex">
     <a [routerLink]="['/']" queryParamsHandling="preserve" class="app-fxFlex app-fxLayout app-row app-center-v">
-        <span>Kurátorská aplikace</span>
+      <span>Kurátorská aplikace</span>
     </a>
-    </div>
-    <div class="app-fxLayout app-row app-center-v">
-  <button mat-button [matMenuTriggerFor]="menu">{{ translator.currentLang | translate}}</button>
-  <mat-menu #menu="matMenu">
-    <button mat-menu-item (click)="onLanguageChanged('cs')">Český</button>
-    <button mat-menu-item (click)="onLanguageChanged('en')">English</button>
-  </mat-menu>
-  <button mat-flat-button>{{ 'login' | translate}}</button>
-  <button [routerLink]="['admin']" mat-flat-button>{{ 'admin' | translate}}</button>
-</div>
-</mat-toolbar>
+  </div>
+  <div class="app-fxLayout app-row app-center-v">
+    <button [routerLink]="['titles']" routerLinkActive="app-active-link" mat-flat-button>{{ 'navbar.titles' | translate}}</button>
+    <button [routerLink]="['authors']" routerLinkActive="app-active-link" mat-flat-button>{{ 'navbar.authors' | translate}}</button>
+    <button mat-button mat-flat-button [matMenuTriggerFor]="menu">{{ translator.currentLang | translate}}</button>
+    <mat-menu #menu="matMenu">
+      <button mat-menu-item (click)="onLanguageChanged('cs')">Český</button>
+      <button mat-menu-item (click)="onLanguageChanged('en')">English</button>
+    </mat-menu>
+    <button mat-flat-button>{{ 'login' | translate}}</button>
+    <button [routerLink]="['admin']" routerLinkActive="app-active-link" mat-flat-button>{{ 'navbar.admin' | translate}}</button>
+  </div>
+</mat-toolbar>  

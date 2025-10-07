@@ -75,8 +75,12 @@ export class AppService {
     return of({ response: { 'status': error.status, 'message': error.message, 'errors': [error.error] } });
   }
 
-  search(params: HttpParams): Observable<any> {
-    return this.get('index/search', params)
+  searchTitles(params: HttpParams): Observable<any> {
+    return this.get('index/titles', params)
+  }
+
+  searchAuthors(params: HttpParams): Observable<any> {
+    return this.get('index/authors', params)
   }
 
   checkAutor(params: HttpParams): Observable<any> {

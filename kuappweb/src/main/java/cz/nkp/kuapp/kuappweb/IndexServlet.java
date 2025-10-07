@@ -98,12 +98,24 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
-        SEARCH{
+        TITLES{
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.search(req); 
+                    json = IndexSearcher.searchTitles(req); 
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        AUTHORS{
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.searchAuthors(req); 
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

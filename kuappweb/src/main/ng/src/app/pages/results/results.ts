@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, DOCUMENT, Inject, signal } from '@angular/core';
+import { Component, DOCUMENT, inject, Inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -15,7 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { AngularSplitModule } from 'angular-split';
 import { FacetsComponent } from '../../components/facets/facets.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, ActivatedRouteSnapshot, Router, RouterModule } from '@angular/router';
 import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
@@ -23,6 +23,8 @@ import { JSONFacet } from '../../shared/facet';
 import { HttpParams } from '@angular/common/http';
 import { ResultItem } from "../../components/result-item/result-item";
 import { MatInputModule } from '@angular/material/input';
+import { AuthorItem } from "../../components/author-item/author-item";
+import { Observable } from 'rxjs';
 
 @Component({
   selector: 'app-results',
@@ -33,7 +35,8 @@ import { MatInputModule } from '@angular/material/input';
     MatButtonModule, MatTableModule, MatPaginatorModule,
     MatFormFieldModule, MatIconModule, MatInputModule,
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
-    ResultItem
+    ResultItem,
+    AuthorItem
   ],
   templateUrl: './results.html',
   styleUrl: './results.scss'
@@ -44,15 +47,17 @@ export class Results {
   solrResponse: any;
   docs = signal<any[]>([]);
   hasFacets = signal<boolean>(false);
+  view = signal<string>('titles');
 
   rows = 100;
   numFound: number = 0;
   pageIndex = 0;
   pageSizeOptions = [10, 25, 100];
 
+  private router = inject(Router);
+
   constructor(
     @Inject(DOCUMENT) private document: Document,
-    private router: Router,
     public state: AppState,
     private service: AppService,
     private config: AppConfiguration
@@ -61,6 +66,7 @@ export class Results {
   }
 
   ngOnInit(): void {
+    this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
     this.getData();
   }
 
@@ -96,7 +102,13 @@ export class Results {
       p.q = this.state.q;
     }
     this.addFilters(p, this.usedFacets);
-    this.service.search(p as HttpParams).subscribe((resp: any) => {
+    let s: Observable<any>;
+    if (this.view() === 'titles') {
+      s = this.service.searchTitles(p as HttpParams);
+    } else {
+      s = this.service.searchAuthors(p as HttpParams);
+    }
+    s.subscribe((resp: any) => {
       this.solrResponse = resp;
       this.numFound = this.solrResponse.response.numFound;
       this.docs.set(this.solrResponse.response.docs);

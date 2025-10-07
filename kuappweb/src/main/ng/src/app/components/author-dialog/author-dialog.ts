@@ -7,13 +7,17 @@ import { HttpParams } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressBar } from "@angular/material/progress-bar";
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 
 @Component({
   selector: 'app-author-dialog',
   imports: [
-    TranslateModule,
-    MatDialogModule, MatIconModule, MatButtonModule,
-    MatProgressBar
+    TranslateModule, FormsModule,
+    MatDialogModule, MatIconModule, MatButtonModule, MatButtonToggleModule,
+    MatProgressBar, MatFormFieldModule, MatInputModule
 ],
   templateUrl: './author-dialog.html',
   styleUrl: './author-dialog.scss'
@@ -28,6 +32,7 @@ export class AuthorDialog {
   links = signal<{[key: string]:{ident: string, url: string}[]}>({});
   linkTypes = signal<string[]>([]);
   loadingLinks = signal<boolean>(false);
+  editing = signal<boolean>(false);
 
   ngOnInit() {
     if (this.data.nameIdentifier) {
@@ -42,6 +47,10 @@ export class AuthorDialog {
           }
         });
       }
+  }
+
+  toggleEdit() {
+    this.editing.set(!this.editing());
   }
 
   save(): void {
