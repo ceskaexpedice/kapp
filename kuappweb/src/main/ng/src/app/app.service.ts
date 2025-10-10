@@ -83,8 +83,12 @@ export class AppService {
     return this.get('index/authors', params)
   }
 
-  checkAutor(params: HttpParams): Observable<any> {
-    return this.get('index/check_autor', params)
+  checkAuthor(params: HttpParams): Observable<any> {
+    return this.get('index/check_author', params)
+  }
+
+  getAuthorById(params: HttpParams): Observable<any> {
+    return this.get('index/get_author_by_id', params);
   }
 
   getLinks(params: HttpParams): Observable<any> {

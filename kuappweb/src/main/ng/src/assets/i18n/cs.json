@@ -32,6 +32,8 @@
     "save": "Uložit",
     "set_as_last": "Nastavit jako poslední",
     "set_state": "Nastavit stav",
+    "check_author": "Hledat autora v AUT",
+    "add_author": "Přidat autora",
     "ok": "OK"
   },
   "admin": {

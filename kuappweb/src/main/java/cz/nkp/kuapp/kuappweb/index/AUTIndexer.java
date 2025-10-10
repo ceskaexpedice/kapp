@@ -87,8 +87,10 @@ public class AUTIndexer {
                 xml = request(url);
                 json = XML.toJSONObject(xml, XMLParserConfiguration.ORIGINAL);
                 processResponse(xml, json, ret, solr);
-                LOGGER.log(Level.INFO, "Indexing AUT. Current {1}", ret.getInt("aut"));
-                hasResumption = json.getJSONObject("OAI-PMH").getJSONObject("ListRecords").optString("resumptionToken") != null;  
+                LOGGER.log(Level.INFO, "Indexing AUT. Current {0}", ret.getInt("aut"));
+                hasResumption = json.getJSONObject("OAI-PMH").getJSONObject("ListRecords").optString("resumptionToken") != null;   
+                Thread.sleep(100);
+                //hasResumption = false;
             } 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -97,15 +99,16 @@ public class AUTIndexer {
         return ret;
     }
 
-    private void dataField(SolrInputDocument idoc, JSONObject df, String tag, String code, String field) {
+    private void dataField(SolrInputDocument idoc, JSONObject df, String tag, String code, String ind, String field) {
         String fieldname = field == null ? "datafield_" + tag + code : field;
-        if (tag.equals(df.opt("tag") + "")) {
+        if (tag.equals(df.opt("tag") + "") && (ind == null || ind.equals(df.opt("ind1") + ""))) {
             Object sfsO = df.get("marc:subfield");
             if (sfsO instanceof JSONArray) {
                 JSONArray sfs = (JSONArray) sfsO;
                 for (int s = 0; s < sfs.length(); s++) {
-                    if (code.equals(sfs.getJSONObject(s).opt("code") + "")) {
-                        idoc.setField(fieldname, sfs.getJSONObject(s).get("content")+"");
+                    JSONObject sf = sfs.getJSONObject(s);
+                    if (code.equals(sf.opt("code") + "")) {
+                        idoc.setField(fieldname, sf.get("content")+"");
                     }
                 }
             } else {
@@ -114,8 +117,6 @@ public class AUTIndexer {
                     idoc.setField(fieldname, o.get("content")+"");
                 }
             }
-            
-
         }
     }
 
@@ -146,13 +147,22 @@ public class AUTIndexer {
                 // tag=100 code=a jmeno    
                 //dataField(idoc, df, "100", "a", "name");
                 // tag=046 code=f datum narozeni, code=g umrti    
-                dataField(idoc, df, "046", "f", "narozeni");
-                dataField(idoc, df, "046", "g", "umrti");
-                dataField(idoc, df, "998", "a", "aleph_link");
+                dataField(idoc, df, "046", "f", null, "narozeni");
+                dataField(idoc, df, "046", "g", null, "umrti");
+                dataField(idoc, df, "998", "a", null, "aleph_link");
                 
-                dataField(idoc, df, "368", "c", null);
-                dataField(idoc, df, "100", "d", null);
-                dataField(idoc, df, "100", "a", null);
+                dataField(idoc, df, "368", "c", null, null);
+                dataField(idoc, df, "100", "d", null, null);
+                dataField(idoc, df, "100", "a", "0", "df1000a");
+                dataField(idoc, df, "100", "a", "1", "df1001a");
+                dataField(idoc, df, "100", "a", null, null); 
+            }
+            if (idoc.containsKey("df1001a")) {
+                String[] p = ((String) idoc.getFieldValue("df1001a")).split(","); 
+                idoc.setField("family", p[0].trim());
+                if (p.length > 1) {
+                    idoc.setField("given", p[1].trim());
+                }
             }
             docs.add(idoc);
         }

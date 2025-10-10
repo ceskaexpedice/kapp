@@ -1,25 +1,35 @@
-<h2 mat-dialog-title>{{data.full}}
-
+<h2 mat-dialog-title>
+    @if(author()) {
+    {{ author().full }}
+    } @else {
+    {{ 'action.add_author' | translate }}
+    }
+    <mat-button-toggle (click)="toggleEdit()" [checked]="editing()"><mat-icon>edit</mat-icon></mat-button-toggle>
 </h2>
 <mat-dialog-content class="app-author">
-    <div><label>{{ 'field.date' | translate }}: </label>{{ data.date }}
+    @if(author()) {
+    <div><label>{{ 'field.date' | translate }}: </label>{{ author().date }}
     </div>
 
     <div>
         <mat-form-field appearance="outline">
             <mat-label>{{ 'field.date_death' | translate }}</mat-label>
-            <input matInput [disabled]="!editing()" [(ngModel)]="data.date_death" />
-        </mat-form-field><mat-button-toggle (click)="toggleEdit()"
-            [checked]="editing()"><mat-icon>edit</mat-icon></mat-button-toggle>
-
-        <!-- <label>{{ 'field.date' | translate }}: </label>{{ data.date }} -->
+            <input matInput [disabled]="!editing()" [(ngModel)]="author().date_death" />
+        </mat-form-field>
     </div>
 
-    <div><label>{{ 'field.role' | translate }}: </label>{{ data.role }}</div>
-    @if (data.nameIdentifier) {
+    <div>
+
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'field.role' | translate }}</mat-label>
+            <input matInput [disabled]="!editing()" [(ngModel)]="author().role" />
+        </mat-form-field>
+
+    </div>
+    @if (author().nameIdentifier) {
     <div><label>{{ 'field.id' | translate }}: </label>
-        <a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+data.nameIdentifier">{{ data.nameIdentifier }}<mat-icon
-                matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+        <a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+author().nameIdentifier">{{ author().nameIdentifier
+            }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
     </div>
     <div><label>{{ 'field.links' | translate }}: </label>
         @if (loadingLinks()) {
@@ -33,10 +43,16 @@
     </div>
     }
 
+    }
 
 </mat-dialog-content>
 <mat-dialog-actions>
+    @if(isNew()) {
+    <button matButton (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
+    }
+    @if(!isNew()) {
     <button matButton (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
+    }
     <button matButton (click)="save()">{{ 'action.save' | translate }}</button>
     <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>

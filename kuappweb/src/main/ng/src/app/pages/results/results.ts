@@ -89,6 +89,10 @@ export class Results {
     p.physical_locations = usedFacets.filter(k => k.field === 'physical_locations').map(k => k.value);
   }
 
+  clearQ() {
+    this.state.q = '';
+    this.getData();
+  }
 
   doSearch() {
     this.getData();

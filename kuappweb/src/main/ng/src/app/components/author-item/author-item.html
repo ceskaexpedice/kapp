@@ -1,1 +1,69 @@
-<p>author-item works!</p>
+<mat-card appearance="outlined" style="margin: 3px;">
+    <mat-card-header>
+        <mat-card-title>
+            <div class="app-labels-header app-mat-card-actions"><mat-chip-set>
+                    @for(l of labels; track $index) {
+                    <mat-chip [style.background-color]="l.color" (removed)="removeLabel(l)"
+                        style="--mat-chip-label-text-color: {{l.text_color}};">{{ l.name }}
+                        <button matChipRemove [attr.aria-label]="'remove ' + l.name">
+                            <mat-icon>cancel</mat-icon>
+                        </button></mat-chip>
+                    }
+                    <mat-chip>
+                        <button mat-icon-button [matMenuTriggerFor]="labelsMenu"><mat-icon matSuffix
+                                class="app-small-icon">new_label</mat-icon></button>
+                        <mat-menu #labelsMenu="matMenu">
+                            @for(a of state.labels(); track $index) {
+                            <button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
+                            }
+                        </mat-menu>
+
+                    </mat-chip>
+                </mat-chip-set>
+
+            </div>
+            {{ doc()['full']}}
+
+        </mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="app-result-item-content">
+        <div><label>{{ 'field.given' | translate }}: </label>{{ doc()['given']}} </div>
+        <div><label>{{ 'field.family' | translate }}: </label>{{ doc()['family']}} </div>
+        <div><label>{{ 'field.date' | translate }}: </label>{{ doc()['date']}} </div>
+
+        @if (doc().nameIdentifier) {
+        <div><label>{{ 'field.id' | translate }}: </label>
+            <a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+doc().nameIdentifier">{{ doc().nameIdentifier
+                }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+        </div>
+        <div><label>{{ 'field.links' | translate }}: </label>
+            @if (loadingLinks()) {
+            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            }
+            @for(w of linkTypes(); track $index) {
+            @for(l of links()[w]; track $index) {
+            <a target="_blank" [href]="l.url">{{ w }}<mat-icon matSuffix
+                    class="app-small-icon">open_in_new</mat-icon></a>
+            }
+            }
+        </div>
+        } @else {
+            <button mat-raised-button (click)="checkAutor()">{{ 'action.check_author' |
+            translate }}</button>
+            {{ aut().length }}
+            @for(a of aut(); track $index) {
+                <div>
+                {{ a['datafield_100a'] }} (<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+a['controlfield_001']">{{ a['controlfield_001'] }}<mat-icon
+                matSuffix class="app-small-icon">open_in_new</mat-icon></a>)
+            </div>
+            }
+        }
+
+        <div><label>{{ 'field.note' | translate }}: </label>{{ doc()['note']}} <a mat-icon-button
+                (click)="editNote()"><mat-icon matSuffix class="app-small-icon">edit</mat-icon></a></div>
+    </mat-card-content>
+    <mat-card-actions align="end" class="app-mat-card-actions">
+        <!-- <button mat-raised-button [matMenuTriggerFor]="stateMenu">{{ 'action.set_state' |
+            translate }}</button> -->
+    </mat-card-actions>
+</mat-card>

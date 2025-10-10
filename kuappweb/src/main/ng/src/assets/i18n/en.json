@@ -28,6 +28,8 @@
     "save": "Save",
     "set_as_last": "Set as last",
     "set_state": "Set state",
+    "check_author": "Search autor in AUT",
+    "add_author": "Add author",
     "ok": "OK"
   },
   "admin": {

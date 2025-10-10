@@ -57,8 +57,8 @@
                 (click)="editNote()"><mat-icon matSuffix class="app-small-icon">edit</mat-icon></a></div>
     </mat-card-content>
     <mat-card-actions align="end" class="app-mat-card-actions">
-        <!-- <button mat-raised-button [matMenuTriggerFor]="stateMenu">{{ 'action.set_state' |
-            translate }}</button> -->
+        <button mat-raised-button (click)="addAuthor()">{{ 'action.add_author' |
+            translate }}</button>
         <button mat-raised-button [matMenuTriggerFor]="stateMenu">{{ (doc()['state'] ? doc()['state'] : 'action.set_state') |
             translate }}</button>
         <mat-menu #stateMenu="matMenu">

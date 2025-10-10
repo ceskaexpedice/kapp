@@ -17,6 +17,7 @@
             <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
               (keyup.enter)="doSearch()">
             <mat-icon matSuffix (click)="doSearch()">search</mat-icon>
+            <mat-icon matSuffix (click)="clearQ()">cancel</mat-icon>
           </mat-form-field>
         </div>
       </div>

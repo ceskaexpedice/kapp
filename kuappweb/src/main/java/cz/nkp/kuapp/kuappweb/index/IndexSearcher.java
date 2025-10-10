@@ -110,6 +110,7 @@ public class IndexSearcher {
             if (request.getParameter("offset") != null) {
                 offset = Integer.parseInt(request.getParameter("offset"));
             }
+            //String q = "nameIdentifier:*";
             String q = "*";
             if (request.getParameter("q") != null) {
                 q = request.getParameter("q");
@@ -125,7 +126,7 @@ public class IndexSearcher {
                             .setMinCount(1)) 
                     .setOffset(offset)
                     .setSort("indextime desc")
-                    .returnFields("*,authors_kramerius:[json]")
+                    .returnFields("*")
                     .setLimit(rows);
 
 
@@ -149,7 +150,7 @@ public class IndexSearcher {
         return ret;
     }
 
-    public static JSONObject checkAutor(HttpServletRequest request) {
+    public static JSONObject checkAuthor(HttpServletRequest request) {
 
         // https://nklink.toolforge.org/link.php?autid=kup19980000039661&format=json
         JSONObject ret = new JSONObject();
@@ -161,10 +162,32 @@ public class IndexSearcher {
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(request.getParameter("author"))
-                    .withParam("defType", "dismax")
-                    .withParam("qf", "name")
-                    .withParam("mm", "80%")
+                    .withParam("df", "full_text")
+//                    .withParam("defType", "dismax")
+//                    .withParam("qf", "full_text")
+//                    .withParam("mm", "80%")
                     .setLimit(rows);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> resp = solr.request(jrequest, "aut");
+            InputStream is = (InputStream) resp.get("stream");
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
+    public static JSONObject getAuthorById(String id) {
+
+        // https://nklink.toolforge.org/link.php?autid=kup19980000039661&format=json
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery("controlfield_001:"+id)
+                    .setLimit(1);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "aut");

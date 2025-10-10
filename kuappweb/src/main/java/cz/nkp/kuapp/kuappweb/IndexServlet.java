@@ -72,7 +72,7 @@ public class IndexServlet extends HttpServlet {
 
     enum Actions {
 
-        FULL {
+        AUT {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
@@ -172,12 +172,24 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
-        CHECK_AUTOR{
+        CHECK_AUTHOR{
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.checkAutor(req); 
+                    json = IndexSearcher.checkAuthor(req); 
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        GET_AUTHOR_BY_ID{
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getAuthorById(req.getParameter("id")); 
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

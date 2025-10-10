@@ -75,6 +75,19 @@ export class ResultItem {
 
   }
 
+  addAuthor() {
+    const dialogRef = this.dialog.open(AuthorDialog, {
+      data: null,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result !== undefined) {
+
+      }
+    });
+
+  }
+
   addLabel(l: Label) {
     if (!this.labels.find(la => la.name === l.name)) {
       this.labels.push(l);
@@ -106,7 +119,7 @@ export class ResultItem {
     const p: any = {};
     p.rows = 10;
     p.author = this.doc()['last_author'];
-    this.service.checkAutor(p as HttpParams).subscribe((resp: any) => {
+    this.service.checkAuthor(p as HttpParams).subscribe((resp: any) => {
       console.log(resp)
     });
   }
