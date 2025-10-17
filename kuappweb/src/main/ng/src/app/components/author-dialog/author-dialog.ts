@@ -27,7 +27,6 @@ export class AuthorDialog {
   readonly service = inject(AppService);
   readonly dialogRef = inject(MatDialogRef<AuthorDialog>);
   readonly data = inject<Author>(MAT_DIALOG_DATA);
-  author = signal<Author>(null);
 
 
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
@@ -36,6 +35,8 @@ export class AuthorDialog {
   editing = signal<boolean>(false);
   isNew = signal<boolean>(false);
 
+  author = signal<Author>(null);
+
   ngOnInit() {
     if (!this.data) {
       // Dialog to add new author
@@ -43,18 +44,22 @@ export class AuthorDialog {
       this.isNew.set(true);
     } else {
       this.author.set(this.data);
-      if (this.data.nameIdentifier) {
-        const p: any = {};
-        p.id = this.data.nameIdentifier;
-        this.loadingLinks.set(true);
-        this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
-          this.loadingLinks.set(false);
-          if (resp.links) {
-            this.links.set(resp.links);
-            this.linkTypes.set(Object.keys(resp.links));
-          }
-        });
-      }
+      this.getLinks();
+    }
+  }
+
+  getLinks() {
+    if (this.author().nameIdentifier) {
+      const p: any = {};
+      p.id = this.author().nameIdentifier;
+      this.loadingLinks.set(true);
+      this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
+        this.loadingLinks.set(false);
+        if (resp.links) {
+          this.links.set(resp.links);
+          this.linkTypes.set(Object.keys(resp.links));
+        }
+      });
     }
   }
 
@@ -70,13 +75,17 @@ export class AuthorDialog {
       p.id = id
       this.service.getAuthorById(p as HttpParams).subscribe((resp: any) => {
         const a = resp.response.docs[0];
+        if (!a) {
+          alert('Id not found')
+          return;
+        }
         if (a['datafield_100d']) {
           const p = a['datafield_100d'].split('-');
           a['date_birth'] = p[0];
           if (p.length > 1) {
             a['date_death'] = p[1];
           }
-          
+
         }
         this.author.set({
           full: a['datafield_100a'],
@@ -88,7 +97,8 @@ export class AuthorDialog {
           nameIdentifier: id,
           authorsId: id,
           isLast: false
-        })
+        });
+        this.getLinks();
       });
     }
   }

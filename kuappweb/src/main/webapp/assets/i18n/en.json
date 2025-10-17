@@ -11,19 +11,33 @@
     "labels": "Label",
     "state": "State",
     "date": "Date",
+    "date_birth": "Datof birth",
+    "date_death": "Datum of death",
     "role": "Role",
     "id": "Identifier",
     "last_author": "lAST AUTHOR",
     "year_of_death_last_author": "Last author death",
     "note": "Note",
-    "pid": "PID"
+    "pid": "PID",
+    "links": "External links"
   },
   "action": {
+    "view": "View",
     "search": "Search",
     "close": "Close",
     "save": "Save",
     "set_as_last": "Set as last",
     "set_state": "Set state",
+    "check_author": "Search autor in AUT",
+    "add_author": "Add author",
     "ok": "OK"
+  },
+  "admin": {
+    "labels": "Labels administration"
+  },
+  "navbar": {
+    "admin": "Administration",
+    "authors": "Authors",
+    "titles": "Titles"
   }
 }

@@ -8,10 +8,12 @@
   "field": {
     "query": "dotaz",
     "author": "Autor",
+    "authors": "Autoři",
     "labels": "Label",
     "state": "Stav",
-    "authors": "Autoři",
     "date": "Datum",
+    "date_birth": "Datum narození",
+    "date_death": "Datum úmrtí",
     "role": "Role",
     "id": "Identifikator",
     "last_author": "Poslední autor",
@@ -20,14 +22,26 @@
     "public": "Veřejný",
     "public_since": "Veřejný od",
     "note": "Komentář",
-    "pid": "PID"
+    "pid": "PID",
+    "links": "Externí odkazy"
   },
   "action": {
+    "view": "Zobrazit",
     "search": "Hledat",
     "close": "Zavřít",
     "save": "Uložit",
     "set_as_last": "Nastavit jako poslední",
     "set_state": "Nastavit stav",
+    "check_author": "Hledat autora v AUT",
+    "add_author": "Přidat autora",
     "ok": "OK"
+  },
+  "admin": {
+    "labels": "Administrace štítků"
+  },
+  "navbar": {
+    "admin": "Administrace",
+    "authors": "Autoři",
+    "titles": "Dila"
   }
 }
