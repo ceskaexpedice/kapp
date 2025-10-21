@@ -17,7 +17,7 @@ public class InstanceTest {
 
         String[] fieldListV7 = instanceV7.getApiVersion().fieldList();
 
-        List<String> expectationsV7 = List.of("pid", "own_pid_path", "root.pid", "model","titles.search");
+        List<String> expectationsV7 = List.of("pid", "own_pid_path", "root.pid", "model","titles.search", "licenses_of_ancestors", "licenses");
         List<String> realValueV7 = Arrays.asList(fieldListV7);
 
         Assertions.assertEquals(expectationsV7,  realValueV7);
@@ -31,10 +31,10 @@ public class InstanceTest {
 
         String[] fieldListV5 = instanceV5.getApiVersion().fieldList();
 
-        List<String> expecationsV5 = List.of("PID","pid_path","root_pid","fedora.model");
+        List<String> expecationsV5 = List.of("PID","pid_path","root_pid","fedora.model","dc.title", "dnnt-labels", "dostupnost");
         List<String> realValueV5 = Arrays.asList(fieldListV5);
 
-        Assertions.assertTrue(expecationsV5.equals(realValueV5));
+        Assertions.assertEquals(expecationsV5, realValueV5);
 
         String queryV5 = instanceV5.getApiVersion().iterationQuery();
         Assertions.assertEquals("fedora.model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)",queryV5);
