@@ -1,11 +1,10 @@
-package com.example;
+package cz.inovatika;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -78,6 +77,8 @@ import org.w3c.dom.Node;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
  */
+
+//TODO: Refactor !!
 public class TsvToSolrIndexer {
 
     private static class AutorData {
