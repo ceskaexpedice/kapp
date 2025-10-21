@@ -5,19 +5,18 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.Builder;
 import java.net.http.HttpResponse;
+import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.stream.Stream;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -38,45 +37,6 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
-
-/*
-package com.example;
-
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
-import java.io.Reader;
-import java.io.StringReader;
-import java.net.URI;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpRequest.Builder;
-import java.net.http.HttpResponse;
-import java.net.ConnectException;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.stream.Stream;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
-import org.json.JSONObject;
-import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
-import org.apache.commons.csv.CSVRecord;
-import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.common.SolrInputDocument;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.NodeList;
-import org.w3c.dom.Node;
-import org.xml.sax.InputSource;
-import org.xml.sax.SAXException;
- */
 
 //TODO: Refactor !!
 public class TsvToSolrIndexer {
@@ -160,7 +120,6 @@ public class TsvToSolrIndexer {
         }
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         HttpClient client = HttpClient.newHttpClient();
-        Builder httpBuilder = HttpRequest.newBuilder();
         factory.setValidating(true);
         factory.setIgnoringElementContentWhitespace(true);
         factory.setNamespaceAware(true);
@@ -174,7 +133,15 @@ public class TsvToSolrIndexer {
             System.err.println("Invalid directory: " + DIRECTORY_PATH);
             return;
         }
-
+        // before looping files, load config:
+        Path mappingsPath = Path.of("services/init/src/main/resources/tsv-mappings.json");
+        ConfigMappingsLoader mappingsLoader;
+        try {
+            mappingsLoader = new ConfigMappingsLoader(mappingsPath);
+        } catch (IOException e) {
+            System.err.println("Failed to load TSV mappings: " + e.getMessage());
+            return;
+        }
         try (SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
             File[] tsvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".tsv"));
 
@@ -190,75 +157,17 @@ public class TsvToSolrIndexer {
                         .setSkipHeaderRecord(true)
                         .build();
                 try (Reader reader = new FileReader(tsvFile); CSVParser parser = new CSVParser(reader, format)) {
-                    HashMap<String, String> headers = new HashMap<>() {
-                        {
-                            switch (tsvFile.getName()) {
-                                case "2025 - Seznam přírůstků NDK pro kontrolu AP - NK_MZK.xlsx - do 1975.tsv", "2025 - Seznam přírůstků NDK pro kontrolu AP - NK_MZK.xlsx - 19 stol..tsv" -> {
-                                    put("Název", "root.title");
-                                    put("Autor", "authors");
-                                    put("Producent balíčku", "physical_locations.facet");
-                                    put("Identifikátor ČNB", "id_ccnb");
-                                    put("Datum vydání", "date.str");
-                                    put("Identifikátor UUID", "pid");
-                                    put("Datum importu", "imported");
-                                    put("Rok úmrtí (nebo jiný rozhodný)", "year_of_death_last_author");
-                                    put("Veřejné od", "public_since");
-                                    put("Kontroloval", "checked_by");
-                                    put("Zdroj", "source");
-                                    put("Kontrola NK:", "check_NK");
-                                    put("Kontrola NK:", "check_MZK");
-                                    put("Poznámka", "note");
-
-                                }
-                                case "kontrola_MONOGRAFIE_1900-1975.xlsx - Veřejná periodika po roce 1920.tsv" -> {
-                                    put("Název", "root.title");
-                                    put("Vydáváno", "date.str");
-                                    put("UUID", "pid");
-                                    put("Ke zveřejnění", "public_since");
-                                    put("Producent balíčku", "physical_locations.facet");
-                                    put("Kontroloval", "checked_by");
-                                    put("Zveřejnit", "public");
-                                    put("Poznámky", "note");
-                                }
-                                default -> {
-                                    if (tsvFile.getName().startsWith("kontrola_MONOGRAFIE_1900-1975.xlsx")) {
-                                        put("Název", "root.title");
-                                        put("Autor", "authors");
-
-                                        put("Datum vydání", "date.str");
-                                        put("Identifikátor ČNB", "id_ccnb");
-                                        put("Identifikátor UUID", "pid");
-                                        put("Datum importu", "imported");
-                                        put("poslední žijící autor (jméno)", "last_author");
-                                        put("rok úmrtí posledního z autorů (RRRR)", "year_of_death_last_author");
-                                        put("zdroj", "source");
-                                        put("veřejné od", "public_since");
-                                        put("Poznámky", "note");
-                                        put("Kontrola NK:", "check_NK");
-                                        put("Kontrola MZK:", "check_MZK");
-                                        if (tsvFile.getName().equals("kontrola_MONOGRAFIE_1900-1975.xlsx - 1900.tsv")) {
-                                            put("Kontroloval (XX)", "checked_by");
-                                            put("Zveřejnit", "public");
-                                            put("Producent balíčku (sigla)", "physical_locations.facet");
-                                        } else {
-                                            put("kontroloval", "checked_by");
-                                            put("zveřejnit (ANO/NE)", "public");
-                                            put("Producent balíčku", "physical_locations.facet");
-                                        }
-                                    } else {
-                                        System.out.println("Skipping unsupported file: " + tsvFile.getName());
-                                    }
-                                }
-                            }
-                        }
-                    };
-
+                    Map<String, String> headers = mappingsLoader.getHeadersForFile(tsvFile.getName());
+                    if (headers == null) {
+                        System.out.println("No configuration for this file: " + tsvFile.getName());
+                        continue;
+                    }
                     for (CSVRecord record : parser) {
                         SolrInputDocument doc = new SolrInputDocument();
                         int recordNumber = (int) record.getRecordNumber() + 1; // +1 to account for header
-                        String pid = null;
+                        String pid;
                         String secondPid = null;
-                        String[] authorArray = null;
+                        String[] authorArray;
                         AutorData[] nameIDArray = null;
                         String last_author = null;
                         for (Map.Entry<String, String> entry : record.toMap().entrySet()) {
@@ -324,11 +233,11 @@ public class TsvToSolrIndexer {
                                                 pid = uuid;
                                             }
                                             // NDK. K5
-                                            Document xml = GetBiblioMods(client, builder, pid, "https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS");
+                                            Document xml = getBiblioMods(client, builder, pid, "https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS");
                                             if (xml == null) {
                                                 // MZK. K7
                                                 // https://api.kramerius.mzk.cz/search/api/client/v7.0/items/uuid:4f0d2790-37d6-11e6-8746-005056825209/metadata/mods
-                                                xml = GetBiblioMods(client, builder, pid, "https://api.kramerius.mzk.cz/search/api/client/v7.0/items/" + pid + "/metadata/mods");
+                                                xml = getBiblioMods(client, builder, pid, "https://api.kramerius.mzk.cz/search/api/client/v7.0/items/" + pid + "/metadata/mods");
                                             }
                                             nameIDArray = processBiblioMods(xml, doc);
                                         }
@@ -336,7 +245,7 @@ public class TsvToSolrIndexer {
                                             String val = entry.getValue().toLowerCase();
                                             doc.addField("public_string", (String) entry.getValue());
                                             if (null == val) {
-                                                DateFormatError(recordNumber, Originalvalue, value, "Unexpected boolean value");
+                                                dateFormatError(recordNumber, Originalvalue, value, "Unexpected boolean value");
                                             } else {
                                                 switch (val) {
                                                     case "ano", "yes", "true" ->
@@ -357,10 +266,6 @@ public class TsvToSolrIndexer {
                                                     //System.err.println("Unexpected year value on row: "+ recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
                                                 }
                                             }
-                                        }
-                                        case "source" -> {
-                                            String val = entry.getValue();
-                                            doc.addField(header, val);
                                         }
                                         case "last_author" -> {
                                             last_author = entry.getValue();
@@ -385,9 +290,9 @@ public class TsvToSolrIndexer {
                             if (last_author != null && (nameIDArray != null)) {
                                 for (AutorData autor : nameIDArray) {
                                     //System.out.println("Comparing last_author: '" + last_author + "' with author: '" + authorArray[i] + "' having nameID: '" + nameIDArray[i] + "'");
-//                                    if (last_author.contains(authorArray[i])) {
-//                                        doc.addField("last_author_nameIdentifier", nameIDArray[i].nameIdentifier);
-//                                    }
+                                   // if (last_author.contains(authorArray[i])) {
+                                  //      doc.addField("last_author_nameIdentifier", nameIDArray[i].nameIdentifier);
+                                 //   }
                                     if (similartyMatch(normalize(last_author), normalize(autor.full), .5)) {
                                         autor.isLast = true;
                                         doc.setField("last_author_nameIdentifier", autor.nameIdentifier);
@@ -416,8 +321,8 @@ public class TsvToSolrIndexer {
                                 aDoc.addField("given", autor.given);
                                 //aDoc.addField("date", autor.date);
                                 aDoc.addField("termsOfAddress", autor.termsOfAddress);
-//                                aDoc.addField("birth", autor.family);
-//                                aDoc.addField("death", autor.family);
+                                //aDoc.addField("birth", autor.family);
+                               // aDoc.addField("death", autor.family);
                                 
                                 ParseDates(aDoc, "date", autor.date, recordNumber, autor.date, show_comma_info);
                                         
@@ -428,7 +333,7 @@ public class TsvToSolrIndexer {
                     }
 
                 } catch (Exception e) {
-                    System.out.println("Critical Exception: " + tsvFile.getName() + ": " + e.getMessage());
+                    System.out.println("Critical Exception: in file:" + tsvFile.getName() +"of type:" + e.getClass() + ": " + e.getMessage());
                     //sent_request = true;
                 }
             }
@@ -437,8 +342,10 @@ public class TsvToSolrIndexer {
             solrClient.commit("authors");
             System.out.println("All TSV files indexed successfully.");
 
-        } catch (Exception e) {
-            System.err.println("Error indexing data: " + e.getMessage());
+        } catch (ConnectException e) {
+            System.err.println("Failed to connect to Solr " + e.getMessage());
+        }catch (Exception e) {
+            System.err.println("Error indexing data: Exception type: "+ e.getClass().getName() + " Message:" + e.getMessage());
         }
     }
 
@@ -454,15 +361,15 @@ public class TsvToSolrIndexer {
         }
     }
 
-    private static void DateFormatError(int recordNumber, String Originalvalue, String value) {
+    private static void dateFormatError(int recordNumber, String Originalvalue, String value) {
         System.err.println("Unexpected date format on row: " + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
 
-    private static void DateFormatError(int recordNumber, String Originalvalue, String value, String message) {
+    private static void dateFormatError(int recordNumber, String Originalvalue, String value, String message) {
         System.err.println(message + " on row: " + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
 
-    private static Document GetBiblioMods(HttpClient client, DocumentBuilder builder, String pid, String url) throws IOException, InterruptedException {
+    private static Document getBiblioMods(HttpClient client, DocumentBuilder builder, String pid, String url) throws IOException, InterruptedException {
         if (pid == null || pid.isBlank()) {
             return null;
         }
@@ -575,7 +482,7 @@ public class TsvToSolrIndexer {
         }
         return nameIDArr;
     }
-
+/* 
     private static AutorData[] ProcessNameIdentifier(Document xml, DocumentBuilder builder, HttpClient client, String secondPid) throws IOException, InterruptedException {
         AutorData[] nameIDArray = ProcessNameIdentifier(xml);
 
@@ -595,7 +502,7 @@ public class TsvToSolrIndexer {
         }
         //System.out.println("No nameIdentifier found in MODS");
         return nameIDArray;
-    }
+    }*/
 
     private static boolean ParseDates(SolrInputDocument doc, String header, String value, int recordNumber, String Originalvalue, boolean show_comma_info) {
 
@@ -612,7 +519,7 @@ public class TsvToSolrIndexer {
             if (year.length() == 4) {
                 value = year + "?";
             } else {
-                DateFormatError(recordNumber, Originalvalue, value);
+                dateFormatError(recordNumber, Originalvalue, value);
             }
         } else if (value.contains("okolo r. 1900")) {
             value = "1900?";
@@ -627,7 +534,7 @@ public class TsvToSolrIndexer {
                 case 4 ->
                     value = parts[1] + "-" + parts[3];
                 default ->
-                    DateFormatError(recordNumber, Originalvalue, value);
+                    dateFormatError(recordNumber, Originalvalue, value);
             }
         } else if (value.contains("po")) {
             value = value.replace("po r.", "po ");
@@ -636,7 +543,7 @@ public class TsvToSolrIndexer {
                     .filter(s -> !s.isEmpty())
                     .toArray(String[]::new);
             if (parts.length != 2) {
-                DateFormatError(recordNumber, Originalvalue, value);
+                dateFormatError(recordNumber, Originalvalue, value);
 
             } else {
                 String year = parts[1];
@@ -652,7 +559,7 @@ public class TsvToSolrIndexer {
             value = value.replaceAll("[\\[\\]]", "");
             String[] parts = value.split(" ");
             if (parts.length != 2) {
-                DateFormatError(recordNumber, Originalvalue, value);
+                dateFormatError(recordNumber, Originalvalue, value);
 
             } else {
                 String year = parts[1];
@@ -672,7 +579,7 @@ public class TsvToSolrIndexer {
             }
             String[] parts = value.split(" ");
             if (parts.length != 3) {
-                DateFormatError(recordNumber, Originalvalue, value);
+                dateFormatError(recordNumber, Originalvalue, value);
             } else {
                 value = parts[0] + "?-" + parts[2] + "?";
             }
@@ -782,7 +689,7 @@ public class TsvToSolrIndexer {
                         year = year.substring(1, 5);
                         confirmed = true;
                     } else {
-                        DateFormatError(recordNumber, Originalvalue, value);
+                        dateFormatError(recordNumber, Originalvalue, value);
                     }
                 } else if (year.length() == 6 || value.length() == 7) {
                     year = year.substring(1, 5);
@@ -796,11 +703,11 @@ public class TsvToSolrIndexer {
                         addyear(year, doc, confirmed);
                     }
                 } else {
-                    DateFormatError(recordNumber, Originalvalue, value, "Failed to parse date");
+                    dateFormatError(recordNumber, Originalvalue, value, "Failed to parse date");
                 }
             }
             default ->
-                DateFormatError(recordNumber, Originalvalue, value);
+                dateFormatError(recordNumber, Originalvalue, value);
         }
 
         return false;
@@ -822,10 +729,6 @@ public class TsvToSolrIndexer {
         Integer calculatedDistance = dist.apply(catalogNormalizedTitle, distriNormalizedTitle);
         double maxDistance = Math.round((1 - shoda) * ((double) distriNormalizedTitle.length()));
 
-        if (maxDistance >= calculatedDistance) {
-            return true;
-        } else {
-            return false;
-        }
+        return maxDistance >= calculatedDistance;
     }
 }
