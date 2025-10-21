@@ -156,27 +156,22 @@ public class TsvToSolrIndexer {
                                         }
                                     }
                                     case "pid" -> {
-                                        String uuid = value.trim();
-                                        uuid = uuid.replaceAll("\\|", " ");
-                                        String[] parts = uuid.split("\\s+");
+                                        String[] parts = value.trim().replaceAll("\\|", " ").split("\\s+");
+                                        for (int i = 0; i < parts.length; i++) {
+                                            if(!parts[i].startsWith("uuid:")){
+                                                parts[i] = "uuid:" + parts[i];
+                                            }
+                                        }
+                                        pid = parts[0];
                                         if (parts.length > 1) {
                                             if (parts.length > 2) {
                                                 System.out.println("More than two UUIDs found, using first two." + parts[2] + " Row: " + recordNumber);
                                             }
-                                            uuid = parts[0];
                                             secondPid = parts[1];
                                             //System.out.println("Multiple UUIDs found, First one: " + uuid + " Second one:" + secondPid + " Row: " + recordNumber);
-                                        }
-                                        if (secondPid != null && !secondPid.startsWith("uuid:")) {
-                                            secondPid = "uuid:" + secondPid;
-                                        }
-                                        if (!uuid.startsWith("uuid:")) {
-                                            doc.addField(header, "uuid:" + uuid);
-                                            pid = "uuid:" + uuid;
-                                        } else {
-                                            doc.addField(header, uuid);
-                                            pid = uuid;
-                                        }
+                                        } 
+                                        doc.addField(header, pid);
+                                        
                                         // NDK. K5
                                         Document xml = getBiblioMods(client, builder, pid, "https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS");
                                         if (xml == null) {
@@ -253,35 +248,37 @@ public class TsvToSolrIndexer {
         }
     }
 
-    private static void extractAuthorData(boolean show_comma_info, SolrClient solrClient, SolrInputDocument doc,
-            int recordNumber, AutorData[] nameIDArray) throws SolrServerException, IOException {
-        if (nameIDArray != null) {
-            for (AutorData autor : nameIDArray) {
-                doc.addField("authors_kramerius", autor.toJsonString());
-                if (autor.nameIdentifier != null && !autor.nameIdentifier.isEmpty()) {
-                    doc.addField("nameIdentifier", autor.nameIdentifier);
-                }
-
-                SolrInputDocument aDoc = new SolrInputDocument();
-                aDoc.addField("nameIdentifier", autor.nameIdentifier);
-                if (autor.nameIdentifier != null) {
-                    aDoc.addField("id", autor.nameIdentifier);
-                } else {
-                    aDoc.addField("id", normalize(autor.full + autor.date));
-                }
-                aDoc.addField("full", autor.full);
-                aDoc.addField("family", autor.family);
-                aDoc.addField("given", autor.given);
-                //aDoc.addField("date", autor.date);
-                aDoc.addField("termsOfAddress", autor.termsOfAddress);
-                //aDoc.addField("birth", autor.family);
-                // aDoc.addField("death", autor.family);
-
-                ParseDates(aDoc, autor.date, recordNumber, show_comma_info);
-
-                solrClient.add("authors", aDoc);
-            }
+    private static void extractAuthorData(final boolean show_comma_info, final SolrClient solrClient, SolrInputDocument doc,
+            final int recordNumber,final AutorData[] nameIDArray) throws SolrServerException, IOException {
+        if (nameIDArray == null) {
+            return;
         }
+        for (AutorData autor : nameIDArray) {
+            doc.addField("authors_kramerius", autor.toJsonString());
+            if (autor.nameIdentifier != null && !autor.nameIdentifier.isEmpty()) {
+                doc.addField("nameIdentifier", autor.nameIdentifier);
+            }
+
+            SolrInputDocument aDoc = new SolrInputDocument();
+            aDoc.addField("nameIdentifier", autor.nameIdentifier);
+            if (autor.nameIdentifier != null) {
+                aDoc.addField("id", autor.nameIdentifier);
+            } else {
+                aDoc.addField("id", normalize(autor.full + autor.date));
+            }
+            aDoc.addField("full", autor.full);
+            aDoc.addField("family", autor.family);
+            aDoc.addField("given", autor.given);
+            //aDoc.addField("date", autor.date);
+            aDoc.addField("termsOfAddress", autor.termsOfAddress);
+            //aDoc.addField("birth", autor.family);
+            // aDoc.addField("death", autor.family);
+
+            ParseDates(aDoc, autor.date, recordNumber, show_comma_info);
+
+            solrClient.add("authors", aDoc);
+        }
+
     }
 
     private static void trySetLastAuthor(SolrInputDocument doc, AutorData[] nameIDArray, String last_author) {
