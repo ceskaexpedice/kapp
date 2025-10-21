@@ -11,6 +11,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.StringReader;
@@ -39,10 +40,9 @@ public class HarvesterImpl implements Harvester {
             HttpClient client = HttpClient.newHttpClient();
             String cursorMark = null;
             String queryCursorMark = null;
+            // loading timestamp
+            config.loadLastUpdatedFromPath();
             do {
-
-                // load timestamp
-                // config.loadLatestTimestamp
 
                 APIVersion apiVersion = config.getApiVersion();
                 String iterationQuery = apiVersion.iterationQuery();
@@ -64,10 +64,7 @@ public class HarvesterImpl implements Harvester {
 
             } while((cursorMark != null && queryCursorMark != null) && !cursorMark.equals(queryCursorMark));
 
-            // update timestamp
-            // store timestamp
-            // config.storeLatestTimestamp
-            //config.updateLastUpdatedTimestamp(Instant.now());
+            config.saveLastUpdatedToPath();
 
         } catch (Exception e) {
             throw new RuntimeException(e);
@@ -102,31 +99,34 @@ public class HarvesterImpl implements Harvester {
     }
 
 
-    public static void main(String[] args) {
-        //inovatika();
-        nkp();
+    public static void main(String[] args) throws IOException {
+        inovatika();
+        //nkp();
     }
 
-    private static void nkp() {
+    private static void nkp() throws IOException {
+
         HarvesterImpl h = new HarvesterImpl();
         Instance config = new Instance();
         config.setAcronym("nkp");
         config.setApiVersion(APIVersion.v5);
         config.setSolrCloud(false);
-        config.updateLastUpdatedTimestamp(Instant.parse("2025-01-21T04:55:21.221Z"));
+        config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-21T04:55:21.221Z"));
         config.setUrl("https://ndk.cz/search/api/v5.0/");
-
         h.harvest(config,System.out::println);
 
     }
 
-    private static void inovatika() {
+    private static void inovatika() throws IOException {
+        String udir = System.getProperty("user.dir");
+
         HarvesterImpl h = new HarvesterImpl();
         Instance config = new Instance();
+        config.setTimestampPath(udir+File.separator+"timestamps"+File.separator+"inovatika"+File.separator+"timestamp");
+
         config.setAcronym("inovatika");
         config.setApiVersion(APIVersion.v7);
         config.setSolrCloud(false);
-        config.updateLastUpdatedTimestamp(Instant.parse("2018-01-21T04:55:21.221Z"));
         config.setUrl("https://k7.inovatika.dev/search/api/client/v7.0/");
 
         h.harvest(config,System.out::println);
