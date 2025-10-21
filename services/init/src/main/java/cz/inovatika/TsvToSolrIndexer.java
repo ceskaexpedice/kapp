@@ -383,7 +383,6 @@ public class TsvToSolrIndexer {
             String kolem_fix = value.replaceAll("kolem r.\\s+", "?");//replace kolem with ?
             value = value.equals(kolem_fix) ? value : kolem_fix + "?";
             value = value.replaceAll("\\s+a\\s+", "-");//replace a with dash
-            value = value.replaceAll("ca\\.?\\s+", "?");//replace ca with ?
             //value = value.replaceAll("[\\[\\]]", "");//Just purge the brackets.
             XmlProcessor.parseDateBasic(doc, value, recordNumber, Originalvalue);
 

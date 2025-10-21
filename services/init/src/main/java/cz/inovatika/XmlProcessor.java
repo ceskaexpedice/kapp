@@ -139,7 +139,7 @@ public class XmlProcessor {
             aDoc.addField("full", autor.full);
             aDoc.addField("family", autor.family);
             aDoc.addField("given", autor.given);
-            //aDoc.addField("date", autor.date);
+            aDoc.addField("date", autor.date);
             aDoc.addField("termsOfAddress", autor.termsOfAddress);
             //aDoc.addField("birth", autor.family);
             // aDoc.addField("death", autor.family);
@@ -161,6 +161,7 @@ public class XmlProcessor {
         return result;
     }
     public static void parseDateBasic(SolrInputDocument doc, String value, int recordNumber, String Originalvalue) {
+        value = value.replaceAll("ca\\.?\\s*", "?");//replace ca with ?
         value = value.replaceAll("asi\\s*", "?").trim();
         String[] parts = value.split("-");
         switch (parts.length) {
