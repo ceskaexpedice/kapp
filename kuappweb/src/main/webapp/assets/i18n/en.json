@@ -30,6 +30,7 @@
     "set_state": "Set state",
     "check_author": "Search autor in AUT",
     "add_author": "Add author",
+    "add_author_by_id": "Add author by id",
     "ok": "OK"
   },
   "admin": {

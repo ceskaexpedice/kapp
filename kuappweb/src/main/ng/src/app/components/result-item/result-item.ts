@@ -56,7 +56,10 @@ export class ResultItem {
       if (this.doc()['labels']) {
         this.doc()['labels'].forEach((name: string) => {
           const l = this.state.labels().find(la => la.name === name);
-          this.labels.push({ name: name, color: l.color, text_color: l.text_color });
+          if (l) {
+            this.labels.push({ name: name, color: l.color, text_color: l.text_color });
+          }
+          
         });
       }
     })

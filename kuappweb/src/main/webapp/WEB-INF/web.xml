@@ -20,6 +20,8 @@
     <servlet-mapping>
         <servlet-name>StaticServlet</servlet-name>
         <url-pattern>/home</url-pattern>
+        <url-pattern>/titles</url-pattern>
+        <url-pattern>/authors</url-pattern>
         <url-pattern>/results</url-pattern>
     </servlet-mapping>
     <session-config>
