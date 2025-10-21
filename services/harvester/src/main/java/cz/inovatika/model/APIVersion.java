@@ -12,6 +12,8 @@ import java.net.http.HttpResponse;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -44,7 +46,7 @@ public enum APIVersion {
 
         @Override
         public String[] fieldList() {
-            return new String[]{"PID", "pid_path", "root_pid", "fedora.model","dc.title"};
+            return new String[]{"PID", "pid_path", "root_pid", "fedora.model","dc.title","dnnt-labels","dostupnost"};
         }
 
         public HarvestingItem createHarvestItemFromResultElement(Element docResultElement, Instance instance) {
@@ -65,6 +67,7 @@ public enum APIVersion {
                 String name = elm.getAttribute("name");
                 return (nodeName.equals("str") && name.equals("PID"));
             });
+
             if (pidElm != null) {
                 item.setPid(pidElm.getTextContent());
             }
@@ -78,7 +81,6 @@ public enum APIVersion {
                 item.setRootPid(rootPidElm.getTextContent());
             }
 
-
             Element titlesElements = XMLUtils.findElement(docResultElement, (elm) -> {
                 String nodeName = elm.getNodeName();
                 String name = elm.getAttribute("name");
@@ -89,6 +91,28 @@ public enum APIVersion {
                 item.setTitles(titlesElements.getTextContent());
             }
 
+            List<String> licenses = new ArrayList<>();
+            Element dnntLabels = XMLUtils.findElement(docResultElement, (elm) -> {
+                String nodeName = elm.getNodeName();
+                String name = elm.getAttribute("name");
+                return (nodeName.equals("arr") && name.equals("dnnt-labels"));
+            });
+            if (dnntLabels != null) {
+                List<String> elementsRecursive = XMLUtils.getElementsRecursive(dnntLabels, elm -> {
+                    return elm.getNodeName().equals("str");
+                }).stream().map(Element::getTextContent).collect(Collectors.toList());
+                licenses.addAll(elementsRecursive);
+            }
+
+            Element dostupnost = XMLUtils.findElement(docResultElement, (elm) -> {
+                String nodeName = elm.getNodeName();
+                String name = elm.getAttribute("name");
+                return (nodeName.equals("str") && name.equals("dostupnost"));
+            });
+            if (dostupnost != null) {
+                licenses.add(dostupnost.getTextContent().trim().equals("private") ? "onsite":"public");
+            }
+            item.setLicenses(licenses.toArray(new String[licenses.size()]));
             return item;
         }
 
@@ -136,7 +160,7 @@ public enum APIVersion {
 
         @Override
         public String[] fieldList() {
-            return new String[]{"pid", "own_pid_path", "root.pid", "model", "titles.search"};
+            return new String[]{"pid", "own_pid_path", "root.pid", "model", "titles.search","licenses_of_ancestors","licenses"};
         }
 
         @Override
@@ -183,6 +207,35 @@ public enum APIVersion {
                 item.setTitles(titles);
             }
 
+            List<String> licenses = new ArrayList<>();
+            Element dLicenses = XMLUtils.findElement(docResultElement, (elm) -> {
+                String nodeName = elm.getNodeName();
+                String name = elm.getAttribute("name");
+                return (nodeName.equals("arr") && name.equals("licenses"));
+            });
+            if (dLicenses != null) {
+                List<String> elementsRecursive = XMLUtils.getElementsRecursive(dLicenses, elm -> {
+                    return elm.getNodeName().equals("str");
+                }).stream().map(Element::getTextContent).collect(Collectors.toList());
+                licenses.addAll(elementsRecursive);
+            }
+
+            Element aLicenses = XMLUtils.findElement(docResultElement, (elm) -> {
+                String nodeName = elm.getNodeName();
+                String name = elm.getAttribute("name");
+                return (nodeName.equals("arr") && name.equals("licenses_of_ancestors"));
+            });
+            if (aLicenses != null) {
+                List<String> elementsRecursive = XMLUtils.getElementsRecursive(dLicenses, elm -> {
+                    return elm.getNodeName().equals("str");
+                }).stream().map(Element::getTextContent).collect(Collectors.toList());
+                for (String l:elementsRecursive) {
+                    if (!licenses.contains(l)) {
+                        licenses.add(l);
+                    }
+                }
+            }
+            item.setLicenses(licenses.toArray(new String[licenses.size()]));
             return item;
         }
 

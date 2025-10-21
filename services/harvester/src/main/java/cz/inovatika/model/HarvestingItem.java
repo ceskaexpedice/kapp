@@ -38,6 +38,11 @@ public class HarvestingItem {
     private String titles;
 
     /**
+     * Licenses associated with the item
+     */
+    private String[] licenses;
+
+    /**
      * A reference to the {@link Instance} configuration associated with this item.
      * This provides the necessary context (e.g., API version, URL) required for
      * subsequent data fetching operations.
@@ -85,16 +90,12 @@ public class HarvestingItem {
         this.instance = instance;
     }
 
-    @Override
-    public boolean equals(Object o) {
-        if (o == null || getClass() != o.getClass()) return false;
-        HarvestingItem that = (HarvestingItem) o;
-        return Objects.equals(rootPid, that.rootPid) && Objects.equals(pid, that.pid) && Objects.equals(model, that.model) && Objects.equals(titles, that.titles) && Objects.equals(instance, that.instance);
+    public String[] getLicenses() {
+        return licenses;
     }
 
-    @Override
-    public int hashCode() {
-        return Objects.hash(rootPid, pid, model, titles, instance);
+    public void setLicenses(String[] licenses) {
+        this.licenses = licenses;
     }
 
     @Override
@@ -103,8 +104,21 @@ public class HarvestingItem {
                 "rootPid='" + rootPid + '\'' +
                 ", pid='" + pid + '\'' +
                 ", model='" + model + '\'' +
-                ", title='" + (titles != null ? Arrays.asList(titles) : "null") + '\'' +
+                ", titles='" + titles + '\'' +
+                ", licenses=" + Arrays.toString(licenses) +
                 ", instance=" + instance +
                 '}';
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (o == null || getClass() != o.getClass()) return false;
+        HarvestingItem that = (HarvestingItem) o;
+        return Objects.equals(rootPid, that.rootPid) && Objects.equals(pid, that.pid) && Objects.equals(model, that.model) && Objects.equals(titles, that.titles) && Objects.deepEquals(licenses, that.licenses) && Objects.equals(instance, that.instance);
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(rootPid, pid, model, titles, Arrays.hashCode(licenses), instance);
     }
 }

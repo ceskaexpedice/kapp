@@ -104,8 +104,8 @@ public class HarvesterImpl implements Harvester {
 
 
     public static void main(String[] args) throws IOException {
-        inovatika();
-        //nkp();
+        //inovatika();
+        nkp();
     }
 
     private static void nkp() throws IOException {
@@ -116,7 +116,10 @@ public class HarvesterImpl implements Harvester {
         config.setSolrCloud(false);
         config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-21T04:55:21.221Z"));
         config.setUrl("https://ndk.cz/search/api/v5.0/");
-        h.harvest(config,System.out::println);
+        //h.harvest(config,System.out::println);
+        h.harvest(config, ctx->{
+            System.out.println(ctx.item());
+        });
     }
 
     private static void inovatika() throws IOException {
@@ -134,17 +137,22 @@ public class HarvesterImpl implements Harvester {
 //        h.harvest(config,System.out::println);
         h.harvest(config,ctx-> {
             try {
-                InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
-                Document parsed = XMLUtils.parseDocument(inputStream, true);
-                System.out.println(parsed.getDocumentElement().getNodeName());
 
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            } catch (InterruptedException e) {
-                throw new RuntimeException(e);
-            } catch (ParserConfigurationException e) {
-                throw new RuntimeException(e);
-            } catch (SAXException e) {
+                System.out.println(ctx.item());
+
+                //String pid = ctx.item().getPid();
+
+//                InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
+//                Document parsed = XMLUtils.parseDocument(inputStream, true);
+//                System.out.println(parsed.getDocumentElement().getNodeName());
+
+//            } catch (IOException e) {
+//                throw new RuntimeException(e);
+//            } catch (InterruptedException e) {
+//                throw new RuntimeException(e);
+//            } catch (ParserConfigurationException e) {
+//                throw new RuntimeException(e);
+            } catch (Exception e) {
                 throw new RuntimeException(e);
             }
         });
