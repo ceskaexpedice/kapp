@@ -47,7 +47,7 @@
         "Ke zveřejnění": "public_since",
         "Producent balíčku": "physical_locations.facet",
         "Kontroloval": "checked_by",
-        "Zveřejnit": "public",
+        "Zveřejnit": "public_string",
         "Poznámky": "note"
       }
     },
@@ -68,10 +68,10 @@
         "Kontrola NK:": "check_NK",
         "Kontrola MZK:": "check_MZK",
         "Kontroloval (XX)": "checked_by",
-        "Zveřejnit": "public",
+        "Zveřejnit": "public_string",
         "Producent balíčku (sigla)": "physical_locations.facet",
         "kontroloval": "checked_by",
-        "zveřejnit (ANO/NE)": "public",
+        "zveřejnit (ANO/NE)": "public_string",
         "Producent balíčku": "physical_locations.facet"
       }
     }
