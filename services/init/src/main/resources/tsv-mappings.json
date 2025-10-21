@@ -1,0 +1,79 @@
+{
+  "mappings": [
+    {
+      "match": "2025 - Seznam přírůstků NDK pro kontrolu AP - NK_MZK.xlsx - do 1975.tsv",
+      "headers": {
+        "Název": "root.title",
+        "Autor": "authors",
+        "Producent balíčku": "physical_locations.facet",
+        "Identifikátor ČNB": "id_ccnb",
+        "Datum vydání": "date.str",
+        "Identifikátor UUID": "pid",
+        "Datum importu": "imported",
+        "Rok úmrtí (nebo jiný rozhodný)": "year_of_death_last_author",
+        "Veřejné od": "public_since",
+        "Kontroloval": "checked_by",
+        "Zdroj": "source",
+        "Kontrola NK:": "check_NK",
+        "Kontrola MZK:": "check_MZK",
+        "Poznámka": "note"
+      }
+    },
+    {
+      "match": "2025 - Seznam přírůstků NDK pro kontrolu AP - NK_MZK.xlsx - 19 stol..tsv",
+      "headers": {
+        "Název": "root.title",
+        "Autor": "authors",
+        "Producent balíčku": "physical_locations.facet",
+        "Identifikátor ČNB": "id_ccnb",
+        "Datum vydání": "date.str",
+        "Identifikátor UUID": "pid",
+        "Datum importu": "imported",
+        "Rok úmrtí (nebo jiný rozhodný)": "year_of_death_last_author",
+        "Veřejné od": "public_since",
+        "Kontroloval": "checked_by",
+        "Zdroj": "source",
+        "Kontrola NK:": "check_NK",
+        "Kontrola MZK:": "check_MZK",
+        "Poznámka": "note"
+      }
+    },
+    {
+      "match": "kontrola_MONOGRAFIE_1900-1975.xlsx - Veřejná periodika po roce 1920.tsv",
+      "headers": {
+        "Název": "root.title",
+        "Vydáváno": "date.str",
+        "UUID": "pid",
+        "Ke zveřejnění": "public_since",
+        "Producent balíčku": "physical_locations.facet",
+        "Kontroloval": "checked_by",
+        "Zveřejnit": "public",
+        "Poznámky": "note"
+      }
+    },
+    {
+      "matchStartsWith": "kontrola_MONOGRAFIE_1900-1975.xlsx",
+      "headers": {
+        "Název": "root.title",
+        "Autor": "authors",
+        "Datum vydání": "date.str",
+        "Identifikátor ČNB": "id_ccnb",
+        "Identifikátor UUID": "pid",
+        "Datum importu": "imported",
+        "poslední žijící autor (jméno)": "last_author",
+        "rok úmrtí posledního z autorů (RRRR)": "year_of_death_last_author",
+        "zdroj": "source",
+        "veřejné od": "public_since",
+        "Poznámky": "note",
+        "Kontrola NK:": "check_NK",
+        "Kontrola MZK:": "check_MZK",
+        "Kontroloval (XX)": "checked_by",
+        "Zveřejnit": "public",
+        "Producent balíčku (sigla)": "physical_locations.facet",
+        "kontroloval": "checked_by",
+        "zveřejnit (ANO/NE)": "public",
+        "Producent balíčku": "physical_locations.facet"
+      }
+    }
+  ]
+}
