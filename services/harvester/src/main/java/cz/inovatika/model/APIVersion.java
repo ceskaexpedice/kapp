@@ -15,8 +15,21 @@ import java.time.format.DateTimeFormatter;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
+/**
+ * Defines the supported API versions and encapsulates the version-specific logic
+ * required for harvesting, particularly for constructing queries and parsing results
+ * from different backend system versions (e.g., V5 vs. V7 of an institutional repository).
+ *
+ * <p>Each enum constant (V5, V7) implements the abstract methods to provide
+ * version-specific identifiers, query components, result parsing, and
+ * metadata fetching logic.
+ */
 public enum APIVersion {
 
+    /**
+     * Implementation for API Version 5.
+     * Uses older field names like 'PID', 'fedora.model', 'modified_date', and a specific MODS URL structure.
+     */
     v5 {
         @Override
         public String getIdentifier(Instance cloud) {
@@ -90,8 +103,8 @@ public enum APIVersion {
         }
 
         @Override
-        public InputStream getMods(HttpClient client, String apiUrl, HarvestingItem item) throws IOException, InterruptedException {
-            String modsUrl = String.format(apiUrl + (apiUrl.endsWith("/") ? "" : "/") + "item/%s/streams/BIBLIO_MODS", item.getPid());
+        public InputStream fetchMods(HttpClient client, Instance instance, HarvestingItem item) throws IOException, InterruptedException {
+            String modsUrl = String.format(instance.getUrl() + (instance.getUrl().endsWith("/") ? "" : "/") + "item/%s/streams/BIBLIO_MODS", item.getPid());
             HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
                     .uri(URI.create(modsUrl))
                     .GET()
@@ -105,6 +118,10 @@ public enum APIVersion {
         }
     },
 
+    /**
+     * Implementation for API Version 7.
+     * Uses newer field names like 'pid', 'model', 'indexed', and a revised MODS URL structure.
+     */
     v7 {
         @Override
         public String getIdentifier(Instance instance) {
@@ -180,8 +197,9 @@ public enum APIVersion {
         }
 
         @Override
-        public InputStream getMods(HttpClient client, String apiUrl, HarvestingItem item) throws IOException, InterruptedException {
-            String modsUrl = String.format(apiUrl + (apiUrl.endsWith("/") ? "" : "/") + "items/%s/metadata/mods", item.getPid());
+        public InputStream fetchMods(HttpClient client, Instance instance, HarvestingItem item) throws IOException, InterruptedException {
+            String url = instance.getUrl();
+            String modsUrl = String.format(url + (url.endsWith("/") ? "" : "/") + "items/%s/metadata/mods", item.getPid());
             HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
                     .uri(URI.create(modsUrl))
                     .GET()
@@ -195,21 +213,74 @@ public enum APIVersion {
         }
     };
 
+    // --- Abstract Methods ---
+
+    /**
+     * Gets the name of the unique identifier field used in the Solr index for this API version.
+     * This field is used for sorting and cursor-based pagination.
+     *
+     * @param instance The harvester instance configuration.
+     * @return The identifier field name (e.g., "PID" or "pid", "compositeId").
+     */
     public abstract String getIdentifier(Instance instance);
 
+    /**
+     * Gets the base query ({@code q} parameter) that defines the set of records to be harvested.
+     *
+     * @return The query string defining the base record types.
+     */
     public abstract String iterationQuery();
 
+    /**
+     * Gets the list of fields ({@code fl} parameter) required to be returned in the Solr response
+     * for creating the {@link HarvestingItem}.
+     *
+     * @return An array of field names.
+     */
     public abstract String[] fieldList();
 
+    /**
+     * Creates the incremental filter query ({@code fq} parameter) based on the last update timestamp.
+     * This filter ensures only records modified since the last harvest are retrieved.
+     *
+     * @param instance The harvester instance configuration containing the {@code lastUpdated} timestamp.
+     * @return The filter query string (e.g., "indexed:[date TO NOW]"), or {@code null} if no timestamp is available.
+     */
     public abstract String incrementFQ(Instance instance);
 
-    public abstract InputStream getMods(HttpClient client, String apiUrl, HarvestingItem item) throws IOException, InterruptedException;
+    /**
+     * Fetches the full metadata (MODS stream) for a specific item using a version-appropriate URL.
+     *
+     * @param client The {@link HttpClient} to use for the HTTP request.
+     * @param instance The instance configuration for context (e.g., base URL).
+     * @param item The {@link HarvestingItem} containing the PID of the record to fetch.
+     * @return An {@link InputStream} containing the MODS XML data, or {@code null} if the request failed (HTTP error).
+     * @throws IOException If an I/O error occurs during the request.
+     * @throws InterruptedException If the operation is interrupted.
+     */
+    public abstract InputStream fetchMods(HttpClient client, Instance instance, HarvestingItem item) throws IOException, InterruptedException;
 
+    /**
+     * Parses a single Solr document element from the XML response into a {@link HarvestingItem} object.
+     * The method must handle version-specific field names and XML structure.
+     *
+     * @param docResultElement The {@code <doc>} XML element from the Solr response.
+     * @param instance The harvester instance configuration for context.
+     * @return A populated {@link HarvestingItem}.
+     */
     public abstract HarvestingItem createHarvestItemFromResultElement(Element docResultElement, Instance instance);
 
+    // --- Private/Static Helpers ---
+
+    /**
+     * DateTimeFormatter configured for Solr date format: ISO 8601 with millisecond precision and UTC zone ('Z').
+     */
     private static final DateTimeFormatter SOLR_DATE_FORMATTER = DateTimeFormatter
             .ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")
             .withZone(ZoneOffset.UTC);
 
+    /**
+     * Logger instance for logging errors and information specific to API version operations.
+     */
     public static final Logger LOGGER = Logger.getLogger(APIVersion.class.getName());
 }

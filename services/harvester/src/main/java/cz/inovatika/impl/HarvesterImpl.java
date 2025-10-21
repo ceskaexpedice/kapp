@@ -2,6 +2,7 @@ package cz.inovatika.impl;
 
 import cz.inovatika.Harvester;
 import cz.inovatika.model.APIVersion;
+import cz.inovatika.model.HarvesterContext;
 import cz.inovatika.model.HarvestingItem;
 import cz.inovatika.model.Instance;
 import cz.inovatika.utils.XMLUtils;
@@ -35,7 +36,7 @@ public class HarvesterImpl implements Harvester {
 
 
     @Override
-    public void harvest(Instance config, Consumer<HarvestingItem> consumer) {
+    public void harvest(Instance config, Consumer<HarvesterContext> consumer) {
         try {
             HttpClient client = HttpClient.newHttpClient();
             String cursorMark = null;
@@ -57,7 +58,10 @@ public class HarvesterImpl implements Harvester {
                 }).forEach(docElm-> {
                     APIVersion version = config.getApiVersion();
                     HarvestingItem harvestingItem = version.createHarvestItemFromResultElement(docElm, config);
-                    consumer.accept(harvestingItem);
+
+                    HarvesterContext context = new HarvesterContext(harvestingItem, client, config);
+                    consumer.accept(context);
+                    //consumer.accept(harvestingItem);
                 });
                 cursorMark = findCursorMark(element);
                 queryCursorMark = findQueryCursorMark(element);
@@ -105,7 +109,6 @@ public class HarvesterImpl implements Harvester {
     }
 
     private static void nkp() throws IOException {
-
         HarvesterImpl h = new HarvesterImpl();
         Instance config = new Instance();
         config.setAcronym("nkp");
@@ -114,14 +117,13 @@ public class HarvesterImpl implements Harvester {
         config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-21T04:55:21.221Z"));
         config.setUrl("https://ndk.cz/search/api/v5.0/");
         h.harvest(config,System.out::println);
-
     }
 
     private static void inovatika() throws IOException {
         String udir = System.getProperty("user.dir");
 
         HarvesterImpl h = new HarvesterImpl();
-        Instance config = new Instance();
+        final Instance config = new Instance();
         config.setTimestampPath(udir+File.separator+"timestamps"+File.separator+"inovatika"+File.separator+"timestamp");
 
         config.setAcronym("inovatika");
@@ -129,6 +131,22 @@ public class HarvesterImpl implements Harvester {
         config.setSolrCloud(false);
         config.setUrl("https://k7.inovatika.dev/search/api/client/v7.0/");
 
-        h.harvest(config,System.out::println);
+//        h.harvest(config,System.out::println);
+        h.harvest(config,ctx-> {
+            try {
+                InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
+                Document parsed = XMLUtils.parseDocument(inputStream, true);
+                System.out.println(parsed.getDocumentElement().getNodeName());
+
+            } catch (IOException e) {
+                throw new RuntimeException(e);
+            } catch (InterruptedException e) {
+                throw new RuntimeException(e);
+            } catch (ParserConfigurationException e) {
+                throw new RuntimeException(e);
+            } catch (SAXException e) {
+                throw new RuntimeException(e);
+            }
+        });
     }
 }
