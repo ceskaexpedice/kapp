@@ -1,7 +1,7 @@
 stages:
   - build
 
-image: eclipse-temurin:21-jdk-focal
+image: eclipse-temurin:21-jdk-jammy
 
 cache:
   key: "$CI_COMMIT_REF_NAME"
