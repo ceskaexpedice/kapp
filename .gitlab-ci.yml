@@ -1,0 +1,24 @@
+stages:
+  - build
+
+image: eclipse-temurin:21-jdk-focal
+
+cache:
+  key: "$CI_COMMIT_REF_NAME"
+  paths:
+    - .gradle/caches
+    - .gradle/wrapper
+
+gradle_build:
+  stage: build
+  script:
+    - echo "Java version:"
+    - java -version 
+    - chmod +x gradlew
+    - echo "Gradlew"
+    - ./gradlew clean build -x test
+    - echo "Build hotov."
+  artifacts:
+    when: always
+    reports:
+      junit: build/test-results/**/*.xml
