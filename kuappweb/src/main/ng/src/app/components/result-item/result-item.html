@@ -1,28 +1,31 @@
 <mat-card appearance="outlined" style="margin: 3px;">
-    <mat-card-header>
-        <mat-card-title>
-            <div class="app-labels-header app-mat-card-actions"><mat-chip-set>
-                    @for(l of labels; track $index) {
-                    <mat-chip [style.background-color]="l.color" (removed)="removeLabel(l)"
-                        style="--mat-chip-label-text-color: {{l.text_color}};">{{ l.name }}
-                        <button matChipRemove [attr.aria-label]="'remove ' + l.name">
-                            <mat-icon>cancel</mat-icon>
-                        </button></mat-chip>
-                    }
-                    <mat-chip>
-                        <button mat-icon-button [matMenuTriggerFor]="labelsMenu"><mat-icon matSuffix
-                                class="app-small-icon">new_label</mat-icon></button>
-                        <mat-menu #labelsMenu="matMenu">
-                            @for(a of state.labels(); track $index) {
-                            <button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
-                            }
-                        </mat-menu>
+    <mat-card-header class="app-fill">
+        <mat-card-title class="app-fill">
+            <div class="app-fxLayout app-row app-fill">
+                <div class="app-fxFlex app-card-title">{{ doc()['root.title']}}</div>
 
-                    </mat-chip>
-                </mat-chip-set>
+                <div class="app-jc-end app-labels-header app-mat-card-actions"><mat-chip-set>
+                        @for(l of labels; track $index) {
+                        <mat-chip [style.background-color]="l.color" (removed)="removeLabel(l)"
+                            style="--mat-chip-label-text-color: {{l.text_color}};">{{ l.name }}
+                            <button matChipRemove [attr.aria-label]="'remove ' + l.name">
+                                <mat-icon>cancel</mat-icon>
+                            </button></mat-chip>
+                        }
+                        <mat-chip>
+                            <button mat-icon-button [matMenuTriggerFor]="labelsMenu"><mat-icon matSuffix
+                                    class="app-small-icon">new_label</mat-icon></button>
+                            <mat-menu #labelsMenu="matMenu">
+                                @for(a of state.labels(); track $index) {
+                                <button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
+                                }
+                            </mat-menu>
 
+                        </mat-chip>
+                    </mat-chip-set>
+
+                </div>
             </div>
-            {{ doc()['root.title']}}
 
         </mat-card-title>
     </mat-card-header>

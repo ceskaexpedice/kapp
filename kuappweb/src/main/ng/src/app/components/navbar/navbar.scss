@@ -1,21 +1,22 @@
-.mat-toolbar {
-    //height: $app-navbar-height;
-  
-    .app-logo {
-      height: 34px;
-    }
-  
-  
-    .mdc-button {
-      padding-left: 16px;
-      padding-right: 16px;
-  
-      &:hover, &.active {
-        color: inherit;
-      }
-    }
+:host {
+  color: var(--mat-sys-primary);
+  background: var(--mat-sys-primary-container);
+}
 
-    .app-active-link {
-      text-decoration: underline;
-    }
+
+.mat-toolbar {
+  //height: $app-navbar-height;
+
+  .app-logo {
+    height: 34px;
+    color: var(--mat-sys-primary);
   }
+  
+  .mdc-button {
+    color: inherit;
+  }
+
+  .app-active-link {
+    text-decoration: underline;
+  }
+}

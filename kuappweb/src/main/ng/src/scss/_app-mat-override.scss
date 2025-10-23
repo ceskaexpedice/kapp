@@ -5,7 +5,8 @@
 :root {
 
   @include mat.toolbar-overrides((
-    container-background-color: var(--mat-sys-primary),
+    // container-background-color: var(--mat-sys-primary),
+    container-background-color: var(--mat-sys-primary-container),
     // container-text-color: white,
     title-text-size: 20px,
     //standard-height: 80px
@@ -38,12 +39,17 @@
   
   ));
 
-}
-
 @for $i from 0 through 5 {
     mat-card.mat-elevation-z#{$i} {
         @include mat.elevation($i);
     }
+}
+
+  @include mat.dialog-overrides((
+    container-elevation-shadow: 5px,
+    container-shape: 7px
+  ));
+
 }
 
 // form field
