@@ -24,9 +24,7 @@ import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
@@ -174,7 +172,7 @@ public class TsvToSolrIndexer {
                         }
                         parsePublicString(doc, recordNumber);
                         ParseDates(doc, getField(doc, "date.str"), recordNumber, show_comma_info);
-                        trySetLastAuthor(doc, nameIDArray, getField(doc, "last_author"));
+                        XmlProcessor.trySetLastAuthor(doc, nameIDArray);
                         XmlProcessor.extractAuthorData(show_comma_info, solrClient, doc, recordNumber, nameIDArray);
 
                         solrClient.add("titles", doc);
@@ -226,25 +224,7 @@ public class TsvToSolrIndexer {
 
     
 
-    private static void trySetLastAuthor(SolrInputDocument doc, AutorData[] nameIDArray, String last_author) {
-        //System.out.println("Processing last_author: '" + last_author + "'");
-        try {
-            if (last_author != null && (nameIDArray != null)) {
-                for (AutorData autor : nameIDArray) {
-                    //System.out.println("Comparing last_author: '" + last_author + "' with author: '" + authorArray[i] + "' having nameID: '" + nameIDArray[i] + "'");
-                    // if (last_author.contains(authorArray[i])) {
-                    //      doc.addField("last_author_nameIdentifier", nameIDArray[i].nameIdentifier);
-                    //   }
-                    if (similartyMatch(normalize(last_author), normalize(autor.full), .5)) {
-                        autor.isLast = true;
-                        doc.setField("last_author_nameIdentifier", autor.nameIdentifier);
-                    }
-                }
-            }
-        } catch (Exception e) {
-            System.out.println("Critical Exception occured in:last_author_nameIdentifier: " + e.getMessage());
-        }
-    }
+    
 
     private static Document getXml(DocumentBuilder builder, HttpResponse<String> response) throws IOException {
         try {
@@ -406,11 +386,5 @@ public class TsvToSolrIndexer {
         return result;
     }
 
-    public static boolean similartyMatch(String catalogNormalizedTitle, String distriNormalizedTitle, double shoda) {
-        LevenshteinDistance dist = LevenshteinDistance.getDefaultInstance();
-        Integer calculatedDistance = dist.apply(catalogNormalizedTitle, distriNormalizedTitle);
-        double maxDistance = Math.round((1 - shoda) * ((double) distriNormalizedTitle.length()));
-
-        return maxDistance >= calculatedDistance;
-    }
+    
 }

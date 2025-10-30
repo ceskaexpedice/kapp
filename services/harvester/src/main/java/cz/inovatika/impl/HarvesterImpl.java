@@ -1,12 +1,18 @@
 package cz.inovatika.impl;
 
+import cz.inovatika.AutorData;
 import cz.inovatika.Harvester;
+import cz.inovatika.XmlProcessor;
 import cz.inovatika.model.APIVersion;
 import cz.inovatika.model.HarvesterContext;
 import cz.inovatika.model.HarvestingItem;
 import cz.inovatika.model.Instance;
 import cz.inovatika.utils.XMLUtils;
 import org.apache.commons.io.IOUtils;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
+import org.apache.solr.common.SolrInputDocument;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -30,17 +36,15 @@ import static cz.inovatika.utils.CursorUtils.*;
 public class HarvesterImpl implements Harvester {
 
     public static final Logger LOGGER = Logger.getLogger(HarvesterImpl.class.getName());
-
-
-    private int ROWS = 100;
-
+    private static final String SOLR_URL = "http://localhost:8983/solr";
+    private final int ROWS = 100;
 
     @Override
     public void harvest(Instance config, Consumer<HarvesterContext> consumer) {
         try {
             HttpClient client = HttpClient.newHttpClient();
             String cursorMark = null;
-            String queryCursorMark = null;
+            String queryCursorMark;
             // loading timestamp
             config.loadLastUpdatedFromPath();
             do {
@@ -51,11 +55,11 @@ public class HarvesterImpl implements Harvester {
                 String id = apiVersion.getIdentifier(config);
                 String fq = apiVersion.incrementFQ(config);
 
-                String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id, config.getApiVersion().getIdentifier(config)+" asc", fl);
+                String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id, config.getApiVersion().getIdentifier(config) + " asc", fl);
                 Element element = executeQuery(client, config.getUrl(), query);
                 XMLUtils.getElementsRecursive(element, (elm) -> {
                     return elm.getNodeName().equals("doc");
-                }).forEach(docElm-> {
+                }).forEach(docElm -> {
                     APIVersion version = config.getApiVersion();
                     HarvestingItem harvestingItem = version.createHarvestItemFromResultElement(docElm, config);
 
@@ -66,7 +70,7 @@ public class HarvesterImpl implements Harvester {
                 cursorMark = findCursorMark(element);
                 queryCursorMark = findQueryCursorMark(element);
 
-            } while((cursorMark != null && queryCursorMark != null) && !cursorMark.equals(queryCursorMark));
+            } while ((cursorMark != null && queryCursorMark != null) && !cursorMark.equals(queryCursorMark));
 
             config.saveLastUpdatedToPath();
 
@@ -80,17 +84,14 @@ public class HarvesterImpl implements Harvester {
             String t = executeSolrQuery(httpClient, url, query);
             Document doc = XMLUtils.parseDocument(new StringReader(t));
             return doc.getDocumentElement();
-        } catch (ParserConfigurationException | SAXException | IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (ParserConfigurationException | SAXException | IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
     }
 
-
     private static String executeSolrQuery(HttpClient client, String url, String query) throws IOException, InterruptedException {
         HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
-                .uri(URI.create(url+"/"+query))
+                .uri(URI.create(url + "/" + query))
                 .GET()
                 .build(), HttpResponse.BodyHandlers.ofInputStream());
         if (response != null && response.statusCode() == 200) {
@@ -101,7 +102,6 @@ public class HarvesterImpl implements Harvester {
             throw new RuntimeException("HTTP error: " + (response != null ? response.statusCode() : "null"));
         }
     }
-
 
     public static void main(String[] args) throws IOException {
         //inovatika();
@@ -117,9 +117,28 @@ public class HarvesterImpl implements Harvester {
         config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-21T04:55:21.221Z"));
         config.setUrl("https://ndk.cz/search/api/v5.0/");
         //h.harvest(config,System.out::println);
-        h.harvest(config, ctx->{
+
+        h.harvest(config, ctx -> {
             System.out.println(ctx.item());
+            InputStream inputStream;
+            try (SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
+                inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
+
+                Document parsed = XMLUtils.parseDocument(inputStream, true);
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.addField("pid", ctx.item().getPid());
+                doc.addField("root.title", ctx.item().getTitles());
+                AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
+                XmlProcessor.trySetLastAuthor(doc, autorData);
+                XmlProcessor.extractAuthorData(false, solrClient, doc, 0, autorData);
+                solrClient.add("titles", doc);
+                solrClient.commit("titles");
+
+            } catch (IOException | InterruptedException | ParserConfigurationException | SAXException | SolrServerException e) {
+                throw new RuntimeException(e);
+            } 
         });
+
     }
 
     private static void inovatika() throws IOException {
@@ -127,7 +146,7 @@ public class HarvesterImpl implements Harvester {
 
         HarvesterImpl h = new HarvesterImpl();
         final Instance config = new Instance();
-        config.setTimestampPath(udir+File.separator+"timestamps"+File.separator+"inovatika"+File.separator+"timestamp");
+        config.setTimestampPath(udir + File.separator + "timestamps" + File.separator + "inovatika" + File.separator + "timestamp");
 
         config.setAcronym("inovatika");
         config.setApiVersion(APIVersion.v7);
@@ -135,15 +154,16 @@ public class HarvesterImpl implements Harvester {
         config.setUrl("https://k7.inovatika.dev/search/api/client/v7.0/");
 
 //        h.harvest(config,System.out::println);
-        h.harvest(config,ctx-> {
+        h.harvest(config, ctx -> {
             try {
 
                 System.out.println(ctx.item());
 
                 //String pid = ctx.item().getPid();
-
-//                InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
-//                Document parsed = XMLUtils.parseDocument(inputStream, true);
+                InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
+                Document parsed = XMLUtils.parseDocument(inputStream, true);
+                SolrInputDocument doc = new SolrInputDocument();
+                AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
 //                System.out.println(parsed.getDocumentElement().getNodeName());
 
 //            } catch (IOException e) {

@@ -10,9 +10,11 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
+import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.w3c.dom.NodeList;
 
 public class XmlProcessor {
@@ -303,6 +305,34 @@ public class XmlProcessor {
         } catch (NumberFormatException e) {
             System.err.println("Failed to parse year range: " + year_start + "-" + year_end);
         }
+    }
+    public static void trySetLastAuthor(SolrInputDocument doc, AutorData[] nameIDArray) {
+        SolrInputField field = doc.getField("last_author");
+        String last_author=field != null ? (String) field.getValue() : null;
+
+        try {
+            if (last_author != null && (nameIDArray != null)) {
+                for (AutorData autor : nameIDArray) {
+                    //System.out.println("Comparing last_author: '" + last_author + "' with author: '" + authorArray[i] + "' having nameID: '" + nameIDArray[i] + "'");
+                    // if (last_author.contains(authorArray[i])) {
+                    //      doc.addField("last_author_nameIdentifier", nameIDArray[i].nameIdentifier);
+                    //   }
+                    if (similartyMatch(normalize(last_author), normalize(autor.full), .5)) {
+                        autor.isLast = true;
+                        doc.setField("last_author_nameIdentifier", autor.nameIdentifier);
+                    }
+                }
+            }
+        } catch (Exception e) {
+            System.out.println("Critical Exception occured in:last_author_nameIdentifier: " + e.getMessage());
+        }
+    }
+    private static boolean similartyMatch(String catalogNormalizedTitle, String distriNormalizedTitle, double shoda) {
+        LevenshteinDistance dist = LevenshteinDistance.getDefaultInstance();
+        Integer calculatedDistance = dist.apply(catalogNormalizedTitle, distriNormalizedTitle);
+        double maxDistance = Math.round((1 - shoda) * ((double) distriNormalizedTitle.length()));
+
+        return maxDistance >= calculatedDistance;
     }
 
 }
