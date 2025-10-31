@@ -127,6 +127,9 @@ public class HarvesterImpl implements Harvester {
                 Document parsed = XMLUtils.parseDocument(inputStream, true);
                 SolrInputDocument doc = new SolrInputDocument();
                 doc.addField("pid", ctx.item().getPid());
+                
+                doc.addField("licenses", ctx.item().getLicenses());
+                doc.addField("model", ctx.item().getModel());
                 doc.addField("root.title", ctx.item().getTitles());
                 AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
                 XmlProcessor.trySetLastAuthor(doc, autorData);
