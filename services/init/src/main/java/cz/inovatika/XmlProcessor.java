@@ -18,6 +18,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.w3c.dom.NodeList;
 
 public class XmlProcessor {
+
     public static AutorData[] processBiblioMods(Document xml, SolrInputDocument doc) throws IOException, InterruptedException {
         if (xml == null) {
             return null;
@@ -120,11 +121,12 @@ public class XmlProcessor {
     static NodeList getNodelistByLocalTagName(Element name,String localName){
         return name.getElementsByTagNameNS("http://www.loc.gov/mods/v3",localName);
     }
-    public static void extractAuthorData(final boolean show_comma_info, final SolrClient solrClient, SolrInputDocument doc,
+    public static List<SolrInputDocument> extractAuthorData(final boolean show_comma_info, final SolrClient solrClient, SolrInputDocument doc,
             final int recordNumber,final AutorData[] nameIDArray) throws SolrServerException, IOException {
         if (nameIDArray == null) {
-            return;
+            return null;
         }
+        List<SolrInputDocument> authorDocs = new ArrayList<SolrInputDocument>();
         for (AutorData autor : nameIDArray) {
             doc.addField("authors_kramerius", autor.toJsonString());
             if (autor.nameIdentifier != null && !autor.nameIdentifier.isEmpty()) {
@@ -148,8 +150,9 @@ public class XmlProcessor {
 
             if(autor.date!=null)parseDateBasic(aDoc, autor.date, recordNumber, autor.date);
 
-            solrClient.add("authors", aDoc);
+            authorDocs.add(aDoc);
         }
+        return authorDocs;
 
     }
         public static String normalize(String input) {

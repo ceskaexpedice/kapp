@@ -13,6 +13,7 @@ import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.util.Arrays;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -38,8 +39,6 @@ public class TsvToSolrIndexer {
     private static final String SOLR_URL = "http://localhost:8983/solr";
     private static String DIRECTORY_PATH = "../Data";  // change this 
     // private static final String DIRECTORY_PATH = "c:\\Users\\alber\\Projects\\KuratorskaAplikace\\tsv\\";  // change this
-
-    
 
     static void add_year_since(String year, SolrInputDocument doc, boolean confirmed) {
         XmlProcessor.add_year_range(year, confirmed, "1999", false, doc);
@@ -132,7 +131,7 @@ public class TsvToSolrIndexer {
                                     case "pid" -> {
                                         String[] parts = value.trim().replaceAll("\\|", " ").split("\\s+");
                                         for (int i = 0; i < parts.length; i++) {
-                                            if(!parts[i].startsWith("uuid:")){
+                                            if (!parts[i].startsWith("uuid:")) {
                                                 parts[i] = "uuid:" + parts[i];
                                             }
                                         }
@@ -143,9 +142,9 @@ public class TsvToSolrIndexer {
                                             }
                                             secondPid = parts[1];
                                             //System.out.println("Multiple UUIDs found, First one: " + uuid + " Second one:" + secondPid + " Row: " + recordNumber);
-                                        } 
+                                        }
                                         doc.addField(header, pid);
-                                        
+
                                         // NDK. K5
                                         Document xml = getBiblioMods(client, builder, pid, "https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS");
                                         if (xml == null) {
@@ -173,7 +172,13 @@ public class TsvToSolrIndexer {
                         parsePublicString(doc, recordNumber);
                         ParseDates(doc, getField(doc, "date.str"), recordNumber, show_comma_info);
                         XmlProcessor.trySetLastAuthor(doc, nameIDArray);
-                        XmlProcessor.extractAuthorData(show_comma_info, solrClient, doc, recordNumber, nameIDArray);
+                        List<SolrInputDocument> authorDocs = XmlProcessor.extractAuthorData(show_comma_info, solrClient, doc, recordNumber, nameIDArray);
+                        if (authorDocs != null) {
+                            for (SolrInputDocument authorDoc : authorDocs) {
+                                if(authorDoc!=null)
+                                    solrClient.add("authors", authorDoc);
+                            }
+                        }
 
                         solrClient.add("titles", doc);
                         if (secondPid != null) {
@@ -221,10 +226,6 @@ public class TsvToSolrIndexer {
             }
         }
     }
-
-    
-
-    
 
     private static Document getXml(DocumentBuilder builder, HttpResponse<String> response) throws IOException {
         try {
@@ -373,8 +374,6 @@ public class TsvToSolrIndexer {
         }
     }
 
-    
-
     public static String normalize(String input) {
         if (input == null) {
             return "";
@@ -386,5 +385,4 @@ public class TsvToSolrIndexer {
         return result;
     }
 
-    
 }

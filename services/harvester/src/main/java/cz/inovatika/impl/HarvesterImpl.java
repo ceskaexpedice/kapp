@@ -8,16 +8,21 @@ import cz.inovatika.model.HarvesterContext;
 import cz.inovatika.model.HarvestingItem;
 import cz.inovatika.model.Instance;
 import cz.inovatika.utils.XMLUtils;
+
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
+import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
+
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
@@ -28,21 +33,29 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 import static cz.inovatika.utils.CursorUtils.*;
+
+import com.google.common.base.Stopwatch;
+
+import java.util.concurrent.TimeUnit;
+
+import org.w3c.dom.DOMException;
 
 public class HarvesterImpl implements Harvester {
 
     public static final Logger LOGGER = Logger.getLogger(HarvesterImpl.class.getName());
     private static final String SOLR_URL = "http://localhost:8983/solr";
     private final int ROWS = 100;
+    private static  final int BATCH_SIZE = 100;
 
     @Override
     public void harvest(Instance config, Consumer<HarvesterContext> consumer) {
-        try {
-            HttpClient client = HttpClient.newHttpClient();
+        try (HttpClient client = HttpClient.newHttpClient()) {
             String cursorMark = null;
             String queryCursorMark;
             // loading timestamp
@@ -104,8 +117,8 @@ public class HarvesterImpl implements Harvester {
     }
 
     public static void main(String[] args) throws IOException {
-        //inovatika();
-        nkp();
+        inovatika();
+        //nkp();
     }
 
     private static void nkp() throws IOException {
@@ -116,45 +129,23 @@ public class HarvesterImpl implements Harvester {
         config.setSolrCloud(false);
         config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-21T04:55:21.221Z"));
         config.setUrl("https://ndk.cz/search/api/v5.0/");
+        
         //h.harvest(config,System.out::println);
-
         try (SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
-            h.harvest(config, ctx -> {
-                System.out.println(ctx.item().getPid());
-                InputStream inputStream;
-                try {
-                    inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
+            List<SolrInputDocument> buffer = new ArrayList<>();
+            List<SolrInputDocument> authorbuffer = new ArrayList<>();
+            h.harvest(config, ctx -> processHarvest(config, ctx,buffer,authorbuffer, solrClient));
+            if (!buffer.isEmpty()) { // BATCH_SIZE
+                sendBatch(solrClient, "titles", buffer);
+                buffer.clear();
 
-                    /*SEVERE: HTTP error: 500
-Exception in thread "main" java.lang.RuntimeException: java.lang.IllegalArgumentException: InputStream cannot be null
-        at cz.inovatika.impl.HarvesterImpl.harvest(HarvesterImpl.java:78)
-        at cz.inovatika.impl.HarvesterImpl.nkp(HarvesterImpl.java:121)
-        at cz.inovatika.impl.HarvesterImpl.main(HarvesterImpl.java:108)
-Caused by: java.lang.IllegalArgumentException: InputStream cannot be null
-        at java.xml/javax.xml.parsers.DocumentBuilder.parse(DocumentBuilder.java:118)
-        at cz.inovatika.utils.XMLUtils.parseDocument(XMLUtils.java:107)
-        at cz.inovatika.impl.HarvesterImpl.lambda$nkp$2(HarvesterImpl.java:127)
-        at cz.inovatika.impl.HarvesterImpl.lambda$harvest$1(HarvesterImpl.java:67)
-        at java.base/java.util.ArrayList.forEach(ArrayList.java:1596)
-        at cz.inovatika.impl.HarvesterImpl.harvest(HarvesterImpl.java:62)
-        ... 2 more */
-                    Document parsed = XMLUtils.parseDocument(inputStream, true);
-                    SolrInputDocument doc = new SolrInputDocument();
-                    doc.addField("pid", ctx.item().getPid());
+            }
+            if (!authorbuffer.isEmpty()) { // BATCH_SIZE
+                sendBatch(solrClient, "authors", authorbuffer);
+                authorbuffer.clear();
 
-                    doc.addField("licenses", ctx.item().getLicenses());
-                    doc.addField("model", ctx.item().getModel());
-                    doc.addField("root.title", ctx.item().getTitles());
-                    AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
-                    XmlProcessor.trySetLastAuthor(doc, autorData);
-                    XmlProcessor.extractAuthorData(false, solrClient, doc, 0, autorData);
-                    solrClient.add("titles", doc);
-                    solrClient.commit("titles");
-                } catch (IOException | InterruptedException | ParserConfigurationException | SAXException | SolrServerException e) {
-                    throw new RuntimeException(e);
-                }
-            });
-        } catch (IOException e) {
+            }
+        } catch (final Exception e) {
             throw new RuntimeException(e);
         }
 
@@ -171,36 +162,94 @@ Caused by: java.lang.IllegalArgumentException: InputStream cannot be null
         config.setApiVersion(APIVersion.v7);
         config.setSolrCloud(false);
         config.setUrl("https://k7.inovatika.dev/search/api/client/v7.0/");
-        
+
 //        h.harvest(config,System.out::println);
         try (SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
-            System.out.println("x");
-            h.harvest(config, ctx -> {
-                try {
-                System.out.println("y");
-                
-                String pid = ctx.item().getPid();
-                System.out.println(pid);
-                    InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
+            List<SolrInputDocument> buffer = new ArrayList<>();
+            List<SolrInputDocument> authorbuffer = new ArrayList<>();
+            h.harvest(config, ctx -> processHarvest(config, ctx, buffer,authorbuffer, solrClient));
+            if (!buffer.isEmpty()) { // BATCH_SIZE
+                sendBatch(solrClient, "titles", buffer);
+                buffer.clear();
 
-                    Document parsed = XMLUtils.parseDocument(inputStream, true);
+            }
+            if (!authorbuffer.isEmpty()) { // BATCH_SIZE
+                sendBatch(solrClient, "authors", authorbuffer);
+                authorbuffer.clear();
 
-                    var doc = new SolrInputDocument();
-                    doc.addField("pid", pid);
-                    doc.addField("licenses", ctx.item().getLicenses());
-                    doc.addField("model", ctx.item().getModel());
-                    doc.addField("root.title", ctx.item().getTitles());
-                    var autorData = XmlProcessor.processBiblioMods(parsed, doc);
-                    XmlProcessor.trySetLastAuthor(doc, autorData);
-                    XmlProcessor.extractAuthorData(false, solrClient, doc, 0, autorData);
-                    solrClient.add("titles", doc);
-                    solrClient.commit("titles");
-                } catch (final ParserConfigurationException | SAXException | IOException | InterruptedException | SolrServerException e) {
-                    throw new RuntimeException(e);
-                }
-            });
+            }
         } catch (final Exception e) {
             throw new RuntimeException(e);
         }
     }
+
+    private static void sendBatch(final SolrClient solrClient, String collection, final List<SolrInputDocument> docs) throws SolrServerException, IOException {
+        UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.add(docs);
+        updateRequest.process(solrClient, collection);
+        System.out.println("Indexed batch of " + docs.size() + " documents.");
+    }
+
+    private static void processHarvest(final Instance config,final  HarvesterContext ctx, List<SolrInputDocument> buffer,List<SolrInputDocument> authorbuffer,final SolrClient solrClient) {
+        {
+                //System.out.println(ctx.item().getPid());
+                InputStream inputStream;
+                try {
+                    //System.out.println("");
+                    Stopwatch sw = Stopwatch.createStarted();
+                    inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
+                    //elapseAndReset(sw);
+                    Document parsed = XMLUtils.parseDocument(inputStream, true);
+                    SolrInputDocument doc = new SolrInputDocument();
+                    if(parsed!=null){
+                        Node date = parsed.getElementsByTagNameNS("http://www.loc.gov/mods/v3","dateIssued").item(0);
+                        if(date!=null){
+                            String dateText = date.getTextContent();
+                            doc.addField("date.str", dateText);
+                            XmlProcessor.parseDateBasic(doc, dateText, 0, dateText);
+                        }
+                        NodeList phyicalLocation = parsed.getElementsByTagNameNS("http://www.loc.gov/mods/v3","physicalLocation");
+                        if(phyicalLocation!=null){
+                            List<String> locations = new ArrayList<>();
+                            for(int i=0;i<phyicalLocation.getLength();i++){
+                                Node locNode = phyicalLocation.item(i);
+                                String locText = locNode.getTextContent();
+                                locations.add(locText);
+                            }
+                            doc.addField("physical_locations.facet", locations);
+                        }
+                    }
+                    doc.addField("pid", ctx.item().getPid());
+                    doc.addField("licenses", ctx.item().getLicenses());
+                    doc.addField("model", ctx.item().getModel());
+                    doc.addField("root.title", ctx.item().getTitles());
+                    AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
+                    XmlProcessor.trySetLastAuthor(doc, autorData);
+                    authorbuffer.addAll(XmlProcessor.extractAuthorData(false, solrClient, doc, 0, autorData));
+                    //elapseAndReset(sw);
+                    buffer.add(doc);
+                    if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
+                        sendBatch(solrClient, "titles", buffer);
+                        buffer.clear();
+                        elapseAndReset(sw);
+                    }
+                    if (authorbuffer.size() >= BATCH_SIZE) { // BATCH_SIZE
+                        sendBatch(solrClient, "authors", authorbuffer);
+                        authorbuffer.clear();
+                        //elapseAndReset(sw);
+                    }
+                } catch (final Exception e) {
+                    throw new RuntimeException(e);
+                } 
+            }
+        
+
+    }
+
+    private static void elapseAndReset(Stopwatch sw) {
+        sw.stop();
+        System.out.println(sw.elapsed(TimeUnit.MILLISECONDS) + " ms");
+        sw.reset().start();
+    }
+    
 }
