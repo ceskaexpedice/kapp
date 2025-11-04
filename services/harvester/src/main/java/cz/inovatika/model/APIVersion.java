@@ -40,7 +40,7 @@ public enum APIVersion {
 
         @Override
         public String iterationQuery() {
-            String query = "fedora.model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=PID+pid_path+root_pid+fedora.model";
+            String query = "fedora.model:(monograph+OR+monographunit)";//"fedora.model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=PID+pid_path+root_pid+fedora.model";
             return query;
         }
 
@@ -154,7 +154,7 @@ public enum APIVersion {
 
         @Override
         public String iterationQuery() {
-            String query = "model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
+            String query = "model:(monograph+OR+monographunit)";//"model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
             return query;
         }
 
