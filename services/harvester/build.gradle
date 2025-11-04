@@ -1,10 +1,15 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'com.gradleup.shadow' version '9.1.0'
 }
 
 group = 'cz.inovatika'
 version = '1.0-SNAPSHOT'
 
+application {
+    mainClass = 'cz.inovatika.impl.HarvesterImpl'
+}
 // Nastavení kompatibility s Java 21, což odpovídá Maven <release>21</release>
 java {
     // Nastavuje target i source kompatibilitu
@@ -12,7 +17,14 @@ java {
         languageVersion = JavaLanguageVersion.of(21)
     }
 }
+shadowJar {
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+    mergeServiceFiles()
 
+    exclude 'META-INF/*.SF'
+    exclude 'META-INF/*.DSA'
+    exclude 'META-INF/*.RSA'
+}
 // Nastavení kódování, které je ekvivalentní Maven properties
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'

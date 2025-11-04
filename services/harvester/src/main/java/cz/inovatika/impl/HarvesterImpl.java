@@ -117,8 +117,8 @@ public class HarvesterImpl implements Harvester {
     }
 
     public static void main(String[] args) throws IOException {
-        inovatika();
-        //nkp();
+        //inovatika();
+        nkp();
     }
 
     private static void nkp() throws IOException {
@@ -165,6 +165,7 @@ public class HarvesterImpl implements Harvester {
 
 //        h.harvest(config,System.out::println);
         try (SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
+            System.out.println("x");
             List<SolrInputDocument> buffer = new ArrayList<>();
             List<SolrInputDocument> authorbuffer = new ArrayList<>();
             h.harvest(config, ctx -> processHarvest(config, ctx, buffer,authorbuffer, solrClient));
