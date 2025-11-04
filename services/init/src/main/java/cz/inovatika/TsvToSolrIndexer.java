@@ -366,6 +366,7 @@ public class TsvToSolrIndexer {
             value = value.replaceAll("\\s+a\\s+", "-");//replace a with dash
             //value = value.replaceAll("[\\[\\]]", "");//Just purge the brackets.
             XmlProcessor.parseDateBasic(doc, value, recordNumber, Originalvalue);
+            
 
             return false;
         } catch (Exception e) {
