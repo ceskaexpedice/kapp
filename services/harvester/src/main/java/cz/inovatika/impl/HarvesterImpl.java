@@ -225,8 +225,15 @@ public class HarvesterImpl implements Harvester {
                     doc.addField("model", ctx.item().getModel());
                     doc.addField("root.title", ctx.item().getTitles());
                     AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
+                    List<String> authorStrings = new ArrayList<>();
+                    for (AutorData autorData2 : autorData) {
+                        if(autorData2!=null)
+                            authorStrings.add(autorData2.full);
+                    }
+                    doc.addField("authors", authorStrings);
                     XmlProcessor.trySetLastAuthor(doc, autorData);
-                    authorbuffer.addAll(XmlProcessor.extractAuthorData(false, solrClient, doc, 0, autorData));
+                    List<SolrInputDocument> ad = XmlProcessor.extractAuthorData(false, solrClient, doc, 0, autorData);
+                    if(ad!=null)authorbuffer.addAll(ad);
                     //elapseAndReset(sw);
                     buffer.add(doc);
                     if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE

@@ -6,7 +6,7 @@ import org.json.JSONObject;
 
 public class AutorData {
 
-    String full;
+    public String full;
     String family;
     String given;
     String date;
