@@ -277,10 +277,12 @@ public class XmlProcessor {
         }
     }
     private static void dateFormatError(int recordNumber, String Originalvalue, String value) {
-        System.err.println("Unexpected date format on row: " + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
+        String recNum = (recordNumber!=0) ? (" on row: " + recordNumber):"";
+        System.err.println("Unexpected date format"+recNum  + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
     private static void dateFormatError(int recordNumber, String Originalvalue, String value, String message) {
-        System.err.println(message + " on row: " + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
+        String recNum = (recordNumber!=0) ? (" on row: " + recordNumber):"";
+        System.err.println(message + recNum + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
     static void addyear(String year, SolrInputDocument doc, boolean confirmed) {
         add_year_range(year, confirmed, year, confirmed, doc);
