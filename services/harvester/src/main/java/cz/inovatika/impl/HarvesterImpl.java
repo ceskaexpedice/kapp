@@ -33,9 +33,12 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
@@ -46,7 +49,6 @@ import com.google.common.base.Stopwatch;
 
 import java.util.concurrent.TimeUnit;
 
-import org.w3c.dom.DOMException;
 
 public class HarvesterImpl implements Harvester {
 
@@ -54,6 +56,7 @@ public class HarvesterImpl implements Harvester {
     private static final String SOLR_URL = "http://localhost:8983/solr";
     private final int ROWS = 100;
     private static final int BATCH_SIZE = 100;
+    private static SolrClient solrClient;
 
     @Override
     public void harvest(Instance config, Consumer<HarvesterContext> consumer) {
@@ -70,7 +73,8 @@ public class HarvesterImpl implements Harvester {
                 String id = apiVersion.getIdentifier(config);
                 String fq = apiVersion.incrementFQ(config);
 
-                String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id, config.getApiVersion().getIdentifier(config) + " asc", fl);
+                String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id,
+                        config.getApiVersion().getIdentifier(config) + " asc", fl);
                 Element element = executeQuery(client, config.getUrl(), query);
                 XMLUtils.getElementsRecursive(element, (elm) -> {
                     return elm.getNodeName().equals("doc");
@@ -80,7 +84,7 @@ public class HarvesterImpl implements Harvester {
 
                     HarvesterContext context = new HarvesterContext(harvestingItem, client, config);
                     consumer.accept(context);
-                    //consumer.accept(harvestingItem);
+                    // consumer.accept(harvestingItem);
                 });
                 cursorMark = findCursorMark(element);
                 queryCursorMark = findQueryCursorMark(element);
@@ -104,7 +108,8 @@ public class HarvesterImpl implements Harvester {
         }
     }
 
-    private static String executeSolrQuery(HttpClient client, String url, String query) throws IOException, InterruptedException {
+    private static String executeSolrQuery(HttpClient client, String url, String query)
+            throws IOException, InterruptedException {
         HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
                 .uri(URI.create(url + "/" + query))
                 .GET()
@@ -117,32 +122,43 @@ public class HarvesterImpl implements Harvester {
             throw new RuntimeException("HTTP error: " + (response != null ? response.statusCode() : "null"));
         }
     }
+
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     static LocalTime start;
     static LocalTime end;
-    static long sleepSeconds;
+    static long sleepSeconds = 2;
+    static int intervalMinutes = 10;
+    static boolean exitOnOutOfInterval = true;
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        if (args.length == 0) {
-            System.err.println("Usage: java NightRunner <time-range> [sleep-seconds]");
-            System.err.println("Example: java NightRunner 22:00-06:00 60");
-            System.exit(1);
+        // if (args.length == 0) {
+
+        // System.err.println("Usage: java cz.inovatika.impl.HarvesterImpl <time-range> [sleep-seconds]");
+        // System.err.println("Example: java cz.inovatika.impl.HarvesterImpl 22:00-06:00 60");
+        // System.exit(1);
+        // }
+
+        start = LocalTime.now();
+        end = start.plus(intervalMinutes, ChronoUnit.MINUTES);
+
+        if (args.length > 0) {
+            String timeRange = args[0];
+            sleepSeconds = args.length > 1 ? Long.parseLong(args[1]) : 60;
+
+            String[] parts = timeRange.split("-");
+            if (parts.length != 2) {
+                System.err.println("Invalid time range. Use format HH:mm-HH:mm");
+                System.exit(1);
+            }
+
+            start = LocalTime.parse(parts[0], TIME_FMT);
+            end = LocalTime.parse(parts[1], TIME_FMT);
+            exitOnOutOfInterval = false;
         }
-
-        String timeRange = args[0];
-        sleepSeconds = args.length > 1 ? Long.parseLong(args[1]) : 60;
-
-        String[] parts = timeRange.split("-");
-        if (parts.length != 2) {
-            System.err.println("Invalid time range. Use format HH:mm-HH:mm");
-            System.exit(1);
-        }
-
-        start = LocalTime.parse(parts[0], TIME_FMT);
-        end = LocalTime.parse(parts[1], TIME_FMT);
+        solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build();
         checkTime(sleepSeconds, start, end);
-        inovatika();
+        // inovatika();
         nkp();
     }
 
@@ -161,13 +177,19 @@ public class HarvesterImpl implements Harvester {
 
             if (!inRange) {
                 System.out.println("Outside allowed time (" + now.format(TIME_FMT) + "). Sleeping...");
-                Thread.sleep(sleepSeconds * 1000);
-            }else return;
+                if (exitOnOutOfInterval) {
+                    System.out.println("Harvest finished");
+                    System.exit(0);
+                } else {
+                    Thread.sleep(sleepSeconds * 1000);
+                }
+            } else
+                return;
         }
 
     }
 
-    private static void nkp() //throws IOException 
+    private static void nkp() // throws IOException
     {
         HarvesterImpl h = new HarvesterImpl();
         Instance config = new Instance();
@@ -177,8 +199,8 @@ public class HarvesterImpl implements Harvester {
         config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-21T04:55:21.221Z"));
         config.setUrl("https://ndk.cz/search/api/v5.0/");
 
-        //h.harvest(config,System.out::println);
-        try (SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
+        // h.harvest(config,System.out::println);
+        try {
             System.out.println("nkp harvesting started");
             List<SolrInputDocument> buffer = new ArrayList<>();
             List<SolrInputDocument> authorbuffer = new ArrayList<>();
@@ -204,16 +226,17 @@ public class HarvesterImpl implements Harvester {
 
         HarvesterImpl h = new HarvesterImpl();
         final Instance config = new Instance();
-        config.setTimestampPath(udir + File.separator + "timestamps" + File.separator + "inovatika" + File.separator + "timestamp");
+        config.setTimestampPath(
+                udir + File.separator + "timestamps" + File.separator + "inovatika" + File.separator + "timestamp");
 
         config.setAcronym("inovatika");
         config.setApiVersion(APIVersion.v7);
         config.setSolrCloud(false);
         config.setUrl("https://k7.inovatika.dev/search/api/client/v7.0/");
 
-//        h.harvest(config,System.out::println);
-        try (SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
-            System.out.println("mzk harvesting started");
+        // h.harvest(config,System.out::println);
+        try {
+            System.out.println("inovatika harvesting started");
             List<SolrInputDocument> buffer = new ArrayList<>();
             List<SolrInputDocument> authorbuffer = new ArrayList<>();
             h.harvest(config, ctx -> processHarvest(config, ctx, buffer, authorbuffer, solrClient));
@@ -232,20 +255,22 @@ public class HarvesterImpl implements Harvester {
         }
     }
 
-    private static void sendBatch(final SolrClient solrClient, String collection, final List<SolrInputDocument> docs) throws SolrServerException, IOException {
+    private static void sendBatch(final SolrClient solrClient, String collection, final List<SolrInputDocument> docs)
+            throws SolrServerException, IOException {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.add(docs);
         updateRequest.process(solrClient, collection);
         System.out.println("Indexed batch of " + docs.size() + " documents.");
     }
 
-    private static void processHarvest(final Instance config, final HarvesterContext ctx, List<SolrInputDocument> buffer, List<SolrInputDocument> authorbuffer, final SolrClient solrClient) {
+    private static void processHarvest(final Instance config, final HarvesterContext ctx,
+            List<SolrInputDocument> buffer, List<SolrInputDocument> authorbuffer, final SolrClient solrClient) {
         {
-            //System.out.println(ctx.item().getPid());
+            // System.out.println(ctx.item().getPid());
             InputStream inputStream;
             Stopwatch sw = Stopwatch.createStarted();
             try {
-                //System.out.println("");
+                // System.out.println("");
                 SolrInputDocument doc = new SolrInputDocument();
                 doc.addField("pid", ctx.item().getPid());
                 doc.addField("licenses", ctx.item().getLicenses());
@@ -257,7 +282,7 @@ public class HarvesterImpl implements Harvester {
                     System.out.println("Failed to get MODS for PID: " + ctx.item().getPid());
                     return;
                 }
-                //elapseAndReset(sw);
+                // elapseAndReset(sw);
                 Document parsed = XMLUtils.parseDocument(inputStream, true);
                 if (parsed != null) {
                     Node date = parsed.getElementsByTagNameNS("http://www.loc.gov/mods/v3", "dateIssued").item(0);
@@ -266,7 +291,8 @@ public class HarvesterImpl implements Harvester {
                         doc.addField("date.str", dateText);
                         XmlProcessor.parseDateBasic(doc, dateText, 0, dateText);
                     }
-                    NodeList phyicalLocation = parsed.getElementsByTagNameNS("http://www.loc.gov/mods/v3", "physicalLocation");
+                    NodeList phyicalLocation = parsed.getElementsByTagNameNS("http://www.loc.gov/mods/v3",
+                            "physicalLocation");
                     if (phyicalLocation != null) {
                         List<String> locations = new ArrayList<>();
                         for (int i = 0; i < phyicalLocation.getLength(); i++) {
@@ -277,6 +303,30 @@ public class HarvesterImpl implements Harvester {
                         doc.addField("physical_locations.facet", locations);
                     }
                 }
+
+                    // Vyplnit state podle 
+                    // https://docs.google.com/document/d/1zMXdaKiAhshUANmxTD1MHnBibjituskJnGEq-LHz7jU/edit?tab=t.0
+                    
+                    
+                    // if (doc.containsKey("licenses") && Arrays.asList(doc.getFieldValue("licenses")).contains("public")) {
+                    //     doc.setField("state", "controlled_public"); // KONTROLOVANÉ - VOLNÉ
+                    // } else 
+                    if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel())) && 
+                        doc.containsKey("date_range_end.year") && 
+                        1900 > (int)doc.getFieldValue("date_range_end.year")) {
+                        doc.setField("state", "noncontrolled_public"); // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
+                    // } else if("periodicalvolume".equals(ctx.item().getModel()) && 
+                    //             doc.containsKey("date_range_end.year") && 
+                    //             110 > (LocalDate.now().getYear()) - (int)doc.getFieldValue("date_range_end.year")) {
+                    //     doc.setField("state", "noncontrolled_public"); // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
+                    } else if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel()))  && 
+                                doc.containsKey("date_range_end.year") && 
+                                70 > (LocalDate.now().getYear()) - (int)doc.getFieldValue("date_range_end.year")) {
+                        doc.setField("state", "noncontrolled_private"); // NEKONTROLOVANÉ 
+                    } else {
+                        doc.setField("state", "to_control"); // KE KONTROLE
+                    }
+                
 
                 AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
                 List<String> authorStrings = new ArrayList<>();
@@ -291,7 +341,7 @@ public class HarvesterImpl implements Harvester {
                 if (ad != null) {
                     authorbuffer.addAll(ad);
                 }
-                //elapseAndReset(sw);
+                // elapseAndReset(sw);
                 buffer.add(doc);
                 if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
                     sendBatch(solrClient, "titles", buffer);
@@ -306,7 +356,7 @@ public class HarvesterImpl implements Harvester {
                 if (authorbuffer.size() >= BATCH_SIZE) { // BATCH_SIZE
                     sendBatch(solrClient, "authors", authorbuffer);
                     authorbuffer.clear();
-                    //elapseAndReset(sw);
+                    // elapseAndReset(sw);
                 }
             } catch (final Exception e) {
                 throw new RuntimeException(e);

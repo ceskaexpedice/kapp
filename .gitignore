@@ -1,1 +1,8 @@
 /target/
+/build/
+services/build/
+services/harvester/build/
+services/harvester/bin/
+services/init/build/
+services/init/bin/
+/.gradle/
