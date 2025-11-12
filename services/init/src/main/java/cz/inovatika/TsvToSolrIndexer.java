@@ -12,6 +12,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.text.Normalizer;
+import java.time.LocalDate;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -143,7 +144,8 @@ public class TsvToSolrIndexer {
                                             secondPid = parts[1];
                                             //System.out.println("Multiple UUIDs found, First one: " + uuid + " Second one:" + secondPid + " Row: " + recordNumber);
                                         }
-                                        doc.addField(header, pid);
+                                        doc.setField(header, pid);
+                                        doc.setField("root.pid", pid);
 
                                         // NDK. K5
                                         Document xml = getBiblioMods(client, builder, pid, "https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS");
@@ -170,6 +172,7 @@ public class TsvToSolrIndexer {
                             }
                         }
                         parsePublicString(doc, recordNumber);
+                        setState(doc, recordNumber);
                         ParseDates(doc, getField(doc, "date.str"), recordNumber, show_comma_info);
                         XmlProcessor.trySetLastAuthor(doc, nameIDArray);
                         List<SolrInputDocument> authorDocs = XmlProcessor.extractAuthorData(show_comma_info, solrClient, doc, recordNumber, nameIDArray);
@@ -217,6 +220,41 @@ public class TsvToSolrIndexer {
             return;
         }
         final String header = "public";
+        switch (value.toLowerCase()) {
+            case "ano", "yes", "true": {
+                doc.setField(header, true);
+                doc.setField("state", "controlled_public"); // KONTROLOVANÉ - VOLNÉ
+                break;
+            } 
+            case "ne", "no", "false": {
+                doc.setField(header, false);
+                doc.setField("state", "controlled_private"); // KONTROLOVANÉ- NEVEŘEJNÉ
+                break;
+            } 
+            default: {
+                //System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
+                doc.setField("state", "controlled_unknown"); // KONTROLOVANÉ - NEZNÁMÉ
+            }
+        }
+    }
+
+    private static void setState(SolrInputDocument doc, int recordNumber) {
+        final String value = getField(doc, "public_string");
+        if (value == null) {
+            // Testujeme public_since
+            if (doc.containsKey("public_since")) {
+                int public_since = (int) doc.getFieldValue("public_since");
+                if (public_since > LocalDate.now().getYear()) {
+                    doc.setField("state", "controlled_private"); // KONTROLOVANÉ- NEVEŘEJNÉ
+                } else {
+                    doc.setField("state", "controlled_public"); // KONTROLOVANÉ - VOLNÉ
+                }
+                return;
+            }
+            doc.setField("state", "controlled_unknown"); // KONTROLOVANÉ - NEZNÁMÉ
+            return;
+        }
+        final String header = "public"; 
         switch (value.toLowerCase()) {
             case "ano", "yes", "true": {
                 doc.setField(header, true);

@@ -128,7 +128,7 @@ public class HarvesterImpl implements Harvester {
     static LocalTime start;
     static LocalTime end;
     static long sleepSeconds = 2;
-    static int intervalMinutes = 1;
+    static int intervalMinutes = 100;
     static boolean exitOnOutOfInterval = true;
 
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -272,10 +272,12 @@ public class HarvesterImpl implements Harvester {
             try {
                 // System.out.println("");
                 SolrInputDocument doc = new SolrInputDocument();
-                doc.addField("pid", ctx.item().getPid());
+                doc.setField("pid", ctx.item().getPid());
                 doc.addField("licenses", ctx.item().getLicenses());
                 doc.addField("model", ctx.item().getModel());
                 doc.addField("root.title", ctx.item().getTitles());
+                doc.setField("root.pid", ctx.item().getRootPid());
+                doc.setField("title", ctx.item().getTitles());
 
                 inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
                 if (inputStream == null) {

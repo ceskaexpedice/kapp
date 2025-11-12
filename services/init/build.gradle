@@ -16,7 +16,7 @@ shadowJar {
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 }
 application {
-    mainClass = 'cz.inovatika.TSVToSolrIndexer'
+    mainClass = 'cz.inovatika.TsvToSolrIndexer'
 }
 
 tasks.withType(JavaCompile) {
