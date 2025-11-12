@@ -62,11 +62,11 @@
     <mat-card-actions align="end" class="app-mat-card-actions">
         <button mat-raised-button (click)="addAuthor()">{{ 'action.add_author' |
             translate }}</button>
-        <button mat-raised-button [matMenuTriggerFor]="stateMenu">{{ (doc()['state'] ? doc()['state'] : 'action.set_state') |
+        <button mat-raised-button [matMenuTriggerFor]="stateMenu">{{ (doc()['state'] ? ('state.' + doc()['state']) : 'action.set_state') |
             translate }}</button>
         <mat-menu #stateMenu="matMenu">
             @for(a of states; track $index) {
-            <button mat-menu-item (click)="setState(a)">{{ a }}</button>
+            <button mat-menu-item (click)="setState(a)">{{ 'state.' + a | translate }}</button>
             }
         </mat-menu>
     </mat-card-actions>

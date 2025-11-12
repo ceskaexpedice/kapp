@@ -24,7 +24,11 @@
         <mat-list class="app-facet">
           @for(k of facets()[f].buckets; track $index; let idx = $index){
           <mat-list-item (click)="filter(f, k.val)" title="{{ k.val}} ({{k.count}})" (mouseover)="fireMouserOver(f, k.val)" (mouseout)="fireMouseOut(f, k.val)">
+            @if (f === 'state') {
+            <mat-checkbox [checked]="isUsed(f, k.val)">{{ 'state.' + k.val | translate}} ({{k.count}}) </mat-checkbox>
+            } @else {
             <mat-checkbox [checked]="isUsed(f, k.val)">{{ k.val}} ({{k.count}}) </mat-checkbox>
+            }
           </mat-list-item>
           }
         </mat-list>
