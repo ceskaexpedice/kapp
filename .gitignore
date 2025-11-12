@@ -6,3 +6,5 @@ services/harvester/bin/
 services/init/build/
 services/init/bin/
 /.gradle/
+.vscode/launch.json
+.vscode/settings.json

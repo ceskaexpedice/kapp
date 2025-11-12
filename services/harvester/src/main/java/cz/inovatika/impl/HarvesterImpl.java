@@ -128,7 +128,7 @@ public class HarvesterImpl implements Harvester {
     static LocalTime start;
     static LocalTime end;
     static long sleepSeconds = 2;
-    static int intervalMinutes = 10;
+    static int intervalMinutes = 1;
     static boolean exitOnOutOfInterval = true;
 
     public static void main(String[] args) throws InterruptedException, IOException {

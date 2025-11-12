@@ -213,16 +213,24 @@ public class TsvToSolrIndexer {
     private static void parsePublicString(SolrInputDocument doc, int recordNumber) {
         final String value = getField(doc, "public_string");
         if (value == null) {
+            doc.setField("state", "controlled_unknown"); // KONTROLOVANÉ - NEZNÁMÉ
             return;
         }
         final String header = "public";
         switch (value.toLowerCase()) {
-            case "ano", "yes", "true" ->
-                doc.addField(header, true);
-            case "ne", "no", "false" ->
-                doc.addField(header, false);
-            default -> {
+            case "ano", "yes", "true": {
+                doc.setField(header, true);
+                doc.setField("state", "controlled_public"); // KONTROLOVANÉ - VOLNÉ
+                break;
+            } 
+            case "ne", "no", "false": {
+                doc.setField(header, false);
+                doc.setField("state", "controlled_private"); // KONTROLOVANÉ- NEVEŘEJNÉ
+                break;
+            } 
+            default: {
                 //System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
+                doc.setField("state", "controlled_unknown"); // KONTROLOVANÉ - NEZNÁMÉ
             }
         }
     }
