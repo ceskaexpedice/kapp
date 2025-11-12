@@ -1,0 +1,38 @@
+<h2 mat-dialog-title>{{ 'action.set_state' | translate}}</h2>
+<mat-dialog-content>
+
+    @if (loading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'new_state' | translate }}</mat-label>
+            <mat-select>
+                @for (l of config.states; track l) {
+                <mat-option [value]="l">{{ 'state.' + l | translate}}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'licenses' | translate }}</mat-label>
+            <mat-select>
+                @for (l of config.licenses; track l) {
+                <mat-option [value]="l">{{ l}}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+    </div>
+    <div>
+        <mat-form-field appearance="outline">
+            <mat-label>{{ 'Duvod' }}</mat-label>
+            <textarea matInput></textarea>
+        </mat-form-field>
+    </div>
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button matButton (click)="save()">{{ 'action.save' | translate }}</button>
+    <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+</mat-dialog-actions>

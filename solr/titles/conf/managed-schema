@@ -267,6 +267,7 @@
   <field name="public_since"  type="int" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="public_string" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="root.title" type="string" indexed="true" stored="true"/>
+  <field name="root.pid" type="string" indexed="true" stored="true"/>
   <field name="source" type="string" indexed="true" stored="true"/>
   <field name="year_of_death_last_author"  type="int" docValues="true" multiValued="false" indexed="true" stored="true"/>
   

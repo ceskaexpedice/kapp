@@ -35,7 +35,7 @@
       <div>
         @if (view() === 'titles') {
         @for(doc of docs(); track $index){
-        <app-result-item [doc]="doc"></app-result-item>
+        <app-result-item [doc]="doc" [expanded]="expanded(doc['root.pid'])"></app-result-item>
         }
         } @else {
         @for(doc of docs(); track $index){

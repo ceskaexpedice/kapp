@@ -18,6 +18,14 @@ import { Label } from './shared/label';
         return this.config.defaultLang;
     }
 
+    public get states() {
+        return this.config.states;
+    }
+
+    public get licenses() {
+        return this.config.licenses;
+    }
+
     constructor(
         private http: HttpClient,
         public state: AppState) { }

@@ -44,7 +44,7 @@ public class IndexSearcher {
             }
             String q = "*";
             if (request.getParameter("q") != null) {
-                q = request.getParameter("q");
+                q = "{!boost b=query($modelboost)}" + request.getParameter("q");
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
@@ -52,6 +52,9 @@ public class IndexSearcher {
 //                    .withFacet("authors", new TermsFacetMap("authors")
 //                            .setLimit(1000)
 //                            .setMinCount(1))
+                    .withParam("fq", "{!collapse field=root.pid}") 
+                    .withParam("expand", true)
+                    .withParam("modelboost", "model:monograph") 
                     .withFacet("public", new TermsFacetMap("public")
                             .setLimit(1000)
                             .setMinCount(1))

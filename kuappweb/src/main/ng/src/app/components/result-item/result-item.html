@@ -2,7 +2,7 @@
     <mat-card-header class="app-fill">
         <mat-card-title class="app-fill">
             <div class="app-fxLayout app-row app-fill">
-                <div class="app-fxFlex app-card-title">{{ doc()['root.title']}}</div>
+                <div class="app-fxFlex app-card-title">{{ doc()['root.title']}} ({{ doc()['model']}})</div>
 
                 <div class="app-jc-end app-labels-header app-mat-card-actions"><mat-chip-set>
                         @for(l of labels; track $index) {
@@ -58,16 +58,30 @@
         </div>
         <div><label>{{ 'field.note' | translate }}: </label>{{ doc()['note']}} <a mat-icon-button
                 (click)="editNote()"><mat-icon matSuffix class="app-small-icon">edit</mat-icon></a></div>
+
+
+        @if (hasCollapsed) {
+        <div class="app-collapsed">
+            @for (ch of expanded().docs; track ch) {
+            <div><label>{{ 'field.pid' | translate }}: </label>
+                {{ ch['model']}} {{ ch['root.title']}} 
+                <a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+ch['pid']">{{
+                    ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+
+                <a (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) :
+            'action.set_state') |
+            translate }}</a>
+            </div>
+            }
+
+        </div>
+        }
     </mat-card-content>
     <mat-card-actions align="end" class="app-mat-card-actions">
         <button mat-raised-button (click)="addAuthor()">{{ 'action.add_author' |
             translate }}</button>
-        <button mat-raised-button [matMenuTriggerFor]="stateMenu">{{ (doc()['state'] ? ('state.' + doc()['state']) : 'action.set_state') |
+        <button mat-raised-button (click)="setState()">{{ (doc()['state'] ? ('state.' + doc()['state']) :
+            'action.set_state') |
             translate }}</button>
-        <mat-menu #stateMenu="matMenu">
-            @for(a of states; track $index) {
-            <button mat-menu-item (click)="setState(a)">{{ 'state.' + a | translate }}</button>
-            }
-        </mat-menu>
     </mat-card-actions>
 </mat-card>

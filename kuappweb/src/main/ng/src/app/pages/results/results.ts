@@ -119,4 +119,9 @@ export class Results {
     });
   }
 
+  expanded(pid: string) {
+    // console.log(this.solrResponse.expanded[pid])
+    return this.solrResponse.expanded[pid];
+  }
+
 }

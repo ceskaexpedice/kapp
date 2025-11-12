@@ -12,4 +12,6 @@ export class Configuration {
   hikoUrl: string;
   isTest: boolean;
   test_mappings: {[tenant: string]: string};
+  states: string[];
+  licenses: string[];
 }
