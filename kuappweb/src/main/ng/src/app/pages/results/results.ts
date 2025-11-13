@@ -95,6 +95,10 @@ export class Results {
   }
 
   doSearch() {
+    const params = {
+      q: this.state.q
+    }
+    this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
     this.getData();
   }
 

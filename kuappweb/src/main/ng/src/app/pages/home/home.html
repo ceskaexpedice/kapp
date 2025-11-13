@@ -6,9 +6,9 @@
         <mat-card-content>
             <mat-form-field appearance="outline">
                 <mat-label>{{ 'action.search' | translate }}</mat-label>
-                <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
-              (keyup.enter)="doSearch()">
-                <mat-icon matSuffix (click)="doSearch()">search</mat-icon>
+                <input [(ngModel)]="q" matInput placeholder="{{ 'field.query' | translate }}"
+              (keyup.enter)="doSearch('titles')">
+                <mat-icon matSuffix (click)="doSearch('titles')">search</mat-icon>
             </mat-form-field>
         </mat-card-content>
         <mat-card-actions align="end" class="app-mat-card-actions">
@@ -24,9 +24,9 @@
         <mat-card-content>
             <mat-form-field appearance="outline">
                 <mat-label>{{ 'action.search' | translate }}</mat-label>
-                <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
-              (keyup.enter)="doSearch()">
-                <mat-icon matSuffix (click)="doSearch()">search</mat-icon>
+                <input [(ngModel)]="q" matInput placeholder="{{ 'field.query' | translate }}"
+              (keyup.enter)="doSearch('authors')">
+                <mat-icon matSuffix (click)="doSearch('authors')">search</mat-icon>
             </mat-form-field>
         </mat-card-content>
         <mat-card-actions align="end" class="app-mat-card-actions">

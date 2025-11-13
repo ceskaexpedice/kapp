@@ -1,7 +1,9 @@
-import { Component } from '@angular/core';
-import { RouterOutlet } from '@angular/router';
+import { Component, inject } from '@angular/core';
+import { ActivatedRoute, RouterOutlet } from '@angular/router';
 import { Footer } from "./components/footer/footer";
 import { Navbar } from "./components/navbar/navbar";
+import { switchMap, of } from 'rxjs';
+import { AppState } from './app-state';
 
 @Component({
   selector: 'app-root',
@@ -10,5 +12,20 @@ import { Navbar } from "./components/navbar/navbar";
   styleUrl: './app.scss'
 })
 export class App {
-  protected title = 'ng';
+  readonly route = inject(ActivatedRoute);
+  state = inject(AppState);
+  
+  ngOnInit() {
+    const s = this.route.queryParams.pipe(
+      switchMap(p => {
+        this.processParams(p);
+        return of(true);
+      })
+    );
+    s.subscribe();
+  }
+
+  processParams(p: any) {
+    this.state.q = p['q'] ? p['q'] : '';
+  }
 }

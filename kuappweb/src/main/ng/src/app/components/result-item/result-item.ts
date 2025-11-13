@@ -127,7 +127,7 @@ export class ResultItem {
   setState() {
 
     const dialogRef = this.dialog.open(StateDialog, {
-      data: null,
+      data: this.doc(),
     });
 
     dialogRef.afterClosed().subscribe(result => {

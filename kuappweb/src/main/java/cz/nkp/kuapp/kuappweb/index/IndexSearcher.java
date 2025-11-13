@@ -69,7 +69,7 @@ public class IndexSearcher {
                             .setMinCount(1))
                     .setOffset(offset)
                     .setSort("indextime desc")
-                    .returnFields("*,authors_kramerius:[json]")
+                    .returnFields("*,authors_kramerius:[json],state_history:[json]")
                     .setLimit(rows);
 
             if (request.getParameter("author") != null) {

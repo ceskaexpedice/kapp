@@ -1,14 +1,17 @@
 <h2 mat-dialog-title>{{ 'action.set_state' | translate}}</h2>
-<mat-dialog-content>
+<mat-dialog-content class="app-state">
 
     @if (loading()) {
     <mat-progress-bar mode="indeterminate"></mat-progress-bar>
     }
 
     <div>
+        Initial state: {{ 'state.' + initialState | translate}}
+    </div>
+    <div>
         <mat-form-field appearance="outline">
             <mat-label>{{ 'new_state' | translate }}</mat-label>
-            <mat-select>
+            <mat-select [(ngModel)]="newState">
                 @for (l of config.states; track l) {
                 <mat-option [value]="l">{{ 'state.' + l | translate}}</mat-option>
                 }
@@ -17,18 +20,39 @@
 
         <mat-form-field appearance="outline">
             <mat-label>{{ 'licenses' | translate }}</mat-label>
-            <mat-select>
+            <mat-select [(ngModel)]="newLicense">
                 @for (l of config.licenses; track l) {
                 <mat-option [value]="l">{{ l}}</mat-option>
                 }
             </mat-select>
         </mat-form-field>
     </div>
+
     <div>
         <mat-form-field appearance="outline">
             <mat-label>{{ 'Duvod' }}</mat-label>
             <textarea matInput></textarea>
         </mat-form-field>
+    </div>
+
+    <div>
+        <mat-form-field appearance="outline" class="app-fill-w">
+            <mat-label>{{ 'history' | translate }}</mat-label>
+            <mat-select [(ngModel)]="currentHistory">
+                @for (l of doc['state_history']; track l) {
+                <mat-option [value]="l">{{ l['date'] | date : 'dd.MM.yyyy hh:mm:ss' }}.- {{ 'state.' + l['state'] | translate }}</mat-option>
+                }
+            </mat-select>
+        </mat-form-field>
+        @if(currentHistory) {
+            <div>
+                <label>Date</label>:{{ currentHistory['date'] | date : 'dd.MM.yyyy hh:mm:ss' }} <br/>
+                <label>State</label>:{{ 'state.' + currentHistory['state'] | translate }}  <br/>
+                <label>Reason</label>:{{ currentHistory['reason']  }}  <br/>
+                <label>User</label>:{{ currentHistory['user']  }}  <br/>
+            </div>
+        }
+
     </div>
 
 </mat-dialog-content>

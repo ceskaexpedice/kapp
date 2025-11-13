@@ -3,9 +3,9 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
-import {MatFormFieldModule} from '@angular/material/form-field';
-import {MatIconModule} from '@angular/material/icon';
-import {MatInputModule} from '@angular/material/input';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatIconModule } from '@angular/material/icon';
+import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { AppState } from '../../app-state';
 
@@ -19,12 +19,18 @@ import { AppState } from '../../app-state';
 })
 export class Home {
 
-
+  q: string;
   constructor(
     private router: Router,
     public state: AppState
-  ){}
-doSearch() {
-  this.router.navigate(['/results'])
-}
+  ) { }
+
+  doSearch(target: string) {
+
+    const params = {
+      q: this.q
+    }
+    this.router.navigate(['/' + target], { queryParams: params, queryParamsHandling: 'merge' });
+  }
+
 }
