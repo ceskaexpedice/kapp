@@ -3,6 +3,7 @@ package cz.inovatika;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.ConnectException;
@@ -13,7 +14,9 @@ import java.net.http.HttpResponse;
 import java.nio.file.Path;
 import java.text.Normalizer;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -27,9 +30,12 @@ import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -38,8 +44,11 @@ import org.xml.sax.SAXException;
 public class TsvToSolrIndexer {
 
     private static final String SOLR_URL = "http://localhost:8983/solr";
-    private static String DIRECTORY_PATH = "../Data";  // change this 
-    // private static final String DIRECTORY_PATH = "c:\\Users\\alber\\Projects\\KuratorskaAplikace\\tsv\\";  // change this
+    private static String DIRECTORY_PATH = "../Data"; // change this
+    // private static final String DIRECTORY_PATH =
+    // "c:\\Users\\alber\\Projects\\KuratorskaAplikace\\tsv\\"; // change this
+
+    private static SolrClient solrClient;
 
     static void add_year_since(String year, SolrInputDocument doc, boolean confirmed) {
         XmlProcessor.add_year_range(year, confirmed, "1999", false, doc);
@@ -76,7 +85,8 @@ public class TsvToSolrIndexer {
             System.err.println("Failed to load TSV mappings: " + e.getMessage());
             return;
         }
-        try (SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
+        solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build();
+        try {
             File[] tsvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".tsv"));
 
             if (tsvFiles == null || tsvFiles.length == 0) {
@@ -111,9 +121,11 @@ public class TsvToSolrIndexer {
                             String value = entry.getValue();
                             String Originalvalue = value;
                             try {
-                                /*if("1926-".equals(value)){
-                                    System.out.println("Debug");
-                                }*/
+                                /*
+                                 * if("1926-".equals(value)){
+                                 * System.out.println("Debug");
+                                 * }
+                                 */
                                 switch (header) {
                                     case "authors" -> {
                                         authorArray = value.split("  |\\|");
@@ -124,7 +136,10 @@ public class TsvToSolrIndexer {
                                     case "imported" -> {
                                         if (value != null && !value.isEmpty()) {
                                             String[] imported = value.split("\\.");
-                                            doc.addField(header, String.format("%04d-%02d-%02dT00:00:00Z", Integer.valueOf(imported[2]), Integer.valueOf(imported[1]), Integer.valueOf(imported[0])));
+                                            doc.addField(header,
+                                                    String.format("%04d-%02d-%02dT00:00:00Z",
+                                                            Integer.valueOf(imported[2]), Integer.valueOf(imported[1]),
+                                                            Integer.valueOf(imported[0])));
                                         } else {
                                             System.err.println("Empty imported date on row: " + recordNumber);
                                         }
@@ -139,20 +154,25 @@ public class TsvToSolrIndexer {
                                         pid = parts[0];
                                         if (parts.length > 1) {
                                             if (parts.length > 2) {
-                                                System.out.println("More than two UUIDs found, using first two." + parts[2] + " Row: " + recordNumber);
+                                                System.out.println("More than two UUIDs found, using first two."
+                                                        + parts[2] + " Row: " + recordNumber);
                                             }
                                             secondPid = parts[1];
-                                            //System.out.println("Multiple UUIDs found, First one: " + uuid + " Second one:" + secondPid + " Row: " + recordNumber);
+                                            // System.out.println("Multiple UUIDs found, First one: " + uuid + " Second
+                                            // one:" + secondPid + " Row: " + recordNumber);
                                         }
                                         doc.setField(header, pid);
                                         doc.setField("root.pid", pid);
 
                                         // NDK. K5
-                                        Document xml = getBiblioMods(client, builder, pid, "https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS");
+                                        Document xml = getBiblioMods(client, builder, pid,
+                                                "https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS");
                                         if (xml == null) {
                                             // MZK. K7
                                             // https://api.kramerius.mzk.cz/search/api/client/v7.0/items/uuid:4f0d2790-37d6-11e6-8746-005056825209/metadata/mods
-                                            xml = getBiblioMods(client, builder, pid, "https://api.kramerius.mzk.cz/search/api/client/v7.0/items/" + pid + "/metadata/mods");
+                                            xml = getBiblioMods(client, builder, pid,
+                                                    "https://api.kramerius.mzk.cz/search/api/client/v7.0/items/" + pid
+                                                            + "/metadata/mods");
                                         }
                                         nameIDArray = XmlProcessor.processBiblioMods(xml, doc);
                                     }
@@ -160,7 +180,9 @@ public class TsvToSolrIndexer {
                                         if (NumberUtils.isCreatable(value) && value.length() == 4) {
                                             doc.addField(header, value);
                                         } else {
-                                            //if(!"?".equals(value))System.err.println("Unexpected year value on row: " + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
+                                            // if(!"?".equals(value))System.err.println("Unexpected year value on row: "
+                                            // + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ?
+                                            // Originalvalue : Originalvalue + " _ " + value));
                                         }
                                     }
                                     default ->
@@ -168,17 +190,19 @@ public class TsvToSolrIndexer {
                                 }
 
                             } catch (IndexOutOfBoundsException e) {
-                                System.err.println("Caught OOBexception in" + tsvFile.getName() + ": " + e.getMessage() + "\n\tVALUE: " + Originalvalue);
+                                System.err.println("Caught OOBexception in" + tsvFile.getName() + ": " + e.getMessage()
+                                        + "\n\tVALUE: " + Originalvalue);
                             }
                         }
                         parsePublicString(doc, recordNumber);
                         setState(doc, recordNumber);
                         ParseDates(doc, getField(doc, "date.str"), recordNumber, show_comma_info);
                         XmlProcessor.trySetLastAuthor(doc, nameIDArray);
-                        List<SolrInputDocument> authorDocs = XmlProcessor.extractAuthorData(show_comma_info, solrClient, doc, recordNumber, nameIDArray);
+                        List<SolrInputDocument> authorDocs = XmlProcessor.extractAuthorData(show_comma_info, solrClient,
+                                doc, recordNumber, nameIDArray);
                         if (authorDocs != null) {
                             for (SolrInputDocument authorDoc : authorDocs) {
-                                if(authorDoc!=null)
+                                if (authorDoc != null)
                                     solrClient.add("authors", authorDoc);
                             }
                         }
@@ -192,8 +216,9 @@ public class TsvToSolrIndexer {
                     }
 
                 } catch (Exception e) {
-                    System.out.println("Critical Exception: in file:" + tsvFile.getName() + "of type:" + e.getClass() + ": " + e.getMessage());
-                    //sent_request = true;
+                    System.out.println("Critical Exception: in file:" + tsvFile.getName() + "of type:" + e.getClass()
+                            + ": " + e.getMessage());
+                    // sent_request = true;
                 }
             }
 
@@ -204,7 +229,8 @@ public class TsvToSolrIndexer {
         } catch (ConnectException e) {
             System.err.println("Failed to connect to Solr " + e.getMessage());
         } catch (Exception e) {
-            System.err.println("Error indexing data: Exception type: " + e.getClass().getName() + " Message:" + e.getMessage());
+            System.err.println(
+                    "Error indexing data: Exception type: " + e.getClass().getName() + " Message:" + e.getMessage());
         }
     }
 
@@ -216,60 +242,67 @@ public class TsvToSolrIndexer {
     private static void parsePublicString(SolrInputDocument doc, int recordNumber) {
         final String value = getField(doc, "public_string");
         if (value == null) {
-            doc.setField("state", "controlled_unknown"); // KONTROLOVANÉ - NEZNÁMÉ
             return;
         }
         final String header = "public";
         switch (value.toLowerCase()) {
             case "ano", "yes", "true": {
                 doc.setField(header, true);
-                doc.setField("state", "controlled_public"); // KONTROLOVANÉ - VOLNÉ
                 break;
-            } 
+            }
             case "ne", "no", "false": {
                 doc.setField(header, false);
-                doc.setField("state", "controlled_private"); // KONTROLOVANÉ- NEVEŘEJNÉ
                 break;
-            } 
+            }
             default: {
-                //System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
-                doc.setField("state", "controlled_unknown"); // KONTROLOVANÉ - NEZNÁMÉ
+                // System.err.println("Unexpected boolean value on row: " + recordNumber +
+                // "\n\tVALUE: " + value);
             }
         }
     }
 
     private static void setState(SolrInputDocument doc, int recordNumber) {
-        final String value = getField(doc, "public_string");
-        if (value == null) {
-            // Testujeme public_since
-            if (doc.containsKey("public_since")) {
-                int public_since = (int) doc.getFieldValue("public_since");
-                if (public_since > LocalDate.now().getYear()) {
-                    doc.setField("state", "controlled_private"); // KONTROLOVANÉ- NEVEŘEJNÉ
-                } else {
-                    doc.setField("state", "controlled_public"); // KONTROLOVANÉ - VOLNÉ
-                }
-                return;
+        String val;
+        if (doc.containsKey("public")) {
+            val = (boolean) doc.getFieldValue("public") ? "controlled_public" : "controlled_private";
+        } else if (doc.containsKey("public_since")) {
+            int public_since = Integer.parseInt(doc.getFieldValue("public_since").toString());
+            if (public_since > LocalDate.now().getYear()) {
+                val = "controlled_private"; // KONTROLOVANÉ- NEVEŘEJNÉ
+            } else {
+                val = "controlled_public"; // KONTROLOVANÉ - VOLNÉ
             }
-            doc.setField("state", "controlled_unknown"); // KONTROLOVANÉ - NEZNÁMÉ
-            return;
+        } else {
+            val = "controlled_unknown"; // KONTROLOVANÉ - NEZNÁMÉ
         }
-        final String header = "public"; 
-        switch (value.toLowerCase()) {
-            case "ano", "yes", "true": {
-                doc.setField(header, true);
-                doc.setField("state", "controlled_public"); // KONTROLOVANÉ - VOLNÉ
-                break;
-            } 
-            case "ne", "no", "false": {
-                doc.setField(header, false);
-                doc.setField("state", "controlled_private"); // KONTROLOVANÉ- NEVEŘEJNÉ
-                break;
-            } 
-            default: {
-                //System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
-                doc.setField("state", "controlled_unknown"); // KONTROLOVANÉ - NEZNÁMÉ
-            }
+
+        doc.setField("state", val);
+
+        JSONObject h = new JSONObject()
+                .put("date", LocalDateTime.now().toString())
+                .put("reason", "import from excel")
+                .put("user", "importer")
+                .put("state", val);
+
+        if (documentExists((String) doc.getFieldValue("pid"))) {
+            Map<String, Object> partialUpdate = new HashMap<>();
+            partialUpdate.put("add", h.toString());
+            doc.addField("state_history", partialUpdate);
+        } else {
+            doc.addField("state_history", h.toString());
+        }
+
+    }
+
+    private static boolean documentExists(String pid) {
+        SolrQuery q = new SolrQuery()
+                .setQuery("pid:\"" + pid + "\"")
+                .setRows(0);
+        try {
+            return solrClient.query("titles", q).getResults().getNumFound() > 0;
+        } catch (SolrServerException | IOException e) {
+            System.err.println(e);
+            return false;
         }
     }
 
@@ -286,10 +319,12 @@ public class TsvToSolrIndexer {
     }
 
     private static void dateFormatError(int recordNumber, String Originalvalue, String value) {
-        System.err.println("Unexpected date format on row: " + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
+        System.err.println("Unexpected date format on row: " + recordNumber + "\n\tVALUE: "
+                + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
 
-    private static Document getBiblioMods(HttpClient client, DocumentBuilder builder, String pid, String url) throws IOException, InterruptedException {
+    private static Document getBiblioMods(HttpClient client, DocumentBuilder builder, String pid, String url)
+            throws IOException, InterruptedException {
         if (pid == null || pid.isBlank()) {
             return null;
         }
@@ -300,7 +335,8 @@ public class TsvToSolrIndexer {
         if (response != null && response.statusCode() == 200) {
             return getXml(builder, response);
         } else {
-            System.out.println("Failed to fetch MODS for second pid " + pid + ", response code: " + (response != null ? response.statusCode() : "null response"));
+            System.out.println("Failed to fetch MODS for second pid " + pid + ", response code: "
+                    + (response != null ? response.statusCode() : "null response"));
             return null;
         }
     }
@@ -308,9 +344,11 @@ public class TsvToSolrIndexer {
     private static boolean ParseDates(SolrInputDocument doc, String value, int recordNumber, boolean show_comma_info) {
         try {
             String Originalvalue = value;
-            /*if("[191-?]".equals(value)){
-            System.out.println("Debug");
-            }*/
+            /*
+             * if("[191-?]".equals(value)){
+             * System.out.println("Debug");
+             * }
+             */
             if (value == null || value.isEmpty()) {
                 System.err.println("Empty date on row: " + recordNumber);
                 return true;
@@ -389,7 +427,8 @@ public class TsvToSolrIndexer {
                 String og = value;
                 value = value.split(",")[0].trim();
                 if (show_comma_info) {
-                    System.out.println("Comma found in " + og + ", using first part: " + value + " Row: " + recordNumber);
+                    System.out
+                            .println("Comma found in " + og + ", using first part: " + value + " Row: " + recordNumber);
                 }
             }
             if (value.contains("19--") && value.length() <= 6) {// Handle 19-- format with or without []
@@ -398,7 +437,7 @@ public class TsvToSolrIndexer {
                 value = "1900?-1999?";
             }
             value = value.replaceAll("19(\\d)-", "19$10?-19$19?");
-            if (value.length() == 5) {//1999] or [1999
+            if (value.length() == 5) {// 1999] or [1999
                 if (value.endsWith("]")) {
                     value = value.substring(0, 4) + '-' + value;
                 } else if (value.startsWith("[")) {
@@ -406,13 +445,12 @@ public class TsvToSolrIndexer {
                 }
             }
             value = value.replaceAll("\\[?19--\\??\\]?", "19");
-            value = value.replaceAll("\\s+až\\s+", "-");//replace až with dash
-            String kolem_fix = value.replaceAll("kolem r.\\s+", "?");//replace kolem with ?
+            value = value.replaceAll("\\s+až\\s+", "-");// replace až with dash
+            String kolem_fix = value.replaceAll("kolem r.\\s+", "?");// replace kolem with ?
             value = value.equals(kolem_fix) ? value : kolem_fix + "?";
-            value = value.replaceAll("\\s+a\\s+", "-");//replace a with dash
-            //value = value.replaceAll("[\\[\\]]", "");//Just purge the brackets.
+            value = value.replaceAll("\\s+a\\s+", "-");// replace a with dash
+            // value = value.replaceAll("[\\[\\]]", "");//Just purge the brackets.
             XmlProcessor.parseDateBasic(doc, value, recordNumber, Originalvalue);
-            
 
             return false;
         } catch (Exception e) {

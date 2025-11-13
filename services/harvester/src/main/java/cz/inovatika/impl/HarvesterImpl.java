@@ -11,10 +11,13 @@ import cz.inovatika.utils.XMLUtils;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.json.JSONObject;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -34,12 +37,15 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
 import java.util.logging.Logger;
 
@@ -48,7 +54,6 @@ import static cz.inovatika.utils.CursorUtils.*;
 import com.google.common.base.Stopwatch;
 
 import java.util.concurrent.TimeUnit;
-
 
 public class HarvesterImpl implements Harvester {
 
@@ -134,8 +139,10 @@ public class HarvesterImpl implements Harvester {
     public static void main(String[] args) throws InterruptedException, IOException {
         // if (args.length == 0) {
 
-        // System.err.println("Usage: java cz.inovatika.impl.HarvesterImpl <time-range> [sleep-seconds]");
-        // System.err.println("Example: java cz.inovatika.impl.HarvesterImpl 22:00-06:00 60");
+        // System.err.println("Usage: java cz.inovatika.impl.HarvesterImpl <time-range>
+        // [sleep-seconds]");
+        // System.err.println("Example: java cz.inovatika.impl.HarvesterImpl 22:00-06:00
+        // 60");
         // System.exit(1);
         // }
 
@@ -306,29 +313,47 @@ public class HarvesterImpl implements Harvester {
                     }
                 }
 
-                    // Vyplnit state podle 
-                    // https://docs.google.com/document/d/1zMXdaKiAhshUANmxTD1MHnBibjituskJnGEq-LHz7jU/edit?tab=t.0
-                    
-                    
-                    // if (doc.containsKey("licenses") && Arrays.asList(doc.getFieldValue("licenses")).contains("public")) {
-                    //     doc.setField("state", "controlled_public"); // KONTROLOVANÉ - VOLNÉ
-                    // } else 
-                    if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel())) && 
-                        doc.containsKey("date_range_end.year") && 
-                        1900 > (int)doc.getFieldValue("date_range_end.year")) {
-                        doc.setField("state", "noncontrolled_public"); // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
-                    // } else if("periodicalvolume".equals(ctx.item().getModel()) && 
-                    //             doc.containsKey("date_range_end.year") && 
-                    //             110 > (LocalDate.now().getYear()) - (int)doc.getFieldValue("date_range_end.year")) {
-                    //     doc.setField("state", "noncontrolled_public"); // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
-                    } else if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel()))  && 
-                                doc.containsKey("date_range_end.year") && 
-                                70 > (LocalDate.now().getYear()) - (int)doc.getFieldValue("date_range_end.year")) {
-                        doc.setField("state", "noncontrolled_private"); // NEKONTROLOVANÉ 
-                    } else {
-                        doc.setField("state", "to_control"); // KE KONTROLE
-                    }
-                
+                // Vyplnit state podle
+                // https://docs.google.com/document/d/1zMXdaKiAhshUANmxTD1MHnBibjituskJnGEq-LHz7jU/edit?tab=t.0
+
+                String val;
+                // if (doc.containsKey("licenses") &&
+                // Arrays.asList(doc.getFieldValue("licenses")).contains("public")) {
+                // val = "controlled_public"); // KONTROLOVANÉ - VOLNÉ
+                // } else
+                if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel())) &&
+                        doc.containsKey("date_range_end.year") &&
+                        1900 > (int) doc.getFieldValue("date_range_end.year")) {
+                    val = "noncontrolled_public"; // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
+                    // } else if("periodicalvolume".equals(ctx.item().getModel()) &&
+                    // doc.containsKey("date_range_end.year") &&
+                    // 110 > (LocalDate.now().getYear()) -
+                    // (int)doc.getFieldValue("date_range_end.year")) {
+                    // val = "noncontrolled_public"); // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
+                } else if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel()))
+                        &&
+                        doc.containsKey("date_range_end.year") &&
+                        70 > (LocalDate.now().getYear()) - (int) doc.getFieldValue("date_range_end.year")) {
+                    val = "noncontrolled_private"; // NEKONTROLOVANÉ
+                } else {
+                    val = "to_control"; // KE KONTROLE
+                }
+
+                doc.setField("state", val);
+
+                JSONObject h = new JSONObject()
+                        .put("date", LocalDateTime.now().toString())
+                        .put("reason", "import from excel")
+                        .put("user", "importer")
+                        .put("state", val);
+
+                if (historyExists((String) doc.getFieldValue("pid"))) {
+                    Map<String, Object> partialUpdate = new HashMap<>();
+                    partialUpdate.put("add", h.toString());
+                    doc.addField("state_history", partialUpdate);
+                } else {
+                    doc.addField("state_history", h.toString());
+                }
 
                 AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
                 List<String> authorStrings = new ArrayList<>();
@@ -365,6 +390,32 @@ public class HarvesterImpl implements Harvester {
             }
         }
 
+    }
+
+    private static boolean documentExists(String pid) {
+        SolrQuery q = new SolrQuery()
+                .setQuery("pid:\"" + pid + "\"")
+                .setRows(0);
+        try {
+            return solrClient.query("titles", q).getResults().getNumFound() > 0;
+        } catch (SolrServerException | IOException e) {
+            System.err.println(e);
+            return false;
+        }
+    }
+
+    private static boolean historyExists(String pid) {
+        SolrQuery q = new SolrQuery()
+                .setQuery("pid:\"" + pid + "\"")
+                .setFields("state_history")
+                .setRows(0);
+        try {
+            SolrDocumentList docs = solrClient.query("titles", q).getResults();
+            return docs.getNumFound() > 0 && !"[]".equals(docs.get(0).getFieldValue("state_history").toString());
+        } catch (SolrServerException | IOException e) {
+            System.err.println(e);
+            return false;
+        }
     }
 
     private static void elapseAndReset(Stopwatch sw) {
