@@ -408,10 +408,12 @@ public class HarvesterImpl implements Harvester {
         SolrQuery q = new SolrQuery()
                 .setQuery("pid:\"" + pid + "\"")
                 .setFields("state_history")
-                .setRows(0);
+                .setRows(1);
         try {
             SolrDocumentList docs = solrClient.query("titles", q).getResults();
-            return docs.getNumFound() > 0 && !"[]".equals(docs.get(0).getFieldValue("state_history").toString());
+            return docs.getNumFound() > 0 &&
+             docs.get(0).getFieldValue("state_history") != null &&
+             !"[]".equals(docs.get(0).getFieldValue("state_history").toString());
         } catch (SolrServerException | IOException e) {
             System.err.println(e);
             return false;
