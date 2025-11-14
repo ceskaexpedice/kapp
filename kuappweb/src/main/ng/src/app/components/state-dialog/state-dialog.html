@@ -6,10 +6,10 @@
     }
 
     <div>
-        Actual state: {{ 'state.' + initialState | translate}}
+        {{ 'current_state' | translate}}: {{ 'state.' + initialState | translate}}
     </div>
     <div>
-        Actual licenses: {{ initialLicenses}}
+        {{ 'current_licenses' | translate}}: {{ initialLicenses}}
     </div>
     <div>
         <mat-form-field appearance="outline">
@@ -33,7 +33,7 @@
 
     <div>
         <mat-form-field appearance="outline" class="app-fill-w">
-            <mat-label>{{ 'Duvod' }}</mat-label>
+            <mat-label>{{ 'reason' | translate }}</mat-label>
             <textarea [(ngModel)]="reason" matInput required></textarea>
         </mat-form-field>
     </div>

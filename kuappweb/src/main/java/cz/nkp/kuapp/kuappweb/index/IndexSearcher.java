@@ -54,6 +54,7 @@ public class IndexSearcher {
 //                            .setMinCount(1))
                     .withParam("fq", "{!collapse field=root.pid}") 
                     .withParam("expand", true)
+                    .withParam("expand.rows", 100)
                     .withParam("modelboost", "model:monograph") 
                     .withFacet("public", new TermsFacetMap("public")
                             .setLimit(10)
@@ -219,6 +220,27 @@ public class IndexSearcher {
                     .setQuery("pid:\""+pid + "\"")
                     .returnFields("*,authors_kramerius:[json],state_history:[json]")
                     .setLimit(1);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> resp = solr.request(jrequest, "titles");
+            InputStream is = (InputStream) resp.get("stream");
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
+    public static JSONObject getRelated(String pid) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery("root.pid:\""+pid + "\"")
+                    .returnFields("*,authors_kramerius:[json],state_history:[json]")
+                    .setLimit(200); 
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "titles");

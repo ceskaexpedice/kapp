@@ -83,6 +83,10 @@ export class AppService {
     return this.get('index/get_doc', {pid});
   }
 
+  getRelated(pid: string): Observable<any> {
+    return this.get('index/get_related', {pid});
+  }
+
   searchAuthors(params: HttpParams): Observable<any> {
     return this.get('index/authors', params)
   }

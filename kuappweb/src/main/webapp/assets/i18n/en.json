@@ -4,6 +4,11 @@
   "clearSelection": "Clear selection",
   "usedFilters": "Used filters",
   "numFound": "num. found",
+  "current_state": "Current state",
+  "new_state": "New state",
+  "current_licenses": "Current licence",
+  "reason": "Reason",
+  "history": "History",
   "field": {
     "query": "Query",
     "author": "Author",

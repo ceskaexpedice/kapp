@@ -29,6 +29,7 @@ import { StateDialog } from '../state-dialog/state-dialog';
 export class ResultItem {
   doc = model<any>();
   expanded = input<any>();
+  related = signal<any[]>([]);
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
 
@@ -58,8 +59,18 @@ export class ResultItem {
 
       if (this.expanded()) {
         this.hasCollapsed = true;
+        this.getRelated();
       }
     })
+  }
+
+  getRelated() {
+    this.related.set([]);
+    this.service.getRelated(this.doc()['root.pid']).subscribe((resp: any) => {
+      if (resp.response?.docs?.length > 0) {
+        this.related.set(resp.response.docs);
+      }
+    });
   }
 
   infoAuthor(a: Author) {

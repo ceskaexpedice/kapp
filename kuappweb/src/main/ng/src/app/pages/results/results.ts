@@ -103,6 +103,7 @@ export class Results {
   }
 
   getData() {
+    this.docs.set([]);
     const p: any = {};
     p.rows = this.rows;
     p.offset = this.pageIndex * p.rows;

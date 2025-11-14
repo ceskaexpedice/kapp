@@ -4,6 +4,11 @@
   "clearSelection": "Zrušit výběr",
   "usedFilters": "Vybrané filtry",
   "numFound": "Nalezeno",
+  "current_state": "Aktuální stav",
+  "new_state": "Nový stav",
+  "current_licenses": "Aktuální licence",
+  "reason": "Důvod",
+  "history": "Historie",
   "field": {
     "query": "dotaz",
     "author": "Autor",

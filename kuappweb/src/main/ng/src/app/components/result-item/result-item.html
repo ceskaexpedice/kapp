@@ -63,7 +63,7 @@
 
         @if (hasCollapsed) {
         <div class="app-collapsed">
-            @for (ch of expanded().docs; track ch) {
+            @for (ch of related(); track ch) {
             <div><label>{{ 'field.pid' | translate }}: </label>
                 {{ ch['model']}} {{ ch['root.title']}}
                 <a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+ch['pid']">{{

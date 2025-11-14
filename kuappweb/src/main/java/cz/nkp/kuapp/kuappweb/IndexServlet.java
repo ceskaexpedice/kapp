@@ -110,12 +110,24 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
-        GET_DOC{
+        GET_DOC {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
                     json = IndexSearcher.getDocByPid(req.getParameter("pid")); 
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        GET_RELATED{ 
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getRelated(req.getParameter("pid")); 
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
