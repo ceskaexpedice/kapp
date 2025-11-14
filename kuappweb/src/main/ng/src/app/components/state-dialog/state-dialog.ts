@@ -34,15 +34,26 @@ export class StateDialog {
   loading = signal<boolean>(false);
 
   initialState: string;
+  initialLicenses: string[];
   newState: string;
-  newLicense: string;
+  newLicenses: string;
+  reason: string;
   currentHistory: any;
 
   ngOnInit() {
     this.initialState = this.doc['state'];
+    this.initialLicenses = this.doc['licenses'];
   }
 
   save() {
-
+    const p = {
+      pid: this.doc.pid,
+      state: this.newState,
+      licenses: this.newLicenses,
+      reason: this.reason
+    };
+    this.service.changeState(p).subscribe(resp => {
+      this.dialogRef.close(true);
+    });
   }
 }

@@ -51,11 +51,12 @@
                 doc()['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
         </div>
         <div><label>{{ 'field.physical_locations' | translate }}: </label>{{ doc()['physical_locations.facet']}}</div>
-        <div><label>{{ 'field.public' | translate }}: </label>{{ doc()['public']}}
-            @if(doc()['public']) {
+        @if(doc()['public_since']) {
+        <div>
             <label>{{ 'field.public_since' | translate }}: </label>{{ doc()['public_since']}}
-            }
         </div>
+        }
+        <div><label>{{ 'field.licenses' | translate }}: </label>{{ doc()['licenses']}}</div>
         <div><label>{{ 'field.note' | translate }}: </label>{{ doc()['note']}} <a mat-icon-button
                 (click)="editNote()"><mat-icon matSuffix class="app-small-icon">edit</mat-icon></a></div>
 
@@ -64,13 +65,13 @@
         <div class="app-collapsed">
             @for (ch of expanded().docs; track ch) {
             <div><label>{{ 'field.pid' | translate }}: </label>
-                {{ ch['model']}} {{ ch['root.title']}} 
+                {{ ch['model']}} {{ ch['root.title']}}
                 <a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+ch['pid']">{{
                     ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
 
                 <a (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) :
-            'action.set_state') |
-            translate }}</a>
+                    'action.set_state') |
+                    translate }}</a>
             </div>
             }
 

@@ -110,6 +110,18 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
+        GET_DOC{
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getDocByPid(req.getParameter("pid")); 
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         AUTHORS{
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -154,6 +166,19 @@ public class IndexServlet extends HttpServlet {
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
                     json = SolrIndexer.indexDocLabels(js); 
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        CHANGE_STATE{
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.changeState(js); 
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

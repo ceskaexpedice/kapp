@@ -79,6 +79,10 @@ export class AppService {
     return this.get('index/titles', params)
   }
 
+  getDoc(pid: string): Observable<any> {
+    return this.get('index/get_doc', {pid});
+  }
+
   searchAuthors(params: HttpParams): Observable<any> {
     return this.get('index/authors', params)
   }
@@ -101,6 +105,10 @@ export class AppService {
 
   saveDocLabels(pid: string, labels: string[]): Observable<any> {
     return this.post('index/save_doc_labels', {pid,labels});
+  }
+
+  changeState(state: any): Observable<any> {
+    return this.post('index/change_state', state);
   }
   
 }

@@ -7,7 +7,12 @@
         <mat-list class="app-facet">
           @for(k of usedFacets; track $index; let idx = $index){
           <mat-list-item (click)="unfilter(k.field, k.value)" >
-            <mat-icon>delete_forever</mat-icon> {{ 'field.' + k.field | translate}}: {{ k.value }}
+            <mat-icon>delete_forever</mat-icon> {{ 'field.' + k.field | translate}}: 
+            @if (k.field === 'state') {
+            {{ 'state.' + k.value | translate}}
+            } @else {
+            {{ k.value }}
+            }
           </mat-list-item>
           }
         </mat-list>
@@ -27,7 +32,7 @@
             @if (f === 'state') {
             <mat-checkbox [checked]="isUsed(f, k.val)">{{ 'state.' + k.val | translate}} ({{k.count}}) </mat-checkbox>
             } @else {
-            <mat-checkbox [checked]="isUsed(f, k.val)">{{ k.val}} ({{k.count}}) </mat-checkbox>
+            <mat-checkbox [checked]="isUsed(f, k.val)">{{ k.val }} ({{k.count}}) </mat-checkbox>
             }
           </mat-list-item>
           }

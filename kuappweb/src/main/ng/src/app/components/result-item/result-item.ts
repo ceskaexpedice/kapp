@@ -1,5 +1,5 @@
 import { HttpParams } from '@angular/common/http';
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, input, model, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { RouterModule } from '@angular/router';
@@ -27,7 +27,7 @@ import { StateDialog } from '../state-dialog/state-dialog';
   styleUrl: './result-item.scss'
 })
 export class ResultItem {
-  doc = input<any>();
+  doc = model<any>();
   expanded = input<any>();
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
@@ -131,8 +131,13 @@ export class ResultItem {
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result !== undefined) {
-
+      console.log(result)
+      if (result) {
+        this.service.getDoc(this.doc().pid).subscribe((resp: any) => {
+          if (resp.response?.docs?.length > 0) {
+            this.doc.set(resp.response.docs[0]);
+          }
+        });
       }
     });
   }

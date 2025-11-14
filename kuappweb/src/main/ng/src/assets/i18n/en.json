@@ -17,6 +17,10 @@
     "id": "Identifier",
     "last_author": "lAST AUTHOR",
     "year_of_death_last_author": "Last author death",
+    "physical_locations": "Umisteni",
+    "public": "Public",
+    "public_since": "Public since",
+    "licenses": "Licenses",
     "note": "Note",
     "pid": "PID",
     "links": "External links"

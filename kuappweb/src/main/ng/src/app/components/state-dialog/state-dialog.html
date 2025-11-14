@@ -6,12 +6,15 @@
     }
 
     <div>
-        Initial state: {{ 'state.' + initialState | translate}}
+        Actual state: {{ 'state.' + initialState | translate}}
+    </div>
+    <div>
+        Actual licenses: {{ initialLicenses}}
     </div>
     <div>
         <mat-form-field appearance="outline">
             <mat-label>{{ 'new_state' | translate }}</mat-label>
-            <mat-select [(ngModel)]="newState">
+            <mat-select [(ngModel)]="newState" required>
                 @for (l of config.states; track l) {
                 <mat-option [value]="l">{{ 'state.' + l | translate}}</mat-option>
                 }
@@ -20,7 +23,7 @@
 
         <mat-form-field appearance="outline">
             <mat-label>{{ 'licenses' | translate }}</mat-label>
-            <mat-select [(ngModel)]="newLicense">
+            <mat-select [(ngModel)]="newLicenses" multiple >
                 @for (l of config.licenses; track l) {
                 <mat-option [value]="l">{{ l}}</mat-option>
                 }
@@ -29,9 +32,9 @@
     </div>
 
     <div>
-        <mat-form-field appearance="outline">
+        <mat-form-field appearance="outline" class="app-fill-w">
             <mat-label>{{ 'Duvod' }}</mat-label>
-            <textarea matInput></textarea>
+            <textarea [(ngModel)]="reason" matInput required></textarea>
         </mat-form-field>
     </div>
 
@@ -57,6 +60,6 @@
 
 </mat-dialog-content>
 <mat-dialog-actions>
-    <button matButton (click)="save()">{{ 'action.save' | translate }}</button>
+    <button matButton [disabled]="!newState || !reason" (click)="save()">{{ 'action.save' | translate }}</button>
     <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>
