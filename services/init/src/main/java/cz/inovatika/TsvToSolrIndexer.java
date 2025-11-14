@@ -8,6 +8,8 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.URI;
+import java.net.URLDecoder;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -33,6 +35,7 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 import org.json.JSONObject;
@@ -175,6 +178,24 @@ public class TsvToSolrIndexer {
                                                             + "/metadata/mods");
                                         }
                                         nameIDArray = XmlProcessor.processBiblioMods(xml, doc);
+
+                                        // String query = "q=pid:" + URLEncoder.encode(
+                                        // ClientUtils.escapeQueryChars(pid), "UTF-8") ;
+                                        // JSONObject item = getItem(client, builder, pid,
+                                        // "https://ndk.cz/search/api/v5.0/search?" + query);
+                                        JSONObject item = getItem(client, builder, pid,
+                                                "https://ndk.cz/search/api/v5.0/item/" + pid);
+                                        if (item != null) {
+                                            doc.setField("model", item.optString("model"));
+                                        } else {
+                                            item = getItem(client, builder, pid,
+                                                    "https://api.kramerius.mzk.cz/search/api/client/v7.0/search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), "UTF-8"));
+                                                    if (item != null && item.getJSONObject("response")
+                                                        .getJSONArray("docs").length() > 0) {
+                                                doc.setField("model", item.getJSONObject("response")
+                                                        .getJSONArray("docs").getJSONObject(0).optString("model"));
+                                            }
+                                        }
                                     }
                                     case "year_of_death_last_author", "public_since" -> {
                                         if (NumberUtils.isCreatable(value) && value.length() == 4) {
@@ -321,6 +342,24 @@ public class TsvToSolrIndexer {
     private static void dateFormatError(int recordNumber, String Originalvalue, String value) {
         System.err.println("Unexpected date format on row: " + recordNumber + "\n\tVALUE: "
                 + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
+    }
+
+    private static JSONObject getItem(HttpClient client, DocumentBuilder builder, String pid, String url)
+            throws IOException, InterruptedException {
+        if (pid == null || pid.isBlank()) {
+            return null;
+        }
+        HttpResponse<String> response = client.send(HttpRequest.newBuilder()
+                .uri(URI.create(url))
+                .GET()
+                .build(), HttpResponse.BodyHandlers.ofString());
+        if (response != null && response.statusCode() == 200) {
+            return new JSONObject(response.body());
+        } else {
+            System.out.println("Failed to fetch ITEM for second pid " + pid + ", response code: "
+                    + (response != null ? response.statusCode() : "null response"));
+            return null;
+        }
     }
 
     private static Document getBiblioMods(HttpClient client, DocumentBuilder builder, String pid, String url)
