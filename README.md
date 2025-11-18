@@ -30,6 +30,7 @@ stateDiagram-v2
 
     %% Přechody po kurátorské kontrole
     KE_KONTROLE --> KONTROLOVANE_VOLNE : Kontrola - Volné AP
+    KE_KONTROLE --> KONTROLOVANE_NEVEREJNE : Kontrola - Běží AP, známý rok
 ```
 
 ## Getting started
