@@ -1,6 +1,71 @@
 # NKP - Kurátorská aplikace
 
 
+## Popis stavu 
+
+Jasně! Aby se diagram správně zobrazil ve GitLab Wiki, stačí předchozí Mermaid kód vložit do bloku kódu, který je označen jako mermaid.
+
+Tady je kód, který můžeš zkopírovat a vložit přímo do tvé GitLab Wiki stránky:
+
+Markdown
+
+```mermaid
+stateDiagram-v2
+    direction LR
+
+    state Počáteční <<start>>
+    state Konec <<end>>
+
+    state NEKONTROLOVANÉ_ZPŘÍSTUPNĚNÉ : Public (Auto-parametry)
+    state NEKONTROLOVANÉ : Private (Auto-parametry, bez kontroly)
+    state KE_KONTROLE : Private (Primární fronta pro kurátora)
+
+    state KONTROLOVANÉ_VOLNÉ : Public (Volné AP)
+    state KONTROLOVANÉ_NEVEŘEJNÉ : Private (Běží AP, s rozhodným rokem)
+    state KONTROLOVANÉ_NEZNÁMÉ : Private (Neznámý stav AP)
+    state KONTROLOVANÉ_NEZNÁMÉ_ZPŘÍSTUPNĚNÉ : Public (Neznámé AP, ale zpřístupněno)
+    state KONTROLOVANÉ_NEVEŘEJNÉ_LICENCE : Public/Private (Neveřejné, ale s licencí)
+    state KONTROLOVANÉ_BEZ_AP : Public (Dílo bez AP)
+    state KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Private (Znepřístupněno)
+
+    %% Počáteční stavy (Automatické zařazení)
+    [*] --> Počáteční
+    Počáteční --> NEKONTROLOVANÉ_ZPŘÍSTUPNĚNÉ : Auto-parametry ZPŘÍSTUPNĚNO (Public)
+    Počáteční --> NEKONTROLOVANÉ : Auto-parametry NEZPŘÍSTUPNĚNO (Private)
+    Počáteční --> KE_KONTROLE : Nesplňuje auto-parametry
+
+    %% Přechody po kurátorské kontrole
+    KE_KONTROLE --> KONTROLOVANÉ_VOLNÉ : Kontrola: Volné AP
+    KE_KONTROLE --> KONTROLOVANÉ_NEVEŘEJNÉ : Kontrola: Běží AP, známý rok
+    KE_KONTROLE --> KONTROLOVANÉ_NEZNÁMÉ : Kontrola: Neznámý stav AP
+    KE_KONTROLE --> KONTROLOVANÉ_NEZNÁMÉ_ZPŘÍSTUPNĚNÉ : Kontrola: Neznámé AP, ale jiná podmínka
+    KE_KONTROLE --> KONTROLOVANÉ_NEVEŘEJNÉ_LICENCE : Kontrola: S licencí
+    KE_KONTROLE --> KONTROLOVANÉ_BEZ_AP : Kontrola: Bez AP
+    KE_KONTROLE --> KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Kontrola: Znepřístupněno
+
+    %% Automatické přechody v čase
+    KONTROLOVANÉ_NEVEŘEJNÉ --> KONTROLOVANÉ_VOLNÉ : Uplynutí rozhodného roku
+    KONTROLOVANÉ_NEVEŘEJNÉ_LICENCE --> KONTROLOVANÉ_VOLNÉ : Uplynutí rozhodného roku
+
+    %% Přechod do fronty kontroly (manuálně)
+    NEKONTROLOVANÉ --> KE_KONTROLE : Manuální přesun do kontroly
+
+    %% Přechody do stavu ZNEPŘÍSTUPNĚNÉ (všechny finalizované)
+    KONTROLOVANÉ_VOLNÉ --> KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Znepřístupnění (Manuálně)
+    KONTROLOVANÉ_NEVEŘEJNÉ --> KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Znepřístupnění (Manuálně)
+    KONTROLOVANÉ_NEZNÁMÉ --> KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Znepřístupnění (Manuálně)
+    KONTROLOVANÉ_NEZNÁMÉ_ZPŘÍSTUPNĚNÉ --> KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Znepřístupnění (Manuálně)
+    KONTROLOVANÉ_NEVEŘEJNÉ_LICENCE --> KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Znepřístupnění (Manuálně)
+    KONTROLOVANÉ_BEZ_AP --> KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Znepřístupnění (Manuálně)
+    NEKONTROLOVANÉ_ZPŘÍSTUPNĚNÉ --> KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Znepřístupnění (Manuálně)
+
+    %% Návrat do kontroly (re-evaluace)
+    KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ --> KE_KONTROLE : Re-evaluace
+    
+
+    KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ --> Konec
+
+```
 
 ## Getting started
 
