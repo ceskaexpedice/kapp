@@ -25,7 +25,7 @@ stateDiagram-v2
     state KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Private (Znepřístupněno)
 
     %% Pocatecni prechody 
-    [*] --> Pocatek
+    [*] --> Imported
     Imported --> NEKONTROLOVANE_ZPRISTUPNENE 
     Imported --> NEKONTROLOVANE 
     Imported --> KE_KONTROLE 
