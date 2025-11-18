@@ -203,7 +203,7 @@ public class HarvesterImpl implements Harvester {
         config.setAcronym("nkp");
         config.setApiVersion(APIVersion.v5);
         config.setSolrCloud(false);
-        config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-01T00:00:21.221Z"));
+        config.updateLastUpdatedTimestampManually(Instant.parse("2025-04-01T00:00:21.221Z"));
         config.setUrl("https://ndk.cz/search/api/v5.0/");
 
         // h.harvest(config,System.out::println);

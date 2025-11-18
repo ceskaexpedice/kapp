@@ -113,7 +113,7 @@ public class TsvToSolrIndexer {
                         SolrInputDocument doc = new SolrInputDocument();
                         int recordNumber = (int) record.getRecordNumber() + 1; // +1 to account for header
                         String pid;
-                        String secondPid = null;
+                        String rootPid = null;
                         String[] authorArray;
                         AutorData[] nameIDArray = null;
                         for (Map.Entry<String, String> entry : record.toMap().entrySet()) {
@@ -155,17 +155,21 @@ public class TsvToSolrIndexer {
                                             }
                                         }
                                         pid = parts[0];
+                                        rootPid = parts[0];
+
                                         if (parts.length > 1) {
                                             if (parts.length > 2) {
                                                 System.out.println("More than two UUIDs found, using first two."
                                                         + parts[2] + " Row: " + recordNumber);
                                             }
-                                            secondPid = parts[1];
+                                            pid = parts[1];
+                                            rootPid = parts[0];
                                             // System.out.println("Multiple UUIDs found, First one: " + uuid + " Second
                                             // one:" + secondPid + " Row: " + recordNumber);
                                         }
+                                        
                                         doc.setField(header, pid);
-                                        doc.setField("root.pid", pid);
+                                        doc.setField("root.pid", rootPid);
 
                                         // NDK. K5
                                         Document xml = getBiblioMods(client, builder, pid,
@@ -187,6 +191,7 @@ public class TsvToSolrIndexer {
                                                 "https://ndk.cz/search/api/v5.0/item/" + pid);
                                         if (item != null) {
                                             doc.setField("model", item.optString("model"));
+                                            doc.setField("root.pid", item.optString("root_pid"));
                                         } else {
                                             item = getItem(client, builder, pid,
                                                     "https://api.kramerius.mzk.cz/search/api/client/v7.0/search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), "UTF-8"));
@@ -194,6 +199,8 @@ public class TsvToSolrIndexer {
                                                         .getJSONArray("docs").length() > 0) {
                                                 doc.setField("model", item.getJSONObject("response")
                                                         .getJSONArray("docs").getJSONObject(0).optString("model"));
+                                                doc.setField("root.pid", item.getJSONObject("response")
+                                                        .getJSONArray("docs").getJSONObject(0).optString("root.pid"));
                                             }
                                         }
                                     }
@@ -228,12 +235,12 @@ public class TsvToSolrIndexer {
                             }
                         }
 
-                        solrClient.add("titles", doc);
-                        if (secondPid != null) {
-                            SolrInputDocument seconddoc = doc.deepCopy();
-                            seconddoc.setField("pid", secondPid);
-                            solrClient.add("titles", seconddoc);
-                        }
+                        solrClient.add("titles", doc); 
+                        // if (secondPid != null) {
+                        //     SolrInputDocument seconddoc = doc.deepCopy();
+                        //     seconddoc.setField("pid", secondPid);
+                        //     solrClient.add("titles", seconddoc);
+                        // }
                     }
 
                 } catch (Exception e) {
@@ -246,12 +253,15 @@ public class TsvToSolrIndexer {
             solrClient.commit("titles");
             solrClient.commit("authors");
             System.out.println("All TSV files indexed successfully.");
+            System.exit(0);
 
         } catch (ConnectException e) {
             System.err.println("Failed to connect to Solr " + e.getMessage());
+            System.exit(1);
         } catch (Exception e) {
             System.err.println(
                     "Error indexing data: Exception type: " + e.getClass().getName() + " Message:" + e.getMessage());
+            System.exit(1);
         }
     }
 
