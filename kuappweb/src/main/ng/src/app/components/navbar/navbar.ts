@@ -29,5 +29,21 @@ export class Navbar {
   onLanguageChanged(lang: string) {
     this.translator.use(lang);
   }
+  goToKeycloakLogin() {
+    const keycloakUrl =
+      'https://eduid.inovatika.dev/realms/master/protocol/openid-connect/auth';
 
+    const clientId = 'kuratorska-aplikace-web';
+    const redirectUri = encodeURIComponent(window.location.origin + '/callback');
+    const responseType = 'code';
+    const scope = 'openid';
+
+    const url =
+      `${keycloakUrl}?client_id=${clientId}` +
+      `&redirect_uri=${redirectUri}` +
+      `&response_type=${responseType}` +
+      `&scope=${scope}`;
+
+    window.location.href = url;
+  }
 }

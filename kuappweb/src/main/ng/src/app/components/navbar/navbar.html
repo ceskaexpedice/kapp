@@ -7,7 +7,7 @@
   <div class="app-fxLayout app-row app-center-v">
     <a [routerLink]="['titles']" routerLinkActive="app-active-link" matButton>{{ 'navbar.titles' | translate}}</a>
     <a [routerLink]="['authors']" routerLinkActive="app-active-link" matButton>{{ 'navbar.authors' | translate}}</a>
-    <a matButton>{{ 'login' | translate}}</a>
+    <a matButton (click)="goToKeycloakLogin()">{{ 'login' | translate}}</a>
     <a [routerLink]="['admin']" routerLinkActive="app-active-link" matButton>{{ 'navbar.admin' | translate}}</a>
     <a matButton [matMenuTriggerFor]="menu">{{ translator.currentLang | translate}}</a>
     <mat-menu #menu="matMenu">
@@ -15,4 +15,4 @@
       <button mat-menu-item (click)="onLanguageChanged('en')">English</button>
     </mat-menu>
   </div>
-</mat-toolbar>  
+</mat-toolbar>
