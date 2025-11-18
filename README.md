@@ -32,8 +32,6 @@ stateDiagram-v2
     KE_KONTROLE --> KONTROLOVANE_VOLNE : Kontrola - Volné AP
     KE_KONTROLE --> KONTROLOVANE_NEVEREJNE : Kontrola - Běží AP, známý rok
     KE_KONTROLE --> KONTROLOVANE_NEZNAME : Kontrola - Neznámý stav AP
-    KE_KONTROLE --> KONTROLOVANE_NEZNAME_ZPRISTUPNENE - Kontrola: Jiná podmínka
-
 ```
 
 ## Getting started
