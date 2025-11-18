@@ -89,7 +89,6 @@ stateDiagram-v2
 
     %% Automatické přechody v čase
     KONTROLOVANE_NEVEREJNE --> KONTROLOVANE_VOLNE : Uplynutí rozhodného roku
-    KONTROLOVANE_NEVEREJNE_LICENCE --> KONTROLOVANE_VOLNE : Uplynutí rozhodného roku
 ```
 
 
