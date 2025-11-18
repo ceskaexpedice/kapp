@@ -54,13 +54,13 @@ stateDiagram-v2
 
 
     %% Přechody po kurátorské kontrole
-    KE_KONTROLE --> KONTROLOVANE_VOLNE : Kontrola: Volné AP
-    KE_KONTROLE --> KONTROLOVANE_NEVEREJNE : Kontrola: Běží AP, známý rok
-    KE_KONTROLE --> KONTROLOVANE_NEZNAME : Kontrola: Neznámý stav AP
-    KE_KONTROLE --> KONTROLOVANE_NEZNAME_ZPRISTUPNENE : Kontrola: Jiná podmínka
-    KE_KONTROLE --> KONTROLOVANE_NEVEREJNE_LICENCE : Kontrola: S licencí
-    KE_KONTROLE --> KONTROLOVANE_BEZ_AP : Kontrola: Bez AP
-    KE_KONTROLE --> KONTROLOVANE_ZNEPRISTUPNENE : Kontrola: Znepřístupněno
+    KE_KONTROLE --> KONTROLOVANE_VOLNE : Kontrola - Volné AP
+    KE_KONTROLE --> KONTROLOVANE_NEVEREJNE : Kontrola -  Běží AP, známý rok
+    KE_KONTROLE --> KONTROLOVANE_NEZNAME : Kontrola - Neznámý stav AP
+    KE_KONTROLE --> KONTROLOVANE_NEZNAME_ZPRISTUPNENE : Kontrola - Jiná podmínka
+    KE_KONTROLE --> KONTROLOVANE_NEVEREJNE_LICENCE : Kontrola - S licencí
+    KE_KONTROLE --> KONTROLOVANE_BEZ_AP : Kontrola - Bez AP
+    KE_KONTROLE --> KONTROLOVANE_ZNEPRISTUPNENE : Kontrola - Znepřístupněno
 ```
 
 ## Getting started
