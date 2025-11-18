@@ -55,7 +55,7 @@ stateDiagram-v2
 
     %% Přechody po kurátorské kontrole
     KE_KONTROLE --> KONTROLOVANE_VOLNE : Kontrola - Volné
-    KE_KONTROLE --> KONTROLOVANE_NEVEREJNE : Kontrola -  Běží AP, neznámý rok kdy vyprší 
+    KE_KONTROLE --> KONTROLOVANE_NEVEREJNE : Kontrola -  Běží AP, známý rok kdy vyprší 
     KE_KONTROLE --> KONTROLOVANE_NEZNAME : Kontrola - Neznámý stav AP 
     KE_KONTROLE --> KONTROLOVANE_NEZNAME_ZPRISTUPNENE : Neznámý stav AP ale bylo zpřístupněno dle jiné podmínky 
     KE_KONTROLE --> KONTROLOVANE_NEVEREJNE_LICENCE : Kontrola - Knihovna na něj vlastní licenci - ? 
