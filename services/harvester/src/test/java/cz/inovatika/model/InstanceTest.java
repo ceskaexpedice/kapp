@@ -37,6 +37,6 @@ public class InstanceTest {
         Assertions.assertEquals(expecationsV5, realValueV5);
 
         String queryV5 = instanceV5.getApiVersion().iterationQuery();
-        Assertions.assertEquals("fedora.model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)",queryV5);
+        Assertions.assertEquals("fedora.model:(monograph+OR+monographunit)",queryV5);
     }
 }
