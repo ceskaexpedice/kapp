@@ -26,8 +26,8 @@ stateDiagram-v2
 
     %% Pocatecni prechody 
     [*] --> Imported
-    Imported --> NEKONTROLOVANE_ZPRISTUPNENE : Automatický přechod, 110 nebo starší než 1900 
-    Imported --> NEKONTROLOVANE : Automaticky přidělovaná licence onsite - Nedochází ke kurátorské kontrole (Mapy, monografie a hudebniny vydané před méně než 70 lety)
+    Imported --> NEKONTROLOVANE_ZPRISTUPNENE : Automatický přechod - starší než 110 nebo 1900 
+    Imported --> NEKONTROLOVANE : Automatický přechod - mladší než 70
     Imported --> KE_KONTROLE : Nutná kurátorská kontrola
 
 ```
