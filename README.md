@@ -38,9 +38,6 @@ stateDiagram-v2
     KE_KONTROLE --> KONTROLOVANE_NEVEREJNE_LICENCE - Kontrola: S licencí
     KE_KONTROLE --> KONTROLOVANE_BEZ_AP : Kontrola - Bez AP
     KE_KONTROLE --> KONTROLOVANE_ZNEPRISTUPNENE : Kontrola - Znepřístupněno
-
-
-
 ```
 
 ## Getting started
