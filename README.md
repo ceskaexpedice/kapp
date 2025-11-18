@@ -26,9 +26,9 @@ stateDiagram-v2
 
     %% Pocatecni prechody 
     [*] --> Imported
-    Imported --> NEKONTROLOVANE_ZPRISTUPNENE 
-    Imported --> NEKONTROLOVANE 
-    Imported --> KE_KONTROLE 
+    Imported --> NEKONTROLOVANE_ZPRISTUPNENE : Automaticky přidělovaná licence public - Nedochází ke kurátorské kontrole (Monografie pred rokem 1900 a rocniky starsi nez 110 let)
+    Imported --> NEKONTROLOVANE : Automaticky přidělovaná licence onsite - Nedochází ke kurátorské kontrole (Mapy, monografie a hudebniny vydané před méně než 70 lety)
+    Imported --> KE_KONTROLE : Nutná kurátorská kontrola
 
 ```
 
