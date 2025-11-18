@@ -3,16 +3,18 @@
 
 ## Popis stavu 
 
+### Stavy po importu dokumentů 
+
 ```mermaid
 stateDiagram-v2
     direction LR
 
-    state Počáteční <<start>>
+    state Imported <<start>>
     state Konec <<end>>
 
-    state NEKONTROLOVANÉ_ZPŘÍSTUPNĚNÉ : Public (Auto-parametry)
-    state NEKONTROLOVANÉ : Private (Auto-parametry, bez kontroly)
-    state KE_KONTROLE : Private (Primární fronta pro kurátora)
+    state NEKONTROLOVANÉ_ZPŘÍSTUPNĚNÉ : Automaticky přidělovaná licence public - Nedochází ke kurátorské kontrole (Monografie pred rokem 1900 a rocniky starsi nez 110 let)
+    state NEKONTROLOVANÉ : Automaticky přidělovaná licence onsite - Nedochází ke kurátorské kontrole (Mapy, monografie a hudebniny vydané před méně než 70 lety)
+    state KE_KONTROLE : Nutná kurátorská kontrola
 
     state KONTROLOVANÉ_VOLNÉ : Public (Volné AP)
     state KONTROLOVANÉ_NEVEŘEJNÉ : Private (Běží AP, s rozhodným rokem)
@@ -24,40 +26,10 @@ stateDiagram-v2
 
     %% Pocatecni prechody 
     [*] --> Pocatek
-    Pocatek --> NEKONTROLOVANE_ZPRISTUPNENE : Auto-parametry Public
-    Pocatek --> NEKONTROLOVANE : Auto-parametry Private
-    Pocatek --> KE_KONTROLE : Nesplňuje auto-parametry
+    Imported --> NEKONTROLOVANE_ZPRISTUPNENE 
+    Imported --> NEKONTROLOVANE 
+    Imported --> KE_KONTROLE 
 
-    %% Přechody po kurátorské kontrole
-    KE_KONTROLE --> KONTROLOVANE_VOLNE : Kontrola - Volné AP
-    KE_KONTROLE --> KONTROLOVANE_NEVEREJNE : Kontrola - Běží AP, známý rok
-    KE_KONTROLE --> KONTROLOVANE_NEZNAME : Kontrola - Neznámý stav AP
-    KE_KONTROLE --> KONTROLOVANE_NEZNAME_ZPRISTUPNENE: Kontrola - Jiná podmínka
-
-    KE_KONTROLE --> KONTROLOVANE_NEVEREJNE_LICENCE : Kontrola - S licencí
-    KE_KONTROLE --> KONTROLOVANE_BEZ_AP : Kontrola - Bez AP
-    KE_KONTROLE --> KONTROLOVANE_ZNEPRISTUPNENE : Kontrola - Znepřístupněno
-
-    %% Automatické přechody v čase
-    KONTROLOVANE_NEVEREJNE --> KONTROLOVANE_VOLNE : Uplynutí rozhodného roku
-    KONTROLOVANE_NEVEREJNE_LICENCE --> KONTROLOVANE_VOLNE : Uplynutí rozhodného roku
-
-    %% Přechod do kontroly (manuálně)
-    NEKONTROLOVANE --> KE_KONTROLE : Manuální přesun
-
-    %% Přechody do stavu ZNEPRISTUPNENE
-    KONTROLOVANE_VOLNE --> KONTROLOVANE_ZNEPRISTUPNENE : Znepřístupnění (Manuálně)
-    KONTROLOVANE_NEVEREJNE --> KONTROLOVANE_ZNEPRISTUPNENE : Znepřístupnění (Manuálně)
-    KONTROLOVANE_NEZNAME --> KONTROLOVANE_ZNEPRISTUPNENE : Znepřístupnění (Manuálně)
-    KONTROLOVANE_NEZNAME_ZPRISTUPNENE --> KONTROLOVANE_ZNEPRISTUPNENE : Znepřístupnění (Manuálně)
-    KONTROLOVANE_NEVEREJNE_LICENCE --> KONTROLOVANE_ZNEPRISTUPNENE : Znepřístupnění (Manuálně)
-    KONTROLOVANE_BEZ_AP --> KONTROLOVANE_ZNEPRISTUPNENE : Znepřístupnění (Manuálně)
-    NEKONTROLOVANE_ZPRISTUPNENE --> KONTROLOVANE_ZNEPRISTUPNENE : Znepřístupnění (Manuálně)
-
-    %% Návrat do kontroly
-    KONTROLOVANE_ZNEPRISTUPNENE --> KE_KONTROLE : Re-evaluace
-    
-    KONTROLOVANE_ZNEPRISTUPNENE --> Konec
 ```
 
 ## Getting started
