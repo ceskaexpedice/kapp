@@ -390,7 +390,7 @@ public class TsvToSolrIndexer {
         }
     }
 
-    private static boolean ParseDates(SolrInputDocument doc, String value, int recordNumber, boolean show_comma_info) {
+    private static void ParseDates(SolrInputDocument doc, String value, int recordNumber, boolean show_comma_info) {
         try {
             String Originalvalue = value;
             /*
@@ -400,78 +400,10 @@ public class TsvToSolrIndexer {
              */
             if (value == null || value.isEmpty()) {
                 System.err.println("Empty date on row: " + recordNumber);
-                return true;
+                return;
             }
-            if (value.contains("asi")) {
-                String year = value.replaceAll("[^0-9]", "");
-                if (year.length() == 4) {
-                    value = year + "?";
-                } else {
-                    dateFormatError(recordNumber, Originalvalue, value);
-                }
-            } else if (value.contains("okolo r. 1900")) {
-                value = "1900?";
-            } else if (value.contains("chybně")) {
-                value = value.split(",")[0].trim();
-            } else if (value.contains("mezi")) {
-                value = value.replace("mezi r.", "mezi");
-                String[] parts = value.split(" ");
-                switch (parts.length) {
-                    case 2 ->
-                        value = parts[1];
-                    case 4 ->
-                        value = parts[1] + "-" + parts[3];
-                    default ->
-                        dateFormatError(recordNumber, Originalvalue, value);
-                }
-            } else if (value.contains("po")) {
-                value = value.replace("po r.", "po ");
-                value = value.replaceAll("[\\[\\]]", "");
-                String[] parts = Arrays.stream(value.split(" "))
-                        .filter(s -> !s.isEmpty())
-                        .toArray(String[]::new);
-                if (parts.length != 2) {
-                    dateFormatError(recordNumber, Originalvalue, value);
-
-                } else {
-                    String year = parts[1];
-                    if (year.length() == 4) {
-                        add_year_since(year, doc, true);
-                    } else {
-                        add_year_since(parts[1].substring(0, 4), doc, false);
-                    }
-                }
-                return true;
-            } else if (value.contains("před")) {
-                value = value.replace("před r.", "před");
-                value = value.replaceAll("[\\[\\]]", "");
-                String[] parts = value.split(" ");
-                if (parts.length != 2) {
-                    dateFormatError(recordNumber, Originalvalue, value);
-
-                } else {
-                    String year = parts[1];
-                    if (year.length() == 4) {
-                        add_year_before(year, doc, true);
-                    } else {
-                        add_year_before(parts[1].substring(0, 4), doc, false);
-                    }
-                }
-                return true;
-            } else if (value.contains("nebo")) {
-                if (!value.contains(" nebo")) {
-                    value = value.replace("nebo", " nebo");
-                }
-                if (!value.contains("nebo ")) {
-                    value = value.replace("nebo", "nebo ");
-                }
-                String[] parts = value.split(" ");
-                if (parts.length != 3) {
-                    dateFormatError(recordNumber, Originalvalue, value);
-                } else {
-                    value = parts[0] + "?-" + parts[2] + "?";
-                }
-            }
+            value = XmlProcessor.replaceWordsWithQMarks(value, recordNumber, Originalvalue);
+            
             if (value.contains(",")) {
                 String og = value;
                 value = value.split(",")[0].trim();
@@ -501,10 +433,8 @@ public class TsvToSolrIndexer {
             // value = value.replaceAll("[\\[\\]]", "");//Just purge the brackets.
             XmlProcessor.parseDateBasic(doc, value, recordNumber, Originalvalue);
 
-            return false;
         } catch (Exception e) {
             System.out.println("Critical Exception occured in:date_str: " + e.getMessage());
-            return false;
         }
     }
 

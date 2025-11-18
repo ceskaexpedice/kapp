@@ -3,6 +3,7 @@ package cz.inovatika;
 import java.io.IOException;
 import java.text.Normalizer;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
@@ -23,7 +24,7 @@ public class XmlProcessor {
         if (xml == null) {
             return null;
         }
-        NodeList nodes = xml.getElementsByTagNameNS("http://www.loc.gov/mods/v3","identifier");
+        NodeList nodes = xml.getElementsByTagNameNS("http://www.loc.gov/mods/v3", "identifier");
         for (int i = 0; i < nodes.getLength(); i++) {
             String type = ((Element) nodes.item(i)).getAttribute("type");
             doc.addField("id_" + type, nodes.item(i).getTextContent());
@@ -47,7 +48,7 @@ public class XmlProcessor {
             String nameIdentifier = null;
             List<String> role = new ArrayList<>();
 
-            NodeList nameParts = getNodelistByLocalTagName(name,"namePart");
+            NodeList nameParts = getNodelistByLocalTagName(name, "namePart");
             if (nameParts != null && nameParts.getLength() > 0) {
                 for (int i = 0; i < nameParts.getLength(); i++) {
                     Node item = nameParts.item(i);
@@ -98,14 +99,14 @@ public class XmlProcessor {
 
             }
 
-            Element nameIDx = getElementByLocalTagName(name,"nameIdentifier");
+            Element nameIDx = getElementByLocalTagName(name, "nameIdentifier");
             if (nameIDx != null) {
                 nameIdentifier = nameIDx.getTextContent();
             }
 
-            Element rolEl = getElementByLocalTagName(name,"role");
+            Element rolEl = getElementByLocalTagName(name, "role");
             if (rolEl != null) {
-                NodeList roles = getNodelistByLocalTagName(name,"roleTerm");
+                NodeList roles = getNodelistByLocalTagName(name, "roleTerm");
                 for (int i = 0; i < roles.getLength(); i++) {
                     role.add(roles.item(i).getTextContent());
                 }
@@ -115,14 +116,17 @@ public class XmlProcessor {
         }
         return nameIDArr;
     }
-    static Element getElementByLocalTagName(Element name,String localName){
-        return (Element)name.getElementsByTagNameNS("http://www.loc.gov/mods/v3",localName).item(0);
+
+    static Element getElementByLocalTagName(Element name, String localName) {
+        return (Element) name.getElementsByTagNameNS("http://www.loc.gov/mods/v3", localName).item(0);
     }
-    static NodeList getNodelistByLocalTagName(Element name,String localName){
-        return name.getElementsByTagNameNS("http://www.loc.gov/mods/v3",localName);
+
+    static NodeList getNodelistByLocalTagName(Element name, String localName) {
+        return name.getElementsByTagNameNS("http://www.loc.gov/mods/v3", localName);
     }
+
     public static List<SolrInputDocument> extractAuthorData(final boolean show_comma_info, final SolrClient solrClient, SolrInputDocument doc,
-            final int recordNumber,final AutorData[] nameIDArray) throws SolrServerException, IOException {
+            final int recordNumber, final AutorData[] nameIDArray) throws SolrServerException, IOException {
         if (nameIDArray == null) {
             return null;
         }
@@ -148,14 +152,17 @@ public class XmlProcessor {
             //aDoc.addField("birth", autor.family);
             // aDoc.addField("death", autor.family);
 
-            if(autor.date!=null)parseDateBasic(aDoc, autor.date, recordNumber, autor.date);
+            if (autor.date != null) {
+                parseDateBasic(aDoc, autor.date, recordNumber, autor.date);
+            }
 
             authorDocs.add(aDoc);
         }
         return authorDocs;
 
     }
-        public static String normalize(String input) {
+
+    public static String normalize(String input) {
         if (input == null) {
             return "";
         }
@@ -165,6 +172,7 @@ public class XmlProcessor {
         result = result.replaceAll("[^a-z0-9]", "");
         return result;
     }
+
     public static void parseDateBasic(SolrInputDocument doc, String value, int recordNumber, String Originalvalue) {
         value = value.replaceAll("ca\\.?\\s*", "?");//replace ca with ?
         value = value.replaceAll("asi\\s*", "?").trim();
@@ -224,7 +232,7 @@ public class XmlProcessor {
                         yearEnd = "19" + yearEnd;
                     }
                 }
-                */
+                 */
                 if (yearStart.isEmpty()) {
                     yearStart = "0";
                     confirmedStart = false;
@@ -243,7 +251,9 @@ public class XmlProcessor {
             case 1 -> {
                 String year = parts[0].trim();
                 boolean confirmed = year.length() == 4;
-                if (year.length() == 5) {//year? or ?year
+                boolean confirmed_start = true;
+                boolean confirmed_end = true;
+                if (year.length() == 5) {
                     if (year.contains("?")) {
                         if (year.indexOf('?') == 0) {
                             year = year.substring(1, 5);
@@ -254,6 +264,12 @@ public class XmlProcessor {
                     } else if (year.startsWith("c")) {
                         year = year.substring(1, 5);
                         confirmed = true;
+                    }else if (year.startsWith("[")) {
+                        year = year.substring(1, 5);
+                        confirmed_start = false;
+                    }else if (year.endsWith("]")) {
+                        year = year.substring(0, 4);
+                        confirmed_end = false;
                     } else {
                         dateFormatError(recordNumber, Originalvalue, value);
                     }
@@ -263,7 +279,10 @@ public class XmlProcessor {
                     year = year + "00";
                 }
                 if (NumberUtils.isCreatable(year)) {
-                    if (value.contains(year + "-")) {
+                    if(!confirmed_start || !confirmed_end){
+                        add_year_range(year, confirmed_start, year, confirmed_end, doc);
+                    }
+                    else if (value.contains(year + "-")) {
                         add_year_since(year, doc, confirmed);
                     } else {
                         addyear(year, doc, confirmed);
@@ -276,20 +295,25 @@ public class XmlProcessor {
                 dateFormatError(recordNumber, Originalvalue, value);
         }
     }
+
     private static void dateFormatError(int recordNumber, String Originalvalue, String value) {
-        String recNum = (recordNumber!=0) ? (" on row: " + recordNumber):"";
-        System.err.println("Unexpected date format"+recNum  + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
+        String recNum = (recordNumber != 0) ? (" on row: " + recordNumber) : "";
+        System.err.println("Unexpected date format" + recNum + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
+
     private static void dateFormatError(int recordNumber, String Originalvalue, String value, String message) {
-        String recNum = (recordNumber!=0) ? (" on row: " + recordNumber):"";
+        String recNum = (recordNumber != 0) ? (" on row: " + recordNumber) : "";
         System.err.println(message + recNum + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
+
     static void addyear(String year, SolrInputDocument doc, boolean confirmed) {
         add_year_range(year, confirmed, year, confirmed, doc);
     }
+
     static void add_year_since(String year, SolrInputDocument doc, boolean confirmed) {
         add_year_range(year, confirmed, "1999", false, doc);
     }
+
     public static void add_year_range(String year_start, boolean confirmed_start, String year_end, boolean confirmed_end, SolrInputDocument doc) {
 
         try {
@@ -311,9 +335,10 @@ public class XmlProcessor {
             System.err.println("Failed to parse year range: " + year_start + "-" + year_end);
         }
     }
+
     public static void trySetLastAuthor(SolrInputDocument doc, AutorData[] nameIDArray) {
         SolrInputField field = doc.getField("last_author");
-        String last_author=field != null ? (String) field.getValue() : null;
+        String last_author = field != null ? (String) field.getValue() : null;
 
         try {
             if (last_author != null && (nameIDArray != null)) {
@@ -332,12 +357,88 @@ public class XmlProcessor {
             System.out.println("Critical Exception occured in:last_author_nameIdentifier: " + e.getMessage());
         }
     }
+
     private static boolean similartyMatch(String catalogNormalizedTitle, String distriNormalizedTitle, double shoda) {
         LevenshteinDistance dist = LevenshteinDistance.getDefaultInstance();
         Integer calculatedDistance = dist.apply(catalogNormalizedTitle, distriNormalizedTitle);
         double maxDistance = Math.round((1 - shoda) * ((double) distriNormalizedTitle.length()));
 
         return maxDistance >= calculatedDistance;
+    }
+
+    public static String replaceWordsWithQMarks(String value,int recordNumber, String Originalvalue) {
+        if (value.contains("asi")) {
+            String year = value.replaceAll("[^0-9]", "");
+            if (year.length() == 4) {
+                value = year + "?";
+            } else {
+                dateFormatError(recordNumber, Originalvalue, value);
+            }
+        } else if (value.contains("okolo r. 1900")) {
+            value = "1900?";
+        } else if (value.contains("chybně")) {
+            value = value.split(",")[0].trim();
+        } else if (value.contains("mezi")) {
+            value = value.replace("mezi r.", "mezi");
+            String[] parts = value.split(" ");
+            switch (parts.length) {
+                case 2 ->
+                    value = parts[1];
+                case 4 ->
+                    value = parts[1] + "-" + parts[3];
+                default ->
+                    dateFormatError(recordNumber, Originalvalue, value);
+            }
+        } else if (value.contains("po")) {
+            value = value.replace("po roce", "po");
+            value = value.replace("po r.", "po ");
+            value = value.replaceAll("[\\[\\]]", "");
+            String[] parts = Arrays.stream(value.split(" "))
+                    .filter(s -> !s.isEmpty())
+                    .toArray(String[]::new);
+            if (parts.length != 2) {
+                dateFormatError(recordNumber, Originalvalue, value);
+
+            } else {
+                String year = parts[1];
+                value = year + "-?";
+                /*if (year.length() == 4) {
+                    add_year_since(year, doc, true);
+                } else {
+                    add_year_since(parts[1].substring(0, 4), doc, false);
+                }*/
+            }
+        } else if (value.contains("před")) {
+            value = value.replace("před r.", "před");
+            value = value.replaceAll("[\\[\\]]", "");
+            String[] parts = value.split(" ");
+            if (parts.length != 2) {
+                dateFormatError(recordNumber, Originalvalue, value);
+
+            } else {
+                String year = parts[1];
+                value = "?-"+year;
+                /*if (year.length() == 4) {
+                    add_year_before(year, doc, true);
+                } else {
+                    add_year_before(parts[1].substring(0, 4), doc, false);
+                }*/
+            }
+        } else if (value.contains("nebo")) {
+            if (!value.contains(" nebo")) {
+                value = value.replace("nebo", " nebo");
+            }
+            if (!value.contains("nebo ")) {
+                value = value.replace("nebo", "nebo ");
+            }
+            String[] parts = value.split(" ");
+            if (parts.length != 3) {
+                dateFormatError(recordNumber, Originalvalue, value);
+            } else {
+                value = parts[0] + "?-" + parts[2] + "?";
+            }
+        }
+        return value;
     }
 
 }

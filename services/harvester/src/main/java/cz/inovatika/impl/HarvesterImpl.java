@@ -60,12 +60,16 @@ public class HarvesterImpl implements Harvester {
     public static final Logger LOGGER = Logger.getLogger(HarvesterImpl.class.getName());
     private static final String SOLR_URL = "http://localhost:8983/solr";
     private final int ROWS = 100;
-    private static final int BATCH_SIZE = 100;
+    private static final int BATCH_SIZE = 200;
+    private static final int AUTHOR_BATCH_SIZE = 250;
     private static SolrClient solrClient;
 
     @Override
     public void harvest(Instance config, Consumer<HarvesterContext> consumer) {
-        try (HttpClient client = HttpClient.newHttpClient()) {
+        harvest( config, consumer,HttpClient.newHttpClient());
+    }
+
+    public void harvest(Instance config, Consumer<HarvesterContext> consumer,HttpClient client) {
             String cursorMark = null;
             String queryCursorMark;
             // loading timestamp
@@ -97,10 +101,6 @@ public class HarvesterImpl implements Harvester {
             } while ((cursorMark != null && queryCursorMark != null) && !cursorMark.equals(queryCursorMark));
 
             config.saveLastUpdatedToPath();
-
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
     }
 
     public static Element executeQuery(HttpClient httpClient, String url, String query) {
@@ -164,12 +164,12 @@ public class HarvesterImpl implements Harvester {
             exitOnOutOfInterval = false;
         }
         solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build();
-        checkTime(sleepSeconds, start, end);
+        checkTime();
         // inovatika();
         nkp();
     }
 
-    private static void checkTime(long sleepSeconds, LocalTime start, LocalTime end)
+    private static void checkTime()
             throws InterruptedException, IOException {
         boolean inRange;
         while (true) {
@@ -209,8 +209,8 @@ public class HarvesterImpl implements Harvester {
         // h.harvest(config,System.out::println);
         try {
             System.out.println("nkp harvesting started");
-            List<SolrInputDocument> buffer = new ArrayList<>();
-            List<SolrInputDocument> authorbuffer = new ArrayList<>();
+            ArrayList<SolrInputDocument> buffer = new ArrayList<>(BATCH_SIZE);
+            ArrayList<SolrInputDocument> authorbuffer = new ArrayList<>(AUTHOR_BATCH_SIZE + 20);
             h.harvest(config, ctx -> processHarvest(config, ctx, buffer, authorbuffer, solrClient));
             if (!buffer.isEmpty()) { // BATCH_SIZE
                 sendBatch(solrClient, "titles", buffer);
@@ -244,8 +244,8 @@ public class HarvesterImpl implements Harvester {
         // h.harvest(config,System.out::println);
         try {
             System.out.println("inovatika harvesting started");
-            List<SolrInputDocument> buffer = new ArrayList<>();
-            List<SolrInputDocument> authorbuffer = new ArrayList<>();
+            ArrayList<SolrInputDocument> buffer = new ArrayList<>(BATCH_SIZE);
+            ArrayList<SolrInputDocument> authorbuffer = new ArrayList<>(AUTHOR_BATCH_SIZE + 20);
             h.harvest(config, ctx -> processHarvest(config, ctx, buffer, authorbuffer, solrClient));
             if (!buffer.isEmpty()) { // BATCH_SIZE
                 sendBatch(solrClient, "titles", buffer);
@@ -274,19 +274,18 @@ public class HarvesterImpl implements Harvester {
             List<SolrInputDocument> buffer, List<SolrInputDocument> authorbuffer, final SolrClient solrClient) {
         {
             // System.out.println(ctx.item().getPid());
-            InputStream inputStream;
             Stopwatch sw = Stopwatch.createStarted();
+            // System.out.println("");
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField("pid", ctx.item().getPid());
+            doc.addField("licenses", ctx.item().getLicenses());
+            doc.addField("model", ctx.item().getModel());
+            doc.addField("root.title", ctx.item().getTitles());
+            doc.setField("root.pid", ctx.item().getRootPid());
+            doc.setField("title", ctx.item().getTitles());
+            
             try {
-                // System.out.println("");
-                SolrInputDocument doc = new SolrInputDocument();
-                doc.setField("pid", ctx.item().getPid());
-                doc.addField("licenses", ctx.item().getLicenses());
-                doc.addField("model", ctx.item().getModel());
-                doc.addField("root.title", ctx.item().getTitles());
-                doc.setField("root.pid", ctx.item().getRootPid());
-                doc.setField("title", ctx.item().getTitles());
-
-                inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
+                InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
                 if (inputStream == null) {
                     System.out.println("Failed to get MODS for PID: " + ctx.item().getPid());
                     return;
@@ -298,6 +297,7 @@ public class HarvesterImpl implements Harvester {
                     if (date != null) {
                         String dateText = date.getTextContent();
                         doc.addField("date.str", dateText);
+                        dateText = XmlProcessor.replaceWordsWithQMarks(dateText,0,dateText);
                         XmlProcessor.parseDateBasic(doc, dateText, 0, dateText);
                     }
                     NodeList phyicalLocation = parsed.getElementsByTagNameNS("http://www.loc.gov/mods/v3",
@@ -373,9 +373,9 @@ public class HarvesterImpl implements Harvester {
                 if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
                     sendBatch(solrClient, "titles", buffer);
                     buffer.clear();
-                    elapseAndReset(sw);
+                    //elapseAndReset(sw);
                     try {
-                        checkTime(sleepSeconds, start, end);
+                        checkTime();
                     } catch (InterruptedException | IOException e) {
                         System.err.println("Error during time check: " + e.getMessage());
                     }
