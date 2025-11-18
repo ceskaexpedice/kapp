@@ -1,5 +1,9 @@
 # NKP - Kurátorská aplikace
 
+Aplikace zajistí komplexní správu veřejných a neveřejných dokumentů, včetně jejich zveřejnění v systému 
+Kramerius.
+
+Data jsou importováná z jednotlivých instancí krame
 
 ## Popis stavu 
 
