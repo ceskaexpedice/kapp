@@ -22,6 +22,11 @@ stateDiagram-v2
     state KONTROLOVANÉ_BEZ_AP : Public (Dílo bez AP)
     state KONTROLOVANÉ_ZNEPŘÍSTUPNĚNÉ : Private (Znepřístupněno)
 
+    %% Pocatecni prechody 
+    [*] --> Pocatek
+    Pocatek --> NEKONTROLOVANE_ZPRISTUPNENE : Auto-parametry Public
+    Pocatek --> NEKONTROLOVANE : Auto-parametry Private
+    Pocatek --> KE_KONTROLE : Nesplňuje auto-parametry
 
 ```
 
