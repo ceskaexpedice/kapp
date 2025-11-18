@@ -39,10 +39,6 @@ stateDiagram-v2
     KE_KONTROLE --> KONTROLOVANE_BEZ_AP : Kontrola - Bez AP
     KE_KONTROLE --> KONTROLOVANE_ZNEPRISTUPNENE : Kontrola - Znepřístupněno
 
-    %% Automatické přechody v čase
-    KONTROLOVANE_NEVEREJNE --> KONTROLOVANE_VOLNE : Uplynutí rozhodného roku
-    KONTROLOVANE_NEVEREJNE_LICENCE --> KONTROLOVANE_VOLNE : Uplynutí rozhodného roku
-
 
 
 ```
