@@ -7,6 +7,7 @@ import cz.inovatika.model.APIVersion;
 import cz.inovatika.model.HarvesterContext;
 import cz.inovatika.model.HarvestingItem;
 import cz.inovatika.model.Instance;
+import cz.inovatika.model.States;
 import cz.inovatika.utils.XMLUtils;
 
 import org.apache.commons.io.IOUtils;
@@ -18,6 +19,7 @@ import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONObject;
+import org.noggit.JSONUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.w3c.dom.Node;
@@ -47,6 +49,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.function.Consumer;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static cz.inovatika.utils.CursorUtils.*;
@@ -54,6 +57,7 @@ import static cz.inovatika.utils.CursorUtils.*;
 import com.google.common.base.Stopwatch;
 
 import java.util.concurrent.TimeUnit;
+
 
 public class HarvesterImpl implements Harvester {
 
@@ -66,41 +70,41 @@ public class HarvesterImpl implements Harvester {
 
     @Override
     public void harvest(Instance config, Consumer<HarvesterContext> consumer) {
-        harvest( config, consumer,HttpClient.newHttpClient());
+        harvest(config, consumer, HttpClient.newHttpClient());
     }
 
-    public void harvest(Instance config, Consumer<HarvesterContext> consumer,HttpClient client) {
-            String cursorMark = null;
-            String queryCursorMark;
-            // loading timestamp
-            config.loadLastUpdatedFromPath();
-            do {
+    public void harvest(Instance config, Consumer<HarvesterContext> consumer, HttpClient client) {
+        String cursorMark = null;
+        String queryCursorMark;
+        // loading timestamp
+        config.loadLastUpdatedFromPath();
+        do {
 
-                APIVersion apiVersion = config.getApiVersion();
-                String iterationQuery = apiVersion.iterationQuery();
-                String[] fl = apiVersion.fieldList();
-                String id = apiVersion.getIdentifier(config);
-                String fq = apiVersion.incrementFQ(config);
+            APIVersion apiVersion = config.getApiVersion();
+            String iterationQuery = apiVersion.iterationQuery();
+            String[] fl = apiVersion.fieldList();
+            String id = apiVersion.getIdentifier(config);
+            String fq = apiVersion.incrementFQ(config);
 
-                String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id,
-                        config.getApiVersion().getIdentifier(config) + " asc", fl);
-                Element element = executeQuery(client, config.getUrl(), query);
-                XMLUtils.getElementsRecursive(element, (elm) -> {
-                    return elm.getNodeName().equals("doc");
-                }).forEach(docElm -> {
-                    APIVersion version = config.getApiVersion();
-                    HarvestingItem harvestingItem = version.createHarvestItemFromResultElement(docElm, config);
+            String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id,
+                    config.getApiVersion().getIdentifier(config) + " asc", fl);
+            Element element = executeQuery(client, config.getUrl(), query);
+            XMLUtils.getElementsRecursive(element, (elm) -> {
+                return elm.getNodeName().equals("doc");
+            }).forEach(docElm -> {
+                APIVersion version = config.getApiVersion();
+                HarvestingItem harvestingItem = version.createHarvestItemFromResultElement(docElm, config);
 
-                    HarvesterContext context = new HarvesterContext(harvestingItem, client, config);
-                    consumer.accept(context);
-                    // consumer.accept(harvestingItem);
-                });
-                cursorMark = findCursorMark(element);
-                queryCursorMark = findQueryCursorMark(element);
+                HarvesterContext context = new HarvesterContext(harvestingItem, client, config);
+                consumer.accept(context);
+                // consumer.accept(harvestingItem);
+            });
+            cursorMark = findCursorMark(element);
+            queryCursorMark = findQueryCursorMark(element);
 
-            } while ((cursorMark != null && queryCursorMark != null) && !cursorMark.equals(queryCursorMark));
+        } while ((cursorMark != null && queryCursorMark != null) && !cursorMark.equals(queryCursorMark));
 
-            config.saveLastUpdatedToPath();
+        config.saveLastUpdatedToPath();
     }
 
     public static Element executeQuery(HttpClient httpClient, String url, String query) {
@@ -133,7 +137,7 @@ public class HarvesterImpl implements Harvester {
     static LocalTime start;
     static LocalTime end;
     static long sleepSeconds = 2;
-    static int intervalMinutes = 100;
+    static int intervalMinutes = 1;
     static boolean exitOnOutOfInterval = true;
 
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -163,10 +167,19 @@ public class HarvesterImpl implements Harvester {
             end = LocalTime.parse(parts[1], TIME_FMT);
             exitOnOutOfInterval = false;
         }
-        solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build();
-        checkTime();
-        // inovatika();
-        nkp();
+        try {
+
+            solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build();
+            checkTime();
+            // inovatika();
+            nkp();
+            System.out.println("Harvest fnished");
+            System.exit(0);
+        } catch (Exception e) {
+            System.err.println(e);
+            System.exit(1);
+
+        }
     }
 
     private static void checkTime()
@@ -283,7 +296,7 @@ public class HarvesterImpl implements Harvester {
             doc.addField("root.title", ctx.item().getTitles());
             doc.setField("root.pid", ctx.item().getRootPid());
             doc.setField("title", ctx.item().getTitles());
-            
+
             try {
                 InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
                 if (inputStream == null) {
@@ -297,7 +310,7 @@ public class HarvesterImpl implements Harvester {
                     if (date != null) {
                         String dateText = date.getTextContent();
                         doc.addField("date.str", dateText);
-                        dateText = XmlProcessor.replaceWordsWithQMarks(dateText,0,dateText);
+                        dateText = XmlProcessor.replaceWordsWithQMarks(dateText, 0, dateText);
                         XmlProcessor.parseDateBasic(doc, dateText, 0, dateText);
                     }
                     NodeList phyicalLocation = parsed.getElementsByTagNameNS("http://www.loc.gov/mods/v3",
@@ -313,47 +326,7 @@ public class HarvesterImpl implements Harvester {
                     }
                 }
 
-                // Vyplnit state podle
-                // https://docs.google.com/document/d/1zMXdaKiAhshUANmxTD1MHnBibjituskJnGEq-LHz7jU/edit?tab=t.0
-
-                String val;
-                // if (doc.containsKey("licenses") &&
-                // Arrays.asList(doc.getFieldValue("licenses")).contains("public")) {
-                // val = "controlled_public"); // KONTROLOVANÉ - VOLNÉ
-                // } else
-                if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel())) &&
-                        doc.containsKey("date_range_end.year") &&
-                        1900 > (int) doc.getFieldValue("date_range_end.year")) {
-                    val = "noncontrolled_public"; // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
-                    // } else if("periodicalvolume".equals(ctx.item().getModel()) &&
-                    // doc.containsKey("date_range_end.year") &&
-                    // 110 > (LocalDate.now().getYear()) -
-                    // (int)doc.getFieldValue("date_range_end.year")) {
-                    // val = "noncontrolled_public"); // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
-                } else if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel()))
-                        &&
-                        doc.containsKey("date_range_end.year") &&
-                        70 > (LocalDate.now().getYear()) - (int) doc.getFieldValue("date_range_end.year")) {
-                    val = "noncontrolled_private"; // NEKONTROLOVANÉ
-                } else {
-                    val = "to_control"; // KE KONTROLE
-                }
-
-                doc.setField("state", val);
-
-                JSONObject h = new JSONObject()
-                        .put("date", LocalDateTime.now().toString())
-                        .put("reason", "import from " + config.getUrl())
-                        .put("user", "importer")
-                        .put("state", val);
-
-                if (historyExists((String) doc.getFieldValue("pid"))) {
-                    Map<String, Object> partialUpdate = new HashMap<>();
-                    partialUpdate.put("add", h.toString());
-                    doc.addField("state_history", partialUpdate);
-                } else {
-                    doc.addField("state_history", h.toString());
-                }
+                setState(doc, ctx, config);
 
                 AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
                 List<String> authorStrings = new ArrayList<>();
@@ -373,7 +346,7 @@ public class HarvesterImpl implements Harvester {
                 if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
                     sendBatch(solrClient, "titles", buffer);
                     buffer.clear();
-                    //elapseAndReset(sw);
+                    // elapseAndReset(sw);
                     try {
                         checkTime();
                     } catch (InterruptedException | IOException e) {
@@ -399,24 +372,83 @@ public class HarvesterImpl implements Harvester {
         try {
             return solrClient.query("titles", q).getResults().getNumFound() > 0;
         } catch (SolrServerException | IOException e) {
-            System.err.println(e);
+            LOGGER.log(Level.SEVERE, null, e);
             return false;
         }
     }
 
-    private static boolean historyExists(String pid) {
+    private static void setState(SolrInputDocument idoc, final HarvesterContext ctx, Instance config) {
+
+        // Vyplnit state podle
+        // https://docs.google.com/document/d/1zMXdaKiAhshUANmxTD1MHnBibjituskJnGEq-LHz7jU/edit?tab=t.0
+
+
+        JSONObject oldDoc = getExistingDocument((String) idoc.getFieldValue("pid"));
+
+        States val;
+        // if (doc.containsKey("licenses") &&
+        // Arrays.asList(doc.getFieldValue("licenses")).contains("public")) {
+        // val = "controlled_public"); // KONTROLOVANÉ - VOLNÉ
+        // } else
+        if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel())) &&
+                idoc.containsKey("date_range_end.year") &&
+                1900 > (int) idoc.getFieldValue("date_range_end.year")) {
+            val = States.CONTROLLED_PUBLIC; // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
+            // } else if("periodicalvolume".equals(ctx.item().getModel()) &&
+            // doc.containsKey("date_range_end.year") &&
+            // 110 > (LocalDate.now().getYear()) -
+            // (int)doc.getFieldValue("date_range_end.year")) {
+            // val = "noncontrolled_public"); // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
+        } else if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel()))
+                &&
+                idoc.containsKey("date_range_end.year") &&
+                70 > (LocalDate.now().getYear()) - (int) idoc.getFieldValue("date_range_end.year")) {
+            val = States.CONTROLLED_PRIVATE; // NEKONTROLOVANÉ
+        } else {
+            val = States.TO_CONTROL; // KE KONTROLE
+        }
+
+        String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+
+        JSONObject h = new JSONObject()
+                .put("date", d)
+                .put("reason", "import from " + config.getUrl())
+                .put("user", "importer")
+                .put("state", val);
+
+        idoc.setField("state", val);
+        idoc.setField("state_date", d);
+        idoc.setField("state_user", "importer");
+        idoc.setField("state_reason", "import from " + config.getUrl());
+
+
+        if (oldDoc != null) {
+            boolean historyExists = oldDoc.has("state_history");
+
+            if (historyExists) {
+                Map<String, Object> partialUpdate = new HashMap<>();
+                partialUpdate.put("add", h.toString());
+                idoc.addField("state_history", partialUpdate);
+            } else {
+                idoc.addField("state_history", h.toString());
+            }
+        } else {
+            idoc.addField("state_history", h.toString());
+        }
+
+    }
+
+    private static JSONObject getExistingDocument(String pid) {
         SolrQuery q = new SolrQuery()
                 .setQuery("pid:\"" + pid + "\"")
                 .setFields("state_history")
                 .setRows(1);
         try {
             SolrDocumentList docs = solrClient.query("titles", q).getResults();
-            return docs.getNumFound() > 0 &&
-             docs.get(0).getFieldValue("state_history") != null &&
-             !"[]".equals(docs.get(0).getFieldValue("state_history").toString());
+            return docs.getNumFound() > 0 ? new JSONObject(JSONUtil.toJSON(docs.get(0))) : null;
         } catch (SolrServerException | IOException e) {
-            System.err.println(e);
-            return false;
+            LOGGER.log(Level.SEVERE, null, e);
+            return null;
         }
     }
 
