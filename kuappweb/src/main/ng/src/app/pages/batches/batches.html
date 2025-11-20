@@ -1,0 +1,48 @@
+<as-split direction="horizontal" [unit]="'pixel'">
+    <as-split-area [size]="320">
+        <div style="flex: 1 30%;" class="app-filters">
+            @for(l of state.batches(); track $index) {
+            <div class="app-label">
+                <a (click)="selectBatch(l)">{{ l.name }}</a>
+
+                <!-- <mat-form-field appearance="outline">
+        <mat-label>Name</mat-label>
+        <input matInput [(ngModel)]="l.name" />
+    </mat-form-field> -->
+            </div>
+            }
+
+            <div class="app-label">
+                <mat-form-field appearance="outline">
+                    <mat-label>New batch name</mat-label>
+                    <input matInput [(ngModel)]="newBatch" />
+                </mat-form-field>
+
+                <button mat-icon-button (click)="addBatch()" [title]="'action.add_new_batch' | translate"><mat-icon>playlist_add</mat-icon></button>
+                <button mat-icon-button (click)="fileUpload.click()" [title]="'action.import_batch' | translate"><mat-icon>download</mat-icon></button>
+
+                <input type="file" #fileUpload ng2FileSelect [uploader]="uploader" style="display:none;" (change)="onFileSelected($event)" >
+
+            </div>
+        </div>
+    </as-split-area>
+    <as-split-area>
+        @if(selectedBatch()) {
+        <div>{{ selectedBatch().name}}</div>
+        <div>{{ selectedBatch().date_created | date : 'dd.MM.yyyy hh:mm:ss'}}</div>
+        <div>{{ selectedBatch().state}}</div>
+
+        <div>
+            @for(doc of docs(); track $index){
+            <app-result-item [doc]="doc"></app-result-item>
+            }
+        </div>
+
+        }
+    </as-split-area>
+</as-split>
+
+
+<mat-card-actions align="end" class="app-mat-card-actions">
+    <button matButton (click)="saveBatches()">{{ 'action.save' | translate }}</button>
+</mat-card-actions>

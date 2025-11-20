@@ -1,5 +1,6 @@
 import { Injectable, signal } from "@angular/core";
 import { Label } from "./shared/label";
+import { Batch } from "./shared/batch";
 
 
 
@@ -11,5 +12,6 @@ import { Label } from "./shared/label";
     public q: string = '';
 
     public labels = signal<Label[]>([]);
+    public batches = signal<Batch[]>([]);
     
 }

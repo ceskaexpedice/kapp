@@ -40,6 +40,12 @@ import { Label } from './shared/label';
                 this.config = cfg as Configuration;
                 return this.http.get('api/index/config').pipe(tap((resp: any) => {
                     
+                    const b = resp.config.find((a: any) => a.id === 'batches').value;
+                    if (b.length > 0) {
+                        this.state.batches.set(b);
+                        console.log(this.state.batches())
+                    }
+                    
                     const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels').value;
                     labelsC.forEach(l => {
                         const r = parseInt(l.color.substring(1,3), 16);
@@ -50,6 +56,7 @@ import { Label } from './shared/label';
                         l.text_color = c > 256 ? '#000' : '#fff';
                     });
                     this.state.labels.set(labelsC);
+                    
 
                 }));
             }),

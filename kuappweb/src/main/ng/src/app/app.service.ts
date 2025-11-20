@@ -2,6 +2,7 @@ import { HttpClient, HttpHeaders, HttpErrorResponse, HttpParams } from '@angular
 import { Injectable } from '@angular/core';
 import { Observable, map, finalize, catchError, of } from 'rxjs';
 import { Label } from './shared/label';
+import { Batch } from './shared/batch';
 
 @Injectable({
   providedIn: 'root'
@@ -111,8 +112,24 @@ export class AppService {
     return this.post('index/save_doc_labels', {pid,labels});
   }
 
+  saveBatches(batches: Batch[]): Observable<any> {
+    return this.post('index/save_batches', batches);
+  }
+
+  saveDocBatches(pid: string, batches: string[]): Observable<any> {
+    return this.post('index/save_doc_batches', {pid,batches});
+  }
+
+  getDocsInBatch(batch: string): Observable<any> {
+    return this.get('index/get_batch_docs', {batch});
+  }
+
   changeState(state: any): Observable<any> {
     return this.post('index/change_state', state);
+  }
+
+  login(): Observable<any> {
+    return this.post('user/login', {});
   }
   
 }

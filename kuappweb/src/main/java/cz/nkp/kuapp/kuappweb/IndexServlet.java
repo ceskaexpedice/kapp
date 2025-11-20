@@ -3,16 +3,22 @@ package cz.nkp.kuapp.kuappweb;
 import cz.nkp.kuapp.kuappweb.index.AUTIndexer;
 import cz.nkp.kuapp.kuappweb.index.IndexSearcher;
 import cz.nkp.kuapp.kuappweb.index.SolrIndexer;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
+import javax.servlet.annotation.MultipartConfig;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
+import javax.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -23,6 +29,9 @@ import org.json.JSONObject;
  * @author alberto
  */
 @WebServlet(name = "IndexServlet", urlPatterns = {"/index/*"})
+@MultipartConfig(location = "/tmp", fileSizeThreshold = 1024 * 1024,
+        maxFileSize = 1024 * 1024 * 10, // 10MB
+        maxRequestSize = 1024 * 1024 * 50)   // 50MB)
 public class IndexServlet extends HttpServlet {
 
     public static final Logger LOGGER = Logger.getLogger(IndexServlet.class.getName());
@@ -70,6 +79,17 @@ public class IndexServlet extends HttpServlet {
         }
     }
 
+    private JSONObject doUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+        JSONObject ret = new JSONObject();
+        //for (Part part : request.getParts()) {
+        Part part = request.getPart("file");
+        LOGGER.log(Level.INFO, "Part name -> {0}", part.getName());
+        String subbmittedFilename = request.getParameter("name");
+        String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
+
+        return ret;
+    }
+
     enum Actions {
 
         AUT {
@@ -78,32 +98,32 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     AUTIndexer fh = new AUTIndexer();
-                    json = fh.full(); 
+                    json = fh.full();
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        RT{
+        RT {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
                     AUTIndexer fh = new AUTIndexer();
-                    json = fh.resumptionToken(req.getParameter("rt")); 
+                    json = fh.resumptionToken(req.getParameter("rt"));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        TITLES{
+        TITLES {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.searchTitles(req); 
+                    json = IndexSearcher.searchTitles(req);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -115,130 +135,186 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getDocByPid(req.getParameter("pid")); 
+                    json = IndexSearcher.getDocByPid(req.getParameter("pid"));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        GET_RELATED{ 
+        GET_RELATED {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getRelated(req.getParameter("pid")); 
+                    json = IndexSearcher.getRelated(req.getParameter("pid"));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        AUTHORS{
+        AUTHORS {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.searchAuthors(req); 
+                    json = IndexSearcher.searchAuthors(req);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        LABELS{
+        LABELS {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getLabels(); 
+                    json = IndexSearcher.getLabels();
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        SAVE_LABELS{
+        SAVE_LABELS {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
                     JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.indexLabels(js); 
+                    json = SolrIndexer.indexLabels(js);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        SAVE_DOC_LABELS{
+        SAVE_DOC_LABELS {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.indexDocLabels(js); 
+                    json = SolrIndexer.indexDocLabels(js);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        CHANGE_STATE{
+        SAVE_BATCHES {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexBatches(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        SAVE_DOC_BATCHES {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.changeState(js); 
+                    json = SolrIndexer.indexDocBatches(js);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        CONFIG{
+        GET_BATCH_DOCS {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getConfig(); 
+                    json = IndexSearcher.getBatchDocs(req.getParameter("batch"));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        CHECK_AUTHOR{
+        UPLOAD_BATCH {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject ret = new JSONObject();
+                //for (Part part : request.getParts()) {
+                Part part = req.getPart("file");
+                LOGGER.log(Level.INFO, "Part name -> {0}", part.getName());
+                String subbmittedFilename = req.getParameter("name");
+                //String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
+
+                BufferedReader reader = new BufferedReader(new InputStreamReader(part.getInputStream()));
+                while (reader.ready()) {
+                    ret = SolrIndexer.addDocToBatch(reader.readLine(), subbmittedFilename);
+                }
+
+                return ret;
+            }
+        },
+        CHANGE_STATE {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.checkAuthor(req); 
+                    JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.changeState(js);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        GET_AUTHOR_BY_ID{
+        CONFIG {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getAuthorById(req.getParameter("id")); 
+                    json = IndexSearcher.getConfig();
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
             }
         },
-        GET_LINKS{
+        CHECK_AUTHOR {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getLinks(req.getParameter("id")); 
+                    json = IndexSearcher.checkAuthor(req);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        GET_AUTHOR_BY_ID {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getAuthorById(req.getParameter("id"));
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        GET_LINKS {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getLinks(req.getParameter("id"));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

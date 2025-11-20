@@ -16,6 +16,7 @@ import { MatChipsModule } from '@angular/material/chips';
 import { LabelsDialog } from '../labels-dialog/labels-dialog';
 import { Label } from '../../shared/label';
 import { StateDialog } from '../state-dialog/state-dialog';
+import { Batch } from '../../shared/batch';
 
 @Component({
   selector: 'app-result-item',
@@ -33,7 +34,7 @@ export class ResultItem {
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
 
-  states = ['controlled_public', 'controlled', 'new_imported']
+  states = ['controlled_public', 'controlled', 'new_imported'];
   labels: Label[] = [];
 
   hasCollapsed = false;
@@ -121,6 +122,26 @@ export class ResultItem {
 
   saveLabels() {
     this.service.saveDocLabels(this.doc()['pid'], this.labels.map(l => l.name)).subscribe((res: any) => {
+      console.log(res)
+    })
+
+  }
+
+  inBatch(s: string) {
+    return this.doc()['batches']?.includes(s)
+  }
+
+  addToBatch(b: Batch) {
+    const bs: string[] = this.doc()['batches'] ? this.doc()['batches'] : [];
+
+    if (!bs.find((la: string) => la === b.name)) {
+      bs.push(b.name);
+      this.saveBatches(bs);
+    }
+  }
+
+  saveBatches(bs: string[]) {
+    this.service.saveDocBatches(this.doc()['pid'], bs).subscribe((res: any) => {
       console.log(res)
     })
 

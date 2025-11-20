@@ -1,4 +1,9 @@
 {
+    "keycloak": {
+         "clientId": "krameriusClient",
+         "loginType": "all" 
+ 
+    },
     "states": [
         "noncontrolled_private",
         "noncontrolled_public",
@@ -8,15 +13,15 @@
         "controlled_unknown"
     ],
     "licenses": [
-"dnnto",
-"dnntt",
-"public",
-"onsite",
-"onsite-sheetmusic",
-"officialworks",
-"orphan",
-"special-needs",
-"cover-and-content"
+        "dnnto",
+        "dnntt",
+        "public",
+        "onsite",
+        "onsite-sheetmusic",
+        "officialworks",
+        "orphan",
+        "special-needs",
+        "cover-and-content"
     ]
 }
 

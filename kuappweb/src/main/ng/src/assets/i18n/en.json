@@ -40,7 +40,10 @@
     "check_author": "Search autor in AUT",
     "add_author": "Add author",
     "add_author_by_id": "Add author by id",
-    "ok": "OK"
+    "ok": "OK",
+    "add_to_batch": "Batches",
+    "add_new_batch": "Add new batch",
+    "import_batch": "Import batch"
   },
   "state": {
     "noncontrolled_private": "NEKONTROLOVANÉ",
@@ -55,7 +58,9 @@
   },
   "navbar": {
     "admin": "Administration",
+    "titles": "Titles",
     "authors": "Authors",
-    "titles": "Titles"
+    "batches": "Batches",
+    "login": "Login"
   }
 }

@@ -47,7 +47,13 @@
             <version>6.0</version>
             <scope>provided</scope>
         </dependency>
-    </dependencies>
+        
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-authz-client</artifactId>
+            <version>26.0.7</version>
+        </dependency>
+    </dependencies> 
 
     <build>
         <plugins>
@@ -145,10 +151,10 @@
                             <file>${project.basedir}/src/main/webapp/index.html</file> 
                             <replacements> 
                                 <replacement> 
-                                  <token>&lt;!doctype html&gt;</token> 
-                                  <value>&lt;%@page contentType="text/html" pageEncoding="UTF-8"%&gt;&lt;!doctype html&gt;</value> 
+                                    <token>&lt;!doctype html&gt;</token> 
+                                    <value>&lt;%@page contentType="text/html" pageEncoding="UTF-8"%&gt;&lt;!doctype html&gt;</value> 
                                 </replacement>
-<!--                                <replacement> 
+                                <!--                                <replacement> 
                                   <token>base href="/"</token> 
                                   <value>base href="${context.name}"</value> 
                                 </replacement> -->
