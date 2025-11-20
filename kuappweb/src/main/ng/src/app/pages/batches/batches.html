@@ -4,11 +4,6 @@
             @for(l of state.batches(); track $index) {
             <div class="app-label">
                 <a (click)="selectBatch(l)">{{ l.name }}</a>
-
-                <!-- <mat-form-field appearance="outline">
-        <mat-label>Name</mat-label>
-        <input matInput [(ngModel)]="l.name" />
-    </mat-form-field> -->
             </div>
             }
 
@@ -18,10 +13,8 @@
                     <input matInput [(ngModel)]="newBatch" />
                 </mat-form-field>
 
-                <button mat-icon-button (click)="addBatch()" [title]="'action.add_new_batch' | translate"><mat-icon>playlist_add</mat-icon></button>
-                <button mat-icon-button (click)="fileUpload.click()" [title]="'action.import_batch' | translate"><mat-icon>download</mat-icon></button>
-
-                <input type="file" #fileUpload ng2FileSelect [uploader]="uploader" style="display:none;" (change)="onFileSelected($event)" >
+                <button mat-icon-button (click)="addBatch()"
+                    [title]="'action.add_new_batch' | translate"><mat-icon>playlist_add</mat-icon></button>
 
             </div>
         </div>
@@ -31,11 +24,44 @@
         <div>{{ selectedBatch().name}}</div>
         <div>{{ selectedBatch().date_created | date : 'dd.MM.yyyy hh:mm:ss'}}</div>
         <div>{{ selectedBatch().state}}</div>
+        <div>{{ states() }}</div>
+        <div>
+
+            <input type="file" #fileUpload ng2FileSelect [uploader]="uploader" style="display:none;"
+                (change)="onFileSelected($event)">
+            <button mat-raised-button (click)="fileUpload.click()"
+                [title]="'action.import_batch' | translate"><mat-icon>download</mat-icon>{{'action.import_batch' |
+                translate}}</button>
+
+            <button mat-raised-button (click)="setState()">{{ 'action.set_state' |
+                translate }}</button>
+        </div>
 
         <div>
-            @for(doc of docs(); track $index){
+            <table mat-table [dataSource]="docs()">
+
+                <ng-container matColumnDef="pid">
+                    <th mat-header-cell *matHeaderCellDef> No. </th>
+                    <td mat-cell *matCellDef="let doc"> {{doc['pid']}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="title">
+                    <th mat-header-cell *matHeaderCellDef> Title </th>
+                    <td mat-cell *matCellDef="let doc"> {{doc.title}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="state">
+                    <th mat-header-cell *matHeaderCellDef> State </th>
+                    <td mat-cell *matCellDef="let doc"> {{ 'state.' + doc.state | translate }} </td>
+                </ng-container>
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+            </table>
+
+            <!-- @for(doc of docs(); track $index){
             <app-result-item [doc]="doc"></app-result-item>
-            }
+            } -->
         </div>
 
         }

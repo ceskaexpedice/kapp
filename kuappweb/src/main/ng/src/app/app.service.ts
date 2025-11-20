@@ -128,6 +128,10 @@ export class AppService {
     return this.post('index/change_state', state);
   }
 
+  changeStateInBatch(state: any): Observable<any> {
+    return this.post('index/change_state_in_batch', state);
+  }
+
   login(): Observable<any> {
     return this.post('user/login', {});
   }

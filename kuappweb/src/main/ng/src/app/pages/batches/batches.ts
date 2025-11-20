@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
-import { MatDialogModule } from '@angular/material/dialog';
+import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -16,6 +16,8 @@ import { DatePipe } from '@angular/common';
 import { ResultItem } from "../../components/result-item/result-item";
 
 import { FileUploadModule, FileUploader, FileUploaderOptions } from 'ng2-file-upload';
+import { StateDialog } from '../../components/state-dialog/state-dialog';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
   selector: 'app-batches',
@@ -23,8 +25,8 @@ import { FileUploadModule, FileUploader, FileUploaderOptions } from 'ng2-file-up
     TranslateModule, FormsModule, DatePipe, FileUploadModule,
     MatDialogModule, MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
-    AngularSplitModule,
-    ResultItem
+    AngularSplitModule, MatTableModule,
+    // ResultItem
   ],
   templateUrl: './batches.html',
   styleUrl: './batches.scss'
@@ -33,27 +35,32 @@ export class Batches {
 
   readonly service = inject(AppService);
   readonly state = inject(AppState);
+  readonly dialog = inject(MatDialog);
+  
   loading = signal<boolean>(false);
 
 
   newBatch: string;
   selectedBatch = signal<Batch>(null);
   docs = signal<any[]>([]);
+  states = signal<string[]>([]);
 
   public uploader: FileUploader = new FileUploader({ url: 'api/index/upload_batch' });
   selectedFile: string;
   progressMsg: string;
+
+  displayedColumns = ['pid', 'title', 'state']
 
   onFileSelected(e: any) {
     console.log(e)
     const file: File = e.target.files[0];
     if (file) {
       this.selectedFile = file.name;
-      if (!this.state.batches().find(b => b.name === this.newBatch)) {
-        this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
-        this.saveBatches();
+      //if (!this.state.batches().find(b => b.name === this.newBatch)) {
+        // this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
+        // this.saveBatches();
         this.uploadFile();
-      }
+      //}
     }
   }
 
@@ -61,7 +68,7 @@ export class Batches {
     const opts: FileUploaderOptions = {
       url: 'api/index/upload_batch',
       additionalParameter: {
-        name: this.newBatch ? this.newBatch : this.selectedFile
+        name: this.selectedBatch().name
       }
     };
     this.progressMsg = 'uploading...'
@@ -84,6 +91,7 @@ export class Batches {
     this.selectedBatch.set(b);
     this.service.getDocsInBatch(b.name).subscribe(resp => {
       this.docs.set(resp.response.docs);
+      this.states.set(resp.facets.state.buckets.map((b: any) => b.val));
     });
   }
 
@@ -111,5 +119,22 @@ export class Batches {
       console.log(resp)
     });
   }
+
+  setState() {
+  
+      const dialogRef = this.dialog.open(StateDialog, {
+        data: {isBatch: true, batch: this.selectedBatch().name, states: this.states()},
+      });
+  
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+          // this.service.getDoc(this.doc().pid).subscribe((resp: any) => {
+          //   if (resp.response?.docs?.length > 0) {
+          //     this.doc.set(resp.response.docs[0]);
+          //   }
+          // });
+        }
+      });
+    }
 
 }

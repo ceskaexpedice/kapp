@@ -235,7 +235,7 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getBatchDocs(req.getParameter("batch"));
+                    json = IndexSearcher.getBatchDocs(req.getParameter("batch"), false);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -249,14 +249,13 @@ public class IndexServlet extends HttpServlet {
                 //for (Part part : request.getParts()) {
                 Part part = req.getPart("file");
                 LOGGER.log(Level.INFO, "Part name -> {0}", part.getName());
-                String subbmittedFilename = req.getParameter("name");
+                String batch = req.getParameter("name");
                 //String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(part.getInputStream()));
                 while (reader.ready()) {
-                    ret = SolrIndexer.addDocToBatch(reader.readLine(), subbmittedFilename);
+                    ret = SolrIndexer.addDocToBatch(reader.readLine(), batch);
                 }
-
                 return ret;
             }
         },
@@ -267,6 +266,19 @@ public class IndexServlet extends HttpServlet {
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
                     json = SolrIndexer.changeState(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        CHANGE_STATE_IN_BATCH {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.changeStateInBatch(js);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

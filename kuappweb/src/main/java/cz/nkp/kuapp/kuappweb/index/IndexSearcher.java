@@ -174,9 +174,6 @@ public class IndexSearcher {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(request.getParameter("author"))
                     .withParam("df", "full_text")
-//                    .withParam("defType", "dismax")
-//                    .withParam("qf", "full_text")
-//                    .withParam("mm", "80%")
                     .setLimit(rows);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
@@ -254,13 +251,16 @@ public class IndexSearcher {
         return ret;
     }
     
-    public static JSONObject getBatchDocs(String batch) {
+    public static JSONObject getBatchDocs(String batch, boolean onlyPids) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery("batches:\""+batch + "\"")
-                    .returnFields("*,authors_kramerius:[json],state_history:[json]")
+                    .withFacet("state", new TermsFacetMap("state")
+                            .setLimit(1000)
+                            .setMinCount(1)) 
+                    .returnFields(onlyPids ? "pid" : "*,authors_kramerius:[json],state_history:[json]")
                     .setLimit(200); 
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));

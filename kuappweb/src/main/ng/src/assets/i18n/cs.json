@@ -5,10 +5,12 @@
   "usedFilters": "Vybrané filtry",
   "numFound": "Nalezeno",
   "current_state": "Aktuální stav",
+  "current_states": "Aktuální stavy",
   "new_state": "Nový stav",
   "current_licenses": "Aktuální licence",
   "reason": "Důvod",
   "history": "Historie",
+  "batch_alert": "pro celou dávku",
   "field": {
     "query": "dotaz",
     "author": "Autor",
@@ -43,7 +45,7 @@
     "ok": "OK",
     "add_to_batch": "Dávky",
     "add_new_batch": "Přidat dávku",
-    "import_batch": "Importovat dávku"
+    "import_batch": "Importovat soubor do dávky"
   },
   "state": {
     "noncontrolled_private": "NEKONTROLOVANÉ",

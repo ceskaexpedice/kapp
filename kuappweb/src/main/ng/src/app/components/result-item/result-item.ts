@@ -159,7 +159,7 @@ export class ResultItem {
   setState() {
 
     const dialogRef = this.dialog.open(StateDialog, {
-      data: this.doc(),
+      data: {isBatch: false, doc: this.doc()}
     });
 
     dialogRef.afterClosed().subscribe(result => {

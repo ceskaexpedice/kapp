@@ -1,4 +1,8 @@
-<h2 mat-dialog-title>{{ 'action.set_state' | translate}}</h2>
+<h2 mat-dialog-title>{{ 'action.set_state' | translate}}
+    @if (data.isBatch) {
+        <span [style.color]="'red'">({{ 'batch_alert' | translate}})</span>
+    }
+</h2>
 <mat-dialog-content class="app-state">
 
     @if (loading()) {
@@ -6,11 +10,21 @@
     }
 
     <div>
-        {{ 'current_state' | translate}}: {{ 'state.' + initialState | translate}}
+        @if (data.isBatch) {
+            {{ 'current_states' | translate}}:
+            @for (s of data.states; track s) {
+                <div>{{ 'state.' + s | translate}}</div>
+            }
+        } @else {
+            {{ 'current_state' | translate}}:
+            {{ 'state.' + initialState | translate}}
+        } 
     </div>
-    <div>
-        {{ 'current_licenses' | translate}}: {{ initialLicenses}}
-    </div>
+        @if (!data.isBatch) {
+            <div>
+                {{ 'current_licenses' | translate}}: {{ initialLicenses}}
+            </div>
+        } 
     <div>
         <mat-form-field appearance="outline">
             <mat-label>{{ 'new_state' | translate }}</mat-label>
@@ -38,11 +52,12 @@
         </mat-form-field>
     </div>
 
+    @if (!data.isBatch) {
     <div>
         <mat-form-field appearance="outline" class="app-fill-w">
             <mat-label>{{ 'history' | translate }}</mat-label>
             <mat-select [(ngModel)]="currentHistory">
-                @for (l of doc['state_history']; track l) {
+                @for (l of data.doc['state_history']; track l) {
                 <mat-option [value]="l">{{ l['date'] | date : 'dd.MM.yyyy hh:mm:ss' }}.- {{ 'state.' + l['state'] | translate }}</mat-option>
                 }
             </mat-select>
@@ -57,6 +72,7 @@
         }
 
     </div>
+}
 
 </mat-dialog-content>
 <mat-dialog-actions>
