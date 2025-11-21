@@ -137,7 +137,7 @@ public class HarvesterImpl implements Harvester {
     static LocalTime start;
     static LocalTime end;
     static long sleepSeconds = 2;
-    static int intervalMinutes = 1;
+    static int intervalMinutes = 60;
     static boolean exitOnOutOfInterval = true;
 
     public static void main(String[] args) throws InterruptedException, IOException {
@@ -216,7 +216,7 @@ public class HarvesterImpl implements Harvester {
         config.setAcronym("nkp");
         config.setApiVersion(APIVersion.v5);
         config.setSolrCloud(false);
-        config.updateLastUpdatedTimestampManually(Instant.parse("2025-04-01T00:00:21.221Z"));
+        config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-01T00:00:21.221Z"));
         config.setUrl("https://ndk.cz/search/api/v5.0/");
 
         // h.harvest(config,System.out::println);
@@ -326,7 +326,6 @@ public class HarvesterImpl implements Harvester {
                     }
                 }
 
-                setState(doc, ctx, config);
 
                 AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
                 List<String> authorStrings = new ArrayList<>();
@@ -341,6 +340,7 @@ public class HarvesterImpl implements Harvester {
                 if (ad != null) {
                     authorbuffer.addAll(ad);
                 }
+                setState(doc, ctx, config);
                 // elapseAndReset(sw);
                 buffer.add(doc);
                 if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
@@ -393,7 +393,7 @@ public class HarvesterImpl implements Harvester {
         if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel())) &&
                 idoc.containsKey("date_range_end.year") &&
                 1900 > (int) idoc.getFieldValue("date_range_end.year")) {
-            val = States.CONTROLLED_PUBLIC; // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
+            val = States.NONCONTROLLED_PUBLIC; // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
             // } else if("periodicalvolume".equals(ctx.item().getModel()) &&
             // doc.containsKey("date_range_end.year") &&
             // 110 > (LocalDate.now().getYear()) -
@@ -402,21 +402,21 @@ public class HarvesterImpl implements Harvester {
         } else if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel()))
                 &&
                 idoc.containsKey("date_range_end.year") &&
-                70 > (LocalDate.now().getYear()) - (int) idoc.getFieldValue("date_range_end.year")) {
-            val = States.CONTROLLED_PRIVATE; // NEKONTROLOVANÉ
+                70 < (LocalDate.now().getYear()) - (int) idoc.getFieldValue("date_range_end.year")) {
+            val = States.NONCONTROLLED_PRIVATE; // NEKONTROLOVANÉ
         } else {
             val = States.TO_CONTROL; // KE KONTROLE
         }
 
-        String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+            String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         JSONObject h = new JSONObject()
                 .put("date", d)
                 .put("reason", "import from " + config.getUrl())
                 .put("user", "importer")
-                .put("state", val);
+                .put("state", val.toString());
 
-        idoc.setField("state", val);
+        idoc.setField("state", val.toString());
         idoc.setField("state_date", d);
         idoc.setField("state_user", "importer");
         idoc.setField("state_reason", "import from " + config.getUrl());
