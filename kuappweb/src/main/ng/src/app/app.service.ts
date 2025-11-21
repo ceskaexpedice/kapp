@@ -116,8 +116,8 @@ export class AppService {
     return this.post('index/save_batches', batches);
   }
 
-  saveDocBatches(pid: string, batches: string[]): Observable<any> {
-    return this.post('index/save_doc_batches', {pid,batches});
+  saveDocBatch(pid: string, batch: string): Observable<any> {
+    return this.post('index/save_doc_batch', {pid,batch});
   }
 
   getDocsInBatch(batch: string): Observable<any> {

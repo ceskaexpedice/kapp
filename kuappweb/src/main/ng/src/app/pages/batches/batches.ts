@@ -18,6 +18,7 @@ import { ResultItem } from "../../components/result-item/result-item";
 import { FileUploadModule, FileUploader, FileUploaderOptions } from 'ng2-file-upload';
 import { StateDialog } from '../../components/state-dialog/state-dialog';
 import { MatTableModule } from '@angular/material/table';
+import { TitleDialog } from '../../components/title-dialog/title-dialog';
 
 @Component({
   selector: 'app-batches',
@@ -36,7 +37,7 @@ export class Batches {
   readonly service = inject(AppService);
   readonly state = inject(AppState);
   readonly dialog = inject(MatDialog);
-  
+
   loading = signal<boolean>(false);
 
 
@@ -49,7 +50,7 @@ export class Batches {
   selectedFile: string;
   progressMsg: string;
 
-  displayedColumns = ['pid', 'title', 'state']
+  displayedColumns = ['pid', 'title', 'state', 'action']
 
   onFileSelected(e: any) {
     console.log(e)
@@ -57,9 +58,9 @@ export class Batches {
     if (file) {
       this.selectedFile = file.name;
       //if (!this.state.batches().find(b => b.name === this.newBatch)) {
-        // this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
-        // this.saveBatches();
-        this.uploadFile();
+      // this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
+      // this.saveBatches();
+      this.uploadFile();
       //}
     }
   }
@@ -85,14 +86,20 @@ export class Batches {
     } else {
       this.progressMsg = response.msg;
     }
+    this.loadBatch();
   }
 
   selectBatch(b: Batch) {
     this.selectedBatch.set(b);
-    this.service.getDocsInBatch(b.name).subscribe(resp => {
+    this.loadBatch();
+  }
+
+  loadBatch() {
+    this.service.getDocsInBatch(this.selectedBatch().name).subscribe(resp => {
       this.docs.set(resp.response.docs);
       this.states.set(resp.facets.state.buckets.map((b: any) => b.val));
     });
+
   }
 
   addBatch() {
@@ -101,6 +108,15 @@ export class Batches {
       // this.batches.push({date_created: new Date(), name: this.newBatch, state: 'new'});
       this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
       this.saveBatches();
+    }
+  }
+
+  addDoc() {
+    const pid = window.prompt("PID?");
+    if (pid) {
+      this.service.saveDocBatch(pid, this.selectedBatch().name).subscribe((res: any) => {
+        this.loadBatch();
+      })
     }
   }
 
@@ -121,20 +137,35 @@ export class Batches {
   }
 
   setState() {
-  
-      const dialogRef = this.dialog.open(StateDialog, {
-        data: {isBatch: true, batch: this.selectedBatch().name, states: this.states()},
-      });
-  
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-          // this.service.getDoc(this.doc().pid).subscribe((resp: any) => {
-          //   if (resp.response?.docs?.length > 0) {
-          //     this.doc.set(resp.response.docs[0]);
-          //   }
-          // });
-        }
-      });
-    }
+
+    const dialogRef = this.dialog.open(StateDialog, {
+      data: { isBatch: true, batch: this.selectedBatch().name, states: this.states() },
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.loadBatch();
+      }
+    });
+  }
+
+  removeFromBatch(pid: string) {
+    this.service.saveDocBatch(pid, '').subscribe((res: any) => {
+      this.loadBatch();
+    })
+
+  }
+
+  viewDoc(doc: any) {
+
+    const dialogRef = this.dialog.open(TitleDialog, {
+      data: doc,
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+      }
+    });
+  }
 
 }

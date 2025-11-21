@@ -13,6 +13,7 @@
   "batch_alert": "pro celou dávku",
   "field": {
     "query": "dotaz",
+    "title": "Název",
     "author": "Autor",
     "authors": "Autoři",
     "labels": "Label",
@@ -44,7 +45,9 @@
     "add_author_by_id": "Přidat autora podle id",
     "ok": "OK",
     "add_to_batch": "Dávky",
+    "remove_from_batch": "Odstranit z dávky",
     "add_new_batch": "Přidat dávku",
+    "add_doc_to_bacth": "Přidat dokument do dávky",
     "import_batch": "Importovat soubor do dávky"
   },
   "state": {

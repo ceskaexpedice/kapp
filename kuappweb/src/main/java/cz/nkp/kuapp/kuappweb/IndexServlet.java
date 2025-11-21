@@ -217,7 +217,7 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
-        SAVE_DOC_BATCHES {
+        SAVE_DOC_BATCH {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
@@ -250,7 +250,7 @@ public class IndexServlet extends HttpServlet {
                 Part part = req.getPart("file");
                 LOGGER.log(Level.INFO, "Part name -> {0}", part.getName());
                 String batch = req.getParameter("name");
-                //String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
+                // String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(part.getInputStream()));
                 while (reader.ready()) {

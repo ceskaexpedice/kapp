@@ -5,12 +5,15 @@
   "usedFilters": "Vybrané filtry",
   "numFound": "Nalezeno",
   "current_state": "Aktuální stav",
+  "current_states": "Aktuální stavy",
   "new_state": "Nový stav",
   "current_licenses": "Aktuální licence",
   "reason": "Důvod",
   "history": "Historie",
+  "batch_alert": "pro celou dávku",
   "field": {
     "query": "dotaz",
+    "title": "Název",
     "author": "Autor",
     "authors": "Autoři",
     "labels": "Label",
@@ -40,7 +43,12 @@
     "check_author": "Hledat autora v AUT",
     "add_author": "Přidat autora",
     "add_author_by_id": "Přidat autora podle id",
-    "ok": "OK"
+    "ok": "OK",
+    "add_to_batch": "Dávky",
+    "remove_from_batch": "Odstranit z dávky",
+    "add_new_batch": "Přidat dávku",
+    "add_doc_to_bacth": "Přidat dokument do dávky",
+    "import_batch": "Importovat soubor do dávky"
   },
   "state": {
     "noncontrolled_private": "NEKONTROLOVANÉ",
@@ -56,6 +64,7 @@
   "navbar": {
     "admin": "Administrace",
     "authors": "Autoři",
+    "batches": "Dávky",
     "titles": "Dila"
   }
 }

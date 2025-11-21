@@ -1,4 +1,5 @@
 {
+    "userClientBaseUrl": "https://k7.inovatika.dev",
     "keycloak": {
          "clientId": "krameriusClient",
          "loginType": "all" 

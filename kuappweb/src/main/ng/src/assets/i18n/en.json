@@ -11,6 +11,7 @@
   "history": "History",
   "field": {
     "query": "Query",
+    "title": "Title",
     "author": "Author",
     "authors": "Authors",
     "labels": "Label",
@@ -42,7 +43,9 @@
     "add_author_by_id": "Add author by id",
     "ok": "OK",
     "add_to_batch": "Batches",
+    "remove_from_batch": "Remove from batch",
     "add_new_batch": "Add new batch",
+    "add_doc_to_bacth": "Add document to batch",
     "import_batch": "Import batch"
   },
   "state": {

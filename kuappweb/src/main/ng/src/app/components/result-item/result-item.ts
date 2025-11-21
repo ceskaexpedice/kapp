@@ -128,20 +128,15 @@ export class ResultItem {
   }
 
   inBatch(s: string) {
-    return this.doc()['batches']?.includes(s)
+    return this.doc()['batch']?.includes(s)
   }
 
   addToBatch(b: Batch) {
-    const bs: string[] = this.doc()['batches'] ? this.doc()['batches'] : [];
-
-    if (!bs.find((la: string) => la === b.name)) {
-      bs.push(b.name);
-      this.saveBatches(bs);
-    }
+      this.saveDocBatch(b.name);
   }
 
-  saveBatches(bs: string[]) {
-    this.service.saveDocBatches(this.doc()['pid'], bs).subscribe((res: any) => {
+  saveDocBatch(bs: string) {
+    this.service.saveDocBatch(this.doc()['pid'], bs).subscribe((res: any) => {
       console.log(res)
     })
 

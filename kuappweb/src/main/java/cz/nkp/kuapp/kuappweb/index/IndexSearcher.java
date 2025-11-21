@@ -256,7 +256,7 @@ public class IndexSearcher {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("batches:\""+batch + "\"")
+                    .setQuery("batch:\""+batch + "\"")
                     .withFacet("state", new TermsFacetMap("state")
                             .setLimit(1000)
                             .setMinCount(1)) 

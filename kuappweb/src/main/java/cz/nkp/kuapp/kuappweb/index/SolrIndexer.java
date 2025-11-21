@@ -82,8 +82,8 @@ public class SolrIndexer {
             doc.setField("pid", js.getString("pid"));
 
             Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", js.getJSONArray("batches"));
-            doc.setField("batches", partialUpdate);
+            partialUpdate.put("set", js.getString("batch"));
+            doc.setField("batch", partialUpdate);
 
             // doc.setField("labels", js.getJSONArray("labels").toString());
             solr.add("titles", doc);
@@ -106,9 +106,9 @@ public class SolrIndexer {
 
             Map<String, Object> partialUpdate = new HashMap<>();
             partialUpdate.put("set", batch);
-            doc.setField("batches", partialUpdate);
+            doc.setField("batch", partialUpdate);
 
-            // doc.setField("labels", js.getJSONArray("labels").toString());
+            // doc.setField("labels", js.getJSONArray("labels").toString()); 
             solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
@@ -178,7 +178,7 @@ public class SolrIndexer {
 
             solr.add("titles", doc);
             solr.commit("titles");
-            LOGGER.log(Level.INFO, "state for {0} changed", js.getString("pid"));
+            LOGGER.log(Level.INFO, "state for {0} changed", pid);
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
