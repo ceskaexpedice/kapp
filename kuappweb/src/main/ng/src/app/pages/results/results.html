@@ -19,6 +19,11 @@
             <mat-icon matSuffix (click)="doSearch()">search</mat-icon>
             <mat-icon matSuffix (click)="clearQ()">cancel</mat-icon>
           </mat-form-field>
+
+          <mat-button-toggle-group name="viewType" aria-label="viewType" [(ngModel)]="viewType">
+            <mat-button-toggle value="table_view"><mat-icon>table_view</mat-icon> {{'action.table_view' | translate}}</mat-button-toggle>
+            <mat-button-toggle value="card_view">{{'action.card_view' | translate}} <mat-icon>credit_card</mat-icon></mat-button-toggle>
+          </mat-button-toggle-group>
         </div>
       </div>
 
@@ -33,6 +38,29 @@
         </mat-paginator>
       </div>
       <div>
+        @if (viewType() === 'table_view') {
+<table mat-table [dataSource]="docs()">
+
+                <ng-container matColumnDef="pid">
+                    <th mat-header-cell *matHeaderCellDef> PID </th>
+                    <td mat-cell *matCellDef="let doc"> {{doc['pid']}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="title">
+                    <th mat-header-cell *matHeaderCellDef> {{ 'field.title' | translate}} </th>
+                    <td mat-cell *matCellDef="let doc"> {{doc.title}} </td>
+                </ng-container>
+
+                <ng-container matColumnDef="state">
+                    <th mat-header-cell *matHeaderCellDef> {{ 'field.state' | translate}} </th>
+                    <td mat-cell *matCellDef="let doc"> {{ 'state.' + doc.state | translate }} </td>
+                </ng-container>
+
+
+                <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="viewDoc(row)" style="cursor: pointer;"></tr>
+            </table>
+        } @else {
         @if (view() === 'titles') {
         @for(doc of docs(); track $index){
         <app-result-item [doc]="doc" [expanded]="expanded(doc['root.pid'])"></app-result-item>
@@ -40,6 +68,7 @@
         } @else {
         @for(doc of docs(); track $index){
         <app-author-item [doc]="doc"></app-author-item>
+        }
         }
         }
       </div>

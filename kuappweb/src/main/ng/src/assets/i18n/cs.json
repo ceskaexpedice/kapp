@@ -48,7 +48,9 @@
     "remove_from_batch": "Odstranit z dávky",
     "add_new_batch": "Přidat dávku",
     "add_doc_to_bacth": "Přidat dokument do dávky",
-    "import_batch": "Importovat soubor do dávky"
+    "import_batch": "Importovat soubor do dávky",
+    "card_view": "Karty",
+    "table_view": "Tabulka"
   },
   "state": {
     "noncontrolled_private": "NEKONTROLOVANÉ",

@@ -46,7 +46,9 @@
     "remove_from_batch": "Remove from batch",
     "add_new_batch": "Add new batch",
     "add_doc_to_bacth": "Add document to batch",
-    "import_batch": "Import batch"
+    "import_batch": "Import batch",
+    "card_view": "Cards",
+    "table_view": "Table"
   },
   "state": {
     "noncontrolled_private": "NEKONTROLOVANÉ",

@@ -23,8 +23,11 @@ import { JSONFacet } from '../../shared/facet';
 import { HttpParams } from '@angular/common/http';
 import { ResultItem } from "../../components/result-item/result-item";
 import { MatInputModule } from '@angular/material/input';
+import {MatButtonToggleModule} from '@angular/material/button-toggle';
 import { AuthorItem } from "../../components/author-item/author-item";
 import { Observable } from 'rxjs';
+import { TitleDialog } from '../../components/title-dialog/title-dialog';
+import { MatDialog } from '@angular/material/dialog';
 
 @Component({
   selector: 'app-results',
@@ -33,7 +36,7 @@ import { Observable } from 'rxjs';
     AngularSplitModule,
     MatProgressBarModule, MatSelectModule,
     MatButtonModule, MatTableModule, MatPaginatorModule,
-    MatFormFieldModule, MatIconModule, MatInputModule,
+    MatFormFieldModule, MatIconModule, MatInputModule, MatButtonToggleModule,
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem,
     AuthorItem
@@ -49,15 +52,20 @@ export class Results {
   hasFacets = signal<boolean>(false);
   view = signal<string>('titles');
 
-  rows = 100;
+  rows = 25;
   numFound: number = 0;
   pageIndex = 0;
   pageSizeOptions = [10, 25, 100];
 
   private router = inject(Router);
+    readonly dialog = inject(MatDialog);
+
+  viewType = signal<string>('table_view');
+  displayedColumns = ['pid', 'title', 'state'];
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
+    
     public state: AppState,
     private service: AppService,
     private config: AppConfiguration
@@ -128,5 +136,17 @@ export class Results {
     // console.log(this.solrResponse.expanded[pid])
     return this.solrResponse.expanded[pid];
   }
+
+  viewDoc(doc: any) {
+  
+      const dialogRef = this.dialog.open(TitleDialog, {
+        data: doc,
+      });
+  
+      dialogRef.afterClosed().subscribe(result => {
+        if (result) {
+        }
+      });
+    }
 
 }
