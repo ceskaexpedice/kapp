@@ -10,6 +10,7 @@ import { Batch } from "./shared/batch";
 
     public showInfo = signal<boolean>(false);
     public q: string = '';
+    usedFacets = signal<{ field: string, value: string }[]>([]);
 
     public labels = signal<Label[]>([]);
     public batches = signal<Batch[]>([]);

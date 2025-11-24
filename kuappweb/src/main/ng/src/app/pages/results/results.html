@@ -3,8 +3,7 @@
   <as-split-area [size]="320">
     <div style="flex: 1 30%;" class="app-filters">
       @if(solrResponse?.facets) {
-      <app-facets [fields]="['labels', 'state', 'licenses', 'physical_locations']" [facets]="solrResponse.facets"
-        (onFiltersChanged)="onFiltersChanged($event)"></app-facets>
+      <app-facets [fields]="['labels', 'state', 'licenses', 'physical_locations']" [facets]="solrResponse.facets"></app-facets>
       }
     </div>
   </as-split-area>

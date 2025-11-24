@@ -33,4 +33,21 @@ export class Home {
     this.router.navigate(['/' + target], { queryParams: params, queryParamsHandling: 'merge' });
   }
 
+  newImported() {
+
+    this.state.usedFacets.set([
+      {field: 'labels', value: 'new_imported'}
+    ]);
+    this.doSearch('titles');
+
+  }
+
+  toControll() {
+
+    this.state.usedFacets.set([
+      {field: 'state', value: 'to_control'}
+    ]);
+    this.doSearch('titles');
+  }
+
 }

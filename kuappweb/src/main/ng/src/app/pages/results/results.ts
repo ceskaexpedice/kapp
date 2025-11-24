@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, DOCUMENT, inject, Inject, signal } from '@angular/core';
+import { Component, computed, DOCUMENT, effect, inject, Inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -63,6 +63,8 @@ export class Results {
   viewType = signal<string>('table_view');
   displayedColumns = ['pid', 'title', 'state'];
 
+
+
   constructor(
     @Inject(DOCUMENT) private document: Document,
     
@@ -70,17 +72,15 @@ export class Results {
     private service: AppService,
     private config: AppConfiguration
   ) {
+    effect(() => {
+    const usedFacets = this.state.usedFacets();
+    this.getData();
 
+    })
   }
 
   ngOnInit(): void {
     this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
-    this.getData();
-  }
-
-  usedFacets: { field: string, value: string }[] = [];
-  onFiltersChanged(usedFacets: { field: string, value: string }[]) {
-    this.usedFacets = usedFacets;
     this.getData();
   }
 
@@ -118,7 +118,7 @@ export class Results {
     if (this.state.q) {
       p.q = this.state.q;
     }
-    this.addFilters(p, this.usedFacets);
+    this.addFilters(p, this.state.usedFacets());
     let s: Observable<any>;
     if (this.view() === 'titles') {
       s = this.service.searchTitles(p as HttpParams);

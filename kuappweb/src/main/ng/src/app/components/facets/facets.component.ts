@@ -6,6 +6,7 @@ import { FacetFields, JSONFacet } from '../../shared/facet';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
+import { AppState } from '../../app-state';
 
 @Component({
   selector: 'app-facets',
@@ -27,7 +28,12 @@ export class FacetsComponent {
   hasUsedFacets: boolean;
   usedFacets: {field: string, value: string}[] = [];
 
-  constructor() {}
+  constructor(public state: AppState) {
+    effect(() => {
+      this.usedFacets = this.state.usedFacets();
+    this.hasUsedFacets = this.usedFacets.length > 0;
+    })
+  }
 
   isUsed(field: string, value: string) {
     return this.usedFacets.findIndex(f => f.field === field && f.value === value) > -1;
@@ -41,13 +47,13 @@ export class FacetsComponent {
       this.usedFacets.push({field, value});
     }
     this.hasUsedFacets = this.usedFacets.length > 0;
-    this.onFiltersChanged.emit(this.usedFacets);
+    this.state.usedFacets.set(this.usedFacets);
   }
 
   unfilter(field: string, value: string) {
     this.usedFacets = this.usedFacets.filter(f => !(f.field === field && f.value === value));
     this.hasUsedFacets = this.usedFacets.length > 0;
-    this.onFiltersChanged.emit(this.usedFacets);
+    this.state.usedFacets.set(this.usedFacets);
   }
 
   fireMouserOver(field: string, value: string) {
