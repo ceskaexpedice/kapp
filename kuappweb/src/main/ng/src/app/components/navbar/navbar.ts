@@ -31,10 +31,11 @@ export class Navbar {
   }
   goToKeycloakLogin() {
     const keycloakUrl =
-      'https://eduid.inovatika.dev/realms/master/protocol/openid-connect/auth';
+      // 'https://eduid.inovatika.dev/realms/kapp/protocol/openid-connect/token';
+      'https://eduid.inovatika.dev/realms/kapp/protocol/openid-connect/auth';
 
-    const clientId = 'kuratorska-aplikace-web';
-    const redirectUri = encodeURIComponent(window.location.origin + '/callback');
+    const clientId = 'kapp';
+    const redirectUri = encodeURIComponent(window.location.origin + '/keycloak');
     const responseType = 'code';
     const scope = 'openid';
 

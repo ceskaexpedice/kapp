@@ -4,10 +4,12 @@ import { Results } from './pages/results/results';
 import { Admin } from './pages/admin/admin';
 import { Login } from './pages/login/login';
 import { Batches } from './pages/batches/batches';
+import { Auth } from './components/auth/auth';
 
 export const routes: Routes = [
     { path: '', component: Home},
     { path: 'login', component: Login },
+    { path: 'keycloak', component: Auth },
     { path: 'home', component: Home},
     { path: 'admin', component: Admin},
     { path: 'batches', component: Batches },

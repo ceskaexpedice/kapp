@@ -1,4 +1,4 @@
-import { Inject, Injectable, PLATFORM_ID } from '@angular/core';
+import { EventEmitter, Inject, Injectable, PLATFORM_ID } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { catchError, of, switchMap, tap } from 'rxjs';
 import { AppState } from './app-state';
@@ -9,9 +9,24 @@ import { Label } from './shared/label';
     providedIn: 'root'
 }) export class AppConfiguration {
 
+    interceptresponse: EventEmitter<any> = new EventEmitter<any>();
+
     public config: Configuration;
-    public get context() {
-        return this.config.context;
+    
+    public get deployPath() {
+        return this.config.deployPath;
+    }
+    
+    public get coreBaseUrl() {
+        return this.config.coreBaseUrl;
+    }
+
+    public get clientApiBaseUrl() {
+        return this.coreBaseUrl + '/api/client/v7.0';
+    }
+    
+    public get keycloak() {
+        return this.config.keycloak;
     }
 
     public get defaultLang() {
@@ -43,7 +58,6 @@ import { Label } from './shared/label';
                     const b = resp.config.find((a: any) => a.id === 'batches').value;
                     if (b.length > 0) {
                         this.state.batches.set(b);
-                        console.log(this.state.batches())
                     }
                     
                     const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels').value;

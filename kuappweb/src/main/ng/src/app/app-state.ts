@@ -14,5 +14,10 @@ import { Batch } from "./shared/batch";
 
     public labels = signal<Label[]>([]);
     public batches = signal<Batch[]>([]);
+
+    // keycloak 
+    code: string;
+    session_state: string;
+
     
 }

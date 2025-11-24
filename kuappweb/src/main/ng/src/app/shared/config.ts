@@ -3,11 +3,14 @@ export interface Sort { label: string; field: string; dir: string; entity?: stri
 
 
 export class Configuration {
-  context: string;
+
+  deployPath: string;
+  coreBaseUrl: string;
+  clientApiBaseUrl: string;
   defaultLang: string;
   
   userClientBaseUrl: string;
-  keycloak: {clientId: string, loginType: string};
+  keycloak: {clientId: string, loginType: string, logoutUrl: string};
   
   states: string[];
   licenses: string[];

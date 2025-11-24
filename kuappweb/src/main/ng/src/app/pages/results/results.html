@@ -9,8 +9,8 @@
   </as-split-area>
   <as-split-area>
     <div class="app-content app-fill-w app-fill-h">
-      <div class="app-fxLayout app-row">
-        <div style="margin-top: 15px;">
+      <div class="app-fxLayout app-row" style="margin-top: 15px; margin-left: 15px;">
+        <div class="app-fxFlex">
           <mat-form-field appearance="outline">
             <mat-label>{{ 'action.search' | translate }}</mat-label>
             <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
@@ -19,6 +19,9 @@
             <mat-icon matSuffix (click)="clearQ()">cancel</mat-icon>
           </mat-form-field>
 
+      </div>
+
+      <div style="margin-right: 15px;">
           <mat-button-toggle-group name="viewType" aria-label="viewType" [(ngModel)]="viewType">
             <mat-button-toggle value="table_view"><mat-icon>table_view</mat-icon> {{'action.table_view' | translate}}</mat-button-toggle>
             <mat-button-toggle value="card_view">{{'action.card_view' | translate}} <mat-icon>credit_card</mat-icon></mat-button-toggle>
