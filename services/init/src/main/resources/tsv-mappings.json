@@ -3,7 +3,7 @@
     {
       "match": "2025 - Seznam přírůstků NDK pro kontrolu AP - NK_MZK.xlsx - do 1975.tsv",
       "headers": {
-        "Název": "root.title",
+        "Název": "title",
         "Autor": "authors",
         "Producent balíčku": "physical_locations.facet",
         "Identifikátor ČNB": "id_ccnb",
@@ -22,7 +22,7 @@
     {
       "match": "2025 - Seznam přírůstků NDK pro kontrolu AP - NK_MZK.xlsx - 19 stol..tsv",
       "headers": {
-        "Název": "root.title",
+        "Název": "title",
         "Autor": "authors",
         "Producent balíčku": "physical_locations.facet",
         "Identifikátor ČNB": "id_ccnb",
@@ -41,7 +41,7 @@
     {
       "match": "kontrola_MONOGRAFIE_1900-1975.xlsx - Veřejná periodika po roce 1920.tsv",
       "headers": {
-        "Název": "root.title",
+        "Název": "title",
         "Vydáváno": "date.str",
         "UUID": "pid",
         "Ke zveřejnění": "public_since",
@@ -54,7 +54,7 @@
     {
       "matchStartsWith": "kontrola_MONOGRAFIE_1900-1975.xlsx",
       "headers": {
-        "Název": "root.title",
+        "Název": "title",
         "Autor": "authors",
         "Datum vydání": "date.str",
         "Identifikátor ČNB": "id_ccnb",

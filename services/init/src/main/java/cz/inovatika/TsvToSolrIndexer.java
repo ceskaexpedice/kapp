@@ -3,12 +3,12 @@ package cz.inovatika;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
-import java.io.InputStream;
+//import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.URI;
-import java.net.URLDecoder;
+//import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -17,7 +17,7 @@ import java.nio.file.Path;
 import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.Arrays;
+//import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -113,7 +113,7 @@ public class TsvToSolrIndexer {
                         SolrInputDocument doc = new SolrInputDocument();
                         int recordNumber = (int) record.getRecordNumber() + 1; // +1 to account for header
                         String pid;
-                        String rootPid = null;
+                        String rootPid;
                         String[] authorArray;
                         AutorData[] nameIDArray = null;
                         for (Map.Entry<String, String> entry : record.toMap().entrySet()) {
@@ -187,13 +187,14 @@ public class TsvToSolrIndexer {
                                         // ClientUtils.escapeQueryChars(pid), "UTF-8") ;
                                         // JSONObject item = getItem(client, builder, pid,
                                         // "https://ndk.cz/search/api/v5.0/search?" + query);
-                                        JSONObject item = getItem(client, builder, pid,
+                                        JSONObject item = getItem(client, pid,
                                                 "https://ndk.cz/search/api/v5.0/item/" + pid);
                                         if (item != null) {
                                             doc.setField("model", item.optString("model"));
                                             doc.setField("root.pid", item.optString("root_pid"));
+                                            doc.setField("root.title", item.optString("root_title"));
                                         } else {
-                                            item = getItem(client, builder, pid,
+                                            item = getItem(client, pid,
                                                     "https://api.kramerius.mzk.cz/search/api/client/v7.0/search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), "UTF-8"));
                                                     if (item != null && item.getJSONObject("response")
                                                         .getJSONArray("docs").length() > 0) {
@@ -201,6 +202,8 @@ public class TsvToSolrIndexer {
                                                         .getJSONArray("docs").getJSONObject(0).optString("model"));
                                                 doc.setField("root.pid", item.getJSONObject("response")
                                                         .getJSONArray("docs").getJSONObject(0).optString("root.pid"));
+                                                doc.setField("root.title", item.getJSONObject("response")
+                                                        .getJSONArray("docs").getJSONObject(0).optString("root.title"));
                                             }
                                         }
                                     }
@@ -223,7 +226,7 @@ public class TsvToSolrIndexer {
                             }
                         }
                         parsePublicString(doc, recordNumber);
-                        setState(doc, recordNumber);
+                        setState(doc);
                         ParseDates(doc, getField(doc, "date.str"), recordNumber, show_comma_info);
                         XmlProcessor.trySetLastAuthor(doc, nameIDArray);
                         List<SolrInputDocument> authorDocs = XmlProcessor.extractAuthorData(show_comma_info, solrClient,
@@ -234,13 +237,11 @@ public class TsvToSolrIndexer {
                                     solrClient.add("authors", authorDoc);
                             }
                         }
-
+                        if(doc.get("pid")==doc.get("root.pid")){
+                            doc.addField("root.title", doc.get("title"));
+                        }
+                        //doc.addField("state_user", "TableParser");
                         solrClient.add("titles", doc); 
-                        // if (secondPid != null) {
-                        //     SolrInputDocument seconddoc = doc.deepCopy();
-                        //     seconddoc.setField("pid", secondPid);
-                        //     solrClient.add("titles", seconddoc);
-                        // }
                     }
 
                 } catch (Exception e) {
@@ -258,7 +259,7 @@ public class TsvToSolrIndexer {
         } catch (ConnectException e) {
             System.err.println("Failed to connect to Solr " + e.getMessage());
             System.exit(1);
-        } catch (Exception e) {
+        } catch (IOException | SolrServerException e) {
             System.err.println(
                     "Error indexing data: Exception type: " + e.getClass().getName() + " Message:" + e.getMessage());
             System.exit(1);
@@ -277,22 +278,19 @@ public class TsvToSolrIndexer {
         }
         final String header = "public";
         switch (value.toLowerCase()) {
-            case "ano", "yes", "true": {
+            case "ano", "yes", "true" ->  {
                 doc.setField(header, true);
-                break;
             }
-            case "ne", "no", "false": {
+            case "ne", "no", "false" ->  {
                 doc.setField(header, false);
-                break;
             }
-            default: {
-                // System.err.println("Unexpected boolean value on row: " + recordNumber +
-                // "\n\tVALUE: " + value);
+            default -> {
+                // System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
             }
         }
     }
 
-    private static void setState(SolrInputDocument doc, int recordNumber) {
+    private static void setState(SolrInputDocument doc) {
         String val;
         if (doc.containsKey("public")) {
             val = (boolean) doc.getFieldValue("public") ? "controlled_public" : "controlled_private";
@@ -354,7 +352,7 @@ public class TsvToSolrIndexer {
                 + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
 
-    private static JSONObject getItem(HttpClient client, DocumentBuilder builder, String pid, String url)
+    private static JSONObject getItem(HttpClient client, String pid, String url)
             throws IOException, InterruptedException {
         if (pid == null || pid.isBlank()) {
             return null;
@@ -366,7 +364,7 @@ public class TsvToSolrIndexer {
         if (response != null && response.statusCode() == 200) {
             return new JSONObject(response.body());
         } else {
-            System.out.println("Failed to fetch ITEM for second pid " + pid + ", response code: "
+            System.out.println("Failed to fetch ITEM for root pid " + pid + ", response code: "
                     + (response != null ? response.statusCode() : "null response"));
             return null;
         }
@@ -384,7 +382,7 @@ public class TsvToSolrIndexer {
         if (response != null && response.statusCode() == 200) {
             return getXml(builder, response);
         } else {
-            System.out.println("Failed to fetch MODS for second pid " + pid + ", response code: "
+            System.out.println("Failed to fetch MODS for pid " + pid + ", response code: "
                     + (response != null ? response.statusCode() : "null response"));
             return null;
         }
