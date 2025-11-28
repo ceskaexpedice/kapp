@@ -9,6 +9,20 @@
   ));
 
 
+  @include mat.card-overrides((
+    outlined-container-shape: 2px
+  ));
+  .mat-mdc-card-actions {
+    padding: 8px 16px 16px 16px;
+  }
+  app-home {
+    @include mat.card-overrides((
+      outlined-container-shape: 28px,
+      outlined-container-color: var(--app-color-lightnes)
+    ));
+  }
+
+
   @include mat.list-overrides((
     list-item-hover-label-text-color: var(--app-color-selected),
     list-item-one-line-container-height: 32px
@@ -16,8 +30,24 @@
 
 
   @include mat.form-field-overrides((
-    container-height: 48px
+    container-height: 36px,
+    container-vertical-padding: 6px,
+    container-text-size: 14px,
+    container-text-weight: 500,
+
+    outlined-outline-color: var(--app-color-gray-4),
+    outlined-label-text-size: 14px,
+    outlined-label-text-populated-size: 14px,
+
+    hover-state-layer-opacity: 0,
+    focus-state-layer-opacity: 0
   ));
+
+  app-home {
+    @include mat.form-field-overrides((
+      outlined-container-shape: 36px,
+    ));
+  }
 
 
   @include mat.button-overrides((
@@ -29,12 +59,6 @@
   @include mat.expansion-overrides((
     container-shape: 0px,
     container-background-color: none
-  ));
-
-
-  @include mat.card-overrides((
-    elevated-container-shape: 2px,
-    outlined-container-shape: 2px
   ));
 
 

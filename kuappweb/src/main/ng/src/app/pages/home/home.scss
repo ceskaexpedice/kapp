@@ -1,29 +1,18 @@
-.app-home-layout {
-    display: flex;
-    flex-wrap: wrap;
-    padding: 20px 20px 100px;
-    justify-content: center;
+.mat-mdc-card {
+	width: 300px;
+	margin-bottom: 32px;
+	min-height: 200px;
 
-    mat-card {
-        width: 400px;
-        height: 200px;
-        margin: 10px;
-    }
+	.mat-mdc-card-header {
+		margin-bottom: 16px;
+	}
 
-    .mat-mdc-form-field {
-        width: 100%;
-    }
+	.mat-mdc-card-content {
+		flex: 1 1 1e-09px; 
+  	box-sizing: border-box;
 
-    .app-mat-card-actions {
-        bottom: 0px;
-        position: absolute;
-        width: 100%;
-    }
-}
-
-.app-home-tenant {
-    display: flex;
-    justify-content: center;
-    padding: 20px 20px;
-    
+		.mat-mdc-form-field {
+			width: 100%;
+		} 
+	}
 }

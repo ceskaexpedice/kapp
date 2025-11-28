@@ -1,72 +1,71 @@
-<div class="app-home-layout app-fxLayout app-row app-fill">
-    <mat-card appearance="outlined">
-        <mat-card-header>
-            <mat-card-title> {{ 'Titles' | translate}} </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <mat-form-field appearance="outline">
-                <mat-label>{{ 'action.search' | translate }}</mat-label>
-                <input [(ngModel)]="q" matInput placeholder="{{ 'field.query' | translate }}"
-              (keyup.enter)="doSearch('titles')">
-                <mat-icon matSuffix (click)="doSearch('titles')">search</mat-icon>
-            </mat-form-field>
-        </mat-card-content>
-        <mat-card-actions align="end" class="app-mat-card-actions">
-            <a [routerLink]="['/titles']" queryParamsHandling="preserve" mat-raised-button>{{ 'action.view' | translate }}</a>
-        </mat-card-actions>
+<div class="app-fxLayout app-column app-fill app-center-v app-center-h app-pt-8">
+	<div class="app-fxLayout app-row app-wrap app-gap-8 app-center-v app-center-h">
+		<mat-card appearance="outlined" class="app-card-title">
+			<mat-card-header>
+				<mat-card-title>{{ 'Titles' | translate }}</mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'action.search' | translate }}</mat-label>
+					<input [(ngModel)]="q" matInput [placeholder]="'field.query' | translate" (keyup.enter)="doSearch('titles')">
+					<mat-icon matSuffix (click)="doSearch('titles')">search</mat-icon>
+				</mat-form-field>
+			</mat-card-content>
+			<mat-card-actions align="end" class="app-mat-card-actions">
+				<button matButton="outlined" [routerLink]="['/titles']" queryParamsHandling="preserve">{{ 'action.view' | translate }}</button>
+			</mat-card-actions>
     </mat-card>
 
-    
-    <mat-card appearance="outlined">
-        <mat-card-header>
-            <mat-card-title> {{ 'Authors' | translate}} </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            <mat-form-field appearance="outline">
-                <mat-label>{{ 'action.search' | translate }}</mat-label>
-                <input [(ngModel)]="q" matInput placeholder="{{ 'field.query' | translate }}"
-              (keyup.enter)="doSearch('authors')">
-                <mat-icon matSuffix (click)="doSearch('authors')">search</mat-icon>
-            </mat-form-field>
-        </mat-card-content>
-        <mat-card-actions align="end" class="app-mat-card-actions">
-            <a [routerLink]="['/authors']" queryParamsHandling="preserve" mat-raised-button>{{ 'action.view' | translate }}</a>
-        </mat-card-actions>
+		<mat-card appearance="outlined" class="app-card-author">
+			<mat-card-header>
+				<mat-card-title>{{ 'Authors' | translate }} </mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'action.search' | translate }}</mat-label>
+					<input [(ngModel)]="q" matInput [placeholder]="'field.query' | translate" (keyup.enter)="doSearch('authors')">
+					<mat-icon matSuffix (click)="doSearch('authors')">search</mat-icon>
+				</mat-form-field>
+			</mat-card-content>
+			<mat-card-actions align="end" class="app-mat-card-actions">
+				<button matButton="outlined" [routerLink]="['/authors']" queryParamsHandling="preserve" mat-raised-button>{{ 'action.view' | translate }}</button>
+			</mat-card-actions>
+    </mat-card>
+
+<!-- 		<mat-card appearance="outlined" class="app-card-import">
+			<mat-card-header>
+				<mat-card-title>{{ 'New imports' | translate }} </mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				Seznam dil nove importovane
+			</mat-card-content>
+			<mat-card-actions align="end" class="app-mat-card-actions">
+				<button matButton="outlined" (click)="newImported()" mat-raised-button>{{ 'action.view' | translate }}</button>
+			</mat-card-actions>
+    </mat-card> -->
+
+		<mat-card appearance="outlined" class="app-card-conflict-author">
+			<mat-card-header>
+					<mat-card-title>{{ 'Authors with conflict' | translate }}</mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				Seznam autoru u kterych je rozdil mezi AUT a Kuratorske app
+			</mat-card-content>
+			<mat-card-actions align="end" class="app-mat-card-actions">
+				<button matButton="outlined" [routerLink]="['/authors']" queryParamsHandling="preserve" mat-raised-button>{{ 'action.view' | translate }}</button>
+			</mat-card-actions>
     </mat-card>
     
-    <mat-card appearance="outlined">
-        <mat-card-header>
-            <mat-card-title> {{ 'New imports' | translate}} </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            Seznam dil nove importovane
-        </mat-card-content>
-        <mat-card-actions align="end" class="app-mat-card-actions">
-            <a (click)="newImported()" mat-raised-button>{{ 'action.view' | translate }}</a>
-        </mat-card-actions>
-    </mat-card>
-    
-    <mat-card appearance="outlined">
-        <mat-card-header>
-            <mat-card-title> {{ 'Authors with conflict' | translate}} </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            Seznam autoru u kterych je rozdil mezi AUT a Kuratorske app
-        </mat-card-content>
-        <mat-card-actions align="end" class="app-mat-card-actions">
-            <a [routerLink]="['/authors']" queryParamsHandling="preserve" mat-raised-button>{{ 'action.view' | translate }}</a>
-        </mat-card-actions>
-    </mat-card>
-    
-    <mat-card appearance="outlined">
-        <mat-card-header>
-            <mat-card-title> {{ 'Non revised titles' | translate}} </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-            Seznam dil k kontrole
-        </mat-card-content>
-        <mat-card-actions align="end" class="app-mat-card-actions">
-            <a (click)="toControll()" mat-raised-button>{{ 'action.view' | translate }}</a>
-        </mat-card-actions>
-    </mat-card>
+    <mat-card appearance="outlined" class="app-card-non-revised-title">
+			<mat-card-header>
+				<mat-card-title>{{ 'Non revised titles' | translate }} </mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				Seznam dil k kontrole
+			</mat-card-content>
+			<mat-card-actions align="end" class="app-mat-card-actions">
+				<button matButton="outlined" (click)="toControll()" mat-raised-button>{{ 'action.view' | translate }}</button>
+			</mat-card-actions>
+		</mat-card>
+	</div>
 </div>
