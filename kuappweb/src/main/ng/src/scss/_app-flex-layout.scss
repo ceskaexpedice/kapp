@@ -1,6 +1,22 @@
 // --- FLEX LAYOUT ---
 
-@use "app-mixins";
+@mixin setFlexGap($direction: null) {
+  @for $i from 0 through 8 {
+    &.app-gap-#{$i} {
+      > * {
+        &:not(:last-child) {
+          @if ($direction == 'row') {
+            margin-right: #{$i * 4}px;
+          } @else if ($direction == 'column') {
+            margin-bottom: #{$i * 4}px;
+          } @else {
+            margin-right: #{$i * 4}px;
+          }
+        }
+      }
+    }
+  }
+}
 
 .app-fxLayout {
   display: flex !important;
@@ -8,12 +24,12 @@
 
   &.app-row {
     flex-direction: row;
-    @include app-mixins.setFlexGap(row);
+    @include setFlexGap(row);
   }
 
   &.app-column {
     flex-direction: column;
-    @include app-mixins.setFlexGap(column);
+    @include setFlexGap(column);
   }
 
   &.app-wrap {

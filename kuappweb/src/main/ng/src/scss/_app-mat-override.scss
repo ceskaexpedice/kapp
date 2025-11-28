@@ -3,13 +3,9 @@
 @use '@angular/material' as mat;
 
 :root {
-
   @include mat.toolbar-overrides((
-    // container-background-color: var(--mat-sys-primary),
     container-background-color: var(--mat-sys-primary-container),
-    // container-text-color: white,
     title-text-size: 20px,
-    //standard-height: 80px
   ));
 
 
@@ -18,62 +14,39 @@
     list-item-one-line-container-height: 32px
   ));
 
+
   @include mat.form-field-overrides((
     container-height: 48px
   ));
 
-  @include mat.button-overrides((
-    protected-container-shape: 4px,
-    outlined-container-shape: 4px
 
+  @include mat.button-overrides((
+    //protected-container-shape: 4px,
+    //outlined-container-shape: 4px
   ));
+
 
   @include mat.expansion-overrides((
     container-shape: 0px,
     container-background-color: none
   ));
 
+
   @include mat.card-overrides((
     elevated-container-shape: 2px,
     outlined-container-shape: 2px
-  
   ));
 
-@for $i from 0 through 5 {
-    mat-card.mat-elevation-z#{$i} {
-        @include mat.elevation($i);
-    }
-}
 
   @include mat.dialog-overrides((
     container-elevation-shadow: 5px,
     container-shape: 7px
   ));
 
-}
 
-// form field
-.mat-mdc-form-field {
-
-  // clear bottom margin
-  .mat-mdc-form-field-subscript-wrapper {
-    line-height: 0;
-    height: 0;
-  }
-}
-
-// dialog
-.mat-mdc-dialog-container {
-  .mat-mdc-dialog-title {
-    margin: 0;
-    padding: 0 16px 8px 16px;
-  }
-
-  .mat-mdc-dialog-content {
-    padding: 16px !important;
-  }
-
-  .mat-mdc-dialog-actions {
-    padding: 0 16px 16px 16px !important;
+  @for $i from 0 through 5 {
+    mat-card.mat-elevation-z#{$i} {
+      @include mat.elevation($i);
+    }
   }
 }
