@@ -2,15 +2,39 @@
 @use 'sass:map';
 @use '@angular/material' as mat;
 
+$home_cards: (
+  titles: #2196f3,
+  authors: #8BC34A,
+  imports: #009688,
+  authors-with-conflict: #607D8B,
+  non-revised-titles: #FF9800
+);
+
+@mixin setHomeCard() {
+  @each $card, $item in $home_cards {
+    .app-card-#{$card} {
+      @include mat.card-overrides((
+        outlined-container-color: $item
+      ));
+    }
+  }
+}
+
 :root {
   @include mat.toolbar-overrides((
-    container-background-color: var(--mat-sys-primary-container),
+    //container-background-color: var(--mat-sys-primary-container),
+    container-background-color: var(--app-color-lightnes),
+    container-text-color: var(--app-color-gray-8),
     title-text-size: 20px,
   ));
+  .mat-toolbar {
+    border-bottom: 1px solid var(--app-color-gray-3)
+  }
 
 
   @include mat.card-overrides((
-    outlined-container-shape: 2px
+    outlined-container-shape: 2px,
+    outlined-container-color: var(--app-color-lightnes)
   ));
   .mat-mdc-card-actions {
     padding: 8px 16px 16px 16px;
@@ -18,8 +42,17 @@
   app-home {
     @include mat.card-overrides((
       outlined-container-shape: 28px,
-      outlined-container-color: var(--app-color-lightnes)
+      outlined-outline-color: transparent
     ));
+    @include setHomeCard();
+    .mat-mdc-card {
+      .mat-mdc-card-header {
+        color: var(--app-color-lightnes)
+      }
+      .mat-mdc-card-content {
+        color: rgba(var(--app-color-lightnes-rgb), .7);
+      }
+    }
   }
 
 
@@ -42,11 +75,21 @@
     hover-state-layer-opacity: 0,
     focus-state-layer-opacity: 0
   ));
-
   app-home {
-    @include mat.form-field-overrides((
-      outlined-container-shape: 36px,
-    ));
+    .mat-mdc-card {
+        @include mat.form-field-overrides((
+        outlined-container-shape: 36px,
+        outlined-outline-color: rgba(var(--app-color-lightnes-rgb), .5),
+        outlined-hover-outline-color: rgba(var(--app-color-lightnes-rgb), .8),
+        outlined-hover-label-text-color: rgba(var(--app-color-lightnes-rgb), .8),
+        outlined-input-text-color: var(--app-color-lightnes),
+        outlined-input-text-placeholder-color: var(--app-color-lightnes),
+        outlined-label-text-color: rgba(var(--app-color-lightnes-rgb), .8),
+        outlined-focus-outline-color: rgba(var(--app-color-lightnes-rgb), .8),
+        outlined-focus-label-text-color: var(--app-color-lightnes),
+        trailing-icon-color: rgba(var(--app-color-lightnes-rgb), .8)
+      ));
+    }
   }
 
 
@@ -54,6 +97,15 @@
     //protected-container-shape: 4px,
     //outlined-container-shape: 4px
   ));
+  app-home {
+    .mat-mdc-card {
+      @include mat.button-overrides((
+        outlined-outline-color: rgba(var(--app-color-lightnes-rgb), .7),
+        outlined-label-text-color: white,
+        outlined-hover-state-layer-opacity: 0.2
+      ));
+    }
+  }
 
 
   @include mat.expansion-overrides((
