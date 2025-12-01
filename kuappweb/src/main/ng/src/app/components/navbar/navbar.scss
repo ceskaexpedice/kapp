@@ -1,22 +1,15 @@
-:host {
-  color: var(--mat-sys-primary);
-  background: var(--mat-sys-primary-container);
-}
-
-
 .mat-toolbar {
-  //height: $app-navbar-height;
-
   .app-logo {
-    height: 34px;
-    color: var(--mat-sys-primary);
-  }
-  
-  .mdc-button {
-    color: inherit;
-  }
-
-  .app-active-link {
-    text-decoration: underline;
+    img {
+      height: 30px;
+    }
+    .app-spacer {
+      width: 1px;
+      height: 30px;
+      background-color: var(--app-color-gray-4);
+    }
+    .app-desc {
+      color: var(--app-color-gray-7);
+    }
   }
 }

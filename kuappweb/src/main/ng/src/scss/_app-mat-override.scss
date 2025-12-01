@@ -37,7 +37,7 @@ $home_cards: (
   @include mat.toolbar-overrides((
     container-background-color: var(--app-color-lightnes),
     container-text-color: var(--app-color-gray-8),
-    title-text-size: 20px,
+    title-text-size: 18px,
   ));
   .mat-toolbar {
     border-bottom: 1px solid var(--app-color-gray-3)
