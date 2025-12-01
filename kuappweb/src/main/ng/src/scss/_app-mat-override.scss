@@ -45,8 +45,9 @@ $home_cards: (
 
 
   @include mat.card-overrides((
-    outlined-container-shape: 2px,
-    outlined-container-color: var(--app-color-lightnes)
+    outlined-container-shape: 0px,
+    outlined-container-color: var(--app-color-lightnes),
+    outlined-outline-color: var(--app-color-gray-3)
   ));
   .mat-mdc-card-actions {
     padding: 8px 16px 16px 16px;
@@ -63,6 +64,13 @@ $home_cards: (
       }
       .mat-mdc-card-content {
         color: rgba(var(--app-color-lightnes-rgb), .7);
+      }
+    }
+  }
+  app-result-item {
+    &:not(:last-child) {
+      .mat-mdc-card-outlined {
+        border-bottom: none !important;
       }
     }
   }
@@ -97,12 +105,32 @@ $home_cards: (
       ));
     }
   }
+  .app-view-rounded {
+    @include mat.form-field-overrides((
+      outlined-container-shape: 36px
+    ));
+  }
 
 
   @include mat.button-overrides((
-    //protected-container-shape: 4px,
-    //outlined-container-shape: 4px
+    outlined-outline-color: var(--app-color-gray-3),
+    outlined-container-height: 36px
   ));
+  .mat-mdc-form-field {
+    .mat-mdc-form-field-icon-suffix {
+      margin-right: 4px;
+      @include mat.icon-button-overrides((
+        state-layer-size: 30px,
+        icon-size: 22px
+      ));
+      .mat-icon {
+        $app-size: 22;
+        font-size: #{$app-size}px;
+        height: #{$app-size}px;
+        width: #{$app-size}px; 
+      }
+    }
+  }
   app-home {
     .mat-mdc-card {
       @include mat.button-overrides((

@@ -17,6 +17,12 @@ a {
   }
 }
 
+.app-color-warn {
+  color: var(--mat-sys-error) !important;
+}
+
+
+
 .app-clean-bg {
   background-color: transparent !important;
 }
@@ -63,6 +69,16 @@ a {
 
 .app-w-100 {
   width: 100%;
+}
+
+.app-pipe {
+  margin: 0 8px 0 8px;
+  border-left: 1px solid var(--app-color-gray-4);
+  min-height: 14px;
+}
+
+.app-cursor-pointer {
+  cursor: pointer;
 }
 
 .app-text-cutter {
