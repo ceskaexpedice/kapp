@@ -1,12 +1,12 @@
 @if(loading){<mat-progress-bar mode="indeterminate"></mat-progress-bar>}
-<div class="app-container app-h-100" style="background-color: re;">
+<div class="app-container app-h-100">
   <div class="app-fxLayout app-row app-fill app-gap-8">
-    <div class="app-left" style="background-color: gree;">
+    <div class="app-left">
       @if(solrResponse?.facets) {
         <app-facets [fields]="['labels', 'state', 'licenses', 'physical_locations']" [facets]="solrResponse.facets"></app-facets>
       }
     </div>
-    <div class="app-fxFlex app-right" style="background-color: blu;">
+    <div class="app-fxFlex app-right">
       <div class="app-fxLayout app-row app-gap-4">
         <div class="app-fxFlex">
           <mat-form-field appearance="outline">
@@ -33,16 +33,20 @@
           <mat-paginator #paginator class="demo-paginator" (page)="handlePageEvent($event)" [length]="numFound" [pageSize]="rows" [showFirstLastButtons]="false" [pageSizeOptions]="pageSizeOptions" [pageIndex]="pageIndex" aria-label="Select page"></mat-paginator>
         </div>
       </div>
-      <div>
+      <div class="app-table-wrapper">
          @if (viewType() === 'table_view') {
-          <table mat-table [dataSource]="docs()">
+          <table mat-table [dataSource]="docs()" class="app-hover app-striped">
             <ng-container matColumnDef="pid">
                 <th mat-header-cell *matHeaderCellDef> PID </th>
-                <td mat-cell *matCellDef="let doc"> {{doc['pid']}} </td>
+                <td mat-cell *matCellDef="let doc">{{doc['pid']}}</td>
             </ng-container>
             <ng-container matColumnDef="title">
                 <th mat-header-cell *matHeaderCellDef> {{ 'field.title' | translate}} </th>
-                <td mat-cell *matCellDef="let doc"> {{doc.title}} </td>
+                <td mat-cell *matCellDef="let doc">
+                  <div class="app-text-cutter-wrapper">
+                    <span class="app-text-cutter">{{ doc.title }}</span>
+                  </div>
+                </td>
             </ng-container>
             <ng-container matColumnDef="state">
                 <th mat-header-cell *matHeaderCellDef> {{ 'field.state' | translate}} </th>

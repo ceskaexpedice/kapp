@@ -152,6 +152,64 @@ $home_cards: (
   ));
 
 
+  @include mat.paginator-overrides((
+    container-background-color: transparent,
+    form-field-container-height: 36px,
+    form-field-container-vertical-padding: 4px
+  ));
+
+
+  @include mat.table-overrides((
+    background-color: var(--app-color-lightnes),
+    header-container-height: 48px, 
+    header-headline-color: var(--app-color-gray-6),
+    row-item-container-height: 36px,
+    row-item-outline-color: var(--app-color-gray-3)
+  ));
+  .mat-mdc-table {
+    &.app-striped {
+      .mat-mdc-row {
+        &:nth-child(odd) {
+          &:not(.app-selected) {
+            background-color: var(--app-color-gray-1);
+          }
+        }
+      }
+    }
+
+    &.app-hover {
+      .mat-mdc-row {
+        &:hover {
+          &:not(.app-selected, .app-row-detail) {
+            background-color: var(--app-color-gray-2);
+          }
+        }
+      }
+    }
+  }
+
+
+  @include mat.menu-overrides((
+    container-color: var(--app-color-lightnes),
+    item-label-text-size: 14px,
+    item-label-text-tracking: 0px,
+    item-label-text-weight: 400
+  ));
+  .mat-mdc-menu-item {
+    min-height: var(--app-menu-item-height) !important;
+  }
+  
+  
+  @include mat.select-overrides((
+    panel-background-color: var(--app-color-lightnes)
+  ));
+  --mat-option-label-text-size: 14px;
+  .mat-mdc-option {
+    min-height: var(--app-menu-item-height) !important;
+    line-height: var(--app-menu-item-height) !important;
+  }
+
+
   @include mat.dialog-overrides((
     container-elevation-shadow: 5px,
     container-shape: 7px

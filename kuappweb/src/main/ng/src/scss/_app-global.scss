@@ -64,3 +64,19 @@ a {
 .app-w-100 {
   width: 100%;
 }
+
+.app-text-cutter {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-text-cutter-wrapper {
+  position: relative;
+  min-height: 20px;
+
+  .app-text-cutter {
+    position: absolute;
+    max-width: 100%;
+  }
+}
