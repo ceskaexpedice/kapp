@@ -20,6 +20,19 @@ $home_cards: (
   }
 }
 
+@mixin setCheckBoxDensity($val: null) {
+  @if ($val != null) {
+    .mat-mdc-checkbox {
+      .mdc-checkbox__background {
+        width: calc(18px - #{$val}px);
+        height: calc(18px - #{$val}px);
+        top: calc((var(--mat-checkbox-state-layer-size, 40px) - calc(18px - #{$val}px)) / 2);
+        left: calc((var(--mat-checkbox-state-layer-size, 40px) - calc(18px - #{$val}px)) / 2);
+      }
+    }
+  }  
+}
+
 :root {
   @include mat.toolbar-overrides((
     container-background-color: var(--app-color-lightnes),
@@ -53,12 +66,6 @@ $home_cards: (
       }
     }
   }
-
-
-  @include mat.list-overrides((
-    list-item-hover-label-text-color: var(--app-color-selected),
-    list-item-one-line-container-height: 32px
-  ));
 
 
   @include mat.form-field-overrides((
@@ -109,7 +116,39 @@ $home_cards: (
 
   @include mat.expansion-overrides((
     container-shape: 0px,
-    container-background-color: none
+    container-background-color: none,
+    container-elevation-shadow: none,
+    header-collapsed-state-height: 48px,
+    header-expanded-state-height: 48px
+  ));
+  .mat-expansion-panel {
+    .mat-expansion-panel-header {
+      border-bottom: 1px solid var(--app-color-gray-3);
+    }
+    .mat-expansion-panel-body {
+      padding: 0;
+    }
+  }
+
+
+  @include mat.list-overrides((
+    list-item-one-line-container-height: 24px
+  ));
+  .app-facet-used {
+    @include mat.list-overrides((
+      list-item-label-text-size: 14px,
+      list-item-leading-icon-size: 20px,
+      list-item-leading-icon-color: var(--mat-sys-error),
+      list-item-leading-icon-start-space: 20px,
+      list-item-leading-icon-end-space: 8px
+    ));
+  }
+
+
+  @include setCheckBoxDensity(2);
+  @include mat.checkbox-overrides((
+    state-layer-size: 26px,
+    selected-focus-state-layer-color: transparent
   ));
 
 
