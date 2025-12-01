@@ -22,7 +22,6 @@ $home_cards: (
 
 :root {
   @include mat.toolbar-overrides((
-    //container-background-color: var(--mat-sys-primary-container),
     container-background-color: var(--app-color-lightnes),
     container-text-color: var(--app-color-gray-8),
     title-text-size: 20px,
