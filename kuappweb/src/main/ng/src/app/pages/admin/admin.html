@@ -1,44 +1,41 @@
-<div class="app-home-layout app-fxLayout app-row app-fill">
-    <mat-card appearance="outlined">
-        <mat-card-header>
-            <mat-card-title> {{ 'admin.labels' | translate}} </mat-card-title>
-        </mat-card-header>
-        <mat-card-content>
-
-            @for(l of state.labels(); track $index) {
-            <div class="app-label">
-                <mat-form-field appearance="outline">
-                    <mat-label>Name</mat-label>
-                    <input matInput [(ngModel)]="l.name" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                    <mat-label>Color</mat-label>
-                    <input matInput [(ngModel)]="l.color" />
-                </mat-form-field>
-                <button mat-flat-button [style.background-color]="l.color" [style.color]="l.text_color">{{ l.name
-                    }}</button>
-            </div>
-            }
-            
-            
-            <div class="app-label">
-                <mat-form-field appearance="outline">
-                    <mat-label>New label name</mat-label>
-                    <input matInput [(ngModel)]="nl.name" />
-                </mat-form-field>
-                <mat-form-field appearance="outline">
-                    <mat-label>New label color</mat-label>
-                    <input matInput [(ngModel)]="nl.color" />
-                </mat-form-field>
-                <button mat-flat-button [style.background-color]="nl.color" [style.color]="nl.text_color">{{ nl.name
-                    }}</button>
-                <button mat-icon-button [style.background-color]="nl.color" [style.color]="nl.text_color" (click)="addLabel(nl)"><mat-icon>new_label</mat-icon></button>
-            </div>
-
-        </mat-card-content>
-
-        <mat-card-actions align="end" class="app-mat-card-actions">
-            <button matButton (click)="saveLabels()">{{ 'action.save' | translate }}</button>
-        </mat-card-actions>
-    </mat-card>
+<div class="app-container app-h-100">
+	<div class="app-fxLayout app-row">
+		<mat-card appearance="outlined">
+			<mat-card-header class="app-mb-4">
+				<mat-card-title> {{ 'admin.labels' | translate}} </mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				@for(l of state.labels(); track $index) {
+					<div class="app-fxLayout app-row app-gap-2">
+						<mat-form-field appearance="outline">
+							<mat-label>Name</mat-label>
+							<input matInput [(ngModel)]="l.name" />
+						</mat-form-field>
+						<mat-form-field appearance="outline">
+							<mat-label>Color</mat-label>
+							<input matInput [(ngModel)]="l.color" />
+						</mat-form-field>
+						<button class="app-fxFlex" matButton="outlined" [style.background-color]="l.color" [style.color]="l.text_color">{{ l.name }}</button>
+					</div>
+				}	
+				<div class="app-fxLayout app-row app-gap-2">
+					<mat-form-field appearance="outline">
+						<mat-label>New label name</mat-label>
+						<input matInput [(ngModel)]="nl.name" />
+					</mat-form-field>
+					<mat-form-field appearance="outline">
+						<mat-label>New label color</mat-label>
+						<input matInput [(ngModel)]="nl.color" />
+					</mat-form-field>
+					<!-- <button matButton="outlined" [style.background-color]="nl.color" [style.color]="nl.text_color">{{ nl.name }}</button> -->
+					<button matButton="outlined" [style.background-color]="nl.color" [style.color]="nl.text_color" (click)="addLabel(nl)" class="app-btn-add">
+						<mat-icon>add_circle</mat-icon>Přidat
+					</button>
+				</div>
+			</mat-card-content>
+			<mat-card-actions class="app-mat-card-actions">
+				<button matButton="outlined" (click)="saveLabels()">{{ 'action.save' | translate }}</button>
+			</mat-card-actions>
+		</mat-card>
+	</div>
 </div>

@@ -1,3 +1,5 @@
-.app-label {
-    margin-bottom: 15px;
+.app-btn-add {
+	&:not(:disabled) {
+		color: var(--app-color-darknes) !important;
+	}
 }

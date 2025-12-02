@@ -3,6 +3,7 @@
 a {
   cursor: pointer;
   text-decoration: none;
+  color: var(--mat-sys-primary);
 
   &:hover {
     text-decoration: none;
@@ -16,6 +17,12 @@ a {
   }
 }
 
+// colors
+.app-color-warn {
+  color: var(--mat-sys-error) !important;
+}
+
+// cleaners
 .app-clean-bg {
   background-color: transparent !important;
 }
@@ -32,6 +39,7 @@ a {
   box-shadow: var(--mat-sys-level2);
 }
 
+// global
 .app-dn {
   display: none;
 }
@@ -42,4 +50,56 @@ a {
 
 .app-vh {
   visibility: hidden;
+}
+
+.app-oh {
+  overflow: hidden;
+}
+
+.app-oa-y {
+  overflow-y: auto !important;
+}
+
+.app-oa-x {
+  overflow-x: auto !important;
+}
+
+.app-h-100 {
+  height: 100%;
+}
+
+.app-w-100 {
+  width: 100%;
+}
+
+.app-label {
+  font-weight: 500;
+  color: var(--app-color-gray-6);
+  font-size: 13px;
+}
+
+.app-pipe {
+  margin: 0 8px 0 8px;
+  border-left: 1px solid var(--app-color-gray-4);
+  min-height: 14px;
+}
+
+.app-cursor-pointer {
+  cursor: pointer;
+}
+
+.app-text-cutter {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.app-text-cutter-wrapper {
+  position: relative;
+  min-height: 20px;
+
+  .app-text-cutter {
+    position: absolute;
+    max-width: 100%;
+  }
 }

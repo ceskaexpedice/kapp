@@ -20,12 +20,24 @@ $home_cards: (
   }
 }
 
+@mixin setCheckBoxDensity($val: null) {
+  @if ($val != null) {
+    .mat-mdc-checkbox {
+      .mdc-checkbox__background {
+        width: calc(18px - #{$val}px);
+        height: calc(18px - #{$val}px);
+        top: calc((var(--mat-checkbox-state-layer-size, 40px) - calc(18px - #{$val}px)) / 2);
+        left: calc((var(--mat-checkbox-state-layer-size, 40px) - calc(18px - #{$val}px)) / 2);
+      }
+    }
+  }  
+}
+
 :root {
   @include mat.toolbar-overrides((
-    //container-background-color: var(--mat-sys-primary-container),
     container-background-color: var(--app-color-lightnes),
     container-text-color: var(--app-color-gray-8),
-    title-text-size: 20px,
+    title-text-size: 18px,
   ));
   .mat-toolbar {
     border-bottom: 1px solid var(--app-color-gray-3)
@@ -33,8 +45,9 @@ $home_cards: (
 
 
   @include mat.card-overrides((
-    outlined-container-shape: 2px,
-    outlined-container-color: var(--app-color-lightnes)
+    outlined-container-shape: 0px,
+    outlined-container-color: var(--app-color-lightnes),
+    outlined-outline-color: var(--app-color-gray-3)
   ));
   .mat-mdc-card-actions {
     padding: 8px 16px 16px 16px;
@@ -54,12 +67,32 @@ $home_cards: (
       }
     }
   }
+  app-result-item,
+  app-author-item {
+    &:not(:last-child) {
+      .mat-mdc-card-outlined {
+        border-bottom: none !important;
+      }
+    }
+    .mat-mdc-card {
+      .mat-mdc-card-header {
+        .mat-mdc-card-header-text {
+          width: 100% !important;
+        }
+      }
 
-
-  @include mat.list-overrides((
-    list-item-hover-label-text-color: var(--app-color-selected),
-    list-item-one-line-container-height: 32px
-  ));
+      .mat-mdc-card-content {
+        line-height: 20px;
+        
+        .mat-icon {
+          $app-size: 16;
+          font-size: #{$app-size}px;
+          height: #{$app-size}px;
+          width: #{$app-size}px; 
+        }
+      }
+    }
+  }
 
 
   @include mat.form-field-overrides((
@@ -91,12 +124,32 @@ $home_cards: (
       ));
     }
   }
+  .app-view-rounded {
+    @include mat.form-field-overrides((
+      outlined-container-shape: 36px
+    ));
+  }
 
 
   @include mat.button-overrides((
-    //protected-container-shape: 4px,
-    //outlined-container-shape: 4px
+    outlined-outline-color: var(--app-color-gray-3),
+    outlined-container-height: 36px
   ));
+  .mat-mdc-form-field {
+    .mat-mdc-form-field-icon-suffix {
+      margin-right: 4px;
+      @include mat.icon-button-overrides((
+        state-layer-size: 30px,
+        icon-size: 22px
+      ));
+      .mat-icon {
+        $app-size: 22;
+        font-size: #{$app-size}px;
+        height: #{$app-size}px;
+        width: #{$app-size}px; 
+      }
+    }
+  }
   app-home {
     .mat-mdc-card {
       @include mat.button-overrides((
@@ -108,10 +161,121 @@ $home_cards: (
   }
 
 
+  @include mat.button-toggle-overrides((
+    height: 36px,
+    divider-color: var(--app-color-gray-3),
+    selected-state-background-color: var(--app-color-gray-2),
+    text-color: var(--app-color-gray-7),
+    selected-state-text-color: var(--mat-sys-primary)
+  ));
+
+
+
+  .mat-mdc-chip {
+    &:not(.app-chip-add) {
+      @include mat.chips-overrides((
+        label-text-color: var(--app-color-lightnes),
+        with-trailing-icon-trailing-icon-color: var(--app-color-lightnes),
+        outline-color: transparent
+      ));
+    }
+  }
+
+
   @include mat.expansion-overrides((
     container-shape: 0px,
-    container-background-color: none
+    container-background-color: none,
+    container-elevation-shadow: none,
+    header-collapsed-state-height: 48px,
+    header-expanded-state-height: 48px
   ));
+  .mat-expansion-panel {
+    .mat-expansion-panel-header {
+      border-bottom: 1px solid var(--app-color-gray-3);
+    }
+    .mat-expansion-panel-body {
+      padding: 0;
+    }
+  }
+
+
+  @include mat.list-overrides((
+    list-item-one-line-container-height: 24px
+  ));
+  .app-facet-used {
+    @include mat.list-overrides((
+      list-item-label-text-size: 14px,
+      list-item-leading-icon-size: 20px,
+      list-item-leading-icon-color: var(--mat-sys-error),
+      list-item-leading-icon-start-space: 20px,
+      list-item-leading-icon-end-space: 8px
+    ));
+  }
+
+
+  @include setCheckBoxDensity(2);
+  @include mat.checkbox-overrides((
+    state-layer-size: 26px,
+    selected-focus-state-layer-color: transparent
+  ));
+
+
+  @include mat.paginator-overrides((
+    container-background-color: transparent,
+    form-field-container-height: 36px,
+    form-field-container-vertical-padding: 4px
+  ));
+
+
+  @include mat.table-overrides((
+    background-color: var(--app-color-lightnes),
+    header-container-height: 48px, 
+    header-headline-color: var(--app-color-gray-6),
+    row-item-container-height: 36px,
+    row-item-outline-color: var(--app-color-gray-3)
+  ));
+  .mat-mdc-table {
+    &.app-striped {
+      .mat-mdc-row {
+        &:nth-child(odd) {
+          &:not(.app-selected) {
+            background-color: var(--app-color-gray-1);
+          }
+        }
+      }
+    }
+
+    &.app-hover {
+      .mat-mdc-row {
+        &:hover {
+          &:not(.app-selected, .app-row-detail) {
+            background-color: var(--app-color-gray-2);
+          }
+        }
+      }
+    }
+  }
+
+
+  @include mat.menu-overrides((
+    container-color: var(--app-color-lightnes),
+    item-label-text-size: 14px,
+    item-label-text-tracking: 0px,
+    item-label-text-weight: 400
+  ));
+  .mat-mdc-menu-item {
+    min-height: var(--app-menu-item-height) !important;
+  }
+  
+  
+  @include mat.select-overrides((
+    panel-background-color: var(--app-color-lightnes)
+  ));
+  --mat-option-label-text-size: 14px;
+  .mat-mdc-option {
+    min-height: var(--app-menu-item-height) !important;
+    line-height: var(--app-menu-item-height) !important;
+  }
 
 
   @include mat.dialog-overrides((
