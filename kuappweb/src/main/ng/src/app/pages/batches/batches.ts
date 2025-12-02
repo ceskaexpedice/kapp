@@ -19,12 +19,14 @@ import { FileUploadModule, FileUploader, FileUploaderOptions } from 'ng2-file-up
 import { StateDialog } from '../../components/state-dialog/state-dialog';
 import { MatTableModule } from '@angular/material/table';
 import { TitleDialog } from '../../components/title-dialog/title-dialog';
+import { MatMenuModule } from '@angular/material/menu';
 
 @Component({
   selector: 'app-batches',
   imports: [
     TranslateModule, FormsModule, DatePipe, FileUploadModule,
-    MatDialogModule, MatIconModule, MatButtonModule, MatCardModule,
+    MatDialogModule, MatMenuModule,
+    MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
     AngularSplitModule, MatTableModule,
     // ResultItem
@@ -53,7 +55,6 @@ export class Batches {
   displayedColumns = ['pid', 'title', 'state', 'action']
 
   onFileSelected(e: any) {
-    console.log(e)
     const file: File = e.target.files[0];
     if (file) {
       this.selectedFile = file.name;
@@ -97,7 +98,10 @@ export class Batches {
   loadBatch() {
     this.service.getDocsInBatch(this.selectedBatch().name).subscribe(resp => {
       this.docs.set(resp.response.docs);
+      if (resp.facets.state.buckets) {
       this.states.set(resp.facets.state.buckets.map((b: any) => b.val));
+
+      }
     });
 
   }
@@ -107,7 +111,7 @@ export class Batches {
     if (!this.state.batches().find(b => b.name === this.newBatch)) {
       // this.batches.push({date_created: new Date(), name: this.newBatch, state: 'new'});
       this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
-      this.saveBatches();
+      this.saveBatches(this.newBatch);
     }
   }
 
@@ -125,14 +129,16 @@ export class Batches {
     if (!this.state.batches().find(b => b.name === this.newBatch)) {
       // this.batches.push({date_created: new Date(), name: this.newBatch, state: 'new'});
       this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
-      this.saveBatches();
+      this.saveBatches(this.newBatch);
     }
   }
 
 
-  saveBatches() {
+  saveBatches(batch: string) {
     this.service.saveBatches(this.state.batches()).subscribe(resp => {
-      console.log(resp)
+      if (batch) {
+        this.selectBatch(this.state.batches().find(b => b.name === batch));
+      }
     });
   }
 
@@ -166,6 +172,13 @@ export class Batches {
       if (result) {
       }
     });
+  }
+
+  createBatchFromLabel(label: string) {
+      this.service.createBatchFromLabel(label).subscribe((res: any) => {
+        this.state.batches.update(b => [...b, { date_created: new Date(), name: res.batch, state: 'new' }]);
+        this.saveBatches(res.batch);
+      })
   }
 
 }

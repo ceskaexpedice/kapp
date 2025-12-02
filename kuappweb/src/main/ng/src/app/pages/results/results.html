@@ -34,7 +34,7 @@
         </div>
       </div>
       <div>
-         @if (viewType() === 'table_view') {
+         @if (viewType() === 'table_view' && view() === 'titles') {
           <div class="app-table-wrapper">
             <table mat-table [dataSource]="docs()" class="app-hover app-striped">
               <ng-container matColumnDef="pid">

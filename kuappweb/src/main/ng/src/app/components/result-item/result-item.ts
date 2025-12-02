@@ -17,13 +17,14 @@ import { LabelsDialog } from '../labels-dialog/labels-dialog';
 import { Label } from '../../shared/label';
 import { StateDialog } from '../state-dialog/state-dialog';
 import { Batch } from '../../shared/batch';
+import { MatFormFieldModule } from "@angular/material/form-field";
+import { FormsModule } from '@angular/forms';
 
 @Component({
   selector: 'app-result-item',
-  imports: [RouterModule, TranslateModule,
+  imports: [RouterModule, TranslateModule, FormsModule,
     MatCardModule, MatButtonModule, MatMenuModule,
-    MatIconModule, MatChipsModule
-  ],
+    MatIconModule, MatChipsModule, MatFormFieldModule],
   templateUrl: './result-item.html',
   styleUrl: './result-item.scss'
 })
@@ -39,6 +40,9 @@ export class ResultItem {
 
   hasCollapsed = false;
   isCollapsed = signal<boolean>(true);
+
+  editingDate = signal(false);
+  decisionDate: number;
 
   constructor(
     private dialog: MatDialog,
@@ -175,5 +179,16 @@ export class ResultItem {
 
   editNote() {
 
+  }
+
+  editDecisionDate() {
+    this.editingDate.set(true)
+  }
+
+  saveDecisionDate() {
+    
+    this.service.saveDecisionDate(this.doc().pid, this.decisionDate).subscribe((res: any) => {
+      console.log(res)
+    })
   }
 }

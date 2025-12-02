@@ -1,9 +1,10 @@
 {
+
+    "coreBaseUrl": "https://k7.inovatika.dev",
     "userClientBaseUrl": "https://k7.inovatika.dev",
     "keycloak": {
-         "clientId": "krameriusClient",
+         "clientId": "kapp",
          "loginType": "all" 
- 
     },
     "states": [
         "noncontrolled_private",
