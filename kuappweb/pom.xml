@@ -57,7 +57,46 @@
 
     <build>
         <plugins>
-            
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.3</version>
+                <configuration>
+                    <from>
+                        <image>docker://tomcat:9.0.107-jdk21-temurin</image>
+                    </from>
+
+                    <to>
+                        <image>kuappweb:latest</image>
+                    </to>
+
+                    <container>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                        <!-- Tomcat webapps directory -->
+                        <appRoot>/usr/local/tomcat/webapps</appRoot>
+                    </container>
+                    
+
+                    <!-- Copy the WAR file into the container -->
+                    <extraDirectories>
+                        <paths>
+                            <path>
+                                <from>${project.build.directory}</from>  <!-- directory containing the WAR -->
+                                <into>/usr/local/tomcat/webapps/</into>
+                                <includes>
+                                    <include>ROOT.war</include>
+                                </includes>
+                            </path>
+                        </paths>
+                    </extraDirectories>
+                </configuration>
+            </plugin>
+
+
+
+
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>exec-maven-plugin</artifactId>
@@ -196,6 +235,9 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>3.4.0</version>
+                <configuration>
+                    <warName>ROOT</warName>
+                </configuration>
             </plugin>
         </plugins>
     </build>
