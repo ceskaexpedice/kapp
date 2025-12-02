@@ -228,11 +228,21 @@
   <fieldType name="tlong" class="solr.TrieLongField" positionIncrementGap="0" docValues="true" precisionStep="8"/>
   <fieldType name="tlongs" class="solr.TrieLongField" positionIncrementGap="0" docValues="true" multiValued="true" precisionStep="8"/>
   <field name="_version_" type="long" indexed="true" stored="true"/>
+
   <field name="checked_by" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
+	
+  <!-- TODO: Delete -->		
   <field name="check_NK" type="boolean" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="check_MZK" type="boolean" docValues="true" multiValued="false" indexed="true" stored="true"/>
+
   <field name="confirmed_end_year" type="boolean" indexed="true" uninvertible="true" stored="true"/>
   <field name="confirmed_start_year" type="boolean" indexed="true" uninvertible="true" stored="true"/>
+  
+  <field name="biblio_mods" type="string" multiValued="true" indexed="false" stored="true"/>
+  <field name="biblio_mods_md5" type="string" multiValued="true" indexed="false" stored="true"/>
+  <dynamicField name="biblio_mods_dl_*" type="string" multiValued="true" indexed="false" stored="true"/>
+  			
+  
   <field name="contains_licenses" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="created" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="date.max" type="date" docValues="true" multiValued="false" indexed="true" required="false" stored="true"/>
@@ -247,6 +257,7 @@
   <field name="imported" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="in_collections" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="in_collections.direct" type="string" multiValued="true" indexed="true" stored="true"/>
+
   <field name="indexed" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="indexer_version" type="int" multiValued="false" indexed="true" stored="true"/>
   <field name="issue.type.code" type="string" multiValued="false" indexed="true" stored="true"/>
