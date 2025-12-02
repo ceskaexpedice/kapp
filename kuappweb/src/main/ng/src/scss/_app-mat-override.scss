@@ -161,6 +161,27 @@ $home_cards: (
   }
 
 
+  @include mat.button-toggle-overrides((
+    height: 36px,
+    divider-color: var(--app-color-gray-3),
+    selected-state-background-color: var(--app-color-gray-2),
+    text-color: var(--app-color-gray-7),
+    selected-state-text-color: var(--mat-sys-primary)
+  ));
+
+
+
+  .mat-mdc-chip {
+    &:not(.app-chip-add) {
+      @include mat.chips-overrides((
+        label-text-color: var(--app-color-lightnes),
+        with-trailing-icon-trailing-icon-color: var(--app-color-lightnes),
+        outline-color: transparent
+      ));
+    }
+  }
+
+
   @include mat.expansion-overrides((
     container-shape: 0px,
     container-background-color: none,
