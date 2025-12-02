@@ -6,7 +6,9 @@ Kramerius.
 Data jsou importováná z jednotlivých instancí krameria a dokumenty postupují nasledující stavy
 
 
-## Import dokumentů
+## Stavy na úrovni částí případně jednoduché monografie
+
+### Import dokumentů
 
 ```mermaid
 stateDiagram-v2
@@ -34,7 +36,7 @@ stateDiagram-v2
     Imported --> KE_KONTROLE : Nutná kurátorská kontrola
 
 ```
-## Kurátorská kontrola
+### Kurátorská kontrola
 
 ```mermaid
 stateDiagram-v2
@@ -66,7 +68,7 @@ stateDiagram-v2
     KE_KONTROLE --> KONTROLOVANE_ZNEPRISTUPNENE : Kontrola -  Jiný důvod znepřístupnění  
 ```
 
-## Automatické přechody
+### Automatické přechody
 ```mermaid
 stateDiagram-v2
     direction LR
@@ -93,17 +95,21 @@ stateDiagram-v2
     KE_KONTROLE --> KONTROLOVANÉ_NEVEŘEJNÉ : Posouzení kurátora
 ```
 
-## Možné přechody u existujících dokumentů
+### Možné přechody u existujících dokumentů
 Všechny stavy jsou možné
 
 
-## Vícesvazkové monografie a periodika
+### Vícesvazkové monografie a periodika
 
 Na úrovni vícesvazku nebo periodika bude pouze **příznak/rodičovský stav**.  Který bude jenom určovat zda je celek určený ke kontrole nebo je zkontrolován. 
 
 
+---
 
-## Rodičovský stav/příznak
+## Stavy na úrovni vícesvazků nebo periodik
+
+
+### Rodičovský stav/příznak
 ```mermaid
 stateDiagram-v2
     direction LR
