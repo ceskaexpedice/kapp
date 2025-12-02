@@ -88,7 +88,7 @@ stateDiagram-v2
 
 
     %% Automatické přechody v čase
-    KONTROLOVANE_NEVEREJNE --> KONTROLOVANE_VOLNE : Uplynutí rozhodného roku
+    KONTROLOVANE_NEVEREJNE --> KE_KONTROLE --> KONTROLOVANE_VOLNE : Uplynutí rozhodného roku
 ```
 
 ## Možné přechody u existujících dokumentů
