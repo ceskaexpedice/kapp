@@ -73,7 +73,7 @@ public class IndexSearcher {
                             .setMinCount(1))
                     .setOffset(offset)
                     .setSort("indextime desc")
-                    .returnFields("*,authors_kramerius:[json],state_history:[json]")
+                    .returnFields("*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
                     .setLimit(rows);
 
             if (request.getParameter("author") != null) {
@@ -215,7 +215,7 @@ public class IndexSearcher {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery("pid:\""+pid + "\"")
-                    .returnFields("*,authors_kramerius:[json],state_history:[json]")
+                    .returnFields("*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
                     .setLimit(1);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));

@@ -54,5 +54,5 @@
     <button matButton (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
     }
     <button matButton (click)="save()">{{ 'action.save' | translate }}</button>
-    <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+    <button matButton [mat-dialog-close]="hasChanges" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>

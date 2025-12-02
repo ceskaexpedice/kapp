@@ -96,7 +96,6 @@
 		<div class="app-collapsed">
 			@for (ch of related(); track ch) {
 			<div>
-				<label>{{ 'field.pid' | translate }}: </label>
 				{{ ch['model']}} {{ ch['root.title']}}
 				@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
 				<a target="_blank" [href]="'https://ndk.cz/view/'+ch['pid']">{{ch['pid']}}<mat-icon matSuffix

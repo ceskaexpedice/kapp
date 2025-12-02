@@ -80,12 +80,16 @@ export class ResultItem {
 
   infoAuthor(a: Author) {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: a,
+      data: {pid:this.doc().pid, author:a},
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result !== undefined) {
-
+      if (result) {
+        this.service.getDoc(this.doc().pid).subscribe((resp: any) => {
+          if (resp.response?.docs?.length > 0) {
+            this.doc.set(resp.response.docs[0]);
+          }
+        });
       }
     });
 
@@ -93,12 +97,16 @@ export class ResultItem {
 
   addAuthor() {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: null,
+      data: {pid:this.doc().pid, author:null},
     });
 
     dialogRef.afterClosed().subscribe(result => {
-      if (result !== undefined) {
-
+      if (result) {
+        this.service.getDoc(this.doc().pid).subscribe((resp: any) => {
+          if (resp.response?.docs?.length > 0) {
+            this.doc.set(resp.response.docs[0]);
+          }
+        });
       }
     });
 
