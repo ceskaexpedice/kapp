@@ -112,7 +112,6 @@ stateDiagram-v2
     state CELEK_ZKONTROLOVÁN <<start>>
 
 
-    %% Přírustky případně nové importy
+    %% Přírustky případně nové importy / Ná úrovni částí probíhá kurátorská kontrola viz stavy výše
     CELEK_KE_KOTNROLE --> CELEK_ZKONTROLOVÁN : Nový import nebo přírustek. 
-    Ná úrovni částí probíhá kurátorská kontrola viz stavy výše
 ```
