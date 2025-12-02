@@ -99,14 +99,10 @@ stateDiagram-v2
 Všechny stavy jsou možné
 
 
-### Vícesvazkové monografie a periodika
-
-Na úrovni vícesvazku nebo periodika bude pouze **příznak/rodičovský stav**.  Který bude jenom určovat zda je celek určený ke kontrole nebo je zkontrolován. 
-
-
 ---
 
 ## Stavy na úrovni vícesvazků nebo periodik
+Na úrovni vícesvazku nebo periodika bude pouze **příznak/rodičovský stav**.  Který bude jenom určovat zda je celek určený ke kontrole nebo je zkontrolován. 
 
 
 ### Rodičovský stav/příznak
