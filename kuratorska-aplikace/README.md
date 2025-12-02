@@ -96,3 +96,9 @@ stateDiagram-v2
 ## Možné přechody u existujících dokumentů
 Všechny stavy jsou možné
 
+
+## Vícesvazkové monografie a periodika
+
+Na úrovni vícesvazku nebo periodika bude pouze příznak/rodičovský stav.  Který bude jenom určovat zda je celek určený ke kontrole nebo je zkontrolován. 
+
+
