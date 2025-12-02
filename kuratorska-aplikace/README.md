@@ -113,5 +113,6 @@ stateDiagram-v2
 
 
     %% Přírustky případně nové importy
-    CELEK_KE_KOTNROLE --> CELEK_ZKONTROLOVÁN : Nový import nebo přírustek. (Přibyl svazek nebo ročník periodika). Ná úrovni částí probíhá kurátorská kontrola viz stavy výše
+    CELEK_KE_KOTNROLE --> CELEK_ZKONTROLOVÁN : Nový import nebo přírustek. 
+    Ná úrovni částí probíhá kurátorská kontrola viz stavy výše
 ```
