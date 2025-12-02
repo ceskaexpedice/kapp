@@ -5,15 +5,15 @@
 				<div class="app-fxFlex">{{ doc()['full']}}</div>
 				<mat-chip-set>
 					@for(l of labels; track $index) {
-						<mat-chip [style.background-color]="l.color" (removed)="removeLabel(l)" style="--mat-chip-label-text-color: {{l.text_color}};">
+						<mat-chip [style.background-color]="l.color" (removed)="removeLabel(l)"><!--style="--mat-chip-label-text-color: {{l.text_color}};"-->
 							{{ l.name }}
 							<button matChipRemove [attr.aria-label]="'remove ' + l.name">
 								<mat-icon>cancel</mat-icon>
 							</button>
 						</mat-chip>
 					}
-					<mat-chip>
-						<button mat-icon-button [matMenuTriggerFor]="labelsMenu"><mat-icon>new_label</mat-icon></button>
+					<mat-chip [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
+						{{ 'Přidat štítek' | translate }}
 						<mat-menu #labelsMenu="matMenu">
 							@for(a of state.labels(); track $index) {
 								<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
