@@ -102,3 +102,16 @@ Všechny stavy jsou možné
 Na úrovni vícesvazku nebo periodika bude pouze **příznak/rodičovský stav**.  Který bude jenom určovat zda je celek určený ke kontrole nebo je zkontrolován. 
 
 
+
+## Rodičovský stav/příznak
+```mermaid
+stateDiagram-v2
+    direction LR
+
+    state CELEK_KE_KOTNROLE <<start>>
+    state CELEK_ZKONTROLOVÁN <<start>>
+
+
+    %% Přírustky případně nové importy
+    CELEK_KE_KOTNROLE --> CELEK_ZKONTROLOVÁN : Nový import nebo přírustek. (Přibyl svazek nebo ročník periodika). Ná úrovni částí probíhá kurátorská kontrola viz stavy výše
+```
