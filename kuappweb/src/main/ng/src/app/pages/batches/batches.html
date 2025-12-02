@@ -2,7 +2,7 @@
     <as-split-area [size]="320">
         <div style="flex: 1 30%;" class="app-filters">
             @for(l of state.batches(); track $index) {
-            <div class="app-label">
+            <div class="app-label" [class.app-active]="selectedBatch()?.name === l.name">
                 <a (click)="selectBatch(l)">{{ l.name }}</a>
             </div>
             }
@@ -16,7 +16,16 @@
                 <button mat-icon-button (click)="addBatch()"
                     [title]="'action.add_new_batch' | translate"><mat-icon>playlist_add</mat-icon></button>
 
+
             </div>
+            <button mat-raised-button [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
+                {{ 'action.add_batch_from_label' | translate }}</button>
+                <mat-menu #labelsMenu="matMenu">
+                    @for(a of state.labels(); track $index) {
+                        <button mat-menu-item (click)="createBatchFromLabel(a.name)">{{ a.name }}</button>
+                    }
+                </mat-menu>
+
         </div>
     </as-split-area>
     <as-split-area>
@@ -80,5 +89,5 @@
 
 
 <mat-card-actions align="end" class="app-mat-card-actions">
-    <button matButton (click)="saveBatches()">{{ 'action.save' | translate }}</button>
+    <button matButton (click)="saveBatches(null)">{{ 'action.save' | translate }}</button>
 </mat-card-actions>

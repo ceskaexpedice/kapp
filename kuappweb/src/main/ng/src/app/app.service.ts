@@ -120,6 +120,14 @@ export class AppService {
     return this.post('index/save_doc_batch', {pid,batch});
   }
 
+  saveDecisionDate(pid: string, decisionDate: number): Observable<any> {
+    return this.post('index/save_decision_date', {pid,decisionDate});
+  }
+
+  createBatchFromLabel(label: string): Observable<any> {
+    return this.post('index/create_batch_from_label', {label});
+  }
+
   getDocsInBatch(batch: string): Observable<any> {
     return this.get('index/get_batch_docs', {batch});
   }

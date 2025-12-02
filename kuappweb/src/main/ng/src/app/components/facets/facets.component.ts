@@ -47,7 +47,7 @@ export class FacetsComponent {
       this.usedFacets.push({field, value});
     }
     this.hasUsedFacets = this.usedFacets.length > 0;
-    this.state.usedFacets.set(this.usedFacets);
+    this.state.usedFacets.update(f => [...this.usedFacets]);
   }
 
   unfilter(field: string, value: string) {

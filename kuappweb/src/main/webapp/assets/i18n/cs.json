@@ -31,7 +31,9 @@
     "licenses": "Licence",
     "note": "Komentář",
     "pid": "PID",
-    "links": "Externí odkazy"
+    "links": "Externí odkazy",
+    "decision_date": "Rozhodující datum",
+    "release_date": "Datum uvolnění"
   },
   "action": {
     "view": "Zobrazit",
@@ -46,8 +48,9 @@
     "ok": "OK",
     "add_to_batch": "Dávky",
     "remove_from_batch": "Odstranit z dávky",
-    "add_new_batch": "Přidat dávku",
-    "add_doc_to_bacth": "Přidat dokument do dávky",
+    "add_new_batch": "Vytvořit dávku",
+    "add_doc_to_bacth": "Přidat do dávky",
+    "add_batch_from_label": "Vytvořit dávku z štítku",
     "import_batch": "Importovat soubor do dávky",
     "card_view": "Karty",
     "table_view": "Tabulka"

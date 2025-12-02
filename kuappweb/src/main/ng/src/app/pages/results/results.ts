@@ -81,7 +81,7 @@ export class Results {
 
   ngOnInit(): void {
     this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
-    this.getData();
+    // this.getData();
   }
 
   handlePageEvent(e: PageEvent) {

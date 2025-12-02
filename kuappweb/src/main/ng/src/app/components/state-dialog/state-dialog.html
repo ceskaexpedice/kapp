@@ -48,7 +48,7 @@
     <div>
         <mat-form-field appearance="outline" class="app-fill-w">
             <mat-label>{{ 'reason' | translate }}</mat-label>
-            <textarea [(ngModel)]="reason" matInput required></textarea>
+            <textarea [(ngModel)]="reason" matInput></textarea>
         </mat-form-field>
     </div>
 
@@ -76,6 +76,6 @@
 
 </mat-dialog-content>
 <mat-dialog-actions>
-    <button matButton [disabled]="!newState || !reason" (click)="save()">{{ 'action.save' | translate }}</button>
+    <button matButton [disabled]="!newState" (click)="save()">{{ 'action.save' | translate }}</button>
     <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>

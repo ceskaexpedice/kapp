@@ -97,10 +97,45 @@ public class SolrIndexer {
         return ret;
     }
 
+
+    public static JSONObject saveDecisionDate(JSONObject js) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField("pid", js.getString("pid"));
+
+            Map<String, Object> partialUpdate = new HashMap<>();
+            partialUpdate.put("set", js.getString("decisionDate"));
+            doc.setField("decision_date", partialUpdate);
+            
+            solr.add("titles", doc);
+            solr.commit("titles");
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
     public static JSONObject addDocToBatch(String pid, String batch) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            ret = addDocToBatch(solr, pid, batch);
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
+    public static JSONObject addDocToBatch(SolrClient solr, String pid, String batch) {
+
+        JSONObject ret = new JSONObject();
+        try {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", pid);
 
@@ -113,6 +148,23 @@ public class SolrIndexer {
             solr.commit("titles");
             ret.put("msg", "saved");
 
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
+    public static JSONObject createBatchFromLabel(JSONObject js) {
+
+        JSONObject ret = new JSONObject();
+        String label = js.getString("label");
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            JSONArray docs = IndexSearcher.getLabelDocs(label).getJSONObject("response").getJSONArray("docs");
+            for (int i = 0; i < docs.length(); i++) {
+                addDocToBatch(solr, docs.getJSONObject(i).getString("pid"), "label_" + label);
+            }
+            ret.put("batch", "label_" + label);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             ret.put("error", ex);

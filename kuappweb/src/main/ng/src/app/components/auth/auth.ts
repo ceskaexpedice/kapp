@@ -21,13 +21,13 @@ export class Auth {
       const target = localStorage.getItem('login.url') || '/';
       localStorage.removeItem('login.url');
       this.auth.keycloakAuth(code, (status: number) => {
-        if (status == AuthService.AUTH_AUTHORIZED) {
-          this.router.navigateByUrl(target);
-        } else if (status == AuthService.AUTH_NOT_AUTHORIZED) {
-          this.auth.logout('/login?failure=1');
-        } else {
-          this.router.navigateByUrl('/login?failure=2');
-        }
+        // if (status == AuthService.AUTH_AUTHORIZED) {
+        //   this.router.navigateByUrl(target);
+        // } else if (status == AuthService.AUTH_NOT_AUTHORIZED) {
+        //   this.auth.logout('/login?failure=1');
+        // } else {
+        //   this.router.navigateByUrl('/login?failure=2');
+        // }
       });
     });
   }
