@@ -1,5 +1,8 @@
 package cz.inovatika.model;
 
+import cz.inovatika.conf.ApplicationConfig;
+import org.json.JSONObject;
+
 import java.net.http.HttpClient;
 
 
@@ -18,6 +21,7 @@ import java.net.http.HttpClient;
  * including API version and base URLs.
  */
 public record HarvesterContext(
+        ApplicationConfig applicationConfig,
         HarvestingItem item,
         HttpClient client,
         Instance config

@@ -1,13 +1,13 @@
 package cz.inovatika.impl;
 
-import cz.inovatika.AutorData;
+import cz.inovatika.authors.AuthorData;
 import cz.inovatika.Harvester;
 import cz.inovatika.XmlProcessor;
-import cz.inovatika.model.APIVersion;
-import cz.inovatika.model.HarvesterContext;
-import cz.inovatika.model.HarvestingItem;
-import cz.inovatika.model.Instance;
-import cz.inovatika.model.States;
+import cz.inovatika.authors.AuthorDataUtils;
+import cz.inovatika.conf.ApplicationConfig;
+import cz.inovatika.conf.WorkflowConfig;
+import cz.inovatika.model.*;
+import cz.inovatika.workflow.States;
 import cz.inovatika.utils.XMLUtils;
 
 import org.apache.commons.io.IOUtils;
@@ -22,8 +22,6 @@ import org.json.JSONObject;
 import org.noggit.JSONUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
-import org.w3c.dom.Node;
-import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
@@ -38,16 +36,11 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Instant;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,11 +62,11 @@ public class HarvesterImpl implements Harvester {
     private static SolrClient solrClient;
 
     @Override
-    public void harvest(Instance config, Consumer<HarvesterContext> consumer) {
-        harvest(config, consumer, HttpClient.newHttpClient());
+    public void harvest(ApplicationConfig applicationConfig, Instance harvestingInstanceConfig, Consumer<HarvesterContext> consumer) {
+        harvest(applicationConfig, harvestingInstanceConfig, consumer, HttpClient.newHttpClient());
     }
 
-    public void harvest(Instance config, Consumer<HarvesterContext> consumer, HttpClient client) {
+    public void harvest(ApplicationConfig applicationConfig, Instance config, Consumer<HarvesterContext> consumer, HttpClient client) {
         String cursorMark = null;
         String queryCursorMark;
         // loading timestamp
@@ -95,9 +88,8 @@ public class HarvesterImpl implements Harvester {
                 APIVersion version = config.getApiVersion();
                 HarvestingItem harvestingItem = version.createHarvestItemFromResultElement(docElm, config);
 
-                HarvesterContext context = new HarvesterContext(harvestingItem, client, config);
+                HarvesterContext context = new HarvesterContext(applicationConfig, harvestingItem, client, config);
                 consumer.accept(context);
-                // consumer.accept(harvestingItem);
             });
             cursorMark = findCursorMark(element);
             queryCursorMark = findQueryCursorMark(element);
@@ -141,14 +133,6 @@ public class HarvesterImpl implements Harvester {
     static boolean exitOnOutOfInterval = true;
 
     public static void main(String[] args) throws InterruptedException, IOException {
-        // if (args.length == 0) {
-
-        // System.err.println("Usage: java cz.inovatika.impl.HarvesterImpl <time-range>
-        // [sleep-seconds]");
-        // System.err.println("Example: java cz.inovatika.impl.HarvesterImpl 22:00-06:00
-        // 60");
-        // System.exit(1);
-        // }
 
         start = LocalTime.now();
         end = start.plus(intervalMinutes, ChronoUnit.MINUTES);
@@ -173,11 +157,9 @@ public class HarvesterImpl implements Harvester {
             checkTime();
             // inovatika();
             nkp();
-            System.out.println("Harvest fnished");
-            System.exit(0);
+
         } catch (Exception e) {
-            System.err.println(e);
-            System.exit(1);
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
 
         }
     }
@@ -212,6 +194,7 @@ public class HarvesterImpl implements Harvester {
     private static void nkp() // throws IOException
     {
         HarvesterImpl h = new HarvesterImpl();
+
         Instance config = new Instance();
         config.setAcronym("nkp");
         config.setApiVersion(APIVersion.v5);
@@ -219,12 +202,18 @@ public class HarvesterImpl implements Harvester {
         config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-01T00:00:21.221Z"));
         config.setUrl("https://ndk.cz/search/api/v5.0/");
 
+        WorkflowConfig workflowConfig = new WorkflowConfig();
+        workflowConfig.setOnsiteYear(70);
+        workflowConfig.setPublicYear(110);
+
+        ApplicationConfig applicationConfig = new ApplicationConfig(Arrays.asList(config), workflowConfig, null);
+
         // h.harvest(config,System.out::println);
         try {
-            System.out.println("nkp harvesting started");
+            LOGGER.log(Level.INFO, "Starting nkp");
             ArrayList<SolrInputDocument> buffer = new ArrayList<>(BATCH_SIZE);
             ArrayList<SolrInputDocument> authorbuffer = new ArrayList<>(AUTHOR_BATCH_SIZE + 20);
-            h.harvest(config, ctx -> processHarvest(config, ctx, buffer, authorbuffer, solrClient));
+            h.harvest(applicationConfig, config, ctx -> processHarvest(config, ctx, buffer, authorbuffer, solrClient));
             if (!buffer.isEmpty()) { // BATCH_SIZE
                 sendBatch(solrClient, "titles", buffer);
                 buffer.clear();
@@ -233,7 +222,6 @@ public class HarvesterImpl implements Harvester {
             if (!authorbuffer.isEmpty()) { // BATCH_SIZE
                 sendBatch(solrClient, "authors", authorbuffer);
                 authorbuffer.clear();
-
             }
         } catch (final Exception e) {
             throw new RuntimeException(e);
@@ -254,12 +242,19 @@ public class HarvesterImpl implements Harvester {
         config.setSolrCloud(false);
         config.setUrl("https://k7.inovatika.dev/search/api/client/v7.0/");
 
+        WorkflowConfig workflowConfig = new WorkflowConfig();
+        workflowConfig.setOnsiteYear(70);
+        workflowConfig.setPublicYear(110);
+
+        ApplicationConfig applicationConfig = new ApplicationConfig(Arrays.asList(config), workflowConfig, null);
+
         // h.harvest(config,System.out::println);
         try {
+
             System.out.println("inovatika harvesting started");
-            ArrayList<SolrInputDocument> buffer = new ArrayList<>(BATCH_SIZE);
+            List<SolrInputDocument> buffer = new ArrayList<>(BATCH_SIZE);
             ArrayList<SolrInputDocument> authorbuffer = new ArrayList<>(AUTHOR_BATCH_SIZE + 20);
-            h.harvest(config, ctx -> processHarvest(config, ctx, buffer, authorbuffer, solrClient));
+            h.harvest(applicationConfig, config, ctx -> processHarvest(config, ctx, buffer, authorbuffer, solrClient));
             if (!buffer.isEmpty()) { // BATCH_SIZE
                 sendBatch(solrClient, "titles", buffer);
                 buffer.clear();
@@ -286,9 +281,13 @@ public class HarvesterImpl implements Harvester {
     private static void processHarvest(final Instance config, final HarvesterContext ctx,
             List<SolrInputDocument> buffer, List<SolrInputDocument> authorbuffer, final SolrClient solrClient) {
         {
-            // System.out.println(ctx.item().getPid());
+
+            // test if document exists
+            // if exists -> update biblio mods, md5 and then -> change state; if not do nothing (licenses, collelctions,etc..)
+            // if new create new document
+            // test monograph -> if it is
+
             Stopwatch sw = Stopwatch.createStarted();
-            // System.out.println("");
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", ctx.item().getPid());
             doc.addField("licenses", ctx.item().getLicenses());
@@ -298,49 +297,49 @@ public class HarvesterImpl implements Harvester {
             doc.setField("title", ctx.item().getTitles());
 
             try {
+
                 InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
                 if (inputStream == null) {
-                    System.out.println("Failed to get MODS for PID: " + ctx.item().getPid());
+                    LOGGER.log(Level.SEVERE, "Failed to get MODS for PID: " + ctx.item().getPid());
                     return;
                 }
-                // elapseAndReset(sw);
-                Document parsed = XMLUtils.parseDocument(inputStream, true);
+                BiblioModsEntity entity = BiblioModsEntity.create(inputStream);
+                Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
                 if (parsed != null) {
-                    Node date = parsed.getElementsByTagNameNS("http://www.loc.gov/mods/v3", "dateIssued").item(0);
-                    if (date != null) {
-                        String dateText = date.getTextContent();
+                    // store biblio mods
+                    doc.setField("biblio_mods", entity.getBiblioMods());
+                    doc.setField("biblio_mods_md5", entity.getMd5Sum());
+
+                    Element dateIssued = XMLUtils.findElement(parsed.getDocumentElement(), elm -> {
+                        return elm.getLocalName().equals("dateIssued");
+                    });
+                    if (dateIssued != null) {
+                        String dateText = dateIssued.getTextContent();
                         doc.addField("date.str", dateText);
-                        dateText = XmlProcessor.replaceWordsWithQMarks(dateText, 0, dateText);
+                        // TODO: change it
+                        dateText = XmlProcessor.replaceWordsWithQMarks(dateText,0,  dateText);
                         XmlProcessor.parseDateBasic(doc, dateText, 0, dateText);
                     }
-                    NodeList phyicalLocation = parsed.getElementsByTagNameNS("http://www.loc.gov/mods/v3",
-                            "physicalLocation");
-                    if (phyicalLocation != null) {
-                        List<String> locations = new ArrayList<>();
-                        for (int i = 0; i < phyicalLocation.getLength(); i++) {
-                            Node locNode = phyicalLocation.item(i);
-                            String locText = locNode.getTextContent();
-                            locations.add(locText);
-                        }
-                        doc.addField("physical_locations.facet", locations);
+
+                    List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> {
+                        return elm.getLocalName().equals("physicalLocation");
+                    }).stream().map(Element::getTextContent).toList();
+                    if (!physicalLocation.isEmpty()) {
+                        doc.addField("physical_locations.facet", physicalLocation);
                     }
                 }
 
-
-                AutorData[] autorData = XmlProcessor.processBiblioMods(parsed, doc);
-                List<String> authorStrings = new ArrayList<>();
-                for (AutorData autorD : autorData) {
-                    if (autorD != null) {
-                        authorStrings.add(autorD.full);
-                    }
-                }
-                doc.addField("authors", authorStrings);
-                XmlProcessor.trySetLastAuthor(doc, autorData);
-                List<SolrInputDocument> ad = XmlProcessor.extractAuthorData(false, solrClient, doc, 0, autorData);
+                List<AuthorData> authorData = AuthorDataUtils.parseAuthorData(parsed);
+                doc.addField("authors", authorData.stream().map(AuthorData::getFull).toList());
+                XmlProcessor.trySetLastAuthor(doc, authorData);
+                List<SolrInputDocument> ad = XmlProcessor.extractAuthorData(false, solrClient, doc, 0, authorData);
                 if (ad != null) {
                     authorbuffer.addAll(ad);
                 }
-                setState(doc, ctx, config);
+
+                JSONObject oldDoc = getExistingDocument((String) doc.getFieldValue("pid"));
+                JSONObject importedDoc = new JSONObject(JSONUtil.toJSON(doc));
+                storeState(config, doc, oldDoc, States.IMPORTED.nextState(ctx, oldDoc, importedDoc));
                 // elapseAndReset(sw);
                 buffer.add(doc);
                 if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
@@ -377,54 +376,26 @@ public class HarvesterImpl implements Harvester {
         }
     }
 
-    private static void setState(SolrInputDocument idoc, final HarvesterContext ctx, Instance config) {
+    private static void storeState(Instance config, SolrInputDocument idoc, JSONObject oldDoc, States nState) {
 
-        // Vyplnit state podle
-        // https://docs.google.com/document/d/1zMXdaKiAhshUANmxTD1MHnBibjituskJnGEq-LHz7jU/edit?tab=t.0
-
-
-        JSONObject oldDoc = getExistingDocument((String) idoc.getFieldValue("pid"));
-
-        States val;
-        // if (doc.containsKey("licenses") &&
-        // Arrays.asList(doc.getFieldValue("licenses")).contains("public")) {
-        // val = "controlled_public"); // KONTROLOVANÉ - VOLNÉ
-        // } else
-        if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel())) &&
-                idoc.containsKey("date_range_end.year") &&
-                1900 > (int) idoc.getFieldValue("date_range_end.year")) {
-            val = States.NONCONTROLLED_PUBLIC; // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
-            // } else if("periodicalvolume".equals(ctx.item().getModel()) &&
-            // doc.containsKey("date_range_end.year") &&
-            // 110 > (LocalDate.now().getYear()) -
-            // (int)doc.getFieldValue("date_range_end.year")) {
-            // val = "noncontrolled_public"); // NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ
-        } else if (("monograph".equals(ctx.item().getModel()) || "monographunit".equals(ctx.item().getModel()))
-                &&
-                idoc.containsKey("date_range_end.year") &&
-                70 < (LocalDate.now().getYear()) - (int) idoc.getFieldValue("date_range_end.year")) {
-            val = States.NONCONTROLLED_PRIVATE; // NEKONTROLOVANÉ
-        } else {
-            val = States.TO_CONTROL; // KE KONTROLE
-        }
-
-            String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+        String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 
         JSONObject h = new JSONObject()
                 .put("date", d)
                 .put("reason", "import from " + config.getUrl())
                 .put("user", "importer")
-                .put("state", val.toString());
+                .put("state", nState.toString());
 
-        idoc.setField("state", val.toString());
+        idoc.setField("state", nState.toString());
         idoc.setField("state_date", d);
         idoc.setField("state_user", "importer");
         idoc.setField("state_reason", "import from " + config.getUrl());
 
 
         if (oldDoc != null) {
-            boolean historyExists = oldDoc.has("state_history");
 
+
+            boolean historyExists = oldDoc.has("state_history");
             if (historyExists) {
                 Map<String, Object> partialUpdate = new HashMap<>();
                 partialUpdate.put("add", h.toString());

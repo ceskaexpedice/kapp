@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
+import cz.inovatika.authors.AuthorData;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
@@ -18,104 +19,105 @@ import org.w3c.dom.Node;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 import org.w3c.dom.NodeList;
 
+//TODO: Rewrite !!
 public class XmlProcessor {
 
-    public static AutorData[] processBiblioMods(Document xml, SolrInputDocument doc) throws IOException, InterruptedException {
-        if (xml == null) {
-            return null;
-        }
-        NodeList nodes = xml.getElementsByTagNameNS("http://www.loc.gov/mods/v3", "identifier");
-        for (int i = 0; i < nodes.getLength(); i++) {
-            String type = ((Element) nodes.item(i)).getAttribute("type");
-            doc.addField("id_" + type, nodes.item(i).getTextContent());
-        }
-        return ProcessNameIdentifier(xml);
-    }
 
-    private static AutorData[] ProcessNameIdentifier(Document xml) throws IOException, InterruptedException {
-        NodeList modsName = xml.getElementsByTagNameNS("http://www.loc.gov/mods/v3", "name");
-        //NodeList modsName = xml.getElementsByTagName("mods:name");
-        AutorData[] nameIDArr = new AutorData[modsName.getLength()];
-
-        for (int x = 0; x < nameIDArr.length; x++) {
-            Element name = (Element) modsName.item(x);
-
-            String full = null;
-            String family = null;
-            String given = null;
-            String date = null;
-            String termsOfAddress = null;
-            String nameIdentifier = null;
-            List<String> role = new ArrayList<>();
-
-            NodeList nameParts = getNodelistByLocalTagName(name, "namePart");
-            if (nameParts != null && nameParts.getLength() > 0) {
-                for (int i = 0; i < nameParts.getLength(); i++) {
-                    Node item = nameParts.item(i);
-                    String type = ((Element) item).getAttribute("type");
-                    if (type == null || type.isEmpty()) {
-                        full = item.getTextContent();
-                        String[] splitName = item.getTextContent().split(",");
-                        if (splitName.length == 2) {
-                            family = splitName[0].trim();
-                            given = splitName[1].trim();
-                        }
-                    } else if (type.equals("family") || type.equals("given")) {
-                        String fam = "";
-                        String giv = "";
-                        switch (type) {
-                            case "family" -> {
-                                fam = item.getTextContent();
-                                if (i + 1 < nameParts.getLength()) {
-                                    Node next = nameParts.item(i + 1);
-                                    String nexttype = ((Element) next).getAttribute("type");
-                                    if (nexttype.equals("given")) {
-                                        giv = next.getTextContent();
-                                    }
-                                }
-                            }
-                            case "given" -> {
-                                giv = item.getTextContent();
-                                if (i + 1 < nameParts.getLength()) {
-                                    Node next = nameParts.item(i + 1);
-                                    String nexttype = ((Element) next).getAttribute("type");
-                                    if (nexttype.equals("family")) {
-                                        fam = next.getTextContent();
-                                    }
-                                }
-                            }
-
-                        }
-                        family = fam;
-                        given = giv;
-                    } else if (type.equals("date")) {
-                        date = item.getTextContent();
-                    } else if (type.equals("termsOfAddress")) {
-                        termsOfAddress = item.getTextContent();
-                    } else {
-                        System.out.println("Disregarded namePart type: " + type + " :" + item.getTextContent());
-                    }
-                }
-
-            }
-
-            Element nameIDx = getElementByLocalTagName(name, "nameIdentifier");
-            if (nameIDx != null) {
-                nameIdentifier = nameIDx.getTextContent();
-            }
-
-            Element rolEl = getElementByLocalTagName(name, "role");
-            if (rolEl != null) {
-                NodeList roles = getNodelistByLocalTagName(name, "roleTerm");
-                for (int i = 0; i < roles.getLength(); i++) {
-                    role.add(roles.item(i).getTextContent());
-                }
-            }
-
-            nameIDArr[x] = new AutorData(full, family, given, date, termsOfAddress, nameIdentifier, role);
-        }
-        return nameIDArr;
-    }
+//    public static AuthorData[] processBiblioMods(Document xml, SolrInputDocument doc) throws IOException, InterruptedException {
+//        if (xml == null) {
+//            return null;
+//        }
+//        NodeList nodes = xml.getElementsByTagNameNS("http://www.loc.gov/mods/v3", "identifier");
+//        for (int i = 0; i < nodes.getLength(); i++) {
+//            String type = ((Element) nodes.item(i)).getAttribute("type");
+//            doc.addField("id_" + type, nodes.item(i).getTextContent());
+//        }
+//        return ProcessNameIdentifier(xml);
+//    }
+//
+//    private static AuthorData[] ProcessNameIdentifier(Document xml) throws IOException, InterruptedException {
+//        NodeList modsName = xml.getElementsByTagNameNS("http://www.loc.gov/mods/v3", "name");
+//        AuthorData[] nameIDArr = new AuthorData[modsName.getLength()];
+//
+//        for (int x = 0; x < nameIDArr.length; x++) {
+//            Element name = (Element) modsName.item(x);
+//
+//            String full = null;
+//            String family = null;
+//            String given = null;
+//            String date = null;
+//            String termsOfAddress = null;
+//            String nameIdentifier = null;
+//            List<String> role = new ArrayList<>();
+//
+//            NodeList nameParts = getNodelistByLocalTagName(name, "namePart");
+//            if (nameParts != null && nameParts.getLength() > 0) {
+//                for (int i = 0; i < nameParts.getLength(); i++) {
+//                    Node item = nameParts.item(i);
+//                    String type = ((Element) item).getAttribute("type");
+//                    if (type == null || type.isEmpty()) {
+//                        full = item.getTextContent();
+//                        String[] splitName = item.getTextContent().split(",");
+//                        if (splitName.length == 2) {
+//                            family = splitName[0].trim();
+//                            given = splitName[1].trim();
+//                        }
+//                    } else if (type.equals("family") || type.equals("given")) {
+//                        String fam = "";
+//                        String giv = "";
+//                        switch (type) {
+//                            case "family" -> {
+//                                fam = item.getTextContent();
+//                                if (i + 1 < nameParts.getLength()) {
+//                                    Node next = nameParts.item(i + 1);
+//                                    String nexttype = ((Element) next).getAttribute("type");
+//                                    if (nexttype.equals("given")) {
+//                                        giv = next.getTextContent();
+//                                    }
+//                                }
+//                            }
+//                            case "given" -> {
+//                                giv = item.getTextContent();
+//                                if (i + 1 < nameParts.getLength()) {
+//                                    Node next = nameParts.item(i + 1);
+//                                    String nexttype = ((Element) next).getAttribute("type");
+//                                    if (nexttype.equals("family")) {
+//                                        fam = next.getTextContent();
+//                                    }
+//                                }
+//                            }
+//
+//                        }
+//                        family = fam;
+//                        given = giv;
+//                    } else if (type.equals("date")) {
+//                        date = item.getTextContent();
+//                    } else if (type.equals("termsOfAddress")) {
+//                        termsOfAddress = item.getTextContent();
+//                    } else {
+//                        System.out.println("Disregarded namePart type: " + type + " :" + item.getTextContent());
+//                    }
+//                }
+//
+//            }
+//
+//            Element nameIDx = getElementByLocalTagName(name, "nameIdentifier");
+//            if (nameIDx != null) {
+//                nameIdentifier = nameIDx.getTextContent();
+//            }
+//
+//            Element rolEl = getElementByLocalTagName(name, "role");
+//            if (rolEl != null) {
+//                NodeList roles = getNodelistByLocalTagName(name, "roleTerm");
+//                for (int i = 0; i < roles.getLength(); i++) {
+//                    role.add(roles.item(i).getTextContent());
+//                }
+//            }
+//
+//            nameIDArr[x] = new AuthorData(full, family, given, date, termsOfAddress, nameIdentifier, role);
+//        }
+//        return nameIDArr;
+//    }
 
     static Element getElementByLocalTagName(Element name, String localName) {
         return (Element) name.getElementsByTagNameNS("http://www.loc.gov/mods/v3", localName).item(0);
@@ -126,34 +128,34 @@ public class XmlProcessor {
     }
 
     public static List<SolrInputDocument> extractAuthorData(final boolean show_comma_info, final SolrClient solrClient, SolrInputDocument doc,
-            final int recordNumber, final AutorData[] nameIDArray) throws SolrServerException, IOException {
+            final int recordNumber, final List<AuthorData> nameIDArray) throws SolrServerException, IOException {
         if (nameIDArray == null) {
             return null;
         }
         List<SolrInputDocument> authorDocs = new ArrayList<SolrInputDocument>();
-        for (AutorData autor : nameIDArray) {
+        for (AuthorData autor : nameIDArray) {
             doc.addField("authors_kramerius", autor.toJsonString());
-            if (autor.nameIdentifier != null && !autor.nameIdentifier.isEmpty()) {
-                doc.addField("nameIdentifier", autor.nameIdentifier);
+            if (autor.getNameIdentifier() != null && !autor.getNameIdentifier().isEmpty()) {
+                doc.addField("nameIdentifier", autor.getNameIdentifier());
             }
 
             SolrInputDocument aDoc = new SolrInputDocument();
-            aDoc.addField("nameIdentifier", autor.nameIdentifier);
-            if (autor.nameIdentifier != null) {
-                aDoc.addField("id", autor.nameIdentifier);
+            aDoc.addField("nameIdentifier", autor.getNameIdentifier());
+            if (autor.getNameIdentifier() != null) {
+                aDoc.addField("id", autor.getNameIdentifier());
             } else {
-                aDoc.addField("id", normalize(autor.full + autor.date));
+                aDoc.addField("id", normalize(autor.getFull() + autor.getDate()));
             }
-            aDoc.addField("full", autor.full);
-            aDoc.addField("family", autor.family);
-            aDoc.addField("given", autor.given);
-            aDoc.addField("date", autor.date);
-            aDoc.addField("termsOfAddress", autor.termsOfAddress);
+            aDoc.addField("full", autor.getFull());
+            aDoc.addField("family", autor.getFamily());
+            aDoc.addField("given", autor.getGiven());
+            aDoc.addField("date", autor.getDate());
+            aDoc.addField("termsOfAddress", autor.getTermsOfAddress());
             //aDoc.addField("birth", autor.family);
             // aDoc.addField("death", autor.family);
 
-            if (autor.date != null) {
-                parseDateBasic(aDoc, autor.date, recordNumber, autor.date);
+            if (autor.getDate() != null) {
+                parseDateBasic(aDoc, autor.getDate(), recordNumber, autor.getDate());
             }
 
             authorDocs.add(aDoc);
@@ -336,20 +338,16 @@ public class XmlProcessor {
         }
     }
 
-    public static void trySetLastAuthor(SolrInputDocument doc, AutorData[] nameIDArray) {
+    public static void trySetLastAuthor(SolrInputDocument doc, List<AuthorData> nameIDArray) {
         SolrInputField field = doc.getField("last_author");
         String last_author = field != null ? (String) field.getValue() : null;
 
         try {
             if (last_author != null && (nameIDArray != null)) {
-                for (AutorData autor : nameIDArray) {
-                    //System.out.println("Comparing last_author: '" + last_author + "' with author: '" + authorArray[i] + "' having nameID: '" + nameIDArray[i] + "'");
-                    // if (last_author.contains(authorArray[i])) {
-                    //      doc.addField("last_author_nameIdentifier", nameIDArray[i].nameIdentifier);
-                    //   }
-                    if (similartyMatch(normalize(last_author), normalize(autor.full), .5)) {
-                        autor.isLast = true;
-                        doc.setField("last_author_nameIdentifier", autor.nameIdentifier);
+                for (AuthorData autor : nameIDArray) {
+                    if (similartyMatch(normalize(last_author), normalize(autor.getFull()), .5)) {
+                        autor.setLast( true);
+                        doc.setField("last_author_nameIdentifier", autor.getNameIdentifier());
                     }
                 }
             }

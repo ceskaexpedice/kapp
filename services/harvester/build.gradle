@@ -18,16 +18,7 @@ java {
     }
 }
 
-// shadowJar {
-//     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-//     mergeServiceFiles()
 
-//     exclude 'META-INF/*.SF'
-//     exclude 'META-INF/*.DSA'
-//     exclude 'META-INF/*.RSA'
-// }
-
-// Nastavení kódování, které je ekvivalentní Maven properties
 tasks.withType(JavaCompile) {
     options.encoding = 'UTF-8'
 }

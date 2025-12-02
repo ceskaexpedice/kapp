@@ -1,0 +1,88 @@
+<mods:modsCollection xmlns:mods="http://www.loc.gov/mods/v3">
+    <mods:mods xmlns:ns4="info:fedora/fedora-system:def/foxml#" ID="MODS_VOLUME_0001">
+        <mods:titleInfo>
+            <mods:title>Több világosságot!</mods:title>
+            <mods:subTitle>(röpirat Kárpátskájá Rus politikai és kulturális küzdelmeihez)</mods:subTitle>
+        </mods:titleInfo>
+        <mods:name type="personal" usage="primary">
+            <mods:namePart>Beregi, Gyula</mods:namePart>
+            <mods:namePart type="date">1884-</mods:namePart>
+            <mods:role>
+                <mods:roleTerm authority="marcrelator" type="code">aut</mods:roleTerm>
+            </mods:role>
+        </mods:name>
+        <mods:typeOfResource>text</mods:typeOfResource>
+        <mods:genre authority="czenas">pojednání</mods:genre>
+        <mods:genre>volume</mods:genre>
+        <mods:originInfo eventType="publication">
+            <mods:place>
+                <mods:placeTerm authority="marccountry" type="code">un</mods:placeTerm>
+            </mods:place>
+            <mods:place>
+                <mods:placeTerm type="text">V Užhorodě</mods:placeTerm>
+            </mods:place>
+            <mods:publisher>Státní tiskárna</mods:publisher>
+            <mods:dateIssued>1920</mods:dateIssued>
+            <mods:dateIssued encoding="marc">1920</mods:dateIssued>
+            <mods:issuance>single unit</mods:issuance>
+        </mods:originInfo>
+        <mods:language>
+            <mods:languageTerm authority="iso639-2b" type="code">hun</mods:languageTerm>
+        </mods:language>
+        <mods:physicalDescription>
+            <mods:form authority="rdacarrier" type="carrier">svazek</mods:form>
+            <mods:form authority="rdamedia" type="media">bez média</mods:form>
+            <mods:form authority="marcform">print</mods:form>
+            <mods:form authority="marccategory">text</mods:form>
+            <mods:form authority="marcsmd">regular print</mods:form>
+            <mods:extent>14 stran ; 24 cm</mods:extent>
+        </mods:physicalDescription>
+        <mods:targetAudience authority="marctarget">adult</mods:targetAudience>
+        <mods:note type="statement of responsibility">irta: Beregi Gyula</mods:note>
+        <mods:note>Obálkový název</mods:note>
+        <mods:subject>
+            <mods:geographicCode authority="marcgac">e-un---</mods:geographicCode>
+        </mods:subject>
+        <mods:subject authority="czenas">
+            <mods:topic>národní identita</mods:topic>
+            <mods:geographic>Podkarpatská Rus</mods:geographic>
+        </mods:subject>
+        <mods:subject authority="czenas">
+            <mods:topic>kulturní identita</mods:topic>
+            <mods:geographic>Podkarpatská Rus</mods:geographic>
+        </mods:subject>
+        <mods:subject authority="czenas">
+            <mods:geographic>Podkarpatská Rus</mods:geographic>
+            <mods:topic>dějiny</mods:topic>
+        </mods:subject>
+        <mods:classification authority="udc" edition="Konspekt">316.347</mods:classification>
+        <mods:classification authority="udc" edition="Konspekt">316.72</mods:classification>
+        <mods:classification authority="udc" edition="Konspekt">94(477.87)</mods:classification>
+        <mods:classification authority="udc" edition="Konspekt">(477.87)</mods:classification>
+        <mods:classification authority="udc" edition="Konspekt">(049)</mods:classification>
+        <mods:location>
+            <mods:physicalLocation authority="siglaADR">ABA004</mods:physicalLocation>
+            <mods:shelfLocator>Č 007238</mods:shelfLocator>
+        </mods:location>
+        <mods:relatedItem type="isReferencedBy">
+            <mods:titleInfo>
+                <mods:title>http://mek.niif.hu/08700/08756/html/I/szin_I.0206.pdf</mods:title>
+            </mods:titleInfo>
+            <mods:note/>
+        </mods:relatedItem>
+        <mods:recordInfo>
+            <mods:descriptionStandard>rda</mods:descriptionStandard>
+            <mods:recordContentSource authority="marcorg">ABA004</mods:recordContentSource>
+            <mods:recordCreationDate encoding="iso8601">2002-07-02T00:00:00Z</mods:recordCreationDate>
+            <mods:recordChangeDate encoding="iso8601">2025-09-25T10:12:09Z</mods:recordChangeDate>
+            <mods:recordIdentifier source="CZ-PrNK">rgk08900454</mods:recordIdentifier>
+            <mods:recordOrigin>machine generated</mods:recordOrigin>
+            <mods:languageOfCataloging>
+                <mods:languageTerm authority="iso639-2b" type="code">cze</mods:languageTerm>
+            </mods:languageOfCataloging>
+        </mods:recordInfo>
+        <mods:identifier type="urnnbn">urn:nbn:cz:nk-008ij7</mods:identifier>
+        <mods:identifier type="barCode">3186366145</mods:identifier>
+        <mods:identifier type="uuid">5385d5bf-c554-11f0-aa17-022270640f61</mods:identifier>
+    </mods:mods>
+</mods:modsCollection>

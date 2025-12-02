@@ -18,15 +18,14 @@ import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 //import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import cz.inovatika.authors.AuthorData;
+import cz.inovatika.authors.AuthorDataUtils;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -48,8 +47,6 @@ public class TsvToSolrIndexer {
 
     private static final String SOLR_URL = "http://localhost:8983/solr";
     private static String DIRECTORY_PATH = "../Data"; // change this
-    // private static final String DIRECTORY_PATH =
-    // "c:\\Users\\alber\\Projects\\KuratorskaAplikace\\tsv\\"; // change this
 
     private static SolrClient solrClient;
 
@@ -115,7 +112,7 @@ public class TsvToSolrIndexer {
                         String pid;
                         String rootPid;
                         String[] authorArray;
-                        AutorData[] nameIDArray = null;
+                        AuthorData[] nameIDArray = null;
                         for (Map.Entry<String, String> entry : record.toMap().entrySet()) {
                             String header = headers.get(entry.getKey());
                             if (header == null) {
@@ -181,7 +178,9 @@ public class TsvToSolrIndexer {
                                                     "https://api.kramerius.mzk.cz/search/api/client/v7.0/items/" + pid
                                                             + "/metadata/mods");
                                         }
-                                        nameIDArray = XmlProcessor.processBiblioMods(xml, doc);
+
+                                        //nameIDArray =  XmlProcessor.processBiblioMods(xml, doc);
+                                        nameIDArray = AuthorDataUtils.parseAuthorData(xml).toArray(new AuthorData[0]);
 
                                         // String query = "q=pid:" + URLEncoder.encode(
                                         // ClientUtils.escapeQueryChars(pid), "UTF-8") ;
@@ -228,9 +227,9 @@ public class TsvToSolrIndexer {
                         parsePublicString(doc, recordNumber);
                         setState(doc);
                         ParseDates(doc, getField(doc, "date.str"), recordNumber, show_comma_info);
-                        XmlProcessor.trySetLastAuthor(doc, nameIDArray);
+                        XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
                         List<SolrInputDocument> authorDocs = XmlProcessor.extractAuthorData(show_comma_info, solrClient,
-                                doc, recordNumber, nameIDArray);
+                                doc, recordNumber, Arrays.asList(nameIDArray));
                         if (authorDocs != null) {
                             for (SolrInputDocument authorDoc : authorDocs) {
                                 if (authorDoc != null)

@@ -14,14 +14,27 @@ import java.util.Objects;
 
 public class ApplicationConfig {
 
-    private List<Instance> instances;
 
-    public ApplicationConfig(List<Instance> instances) {
+    private WorkflowConfig workflow;
+    private List<Instance> instances;
+    private SolrConfig solr;
+
+    public ApplicationConfig(List<Instance> instances, WorkflowConfig workflow, SolrConfig solr) {
         this.instances = instances;
+        this.workflow = workflow;
+        this.solr = solr;
     }
 
     public List<Instance> getInstances() {
         return instances;
+    }
+
+    public WorkflowConfig getWorkflow() {
+        return workflow;
+    }
+
+    public SolrConfig getSolr() {
+        return solr;
     }
 
     public static ApplicationConfig loadFromStream(InputStream is) throws ConfigException {
