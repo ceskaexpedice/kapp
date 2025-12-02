@@ -17,12 +17,12 @@ a {
   }
 }
 
+// colors
 .app-color-warn {
   color: var(--mat-sys-error) !important;
 }
 
-
-
+// cleaners
 .app-clean-bg {
   background-color: transparent !important;
 }
@@ -39,6 +39,7 @@ a {
   box-shadow: var(--mat-sys-level2);
 }
 
+// global
 .app-dn {
   display: none;
 }
@@ -69,6 +70,12 @@ a {
 
 .app-w-100 {
   width: 100%;
+}
+
+.app-label {
+  font-weight: 500;
+  color: var(--app-color-gray-6);
+  font-size: 13px;
 }
 
 .app-pipe {

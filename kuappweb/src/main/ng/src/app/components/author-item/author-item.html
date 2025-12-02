@@ -1,69 +1,78 @@
-<mat-card appearance="outlined" style="margin: 3px;">
-    <mat-card-header>
-        <mat-card-title>
-            <div class="app-labels-header app-mat-card-actions"><mat-chip-set>
-                    @for(l of labels; track $index) {
-                    <mat-chip [style.background-color]="l.color" (removed)="removeLabel(l)"
-                        style="--mat-chip-label-text-color: {{l.text_color}};">{{ l.name }}
-                        <button matChipRemove [attr.aria-label]="'remove ' + l.name">
-                            <mat-icon>cancel</mat-icon>
-                        </button></mat-chip>
-                    }
-                    <mat-chip>
-                        <button mat-icon-button [matMenuTriggerFor]="labelsMenu"><mat-icon matSuffix
-                                class="app-small-icon">new_label</mat-icon></button>
-                        <mat-menu #labelsMenu="matMenu">
-                            @for(a of state.labels(); track $index) {
-                            <button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
-                            }
-                        </mat-menu>
-
-                    </mat-chip>
-                </mat-chip-set>
-
-            </div>
-            {{ doc()['full']}}
-
-        </mat-card-title>
-    </mat-card-header>
-    <mat-card-content class="app-result-item-content">
-        <div><label>{{ 'field.given' | translate }}: </label>{{ doc()['given']}} </div>
-        <div><label>{{ 'field.family' | translate }}: </label>{{ doc()['family']}} </div>
-        <div><label>{{ 'field.date' | translate }}: </label>{{ doc()['date']}} </div>
-
-        @if (doc().nameIdentifier) {
-        <div><label>{{ 'field.id' | translate }}: </label>
-            <a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+doc().nameIdentifier">{{ doc().nameIdentifier
-                }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
-        </div>
-        <div><label>{{ 'field.links' | translate }}: </label>
-            @if (loadingLinks()) {
-            <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-            }
-            @for(w of linkTypes(); track $index) {
-            @for(l of links()[w]; track $index) {
-            <a target="_blank" [href]="l.url">{{ w }}<mat-icon matSuffix
-                    class="app-small-icon">open_in_new</mat-icon></a>
-            }
-            }
-        </div>
-        } @else {
-            <button mat-raised-button (click)="checkAutor()">{{ 'action.check_author' |
-            translate }}</button>
-            {{ aut().length }}
-            @for(a of aut(); track $index) {
-                <div>
-                {{ a['datafield_100a'] }} (<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+a['controlfield_001']">{{ a['controlfield_001'] }}<mat-icon
-                matSuffix class="app-small-icon">open_in_new</mat-icon></a>)
-            </div>
-            }
-        }
-
-        <div><label>{{ 'field.note' | translate }}: </label>{{ doc()['note']}} <a mat-icon-button
-                (click)="editNote()"><mat-icon matSuffix class="app-small-icon">edit</mat-icon></a></div>
-    </mat-card-content>
-    <mat-card-actions align="end" class="app-mat-card-actions">
-        <!-- <button mat-raised-button [matMenuTriggerFor]="stateMenu">{{ 'action.set_state' |
-            translate }}</button> -->
-    </mat-card-actions>
+<mat-card appearance="outlined">
+	<mat-card-header>
+		<mat-card-title>
+			<div class="app-fxLayout app-row app-gap-1">
+				<div class="app-fxFlex">{{ doc()['full']}}</div>
+				<mat-chip-set>
+					@for(l of labels; track $index) {
+						<mat-chip [style.background-color]="l.color" (removed)="removeLabel(l)" style="--mat-chip-label-text-color: {{l.text_color}};">
+							{{ l.name }}
+							<button matChipRemove [attr.aria-label]="'remove ' + l.name">
+								<mat-icon>cancel</mat-icon>
+							</button>
+						</mat-chip>
+					}
+					<mat-chip>
+						<button mat-icon-button [matMenuTriggerFor]="labelsMenu"><mat-icon>new_label</mat-icon></button>
+						<mat-menu #labelsMenu="matMenu">
+							@for(a of state.labels(); track $index) {
+								<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
+							}
+						</mat-menu>
+					</mat-chip>
+				</mat-chip-set>
+			</div>
+		</mat-card-title>
+	</mat-card-header>
+	<mat-card-content>
+		<div><span class="app-label">{{ 'field.given' | translate }}: </span>{{ doc()['given']}} </div>
+		<div><span class="app-label">{{ 'field.family' | translate }}: </span>{{ doc()['family']}} </div>
+		<div><span class="app-label">{{ 'field.date' | translate }}: </span>{{ doc()['date']}} </div>
+		@if (doc().nameIdentifier) {
+			<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+				<span class="app-label">{{ 'field.id' | translate }}:</span>
+				<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+doc().nameIdentifier" class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+					<span>{{ doc().nameIdentifier}}</span>
+					<mat-icon>open_in_new</mat-icon>
+				</a>
+			</div>
+			<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+				<span class="app-label">{{ 'field.links' | translate }}:</span>
+				<!-- @if (loadingLinks()) {
+					<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+				} -->
+				@for(w of linkTypes(); track $index) {
+					@for(l of links()[w]; track $index) {
+						<a target="_blank" [href]="l.url" class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+							<span>{{ w }}</span>
+							<mat-icon>open_in_new</mat-icon>
+						</a>
+					}
+				}
+			</div>
+		} @else {
+			<button (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
+			<strong>{{ aut().length }}</strong>
+			@for(a of aut(); track $index) {
+				<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+					<span>{{ a['datafield_100a'] }}</span>
+					(<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+a['controlfield_001']" class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+						<span>{{ a['controlfield_001'] }}</span>
+						<mat-icon>open_in_new</mat-icon>
+					</a>)
+				</div>
+			}
+		}
+		<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+			<span class="app-label">{{ 'field.note' | translate }}: </span>
+			<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+				<span>{{ doc()['note']}}</span>
+				<a (click)="editNote()" class="app-fxLayout app-row app-center-v app-wrap app-gap-1"><mat-icon>edit</mat-icon></a>
+			</div>
+		</div>
+	</mat-card-content>
+	<!-- <mat-card-actions align="end">
+		<button matButton="outlined" [matMenuTriggerFor]="stateMenu">{{ 'action.set_state' | translate }}</button>
+	</mat-card-actions> -->
 </mat-card>
+  

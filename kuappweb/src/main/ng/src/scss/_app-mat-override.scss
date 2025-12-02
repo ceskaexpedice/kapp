@@ -67,10 +67,29 @@ $home_cards: (
       }
     }
   }
-  app-result-item {
+  app-result-item,
+  app-author-item {
     &:not(:last-child) {
       .mat-mdc-card-outlined {
         border-bottom: none !important;
+      }
+    }
+    .mat-mdc-card {
+      .mat-mdc-card-header {
+        .mat-mdc-card-header-text {
+          width: 100% !important;
+        }
+      }
+
+      .mat-mdc-card-content {
+        line-height: 20px;
+        
+        .mat-icon {
+          $app-size: 16;
+          font-size: #{$app-size}px;
+          height: #{$app-size}px;
+          width: #{$app-size}px; 
+        }
       }
     }
   }
