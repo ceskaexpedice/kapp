@@ -99,6 +99,6 @@ Všechny stavy jsou možné
 
 ## Vícesvazkové monografie a periodika
 
-Na úrovni vícesvazku nebo periodika bude pouze příznak/rodičovský stav.  Který bude jenom určovat zda je celek určený ke kontrole nebo je zkontrolován. 
+Na úrovni vícesvazku nebo periodika bude pouze **příznak/rodičovský stav**.  Který bude jenom určovat zda je celek určený ke kontrole nebo je zkontrolován. 
 
 
