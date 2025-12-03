@@ -1,19 +1,24 @@
 package cz.inovatika.model;
 
 import cz.inovatika.utils.XMLUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -48,6 +53,17 @@ public enum APIVersion {
         public String[] fieldList() {
             return new String[]{"PID", "pid_path", "root_pid", "fedora.model","dc.title","dnnt-labels","dostupnost"};
         }
+
+        @Override
+        public String prepareSubquery(List<HarvestingItem> items) {
+            List<HarvestingItem> monograph = getMonographs(items);
+            if (!monograph.isEmpty()) {
+                String  or = monograph.stream().map(HarvestingItem::getPid).map(it -> '"'+it+'"').collect(Collectors.joining(" OR "));
+                return String.format("search?q=root_pid:(%s)+AND+fedora.model:monographunit&fl=PID+fedora.model+root_pid&rows=%d", URLEncoder.encode(or, StandardCharsets.UTF_8), monograph.size());
+            }
+            return null;
+        }
+
 
         public HarvestingItem createHarvestItemFromResultElement(Element docResultElement, Instance instance) {
             final HarvestingItem item = new HarvestingItem();
@@ -117,6 +133,12 @@ public enum APIVersion {
         }
 
         @Override
+        public void processSubqueryResult(List<HarvestingItem> items, Element resultElm) {
+            processSubqueryResult(items, resultElm, "PID", "root_pid");
+        }
+
+
+        @Override
         public String incrementFQ(Instance instance) {
             Instant lastUpdated = instance.getLastUpdated();
             if (lastUpdated != null) {
@@ -161,6 +183,19 @@ public enum APIVersion {
         @Override
         public String[] fieldList() {
             return new String[]{"pid", "own_pid_path", "root.pid", "model", "titles.search","licenses_of_ancestors","licenses"};
+        }
+
+
+
+
+        @Override
+        public String prepareSubquery(List<HarvestingItem> items) {
+            List<HarvestingItem> monograph = getMonographs(items);
+            if (!monograph.isEmpty()) {
+                String  or = monograph.stream().map(HarvestingItem::getPid).map(it -> '"'+it+'"').collect(Collectors.joining(" OR "));
+                return String.format("search?q=root.pid:(%s)+AND+model:monographunit&fl=pid+model+root.pid&rows=%d", URLEncoder.encode(or, StandardCharsets.UTF_8),monograph.size());
+            }
+            return null;
         }
 
         @Override
@@ -240,6 +275,11 @@ public enum APIVersion {
         }
 
         @Override
+        public void processSubqueryResult(List<HarvestingItem> items, Element resultElm) {
+            processSubqueryResult(items, resultElm, "PID", "root_pid");
+        }
+
+        @Override
         public String incrementFQ(Instance instance) {
             Instant lastUpdated = instance.getLastUpdated();
             if (lastUpdated != null) {
@@ -265,6 +305,38 @@ public enum APIVersion {
             }
         }
     };
+
+    static void processSubqueryResult(List<HarvestingItem> items, Element resultElm, String pidKey, String rootPidKey) {
+        Map<String, HarvestingItem> map = new HashMap<>();
+        items.forEach(item -> {
+            map.put(item.getPid(), item);
+        });
+
+        List<Pair<String,String>> monographUnitPids = XMLUtils.getElementsRecursive(resultElm, (elm) -> {
+            return elm.getNodeName().equals("doc");
+        }).stream().map(docElm -> {
+            Element pidElm = XMLUtils.findElement(docElm, elm -> elm.getAttribute("name").equals(pidKey));
+            Element rootPid = XMLUtils.findElement(docElm, elm -> elm.getAttribute("name").equals(rootPidKey));
+            if (pidElm != null && rootPid !=null) {
+                return Pair.of(rootPid.getTextContent(), pidElm.getTextContent());
+            }
+            return null;
+        }).toList();
+
+        monographUnitPids.forEach(k-> {
+            String rootPid = k.getKey();
+            if (map.containsKey(rootPid)) {
+                map.get(rootPid).setRootTitle(true);
+            }
+        });
+    }
+
+    private static List<HarvestingItem> getMonographs(List<HarvestingItem> items) {
+        List<HarvestingItem> monograph = items.stream().filter(item -> {
+            return item.getModel().equals("monograph");
+        }).toList();
+        return monograph;
+    }
 
     // --- Abstract Methods ---
 
@@ -322,6 +394,11 @@ public enum APIVersion {
      * @return A populated {@link HarvestingItem}.
      */
     public abstract HarvestingItem createHarvestItemFromResultElement(Element docResultElement, Instance instance);
+
+
+    public abstract String prepareSubquery(List<HarvestingItem> items);
+
+    public abstract void processSubqueryResult(List<HarvestingItem> items, Element resultElm);
 
     // --- Private/Static Helpers ---
 

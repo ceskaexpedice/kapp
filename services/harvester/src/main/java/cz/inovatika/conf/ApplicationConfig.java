@@ -17,6 +17,7 @@ public class ApplicationConfig {
 
     private WorkflowConfig workflow;
     private List<Instance> instances;
+
     private SolrConfig solr;
 
     public ApplicationConfig(List<Instance> instances, WorkflowConfig workflow, SolrConfig solr) {

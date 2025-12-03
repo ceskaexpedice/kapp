@@ -5,6 +5,8 @@ import cz.inovatika.model.Instance;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
+import java.io.File;
+import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.Year;
 import java.util.List;
@@ -13,6 +15,8 @@ public class ConfigurationTest {
 
     @Test
     public void testLoad() {
+
+
         InputStream resourceAsStream = ConfigurationTest.class.getResourceAsStream("app.conf");
         ApplicationConfig config = ApplicationConfig.loadFromStream(resourceAsStream);
         List<Instance> instances = config.getInstances();
@@ -33,6 +37,5 @@ public class ConfigurationTest {
         int expecationo = Year.now().minusYears(70).getValue();
         Assertions.assertEquals(expecationo, calculateOnsiteYear);
 
-        System.out.println(expecationo);
     }
 }

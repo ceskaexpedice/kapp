@@ -18,6 +18,7 @@ import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.eclipse.jetty.util.StringUtil;
 import org.json.JSONObject;
 import org.noggit.JSONUtil;
 import org.w3c.dom.Document;
@@ -82,15 +83,29 @@ public class HarvesterImpl implements Harvester {
             String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id,
                     config.getApiVersion().getIdentifier(config) + " asc", fl);
             Element element = executeQuery(client, config.getUrl(), query);
-            XMLUtils.getElementsRecursive(element, (elm) -> {
+
+
+            List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> {
                 return elm.getNodeName().equals("doc");
-            }).forEach(docElm -> {
+            }).stream().map(docElm -> {
                 APIVersion version = config.getApiVersion();
                 HarvestingItem harvestingItem = version.createHarvestItemFromResultElement(docElm, config);
+                return harvestingItem;
+            }).toList();
 
+            String subquery = config.getApiVersion().prepareSubquery(harvestItems);
+            if (!StringUtil.isEmpty(subquery)) {
+                Element subResult = executeQuery(client, config.getUrl(), subquery);
+                config.getApiVersion().processSubqueryResult(harvestItems, subResult);
+
+            }
+
+            for (HarvestingItem harvestingItem : harvestItems) {
                 HarvesterContext context = new HarvesterContext(applicationConfig, harvestingItem, client, config);
                 consumer.accept(context);
-            });
+            }
+
+
             cursorMark = findCursorMark(element);
             queryCursorMark = findQueryCursorMark(element);
 
@@ -309,7 +324,6 @@ public class HarvesterImpl implements Harvester {
                     // store biblio mods
                     doc.setField("biblio_mods", entity.getBiblioMods());
                     doc.setField("biblio_mods_md5", entity.getMd5Sum());
-
                     Element dateIssued = XMLUtils.findElement(parsed.getDocumentElement(), elm -> {
                         return elm.getLocalName().equals("dateIssued");
                     });
@@ -379,7 +393,6 @@ public class HarvesterImpl implements Harvester {
     private static void storeState(Instance config, SolrInputDocument idoc, JSONObject oldDoc, States nState) {
 
         String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
-
         JSONObject h = new JSONObject()
                 .put("date", d)
                 .put("reason", "import from " + config.getUrl())
