@@ -8,4 +8,4 @@
  */
 
 rootProject.name = 'nkp-kuratorska-aplikace'
-include'services:init', 'services:harvester','services:scheduler'
+include'services:init', 'services:harvester','services:kscheduler'
