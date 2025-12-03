@@ -36,21 +36,21 @@ test {
 
 dependencies {
 
-    implementation 'org.apache.commons:commons-lang3:3.12.0'
+    api 'org.apache.commons:commons-lang3:3.12.0'
 
-    implementation 'com.google.code.gson:gson:2.10.1'
-    implementation 'commons-io:commons-io:2.16.1'
-    implementation 'org.json:json:20250517'
+    api 'com.google.code.gson:gson:2.10.1'
+    api 'commons-io:commons-io:2.16.1'
+    api 'org.json:json:20250517'
 
-    implementation 'org.apache.solr:solr-solrj:9.9.0'
-    implementation project(':services:init')
+    api 'org.apache.solr:solr-solrj:9.9.0'
+    api project(':services:init')
+    api 'com.google.guava:guava:32.1.2-jre'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.10.1'
 
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
-    implementation 'com.google.guava:guava:32.1.2-jre'
 
 }
 

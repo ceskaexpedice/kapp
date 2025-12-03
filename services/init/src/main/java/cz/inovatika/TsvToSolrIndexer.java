@@ -19,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 //import java.util.Arrays;
 import java.util.*;
+import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -228,8 +229,15 @@ public class TsvToSolrIndexer {
                         setState(doc);
                         ParseDates(doc, getField(doc, "date.str"), recordNumber, show_comma_info);
                         XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
-                        List<SolrInputDocument> authorDocs = XmlProcessor.extractAuthorData(show_comma_info, solrClient,
-                                doc, recordNumber, Arrays.asList(nameIDArray));
+
+                        Arrays.asList(nameIDArray).forEach(author -> {
+                            doc.addField("authors_kramerius", author.toJsonString());
+                            if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
+                                doc.addField("nameIdentifier", author.getNameIdentifier());
+                            }
+                        });
+
+                        List<SolrInputDocument> authorDocs = Arrays.asList(nameIDArray).stream().map(AuthorData::toAuthoritySolrDocument).collect(Collectors.toList());
                         if (authorDocs != null) {
                             for (SolrInputDocument authorDoc : authorDocs) {
                                 if (authorDoc != null)

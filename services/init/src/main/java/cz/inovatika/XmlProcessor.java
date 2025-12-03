@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.stream.Collectors;
 
 import cz.inovatika.authors.AuthorData;
 import org.apache.commons.lang3.math.NumberUtils;
@@ -127,41 +128,29 @@ public class XmlProcessor {
         return name.getElementsByTagNameNS("http://www.loc.gov/mods/v3", localName);
     }
 
-    public static List<SolrInputDocument> extractAuthorData(final boolean show_comma_info, final SolrClient solrClient, SolrInputDocument doc,
-            final int recordNumber, final List<AuthorData> nameIDArray) throws SolrServerException, IOException {
-        if (nameIDArray == null) {
+    public static List<SolrInputDocument> extractAuthorData(final List<AuthorData> authors) throws SolrServerException, IOException {
+        if (authors == null) {
             return null;
         }
-        List<SolrInputDocument> authorDocs = new ArrayList<SolrInputDocument>();
-        for (AuthorData autor : nameIDArray) {
-            doc.addField("authors_kramerius", autor.toJsonString());
-            if (autor.getNameIdentifier() != null && !autor.getNameIdentifier().isEmpty()) {
-                doc.addField("nameIdentifier", autor.getNameIdentifier());
-            }
-
+        return authors.stream().map(author-> {
             SolrInputDocument aDoc = new SolrInputDocument();
-            aDoc.addField("nameIdentifier", autor.getNameIdentifier());
-            if (autor.getNameIdentifier() != null) {
-                aDoc.addField("id", autor.getNameIdentifier());
+            aDoc.addField("nameIdentifier", author.getNameIdentifier());
+            if (author.getNameIdentifier() != null) {
+                aDoc.addField("id", author.getNameIdentifier());
             } else {
-                aDoc.addField("id", normalize(autor.getFull() + autor.getDate()));
+                aDoc.addField("id", normalize(author.getFull() + author.getDate()));
             }
-            aDoc.addField("full", autor.getFull());
-            aDoc.addField("family", autor.getFamily());
-            aDoc.addField("given", autor.getGiven());
-            aDoc.addField("date", autor.getDate());
-            aDoc.addField("termsOfAddress", autor.getTermsOfAddress());
-            //aDoc.addField("birth", autor.family);
-            // aDoc.addField("death", autor.family);
+            aDoc.addField("full", author.getFull());
+            aDoc.addField("family", author.getFamily());
+            aDoc.addField("given", author.getGiven());
+            aDoc.addField("date", author.getDate());
+            aDoc.addField("termsOfAddress", author.getTermsOfAddress());
 
-            if (autor.getDate() != null) {
-                parseDateBasic(aDoc, autor.getDate(), recordNumber, autor.getDate());
+            if (author.getDate() != null) {
+                parseDateBasic(aDoc, author.getDate(), -1/*FUCK OFF*/, author.getDate());
             }
-
-            authorDocs.add(aDoc);
-        }
-        return authorDocs;
-
+            return aDoc;
+        }).collect(Collectors.toList());
     }
 
     public static String normalize(String input) {

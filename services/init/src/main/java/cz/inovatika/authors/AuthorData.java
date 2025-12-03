@@ -3,6 +3,7 @@ package cz.inovatika.authors;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import cz.inovatika.XmlProcessor;
 import cz.inovatika.utils.XMLUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.eclipse.jetty.util.StringUtil;
@@ -164,6 +165,27 @@ public class AuthorData {
             authorData.setRole(roleTerms);
         }
         return authorData;
+    }
+
+    public SolrInputDocument toAuthoritySolrDocument() {
+        SolrInputDocument aDoc = new SolrInputDocument();
+        aDoc.addField("nameIdentifier", this.getNameIdentifier());
+        if (this.getNameIdentifier() != null) {
+            aDoc.addField("id", this.getNameIdentifier());
+        } else {
+            aDoc.addField("id", XmlProcessor.normalize(this.getFull() + this.getDate()));
+        }
+        aDoc.addField("full", this.getFull());
+        aDoc.addField("family", this.getFamily());
+        aDoc.addField("given", this.getGiven());
+        aDoc.addField("date", this.getDate());
+        aDoc.addField("termsOfAddress", this.getTermsOfAddress());
+
+        if (this.getDate() != null) {
+            XmlProcessor.parseDateBasic(aDoc, this.getDate(), -1/*FUCK OFF*/, this.getDate());
+        }
+        return aDoc;
+
     }
 
     public String toJsonString() {
