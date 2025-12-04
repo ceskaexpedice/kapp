@@ -1,12 +1,11 @@
 @if(loading){<mat-progress-bar mode="indeterminate"></mat-progress-bar>}
 <div class="app-container app-h-100">
   <div class="app-fxLayout app-row app-fill app-gap-8">
-    <div class="app-left">
-      @if(solrResponse?.facets) {
-      <app-facets [fields]="['labels', 'state', 'licenses', 'physical_locations']"
-        [facets]="solrResponse.facets"></app-facets>
-      }
-    </div>
+    @if(solrResponse?.facets) {
+      <div class="app-left">
+        <app-facets [fields]="['labels', 'state', 'licenses', 'physical_locations']" [facets]="solrResponse.facets"></app-facets>
+        </div>
+    }
     <div class="app-fxFlex app-right">
       <div class="app-fxLayout app-row app-gap-4 app-toolbar">
         <div class="app-fxFlex">
