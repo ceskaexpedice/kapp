@@ -7,18 +7,14 @@
     .mat-mdc-form-field {
       min-width: 400px;
     }
-  }
-  .app-table-wrapper {
-    border: 1px solid var(--app-color-gray-3);
-
-    .mat-mdc-table {
-      .mat-mdc-cell {
-        &.mat-column-pid {
-          width: 340px;
-        }
-        &.mat-column-state {
-          width: 100px ;
-        }
+  } 
+  .mat-mdc-table {
+    .mat-mdc-cell {
+      &.mat-column-pid {
+        width: 340px;
+      }
+      &.mat-column-state {
+        width: 100px ;
       }
     }
   }

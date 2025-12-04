@@ -78,6 +78,14 @@ a {
   font-size: 13px;
 }
 
+.app-date {
+  color: var(--app-color-gray-6);
+}
+
+.app-table-wrapper {
+  border: 1px solid var(--app-color-gray-3);
+}
+
 .app-pipe {
   margin: 0 8px 0 8px;
   border-left: 1px solid var(--app-color-gray-4);

@@ -20,6 +20,7 @@ import { StateDialog } from '../../components/state-dialog/state-dialog';
 import { MatTableModule } from '@angular/material/table';
 import { TitleDialog } from '../../components/title-dialog/title-dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatListItem, MatListModule } from "@angular/material/list";
 
 @Component({
   selector: 'app-batches',
@@ -29,8 +30,8 @@ import { MatMenuModule } from '@angular/material/menu';
     MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
     AngularSplitModule, MatTableModule,
-    // ResultItem
-  ],
+    MatListItem, MatListModule
+],
   templateUrl: './batches.html',
   styleUrl: './batches.scss'
 })
