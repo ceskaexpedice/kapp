@@ -21,6 +21,7 @@ import { MatTableModule } from '@angular/material/table';
 import { TitleDialog } from '../../components/title-dialog/title-dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatListItem, MatListModule } from "@angular/material/list";
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-batches',
@@ -30,7 +31,7 @@ import { MatListItem, MatListModule } from "@angular/material/list";
     MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
     AngularSplitModule, MatTableModule,
-    MatListItem, MatListModule
+    MatListItem, MatListModule, MatTooltipModule
 ],
   templateUrl: './batches.html',
   styleUrl: './batches.scss'
