@@ -231,7 +231,6 @@
 
   <field name="checked_by" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
 	
-  <!-- TODO: Delete -->		
   <field name="check_NK" type="boolean" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="check_MZK" type="boolean" docValues="true" multiValued="false" indexed="true" stored="true"/>
 
@@ -240,8 +239,11 @@
   
   <field name="biblio_mods" type="string" multiValued="true" indexed="false" stored="true"/>
   <field name="biblio_mods_md5" type="string" multiValued="true" indexed="false" stored="true"/>
+  <field name="is_hierarchical" type="boolean" multiValued="false" indexed="false" stored="true"/>
+  <!-- TODO: delete -->
   <dynamicField name="biblio_mods_dl_*" type="string" multiValued="true" indexed="false" stored="true"/>
-  			
+  
+  
   
   <field name="contains_licenses" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="created" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
