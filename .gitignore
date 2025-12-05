@@ -9,3 +9,4 @@ web/.DS_Store
 solr/**/data
 solr/userfiles
 solr/filestore
+kuappweb/src/main/webapp/index.html

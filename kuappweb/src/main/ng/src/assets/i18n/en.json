@@ -31,7 +31,10 @@
     "pid": "PID",
     "links": "External links",
     "decision_date": "Decision date",
-    "release_date": "Release date"
+    "release_date": "Release date",
+    "dateIssued": "Date issued", 
+    "sigla": "Location", 
+    "indextime": "Index time"
   },
   "action": {
     "view": "View",
