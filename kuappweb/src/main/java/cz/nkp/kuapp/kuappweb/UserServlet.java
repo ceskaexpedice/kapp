@@ -148,8 +148,6 @@ public class UserServlet extends HttpServlet {
                             .build();
                     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                     String r = response.body();
-
-                    System.out.println(r);
                     
                     JSONObject json = new JSONObject(r);
                     
@@ -158,7 +156,6 @@ public class UserServlet extends HttpServlet {
                     
                     String header = new String(decoder.decode(chunks[0]));
                     String payload = new String(decoder.decode(chunks[1]));
-                    System.out.println(payload);
                     user = new JSONObject(payload);
                     req.getSession().setAttribute("user", user);
                     
