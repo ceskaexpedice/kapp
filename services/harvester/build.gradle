@@ -35,6 +35,8 @@ test {
 }
 
 dependencies {
+    api project(':services:init')
+    api project(':services:common')
 
     api 'org.apache.commons:commons-lang3:3.12.0'
 
@@ -43,7 +45,6 @@ dependencies {
     api 'org.json:json:20250517'
 
     api 'org.apache.solr:solr-solrj:9.9.0'
-    api project(':services:init')
     api 'com.google.guava:guava:32.1.2-jre'
 
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'

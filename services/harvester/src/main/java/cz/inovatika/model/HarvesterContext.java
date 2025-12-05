@@ -1,6 +1,8 @@
 package cz.inovatika.model;
 
 import cz.inovatika.conf.ApplicationConfig;
+import cz.inovatika.conf.TouchStoreConfig;
+import cz.inovatika.touchstore.TouchStore;
 import org.json.JSONObject;
 
 import java.net.http.HttpClient;
@@ -23,6 +25,7 @@ import java.net.http.HttpClient;
 public record HarvesterContext(
         ApplicationConfig applicationConfig,
         HarvestingItem item,
+        TouchStore touchStore,
         HttpClient client,
         Instance config
 ){}

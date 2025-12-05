@@ -5,6 +5,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.logging.Logger;
 
@@ -32,6 +34,8 @@ public class Instance {
 
     private Instant lastUpdated;
     private String timestampPath;
+
+    private List<String> physicalLocations = new ArrayList<>();
 
     public Instance() {}
 
@@ -121,6 +125,14 @@ public class Instance {
 
     public void setTimestampPath(String timestampPath) {
         this.timestampPath = timestampPath;
+    }
+
+    public List<String> getPhysicalLocations() {
+        return physicalLocations;
+    }
+
+    public void setPhysicalLocations(List<String> physicalLocations) {
+        this.physicalLocations = physicalLocations;
     }
 
     public boolean saveLastUpdatedToPath() {

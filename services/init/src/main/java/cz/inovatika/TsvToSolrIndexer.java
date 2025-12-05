@@ -47,6 +47,12 @@ import org.xml.sax.SAXException;
 public class TsvToSolrIndexer {
 
     private static final String SOLR_URL = "http://localhost:8983/solr";
+    public static final String MODEL_FIELD = "model";
+    public static final String ROOT_PID_FIELD = "root.pid";
+    public static final String ROOT_TITLE_FIELD = "root.title";
+    public static final String AUTHORS_KRAMERIUS_FIELD = "authors_kramerius";
+    public static final String NAME_IDENTIFIER_FIELD = "nameIdentifier";
+
     private static String DIRECTORY_PATH = "../Data"; // change this
 
     private static SolrClient solrClient;
@@ -167,7 +173,7 @@ public class TsvToSolrIndexer {
                                         }
                                         
                                         doc.setField(header, pid);
-                                        doc.setField("root.pid", rootPid);
+                                        doc.setField(ROOT_PID_FIELD, rootPid);
 
                                         // NDK. K5
                                         Document xml = getBiblioMods(client, builder, pid,
@@ -190,19 +196,19 @@ public class TsvToSolrIndexer {
                                         JSONObject item = getItem(client, pid,
                                                 "https://ndk.cz/search/api/v5.0/item/" + pid);
                                         if (item != null) {
-                                            doc.setField("model", item.optString("model"));
-                                            doc.setField("root.pid", item.optString("root_pid"));
-                                            doc.setField("root.title", item.optString("root_title"));
+                                            doc.setField(MODEL_FIELD, item.optString("model"));
+                                            doc.setField(ROOT_PID_FIELD, item.optString("root_pid"));
+                                            doc.setField(ROOT_TITLE_FIELD, item.optString("root_title"));
                                         } else {
                                             item = getItem(client, pid,
                                                     "https://api.kramerius.mzk.cz/search/api/client/v7.0/search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), "UTF-8"));
                                                     if (item != null && item.getJSONObject("response")
                                                         .getJSONArray("docs").length() > 0) {
-                                                doc.setField("model", item.getJSONObject("response")
+                                                doc.setField(MODEL_FIELD, item.getJSONObject("response")
                                                         .getJSONArray("docs").getJSONObject(0).optString("model"));
-                                                doc.setField("root.pid", item.getJSONObject("response")
+                                                doc.setField(ROOT_PID_FIELD, item.getJSONObject("response")
                                                         .getJSONArray("docs").getJSONObject(0).optString("root.pid"));
-                                                doc.setField("root.title", item.getJSONObject("response")
+                                                doc.setField(ROOT_TITLE_FIELD, item.getJSONObject("response")
                                                         .getJSONArray("docs").getJSONObject(0).optString("root.title"));
                                             }
                                         }
@@ -231,9 +237,9 @@ public class TsvToSolrIndexer {
                         XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
 
                         Arrays.asList(nameIDArray).forEach(author -> {
-                            doc.addField("authors_kramerius", author.toJsonString());
+                            doc.addField(AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
                             if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
-                                doc.addField("nameIdentifier", author.getNameIdentifier());
+                                doc.addField(NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
                             }
                         });
 
@@ -245,7 +251,7 @@ public class TsvToSolrIndexer {
                             }
                         }
                         if(doc.get("pid")==doc.get("root.pid")){
-                            doc.addField("root.title", doc.get("title"));
+                            doc.addField(ROOT_TITLE_FIELD, doc.get("title"));
                         }
                         //doc.addField("state_user", "TableParser");
                         solrClient.add("titles", doc); 

@@ -1,5 +1,6 @@
 package cz.inovatika.authors;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -18,28 +19,9 @@ public class AuthorData {
     private String date;
     private String termsOfAddress;
     private String nameIdentifier;
-    private List<String> role;
+    private List<String> role = new ArrayList<>();
     boolean isLast;
 
-//    private AuthorData(Builder builder) {
-//        this.full = builder.full;
-//        this.family = builder.family;
-//        this.given = builder.given;
-//        this.date = builder.date;
-//        this.termsOfAddress = builder.termsOfAddress;
-//        this.nameIdentifier = builder.nameIdentifier;
-//        this.role = builder.role;
-//        this.isLast = builder.isLast;
-//    }
-//    public AuthorData(String full, String family, String given, String date, String termsOfAddress, String nameIdentifier, List<String> role) {
-//        this.full = full;
-//        this.family = family;
-//        this.given = given;
-//        this.date = date;
-//        this.termsOfAddress = termsOfAddress;
-//        this.nameIdentifier = nameIdentifier;
-//        this.role = role;
-//    }
 
     private AuthorData() {}
 
@@ -196,7 +178,13 @@ public class AuthorData {
         json.put("date", date);
         json.put("role", role);
         json.put("termsOfAddress", termsOfAddress);
-        json.put("nameIdentifier", nameIdentifier);
+
+        if (this.getNameIdentifier() != null) {
+            json.put("nameIdentifier", this.getNameIdentifier());
+        } else {
+            json.put("nameIdentifier", XmlProcessor.normalize(this.getFull() + this.getDate()));
+        }
+
         json.put("isLast", isLast);
         return json.toString();
     }

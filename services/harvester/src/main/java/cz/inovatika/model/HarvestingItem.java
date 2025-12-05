@@ -1,8 +1,6 @@
 package cz.inovatika.model;
 
 
-import org.eclipse.jetty.util.StringUtil;
-
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -51,7 +49,7 @@ public class HarvestingItem {
      */
     private Instance instance;
 
-    private boolean isRootTitle = false; // true only for monograph with monographunits and periodical
+    private boolean isHierarchical = false; // true only for monograph with monographunits and periodical
 
     public String getPid() {
         return pid;
@@ -101,12 +99,12 @@ public class HarvestingItem {
         this.licenses = licenses;
     }
 
-    public boolean isRootTitle() {
-        return isRootTitle;
+    public boolean isHierarchical() {
+        return isHierarchical;
     }
 
-    public void setRootTitle(boolean rootTitle) {
-        this.isRootTitle = rootTitle;
+    public void setHierarchical(boolean hierarchical) {
+        this.isHierarchical = hierarchical;
     }
 
 

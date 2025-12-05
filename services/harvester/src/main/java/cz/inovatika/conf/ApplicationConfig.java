@@ -15,15 +15,17 @@ import java.util.Objects;
 public class ApplicationConfig {
 
 
+    private TouchStoreConfig touchStoreConfig;
     private WorkflowConfig workflow;
     private List<Instance> instances;
-
     private SolrConfig solr;
 
-    public ApplicationConfig(List<Instance> instances, WorkflowConfig workflow, SolrConfig solr) {
+
+    public ApplicationConfig(List<Instance> instances, WorkflowConfig workflow, SolrConfig solr, TouchStoreConfig touchStoreConfig) {
         this.instances = instances;
         this.workflow = workflow;
         this.solr = solr;
+        this.touchStoreConfig = touchStoreConfig;
     }
 
     public List<Instance> getInstances() {
@@ -38,16 +40,16 @@ public class ApplicationConfig {
         return solr;
     }
 
+    public TouchStoreConfig getTouchStoreConfig() {
+        return touchStoreConfig;
+    }
+
     public static ApplicationConfig loadFromStream(InputStream is) throws ConfigException {
         try {
             Gson gson = new GsonBuilder()
                     .registerTypeAdapter(Instant.class, new InstantTypeAdapter())
                     .create();
             return gson.fromJson(new InputStreamReader(is), ApplicationConfig.class);
-        } catch (JsonSyntaxException e) {
-            throw new ConfigException(e);
-        } catch (JsonIOException e) {
-            throw new ConfigException(e);
         } catch (Exception e) {
             throw new ConfigException(e);
         }
