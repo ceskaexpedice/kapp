@@ -26,7 +26,7 @@ export class AuthorDialog {
 
   readonly service = inject(AppService);
   readonly dialogRef = inject(MatDialogRef<AuthorDialog>);
-  readonly data = inject<Author>(MAT_DIALOG_DATA);
+  readonly data = inject<{pid: string, author: Author}>(MAT_DIALOG_DATA);
 
 
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
@@ -37,13 +37,15 @@ export class AuthorDialog {
 
   author = signal<Author>(null);
 
+  hasChanges: boolean;
+
   ngOnInit() {
     if (!this.data) {
       // Dialog to add new author
       // Show buttons
       this.isNew.set(true);
     } else {
-      this.author.set(this.data);
+      this.author.set(this.data.author);
       this.getLinks();
     }
   }
@@ -104,10 +106,15 @@ export class AuthorDialog {
   }
 
   save(): void {
-
+    this.hasChanges = true;
   }
 
   setAsLast() {
-
+    if (this.author()['date_death']) {
+      this.service.saveDecisionDate(this.data.pid, this.author()['date_death']).subscribe((res: any) => {
+        console.log(res);
+        this.hasChanges = true;
+      })
+    }
   }
 }

@@ -36,7 +36,8 @@ export class Admin {
 
   addLabel(l: Label) {
     if (!this.labels.find(la => la.name === l.name)) {
-      this.labels.push(l);
+      this.labels.push({name: l.name, color: l.color});
+      this.nl = {name: ''};
       this.saveLabels();
     }
   }

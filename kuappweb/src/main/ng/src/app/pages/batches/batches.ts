@@ -20,6 +20,8 @@ import { StateDialog } from '../../components/state-dialog/state-dialog';
 import { MatTableModule } from '@angular/material/table';
 import { TitleDialog } from '../../components/title-dialog/title-dialog';
 import { MatMenuModule } from '@angular/material/menu';
+import { MatListItem, MatListModule } from "@angular/material/list";
+import { MatTooltipModule } from '@angular/material/tooltip';
 
 @Component({
   selector: 'app-batches',
@@ -29,8 +31,8 @@ import { MatMenuModule } from '@angular/material/menu';
     MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
     AngularSplitModule, MatTableModule,
-    // ResultItem
-  ],
+    MatListItem, MatListModule, MatTooltipModule
+],
   templateUrl: './batches.html',
   styleUrl: './batches.scss'
 })
@@ -111,6 +113,7 @@ export class Batches {
     if (!this.state.batches().find(b => b.name === this.newBatch)) {
       // this.batches.push({date_created: new Date(), name: this.newBatch, state: 'new'});
       this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
+      this.newBatch = null;
       this.saveBatches(this.newBatch);
     }
   }

@@ -28,13 +28,16 @@ import { AuthorItem } from "../../components/author-item/author-item";
 import { Observable } from 'rxjs';
 import { TitleDialog } from '../../components/title-dialog/title-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { ResizecolDirective } from '../../shared/resizecol.directive';
+
+import { MatSortModule, Sort } from '@angular/material/sort';
 
 @Component({
   selector: 'app-results',
   imports: [
-    TranslateModule, FormsModule,
-    AngularSplitModule,
-    MatProgressBarModule, MatSelectModule,
+    TranslateModule, FormsModule, DatePipe,
+    AngularSplitModule, ResizecolDirective,
+    MatProgressBarModule, MatSelectModule, MatSortModule,
     MatButtonModule, MatTableModule, MatPaginatorModule,
     MatFormFieldModule, MatIconModule, MatInputModule, MatButtonToggleModule,
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
@@ -61,9 +64,9 @@ export class Results {
     readonly dialog = inject(MatDialog);
 
   viewType = signal<string>('table_view');
-  displayedColumns = ['pid', 'title', 'state'];
+  displayedColumns = ['pid', 'title', 'state', 'dateIssued', 'sigla', 'indextime']; //Datum vydání; Producent/Umístění (duplicitně k fasetě); Datum importu(?)
 
-
+  sort: Sort = {active: 'indextime', direction: 'desc'};
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -118,6 +121,7 @@ export class Results {
     if (this.state.q) {
       p.q = this.state.q;
     }
+    p.sort = this.sort.active + " " + this.sort.direction;
     this.addFilters(p, this.state.usedFacets());
     let s: Observable<any>;
     if (this.view() === 'titles') {
@@ -147,6 +151,11 @@ export class Results {
         if (result) {
         }
       });
+    }
+
+    sortTable(e: Sort) {
+      this.sort = e;
+      this.getData();
     }
 
 }

@@ -1,6 +1,7 @@
-::ng-deep {
 .app-active {
-    font-weight: bold;
-}
-    
-}
+	background-color: var(--app-color-gray-2);
+
+	::ng-deep .mat-mdc-list-item-unscoped-content {
+		font-weight: 900 !important;
+	}
+}   

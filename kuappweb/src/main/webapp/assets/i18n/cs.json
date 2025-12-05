@@ -33,7 +33,10 @@
     "pid": "PID",
     "links": "Externí odkazy",
     "decision_date": "Rozhodující datum",
-    "release_date": "Datum uvolnění"
+    "release_date": "Datum uvolnění",
+    "dateIssued": "Datum vydání", 
+    "sigla": "Producent/Umístění", 
+    "indextime": "Datum importu"
   },
   "action": {
     "view": "Zobrazit",
