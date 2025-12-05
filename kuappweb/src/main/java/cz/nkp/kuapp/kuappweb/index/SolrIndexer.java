@@ -97,7 +97,6 @@ public class SolrIndexer {
         return ret;
     }
 
-
     public static JSONObject saveDecisionDate(JSONObject js) {
 
         JSONObject ret = new JSONObject();
@@ -117,6 +116,29 @@ public class SolrIndexer {
             LOGGER.log(Level.SEVERE, null, ex);
             ret.put("error", ex);
         }
+        return ret;
+    }
+
+    // Save changes to author
+    public static JSONObject saveAuthor(JSONObject js) {
+
+        JSONObject ret = new JSONObject(); 
+//        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+//            SolrInputDocument doc = new SolrInputDocument();
+//            doc.setField("pid", js.getString("pid"));
+//
+//            Map<String, Object> partialUpdate = new HashMap<>();
+//            partialUpdate.put("set", js.getString("decisionDate"));
+//            doc.setField("decision_date", partialUpdate);
+//            
+//            solr.add("titles", doc);
+//            solr.commit("titles");
+//            ret.put("msg", "saved");
+//
+//        } catch (Exception ex) {
+//            LOGGER.log(Level.SEVERE, null, ex);
+//            ret.put("error", ex);
+//        }
         return ret;
     }
     

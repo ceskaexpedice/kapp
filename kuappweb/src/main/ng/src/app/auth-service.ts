@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Router } from '@angular/router';
 import { map, Observable } from 'rxjs';
 import { User } from './shared/user';
@@ -16,7 +16,7 @@ export class AuthService {
   static GLOBAL_ACTIONS_LOADED = 0;
   static SPECIFIC_ACTIONS_LOADED = 0;
 
-  user: User;
+  user =  signal<User>(null);
   static token: string;
   static tokenTime: Date;
   static tokenDeadline: Date;
@@ -82,7 +82,7 @@ export class AuthService {
   }
 
   isLoggedIn() {
-    return this.user && this.user.isLoggedIn();
+    return this.user && this.user().isLoggedIn();
   }
 
   isAuthorized() {
@@ -99,7 +99,7 @@ export class AuthService {
     if (!this.user) {
       return '?';
     }
-    return (this.user.name || this.user.uid || '?')[0];
+    return (this.user.name || this.user().sid || '?')[0];
   }
 
   checkToken(callback: (arg0: number) => void) {
@@ -109,7 +109,7 @@ export class AuthService {
     }
 
     this.validateToken().subscribe((user: User) => {
-      this.user = user;
+      this.user.set(user);
     },
       (error) => {
         callback(AuthService.AUTH_NOT_LOGGED_IN);
@@ -117,16 +117,13 @@ export class AuthService {
   }
 
   keycloakAuth(code: string, callback: (arg0: number) => void = null) {
-    this.getToken(code).subscribe(
-      (token: string) => {
-        if (!token) {
+    this.getUser(code).subscribe(
+      (user: any) => {
+        if (!user) {
           callback(AuthService.AUTH_NOT_LOGGED_IN);
         } else {
-          AuthService.token = token;
-          AuthService.tokenTime = new Date();
-          localStorage.setItem('account.token', token);
-          localStorage.setItem('account.token.time', new Date().toISOString());
-          this.checkToken(callback);
+          this.user.set(user);
+          callback(AuthService.AUTH_AUTHORIZED);
         }
       },
       (error) => {
@@ -145,12 +142,14 @@ export class AuthService {
     return this.http.get(`${this.settings.clientApiBaseUrl}/user/logout`);
   }
 
-  private getToken(code: string): Observable<string> {
-    const redircetUri = `${this.baseUrl()}/keycloak`;
+  private getUser(code: string): Observable<string> {
+    // const redircetUri = `${this.baseUrl()}/keycloak`;
+    // const keycloakUrl = this.settings.keycloakUrl + '/token';
     // let url = `${this.settings.clientApiBaseUrl}/user/auth/login?&redirect_uri=${redircetUri}`;
-    let url = `${this.settings.clientApiBaseUrl}/user/auth/token?code=${code}&redirect_uri=${redircetUri}`;
+    const redirect_uri = localStorage.getItem('redirectUri');
+    let url = `/api/user/token?code=${code}&redirect_uri=${redirect_uri}`;
     return this.http.get(url).pipe(map((response: any) =>
-      response['access_token'])
+      response)
     );
 
   }

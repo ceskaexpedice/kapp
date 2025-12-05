@@ -1,5 +1,5 @@
 {
-
+    "keycloakUrl": "https://eduid.inovatika.dev/realms/kapp/protocol/openid-connect",
     "coreBaseUrl": "https://k7.inovatika.dev",
     "userClientBaseUrl": "https://k7.inovatika.dev",
     "keycloak": {

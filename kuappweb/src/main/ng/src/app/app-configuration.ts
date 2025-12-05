@@ -25,6 +25,10 @@ import { Label } from './shared/label';
         return this.coreBaseUrl + '/api/client/v7.0';
     }
     
+    public get keycloakUrl() {
+        return this.config.keycloakUrl;
+    }
+    
     public get keycloak() {
         return this.config.keycloak;
     }

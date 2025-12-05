@@ -106,7 +106,11 @@ export class AuthorDialog {
   }
 
   save(): void {
-    this.hasChanges = true;
+        console.log(this.author());
+      this.service.saveAuthor(this.author()).subscribe((res: any) => {
+        console.log(this.author());
+        this.hasChanges = true;
+      })
   }
 
   setAsLast() {

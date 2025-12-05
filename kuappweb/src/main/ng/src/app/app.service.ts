@@ -3,6 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map, finalize, catchError, of } from 'rxjs';
 import { Label } from './shared/label';
 import { Batch } from './shared/batch';
+import { Author } from './shared/author';
 
 @Injectable({
   providedIn: 'root'
@@ -118,6 +119,10 @@ export class AppService {
 
   saveDocBatch(pid: string, batch: string): Observable<any> {
     return this.post('index/save_doc_batch', {pid,batch});
+  }
+
+  saveAuthor(author: Author): Observable<any> {
+    return this.post('index/save_author', author);
   }
 
   saveDecisionDate(pid: string, decisionDate: number): Observable<any> {

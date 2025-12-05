@@ -1,13 +1,18 @@
-/*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/JSP_Servlet/Servlet.java to edit this template
- */
 package cz.nkp.kuapp.kuappweb;
 
 import cz.nkp.kuapp.kuappweb.index.AUTIndexer;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -72,6 +77,19 @@ public class UserServlet extends HttpServlet {
             response.getWriter().print(e1.toString());
         }
     }
+    
+    private static String getFormDataAsString(Map<String, String> formData) {
+    StringBuilder formBodyBuilder = new StringBuilder();
+    for (Map.Entry<String, String> singleEntry : formData.entrySet()) {
+        if (formBodyBuilder.length() > 0) {
+            formBodyBuilder.append("&");
+        }
+        formBodyBuilder.append(URLEncoder.encode(singleEntry.getKey(), StandardCharsets.UTF_8));
+        formBodyBuilder.append("=");
+        formBodyBuilder.append(URLEncoder.encode(singleEntry.getValue(), StandardCharsets.UTF_8));
+    }
+    return formBodyBuilder.toString();
+}
 
     enum Actions {
 
@@ -81,22 +99,85 @@ public class UserServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = Options.getInstance().getJSONObject("keycloak");
-                    
+
                     System.out.println(js);
                     InputStream is = new ByteArrayInputStream(js.toString().getBytes());
                     AuthzClient authzClient = AuthzClient.create(is);
                     // create an authorization request
                     AuthorizationRequest request = new AuthorizationRequest();
 
-                    
                     AuthorizationResponse response = authzClient.authorization("kapp", "kapp").authorize(request);
                     String rpt = response.getToken();
+
                     System.out.println(rpt);
                 } catch (Exception ex) {
                     LOGGER.log(Level.SEVERE, null, ex);
                     json.put("error", ex.toString());
                 }
-                return json; 
+                return json;
+            }
+        },
+        TOKEN {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject user = new JSONObject();
+                try {
+                    JSONObject js = Options.getInstance().getJSONObject("keycloak");
+
+                 ///  curl -s -X POST "https://eduid.inovatika.dev/realms/kapp/protocol/openid-connect/token" ^
+                    //  -H "Content-Type: application/x-www-form-urlencoded" ^
+                    //  -d "grant_type=authorization_code" ^
+                    //  -d "client_id=kapp" ^
+                    //  -d "code=737e5266-0187-41d2-9576-6e67b8787fd1.0fbf26b4-1351-4028-99eb-aac90bb0414a.3fc1dc7f-58c3-4db0-9506-7a8b50d6dd5d" ^
+                    //  -d "scope=openid"
+                    
+                    String url = js.getString("auth-server-url") + "realms/" + js.getString("realm") + "/protocol/openid-connect/token";
+                    
+                    Map<String, String> formData = new HashMap<>();
+                    formData.put("grant_type", "authorization_code");
+                    formData.put("client_id", "kapp");
+                    formData.put("scope", "openid");
+                    formData.put("code", req.getParameter("code"));
+                    formData.put("redirect_uri", req.getParameter("redirect_uri"));
+
+                    HttpClient client = HttpClient.newHttpClient();
+                    HttpRequest request = HttpRequest.newBuilder()
+                            .POST(HttpRequest.BodyPublishers.ofString(getFormDataAsString(formData)))
+                            .setHeader("Content-Type", "application/x-www-form-urlencoded")
+                            .uri(new URI(url))
+                            .build();
+                    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    String r = response.body();
+
+                    System.out.println(r);
+                    
+                    JSONObject json = new JSONObject(r);
+                    
+                    String[] chunks = json.getString("access_token").split("\\.");
+                    Base64.Decoder decoder = Base64.getUrlDecoder();
+                    
+                    String header = new String(decoder.decode(chunks[0]));
+                    String payload = new String(decoder.decode(chunks[1]));
+                    System.out.println(payload);
+                    user = new JSONObject(payload);
+                    req.getSession().setAttribute("user", user);
+                    
+                    // get user by token
+                    // curl -X GET -H "Authorization: Bearer $ACCESS_TOKEN" $KCHOST/auth/admin/realms/$REALM/users | jq
+//                    url = js.getString("auth-server-url") + "/admin/realms/" + js.getString("realm") + "/users";
+//                    HttpRequest grequest = HttpRequest.newBuilder()
+//                            .GET()
+//                            .setHeader("Authorization", "Bearer " + json.getString("access_token"))
+//                            .uri(new URI(url))
+//                            .build();
+//                    HttpResponse<String> uresponse = client.send(grequest, HttpResponse.BodyHandlers.ofString());
+//                    String u = uresponse.body();
+                    
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, null, ex);
+                    user.put("error", ex.toString());
+                }
+                return user;
             }
         },
         RT {

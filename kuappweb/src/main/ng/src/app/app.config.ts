@@ -8,6 +8,7 @@ import { AppService } from './app.service';
 import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AppConfiguration } from './app-configuration';
+import { Configuration } from './shared/config';
 
 
 export const appConfig: ApplicationConfig = {

@@ -18,6 +18,7 @@ import { Batch } from "./shared/batch";
     // keycloak 
     code: string;
     session_state: string;
+    redirect_uri: string;
 
     
 }

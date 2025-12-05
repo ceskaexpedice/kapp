@@ -243,6 +243,19 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
+        SAVE_AUTHOR { 
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.saveDecisionDate(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         SAVE_DECISION_DATE {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {

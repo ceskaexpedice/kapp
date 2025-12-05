@@ -5,6 +5,7 @@ export interface Sort { label: string; field: string; dir: string; entity?: stri
 export class Configuration {
 
   deployPath: string;
+  keycloakUrl: string;
   coreBaseUrl: string;
   clientApiBaseUrl: string;
   defaultLang: string;

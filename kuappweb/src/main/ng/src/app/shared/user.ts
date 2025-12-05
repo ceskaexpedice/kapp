@@ -1,7 +1,7 @@
 export class User {
 
   authenticated: boolean = false;
-  uid: string;
+  sid: string;
   name: string;
   roles: string[];
   licenses: string[];
@@ -12,7 +12,7 @@ export class User {
       const user = new User();
       user.authenticated = !!json['authenticated'];
       user.name = (json['name'] || '').trim();
-      user.uid = json['uid'];
+      user.sid = json['sid'];
       user.roles = json['roles'] || [];
       user.session = json['session'] || {};
       user.licenses = json['licenses'] || [];
