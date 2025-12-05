@@ -56,13 +56,23 @@
 			</a>
 			}
 		</div>
+
 		<div><span class="app-label">{{ 'field.physical_locations' | translate }}: </span>{{
 			doc()['physical_locations.facet']}}</div>
 		@if(doc()['public_since']) {
 		<div>
-			<span>{{ 'field.public_since' | translate }}: </span>{{ doc()['public_since']}}
+			<span class="app-label">{{ 'field.public_since' | translate }}: </span>{{ doc()['public_since']}}
 		</div>
 		}
+		
+		<div>
+			<span class="app-label">{{ 'field.dateIssued' | translate }}: </span>{{ doc()['dateIssued']}}
+		</div>
+		
+		<div>
+			<span class="app-label">{{ 'field.indextime' | translate }}: </span>{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}
+		</div>
+
 		<div><span class="app-label">{{ 'field.licenses' | translate }}: </span>{{ doc()['licenses']}}</div>
 		<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
 			<span class="app-label">{{ 'field.note' | translate }}: </span>

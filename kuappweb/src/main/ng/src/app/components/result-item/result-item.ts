@@ -19,10 +19,11 @@ import { StateDialog } from '../state-dialog/state-dialog';
 import { Batch } from '../../shared/batch';
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { FormsModule } from '@angular/forms';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-result-item',
-  imports: [RouterModule, TranslateModule, FormsModule,
+  imports: [RouterModule, TranslateModule, FormsModule, DatePipe,
     MatCardModule, MatButtonModule, MatMenuModule,
     MatIconModule, MatChipsModule, MatFormFieldModule],
   templateUrl: './result-item.html',

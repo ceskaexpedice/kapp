@@ -113,6 +113,7 @@ export class Batches {
     if (!this.state.batches().find(b => b.name === this.newBatch)) {
       // this.batches.push({date_created: new Date(), name: this.newBatch, state: 'new'});
       this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
+      this.newBatch = null;
       this.saveBatches(this.newBatch);
     }
   }
