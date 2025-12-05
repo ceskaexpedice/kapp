@@ -28,12 +28,13 @@ import { AuthorItem } from "../../components/author-item/author-item";
 import { Observable } from 'rxjs';
 import { TitleDialog } from '../../components/title-dialog/title-dialog';
 import { MatDialog } from '@angular/material/dialog';
+import { ResizecolDirective } from '../../shared/resizecol.directive';
 
 @Component({
   selector: 'app-results',
   imports: [
-    TranslateModule, FormsModule,
-    AngularSplitModule,
+    TranslateModule, FormsModule, DatePipe,
+    AngularSplitModule, ResizecolDirective,
     MatProgressBarModule, MatSelectModule,
     MatButtonModule, MatTableModule, MatPaginatorModule,
     MatFormFieldModule, MatIconModule, MatInputModule, MatButtonToggleModule,
@@ -61,7 +62,7 @@ export class Results {
     readonly dialog = inject(MatDialog);
 
   viewType = signal<string>('table_view');
-  displayedColumns = ['pid', 'title', 'state'];
+  displayedColumns = ['pid', 'title', 'state', 'dateIssued', 'sigla', 'indextime']; //Datum vydání; Producent/Umístění (duplicitně k fasetě); Datum importu(?)
 
 
 
