@@ -282,6 +282,12 @@ $home_cards: (
     container-elevation-shadow: 5px,
     container-shape: 7px
   ));
+  .app-dialog-title {
+    @include mat.dialog-overrides((
+      container-min-width: 1000px,
+      content-padding: 0px
+    ));
+  }
 
 
   @for $i from 0 through 5 {

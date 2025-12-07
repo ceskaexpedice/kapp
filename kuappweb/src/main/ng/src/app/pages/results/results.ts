@@ -145,6 +145,7 @@ export class Results {
   
       const dialogRef = this.dialog.open(TitleDialog, {
         data: doc,
+        panelClass: "app-dialog-title"
       });
   
       dialogRef.afterClosed().subscribe(result => {
