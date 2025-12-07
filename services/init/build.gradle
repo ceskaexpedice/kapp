@@ -35,6 +35,8 @@ test {
 }
 
 dependencies {
+    api project(':services:common')
+
     implementation 'org.apache.solr:solr-solrj:9.9.0'
     implementation 'org.apache.commons:commons-csv:1.10.0'
     implementation 'org.apache.commons:commons-lang3:3.12.0'

@@ -2,6 +2,8 @@ package cz.inovatika.model;
 
 
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -51,6 +53,7 @@ public class HarvestingItem {
 
     private boolean isHierarchical = false; // true only for monograph with monographunits and periodical
 
+
     public String getPid() {
         return pid;
     }
@@ -98,6 +101,25 @@ public class HarvestingItem {
     public void setLicenses(String[] licenses) {
         this.licenses = licenses;
     }
+
+//    public Map<String,String> getIdentifies() {
+//        return identifiers;
+//    }
+//
+//    public void addIdentifier(String idKey, String val) {
+//        this.identifiers.put(idKey, val);
+//    }
+//
+//    public void removeIdentifier(String idKey) {
+//        this.identifiers.remove(idKey);
+//    }
+//
+//    public String getIdentifier(String idKey) {
+//        return this.identifiers.get(idKey);
+//    }
+
+
+
 
     public boolean isHierarchical() {
         return isHierarchical;

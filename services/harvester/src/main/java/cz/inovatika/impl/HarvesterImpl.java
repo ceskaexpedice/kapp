@@ -8,12 +8,20 @@ import cz.inovatika.authors.AuthorDataUtils;
 import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.conf.TouchStoreConfig;
 import cz.inovatika.conf.WorkflowConfig;
+import cz.inovatika.dates.DateNormalizer;
+import cz.inovatika.dates.DateRange;
+import cz.inovatika.dates.DateRangeParser;
+import cz.inovatika.identifiers.IdentifierUtils;
 import cz.inovatika.model.*;
+import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.touchstore.TouchStore;
 import cz.inovatika.touchstore.impl.TouchStoreImpl;
+import cz.inovatika.workflow.LicensesAssignation;
 import cz.inovatika.workflow.States;
 import cz.inovatika.utils.XMLUtils;
 
+import cz.inovatika.workflow.Workflow;
+import cz.inovatika.workflow.WorkflowDoc;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -89,11 +97,9 @@ public class HarvesterImpl implements Harvester {
             String id = apiVersion.getIdentifier(config);
             String fq = apiVersion.incrementFQ(config);
 
-
-
-
-            String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq+" AND PID:\"uuid:00008900-a41c-11f0-adfb-5ef3fc9bb22f\"", "search", id,
+            String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id,
                     config.getApiVersion().getIdentifier(config) + " asc", fl);
+            LOGGER.info("query: " + query + " cursorMark: " + cursorMark);
             Element element = executeQuery(client, config.getUrl(), query);
 
             List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> {
@@ -106,6 +112,7 @@ public class HarvesterImpl implements Harvester {
 
             String subquery = config.getApiVersion().prepareSubquery(harvestItems);
             if (!StringUtil.isEmpty(subquery)) {
+                LOGGER.info("subquery: " + subquery);
                 Element subResult = executeQuery(client, config.getUrl(), subquery);
                 config.getApiVersion().processSubqueryResult(harvestItems, subResult);
             }
@@ -182,6 +189,13 @@ public class HarvesterImpl implements Harvester {
             nkp();
 
         } catch (Exception e) {
+            if (solrClient != null) {
+                try {
+                    solrClient.close();
+                } catch (IOException ex) {
+                    throw new RuntimeException(ex);
+                }
+            }
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
 
         }
@@ -289,10 +303,15 @@ public class HarvesterImpl implements Harvester {
             throws SolrServerException, IOException {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.add(docs);
-        updateRequest.process(solrClient, collection);
-        System.out.println("Indexed batch of " + docs.size() + " documents.");
-        solrClient.commit(collection);
+        if (docs.size() > 0) {
+            updateRequest.process(solrClient, collection);
+            System.out.println("Indexed batch of " + docs.size() + " documents.");
+            solrClient.commit(collection);
+        } else {
+            LOGGER.log(Level.INFO, "No documents to be indexed.");
+        }
     }
+
 
     private static Map<String, Object> createSetOperation(Object value) {
         Map<String, Object> updateMap = new HashMap<>();
@@ -305,12 +324,36 @@ public class HarvesterImpl implements Harvester {
         {
 
             String pid = ctx.item().getPid();
+            LOGGER.info(String.format( "Processing '%s" , pid));
+            if (pid != null) {
+                if (pid.equals("uuid:016cacd0-9b5b-11ea-9ded-005056825209")) {
+                    System.out.println("-->");
+                }
+            }
             boolean exists = ctx.touchStore().exists(pid);
             if (exists) {
                 try {
+
+                    SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
+                            FromKramFields.PID_FIELD,
+                            new SolrInputDocument(),
+                            SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
+
+                    wrapper.setField(FromKramFields.PID_FIELD, ctx.item().getPid());
+                    wrapper.addField(FromKramFields.LICENSES_FIELD, ctx.item().getLicenses());
+                    wrapper.addField(String.format("%s%s",  FromKramFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), ctx.item().getLicenses());
+
                     List<String> cPhysicalLocations = config.getPhysicalLocations();
                     List<String> touchStorePhysicalLocations =   ctx.touchStore().getPhysicalLocations(pid);
-                    boolean acceptLibrary = touchStorePhysicalLocations.isEmpty();
+                    if (touchStorePhysicalLocations.isEmpty()) {
+                        String rootPid = ctx.touchStore().getRootPid(pid);
+                        if (rootPid != null) {
+                            // loading physical locations from root.pid
+                            touchStorePhysicalLocations = ctx.touchStore().getPhysicalLocations(rootPid);
+                        }
+                    }
+
+                    boolean acceptLibrary = touchStorePhysicalLocations == null || touchStorePhysicalLocations.isEmpty();
                     for (String prevSigla : touchStorePhysicalLocations) {
                         if (cPhysicalLocations.contains(prevSigla)) {
                             acceptLibrary = true;
@@ -328,58 +371,117 @@ public class HarvesterImpl implements Harvester {
                         if (ctx.touchStore().isModsChanged(pid, entity.getMd5Sum())) {
                             try {
                                 Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
-                                SolrInputDocument doc = new SolrInputDocument();
-                                doc.setField(FromKramFields.PID_FIELD, ctx.item().getPid());
 
-                                doc.addField(FromKramFields.LICENSES_FIELD, createSetOperation(ctx.item().getLicenses()));
-                                doc.addField(FromKramFields.MODEL_FIELD, createSetOperation(ctx.item().getModel()));
-                                doc.addField(FromKramFields.ROOT_TITLE_FIELD, createSetOperation(ctx.item().getTitles()));
-                                doc.setField(FromKramFields.ROOT_PID_FIELD, createSetOperation(ctx.item().getRootPid()));
-                                doc.setField(FromKramFields.TITLE_FIELD, createSetOperation(ctx.item().getTitles()));
+                                wrapper.addField(FromKramFields.MODEL_FIELD, ctx.item().getModel());
+                                wrapper.addField(FromKramFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
+                                wrapper.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
+                                wrapper.setField(FromKramFields.TITLE_FIELD, ctx.item().getTitles());
 
-
-                                doc.setField(FromKramFields.BIBLIO_MODS_FIELD, createSetOperation(entity.getBiblioMods()));
-                                doc.setField(FromKramFields.BIBLIO_MODS_MD_5_FIELD, createSetOperation(entity.getMd5Sum()));
-
+                                wrapper.setField(FromKramFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
+                                wrapper.setField(FromKramFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
 
                                 Element dateIssued = XMLUtils.findElement(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("dateIssued"));
                                 if (dateIssued != null) {
+
                                     String dateText = dateIssued.getTextContent();
-                                    doc.addField(FromKramFields.DATE_STR_FIELD, createSetOperation(dateText));
+                                    wrapper.addField(FromKramFields.DATE_STR_FIELD, dateText);
+
+                                    DateRangeParser dateRangeParser = new DateRangeParser();
+                                    DateRange parsedDateRange = dateRangeParser.parse(new DateNormalizer().normalize(dateText));
+                                    if (parsedDateRange != null) {
+                                        parsedDateRange.mapToSolrDocument(wrapper);
+                                    }
 
                                     // TODO: change it
-                                    dateText = XmlProcessor.replaceWordsWithQMarks(dateText, 0, dateText);
-                                    XmlProcessor.parseDateBasic(doc, dateText, 0, dateText);
+                                    //dateText = XmlProcessor.replaceWordsWithQMarks(dateText, 0, dateText);
+                                    //XmlProcessor.parseDateBasic(doc, dateText, 0, dateText);
                                 }
 
                                 List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("physicalLocation")).stream().map(Element::getTextContent).toList();
                                 if (!physicalLocation.isEmpty()) {
-                                    doc.setField(FromKramFields.PHYSICAL_LOCATIONS_FACET_FIELD, createSetOperation(physicalLocation));
-
+                                    wrapper.setField(FromKramFields.PHYSICAL_LOCATIONS_FACET_FIELD, createSetOperation(physicalLocation));
                                 }
 
                                 // store to touch store
-                                ctx.touchStore().touch(pid, entity.getMd5Sum(), config.getAcronym(), physicalLocation);
+                                ctx.touchStore().touch(pid, entity.getMd5Sum(), config.getAcronym(), ctx.item().getRootPid(), physicalLocation);
                                 ctx.touchStore().storeMods(pid, entity.getBiblioMods().trim());
 
-                                JSONObject oldDoc = getExistingDocument((String) doc.getFieldValue(FromKramFields.PID_FIELD));
-                                JSONObject importedDoc = new JSONObject(JSONUtil.toJSON(doc));
-                                States states = States.IMPORTED.calculateNextState(ctx, oldDoc, importedDoc);
+                                // Authors
+                                List<AuthorData> authorData = AuthorDataUtils.parseAuthorData(parsed);
+                                wrapper.addField(FromKramFields.AUTHORS_FIELD, authorData.stream().map(AuthorData::getFull).toList());
+                                authorData.forEach(author -> {
+                                    wrapper.addField(FromKramFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
+                                    if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
+                                        wrapper.addField(FromKramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+                                    }
+                                });
 
+                                IdentifierUtils.findIdentifiers(parsed).forEach((k,v) ->{
+                                    wrapper.setField(String.format("id_%s",k),v);
+                                });
+
+                                List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).collect(Collectors.toList());
+                                authorsBuffer.addAll(authorityDocuments);
+
+                                Integer dateRangeEnd = (Integer) wrapper.getFieldValue(ApplFields.DATE_RANGE_END_YEAR);
+                                if (dateRangeEnd != null && dateRangeEnd > 0) {
+                                    String user = "importer";
+                                    String message = String.format("Imported from '%s'", config.getUrl());
+
+                                    WorkflowDoc workflowDoc = new WorkflowDoc(
+                                            dateRangeEnd,
+                                            States.IMPORTED,
+                                            user,
+                                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")),
+                                            ctx.item().getModel(),
+                                            ctx.item().isHierarchical(),
+                                            LicensesAssignation.NONE);
+                                    Workflow wf = new Workflow();
+
+                                    // state differs
+                                    JSONObject oldDoc = getExistingDocument((String) wrapper.getDocument().getFieldValue(FromKramFields.PID_FIELD));
+                                    String oldState = oldDoc.getString("state");
+                                    States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
+                                    if (oldState != null && !oldState.equals(newState.name())) {
+                                        wf.executeTransition(ctx, workflowDoc, user, message, wrapper);
+                                    }
+                                }
                             } catch (ParserConfigurationException | SAXException e) {
                                 throw new RuntimeException(e);
                             }
                         }
+
+                        buffer.add(wrapper.getDocument());
+                        if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
+                            sendBatch(solrClient, Constants.Collection.TITLES_COLLECTION, buffer);
+                            buffer.clear();
+                            try {
+                                checkTime();
+                            } catch (InterruptedException | IOException e) {
+                                LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                            }
+                        }
+                        if (authorsBuffer.size() >= BATCH_SIZE) { // BATCH_SIZE
+                            sendBatch(solrClient, "authors", authorsBuffer);
+                            authorsBuffer.clear();
+                        }
+
                     }
-                } catch (IOException | InterruptedException | NoSuchAlgorithmException e) {
+                } catch (IOException | InterruptedException | NoSuchAlgorithmException | SolrServerException e) {
                     throw new RuntimeException(e);
                 }
             } else {
 
                 Stopwatch sw = Stopwatch.createStarted();
-                SolrInputDocument doc = new SolrInputDocument();
+
+                SolrInputDocumentWrapper doc = new SolrInputDocumentWrapper(
+                        FromKramFields.PID_FIELD,
+                        new SolrInputDocument(),
+                        SolrInputDocumentWrapper.TypeOfChange.SIMPLE);
+
                 doc.setField(FromKramFields.PID_FIELD, ctx.item().getPid());
                 doc.addField(FromKramFields.LICENSES_FIELD, ctx.item().getLicenses());
+                doc.addField(String.format("%s%s",  FromKramFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), ctx.item().getLicenses());
                 doc.addField(FromKramFields.MODEL_FIELD, ctx.item().getModel());
                 doc.addField(FromKramFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
                 doc.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
@@ -404,9 +506,13 @@ public class HarvesterImpl implements Harvester {
                             String dateText = dateIssued.getTextContent();
                             doc.addField(FromKramFields.DATE_STR_FIELD, dateText);
 
-                            // TODO: change it
-                            dateText = XmlProcessor.replaceWordsWithQMarks(dateText, 0, dateText);
-                            XmlProcessor.parseDateBasic(doc, dateText, 0, dateText);
+
+                            DateRangeParser dateRangeParser = new DateRangeParser();
+                            DateRange parsedDateRange = dateRangeParser.parse(new DateNormalizer().normalize(dateText));
+                            if (parsedDateRange != null) {
+                                parsedDateRange.mapToSolrDocument(doc);
+                            }
+
                         }
 
                         List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("physicalLocation")).stream().map(Element::getTextContent).toList();
@@ -415,9 +521,10 @@ public class HarvesterImpl implements Harvester {
                         }
 
                         // store to touch store
-                        ctx.touchStore().touch(pid, entity.getMd5Sum(), config.getAcronym(), physicalLocation);
+                        ctx.touchStore().touch(pid, entity.getMd5Sum(), config.getAcronym(), ctx.item().getRootPid(), physicalLocation);
                         ctx.touchStore().storeMods(pid, entity.getBiblioMods().trim());
 
+                        // Authors
                         List<AuthorData> authorData = AuthorDataUtils.parseAuthorData(parsed);
                         doc.addField(FromKramFields.AUTHORS_FIELD, authorData.stream().map(AuthorData::getFull).toList());
                         authorData.forEach(author -> {
@@ -426,18 +533,34 @@ public class HarvesterImpl implements Harvester {
                                 doc.addField(FromKramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
                             }
                         });
+                        IdentifierUtils.findIdentifiers(parsed).forEach((k,v) ->{
+                            doc.setField(String.format("id_%s",k),v);
+                        });
 
-                        XmlProcessor.trySetLastAuthor(doc, authorData);
+                        //XmlProcessor.trySetLastAuthor(doc, authorData);
 
                         List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).collect(Collectors.toList());
                         authorsBuffer.addAll(authorityDocuments);
 
-                        JSONObject oldDoc = getExistingDocument((String) doc.getFieldValue(FromKramFields.PID_FIELD));
-                        JSONObject importedDoc = new JSONObject(JSONUtil.toJSON(doc));
+                        //JSONObject oldDoc = getExistingDocument((String) doc.getDocument().getFieldValue(FromKramFields.PID_FIELD));
+                        //JSONObject importedDoc = new JSONObject(JSONUtil.toJSON(doc));
 
-                        storeState(config, doc, oldDoc, States.IMPORTED.calculateNextState(ctx, oldDoc, importedDoc));
-
-                        buffer.add(doc);
+                        Integer dateRangeEnd = (Integer) doc.getFieldValue(ApplFields.DATE_RANGE_END_YEAR);
+                        if (ctx.item().isHierarchical() ||  (dateRangeEnd != null && dateRangeEnd > 0)) {
+                            String user = "importer";
+                            String message = String.format("Imported from '%s'", config.getUrl());
+                            WorkflowDoc workflowDoc = new WorkflowDoc(
+                                    dateRangeEnd,
+                                    States.IMPORTED,
+                                    user,
+                                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")),
+                                    ctx.item().getModel(),
+                                    ctx.item().isHierarchical(),
+                                    LicensesAssignation.NONE);
+                            Workflow wf = new Workflow();
+                            wf.executeTransition(ctx, workflowDoc, user, message, doc);
+                        }
+                        buffer.add(doc.getDocument());
                         if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
                             sendBatch(solrClient, Constants.Collection.TITLES_COLLECTION, buffer);
                             buffer.clear();

@@ -5,16 +5,17 @@ import cz.inovatika.touchstore.TouchStore;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 
 public class TouchStoreImpl implements TouchStore {
 
     public static final String PID_FILE="pid.txt";
+    public static final String ROOT_PID_FILE ="root_pid.txt";
     public static final String MODS_FILE = "mods.xml";
     public static final String MD5_FILE = "mods_md5.txt";
     public static final String SOURCE_FILE = "source.txt";
@@ -51,7 +52,7 @@ public class TouchStoreImpl implements TouchStore {
     }
 
     @Override
-    public void touch(String pid, String md5, String source, List<String> physicalLocations) throws IOException {
+    public void touch(String pid, String md5, String source, String rootPid, List<String> physicalLocations) throws IOException {
         Path path = calculatePath(pid);
         Path createdPath = Files.createDirectories(path);
 
@@ -67,6 +68,9 @@ public class TouchStoreImpl implements TouchStore {
 
         Path pidFile = createdPath.resolve(PID_FILE);
         Files.write(pidFile,  pid.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+
+        Path rootPidFile = createdPath.resolve(ROOT_PID_FILE);
+        Files.write(rootPidFile,  rootPid.getBytes(java.nio.charset.StandardCharsets.UTF_8));
     }
 
     @Override
@@ -109,6 +113,15 @@ public class TouchStoreImpl implements TouchStore {
         Path filePath = path.resolve(PHYSICAL_LOCATIONS);
         if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
             return Files.readAllLines(filePath, StandardCharsets.UTF_8);
+        } else return new ArrayList<>();
+    }
+
+    @Override
+    public String getRootPid(String pid) throws IOException {
+        Path path = calculatePath(pid);
+        Path filePath = path.resolve(ROOT_PID_FILE);
+        if (Files.exists(filePath) && Files.isRegularFile(filePath)) {
+            return Files.readString(filePath, StandardCharsets.UTF_8);
         } else return null;
     }
 }
