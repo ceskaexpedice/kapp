@@ -1,12 +1,12 @@
 @if(loading){<mat-progress-bar mode="indeterminate"></mat-progress-bar>}
-<div class="app-container app-h-100">
+<div class="app-container-fluid app-h-100">
   <div class="app-fxLayout app-row app-fill app-gap-8">
     @if(solrResponse?.facets) {
       <div class="app-left">
         <app-facets [fields]="['labels', 'state', 'licenses', 'physical_locations']" [facets]="solrResponse.facets"></app-facets>
       </div>
     }
-    <div class="app-fxFlex app-right">
+    <div class="app-fxFlex app-right app-oh">
       <div class="app-fxLayout app-row app-gap-4 app-toolbar">
         <div class="app-fxFlex">
           <mat-form-field appearance="outline" class="app-view-rounded">
@@ -43,7 +43,7 @@
       </div>
       <div>
         @if (viewType() === 'table_view' && view() === 'titles') {
-        <div class="app-table-wrapper">
+        <div class="app-table-wrapper app-oa-y">
           <table mat-table [dataSource]="docs()" class="app-hover app-striped app-resize"
           matSort [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction" (matSortChange)="sortTable($event)">
 
