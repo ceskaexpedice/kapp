@@ -21,7 +21,7 @@ a {
   color: var(--mat-sys-primary);
 
   &:hover {
-    &:not(.mat-toolbar &) {
+    &:not(.mat-toolbar &, .mat-mdc-nav-list &) {
       text-decoration: underline;
     }
   }
