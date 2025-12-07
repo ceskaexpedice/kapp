@@ -26,115 +26,123 @@
 		</mat-card-title>
 	</mat-card-header>
 	<mat-card-content>
-		<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.authors' | translate }}:</span>
 			@for(a of doc()['authors_kramerius']; track $index) {
-			<a (click)="infoAuthor(a)" class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
-				<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
-			</a>
-			@for(l of a.links; track $index) {
-			<a target="_blank" [href]="l.url" class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
-				<span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
-			</a>
-			}
+				<a (click)="infoAuthor(a)" class="app-value">
+					<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
+				</a>
+				@for(l of a.links; track $index) {
+					<a target="_blank" [href]="l.url" class="app-value">
+						<span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
+					</a>
+				}
 			}
 		</div>
-		<div><span class="app-label">{{ 'field.last_author' | translate }}: </span>{{ doc()['last_author']}} </div>
-		<div><span class="app-label">{{ 'field.year_of_death_last_author' | translate }}: </span>{{
-			doc()['year_of_death_last_author']}}</div>
-		<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.last_author' | translate }}:</span>
+			<span class="app-value">{{ doc()['last_author']}}</span>
+		</div>
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.year_of_death_last_author' | translate }}:</span>
+			<span class="app-value">{{ doc()['year_of_death_last_author'] }}</span>
+		</div>
+		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.pid' | translate }}:</span>
 			@if (doc()['physical_locations.facet']?.[0] === 'ABA001') {
-			<a target="_blank" [href]="'https://ndk.cz/view/'+doc()['pid']"
-				class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
-				<span>{{doc()['pid']}}</span><mat-icon>open_in_new</mat-icon>
-			</a>
+				<a target="_blank" [href]="'https://ndk.cz/view/'+doc()['pid']" class="app-value">
+					<span>{{doc()['pid']}}</span>
+					<mat-icon>open_in_new</mat-icon>
+				</a>
 			} @else {
-			<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+doc()['pid']"
-				class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
-				<span>{{doc()['pid']}}</span><mat-icon>open_in_new</mat-icon>
-			</a>
+				<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+doc()['pid']" class="app-value">
+					<span>{{doc()['pid']}}</span>
+					<mat-icon>open_in_new</mat-icon>
+				</a>
 			}
 		</div>
-
-		<div><span class="app-label">{{ 'field.physical_locations' | translate }}: </span>{{
-			doc()['physical_locations.facet']}}</div>
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.physical_locations' | translate }}:</span>
+			<span class="app-value">{{ doc()['physical_locations.facet'] }}</span>
+		</div>
 		@if(doc()['public_since']) {
-		<div>
-			<span class="app-label">{{ 'field.public_since' | translate }}: </span>{{ doc()['public_since']}}
-		</div>
+			<div class="app-metadata-row">
+				<span class="app-label">{{ 'field.public_since' | translate }}:</span>
+				<span class="app-value">{{ doc()['public_since'] }}</span>
+			</div>
 		}
-		
-		<div>
-			<span class="app-label">{{ 'field.dateIssued' | translate }}: </span>{{ doc()['dateIssued']}}
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.dateIssued' | translate }}:</span>
+			<span class="app-value">{{ doc()['dateIssued']}}</span>
+		</div>	
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.indextime' | translate }}:</span>
+			<span class="app-value">{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}</span>
 		</div>
-		
-		<div>
-			<span class="app-label">{{ 'field.indextime' | translate }}: </span>{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.licenses' | translate }}:</span>
+			<span class="app-value">{{ doc()['licenses']}}</span>
 		</div>
-
-		<div><span class="app-label">{{ 'field.licenses' | translate }}: </span>{{ doc()['licenses']}}</div>
-		<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
-			<span class="app-label">{{ 'field.note' | translate }}: </span>
-			<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.note' | translate }}:</span>
+			<div class="app-value">
 				<span>{{ doc()['note']}}</span>
-				<a (click)="editNote()"><mat-icon>edit</mat-icon></a>
+				<a (click)="editNote()" class="app-value"><mat-icon>edit</mat-icon></a>
 			</div>
 		</div>
-		<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
-			<span class="app-label">{{ 'field.decision_date' | translate }}: </span>
-			<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.decision_date' | translate }}:</span>
+			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
 				@if (editingDate()) {
-					<mat-form-field appearance="outline" class="app-fill-w">
+					<!-- <mat-form-field appearance="outline">
 						<mat-label>{{ 'field.decision_date' | translate }}</mat-label>
 						<input [(ngModel)]="decisionDate" matInput />
-					</mat-form-field>
-					<a (click)="saveDecisionDate()"><mat-icon>save</mat-icon></a>
+					</mat-form-field> -->
+					<input [(ngModel)]="decisionDate" matInput />
+					<a (click)="saveDecisionDate()" class="app-value"><mat-icon>save</mat-icon></a>
 				} @else {
-					<span>{{ doc()['decision_date']}}</span>
-					<a (click)="editDecisionDate()"><mat-icon>edit</mat-icon></a>
+					<div class="app-value">
+						<span>{{ doc()['decision_date']}}</span>
+						<a (click)="editDecisionDate()" class="app-value"><mat-icon>edit</mat-icon></a>
+					</div>	
 				}
 			</div>
-			<span class="app-label">{{ 'field.release_date' | translate }}: </span>
-			<div class="app-fxLayout app-row app-center-v app-wrap app-gap-1">
+		</div>
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.release_date' | translate }}:</span>
+			<div class="app-value">
 				<span>{{ doc()['release_date']}}</span>
 			</div>
 		</div>
 
 
 		@if (hasCollapsed) {
-		<div class="app-collapsed">
-			@for (ch of related(); track ch) {
-			<div>
-				{{ ch['model']}} {{ ch['root.title']}}
-				@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
-				<a target="_blank" [href]="'https://ndk.cz/view/'+ch['pid']">{{ch['pid']}}<mat-icon matSuffix
-						class="app-small-icon">open_in_new</mat-icon></a>
-				} @else {
-				<a target="_blank"
-					[href]="'https://www.digitalniknihovna.cz/mzk/view/'+ch['pid']">{{ch['pid']}}<mat-icon matSuffix
-						class="app-small-icon">open_in_new</mat-icon></a>
+			<div class="app-collapsed">
+				@for (ch of related(); track ch) {
+					<div>
+						{{ ch['model']}} {{ ch['root.title']}}
+						@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
+							<a target="_blank" [href]="'https://ndk.cz/view/'+ch['pid']">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+						} @else {
+							<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+ch['pid']">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+						}
+						<a (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate }}</a>
+					</div>
 				}
-				<a (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate
-					}}</a>
 			</div>
-			}
-		</div>
 		}
 	</mat-card-content>
 	<mat-card-actions align="end">
 		<div class="app-fxLayout app-row app-gap-2">
 			<button matButton="outlined" (click)="addAuthor()">{{ 'action.add_author' | translate }}</button>
-			<button matButton="outlined" (click)="setState()">{{ (doc()['state'] ? ('state.' + doc()['state']) :
-				'action.set_state') | translate }}</button>
-			<button matButton="outlined" [matMenuTriggerFor]="batchesMenu">{{'action.add_doc_to_bacth' |
-				translate}}</button>
+			<button matButton="outlined" (click)="setState()">{{ (doc()['state'] ? ('state.' + doc()['state']) : 'action.set_state') | translate }}</button>
+			<button matButton="outlined" [matMenuTriggerFor]="batchesMenu">{{'action.add_doc_to_bacth' | translate}}</button>
 		</div>
 		<mat-menu #batchesMenu="matMenu">
 			@for(a of state.batches(); track $index) {
-			<button mat-menu-item (click)="addToBatch(a)">
-				<mat-icon>{{ inBatch(a.name) ? 'check' : 'none'}}</mat-icon>{{ a.name }}
-			</button>
+				<button mat-menu-item (click)="addToBatch(a)">
+					<mat-icon>{{ inBatch(a.name) ? 'check' : 'none'}}</mat-icon>{{ a.name }}
+				</button>
 			}
 		</mat-menu>
 	</mat-card-actions>

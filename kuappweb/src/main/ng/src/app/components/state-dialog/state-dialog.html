@@ -58,10 +58,18 @@
 			</mat-form-field>
 			@if(currentHistory) {
 				<div>
-					<span class="app-label">Date</span>: {{ currentHistory['date'] | date : 'dd.MM.yyyy hh:mm:ss' }} <br/>
-					<span class="app-label">State</span>: {{ 'state.' + currentHistory['state'] | translate }}  <br/>
-					<span class="app-label">Reason</span>: {{ currentHistory['reason']  }}  <br/>
-					<span class="app-label">User</span>: {{ currentHistory['user']  }}  <br/>
+					<div>
+						<span class="app-label">Date</span>: <span class="app-value">{{ currentHistory['date'] | date : 'dd.MM.yyyy hh:mm:ss' }}</span>
+					</div>
+					<div>
+						<span class="app-label">State</span>: {{ 'state.' + currentHistory['state'] | translate }}
+					</div>
+					<div>
+						<span class="app-label">Reason</span>: {{ currentHistory['reason'] }}
+					</div>
+					<div>
+						<span class="app-label">User</span>: {{ currentHistory['user']  }}{{ currentHistory['date'] | date : 'dd.MM.yyyy hh:mm:ss' }}
+					</div>		
 				</div>
 			}
 		}

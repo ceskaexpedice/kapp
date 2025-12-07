@@ -83,13 +83,6 @@ $home_cards: (
 
       .mat-mdc-card-content {
         line-height: 20px;
-        
-        .mat-icon {
-          $app-size: 16;
-          font-size: #{$app-size}px;
-          height: #{$app-size}px;
-          width: #{$app-size}px; 
-        }
       }
     }
   }

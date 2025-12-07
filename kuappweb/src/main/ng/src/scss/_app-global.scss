@@ -1,12 +1,29 @@
 // --- GLOBAL ---
 
+// set icon size
+@mixin setIcon($size: null, $color: null, $position: null) {
+  @if ($size != null) {
+    font-size: #{$size}px;
+    height: #{$size}px;
+    width: #{$size}px;  
+  }
+  @if ($color != null) {
+    color: $color !important;
+  }
+  @if ($position != null) {
+    vertical-align: $position !important;  
+  }  
+}
+
 a {
   cursor: pointer;
   text-decoration: none;
   color: var(--mat-sys-primary);
 
   &:hover {
-    text-decoration: none;
+    &:not(.mat-toolbar &) {
+      text-decoration: underline;
+    }
   }
 
   &.app-disabled-link {
@@ -109,5 +126,28 @@ a {
   .app-text-cutter {
     position: absolute;
     max-width: 100%;
+  }
+}
+
+// elements
+.app-metadata-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+
+  .app-label {
+    margin-right: 2px;
+  }
+
+  .app-value {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    margin-right: 8px;
+
+    .mat-icon {
+      @include setIcon(16);
+      margin-left: 2px;
+    }
   }
 }

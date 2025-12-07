@@ -1,58 +1,62 @@
-<h2 mat-dialog-title>
-    @if(author()) {
-    {{ author().full }}
-    } @else {
-    {{ 'action.add_author' | translate }}
-    }
-    <mat-button-toggle (click)="toggleEdit()" [checked]="editing()"><mat-icon>edit</mat-icon></mat-button-toggle>
+@if (loadingLinks()) {
+	<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+}
+<h2 mat-dialog-title class="app-fxLayout app-row app-center-v">
+	<span class="app-fxFlex">
+		@if(author()) {
+			{{ author().full }}
+		} @else {
+			{{ 'action.add_author' | translate }}
+		}
+	</span>
+	<button matIconButton (click)="toggleEdit()" ><mat-icon>edit</mat-icon></button><!--[checked]="editing()"-->
 </h2>
-<mat-dialog-content class="app-author">
-    @if(author()) {
-    <div><label>{{ 'field.date' | translate }}: </label>{{ author().date }}
-    </div>
-
-    <div>
-        <mat-form-field appearance="outline">
-            <mat-label>{{ 'field.date_death' | translate }}</mat-label>
-            <input matInput [disabled]="!editing()" [(ngModel)]="author().date_death" />
-        </mat-form-field>
-    </div>
-
-    <div>
-
-        <mat-form-field appearance="outline">
-            <mat-label>{{ 'field.role' | translate }}</mat-label>
-            <input matInput [disabled]="!editing()" [(ngModel)]="author().role" />
-        </mat-form-field>
-
-    </div>
-    @if (author().nameIdentifier) {
-    <div><label>{{ 'field.id' | translate }}: </label>
-        <a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+author().nameIdentifier">{{ author().nameIdentifier
-            }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
-    </div>
-    <div><label>{{ 'field.links' | translate }}: </label>
-        @if (loadingLinks()) {
-        <mat-progress-bar mode="indeterminate"></mat-progress-bar>
-        }
-        @for(w of linkTypes(); track $index) {
-        @for(l of links()[w]; track $index) {
-        <a target="_blank" [href]="l.url">{{ w }}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
-        }
-        }
-    </div>
-    }
-
-    }
-
+<mat-dialog-content>
+	@if(author()) {
+		<div class="app-fxLayout app-column">
+			<div class="app-metadata-row app-mb-4">
+				<span class="app-label">{{ 'field.date' | translate }}:</span>
+				<span class="app-value">{{ author().date }}</span>
+			</div>
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.date_death' | translate }}</mat-label>
+				<input matInput [disabled]="!editing()" [(ngModel)]="author().date_death" />
+			</mat-form-field>
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.role' | translate }}</mat-label>
+				<input matInput [disabled]="!editing()" [(ngModel)]="author().role" />
+			</mat-form-field>
+		</div>
+	
+		@if (author().nameIdentifier) {
+			<div class="app-metadata-row">
+				<span class="app-label">{{ 'field.id' | translate }}:</span>
+				<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+author().nameIdentifier" class="app-value">
+					<span>{{ author().nameIdentifier }}</span>
+					<mat-icon>open_in_new</mat-icon>
+				</a>
+			</div>
+			<div class="app-metadata-row">
+				<span class="app-label">{{ 'field.links' | translate }}:</span>
+				@for(w of linkTypes(); track $index) {
+					@for(l of links()[w]; track $index) {
+						<a target="_blank" [href]="l.url" class="app-value">
+							<span>{{ w }}</span>
+							<mat-icon>open_in_new</mat-icon>
+						</a>
+					}
+				}
+			</div>
+		}
+	}
 </mat-dialog-content>
 <mat-dialog-actions>
-    @if(isNew()) {
-    <button matButton (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
-    }
-    @if(!isNew()) {
-    <button matButton (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
-    }
-    <button matButton (click)="save()">{{ 'action.save' | translate }}</button>
-    <button matButton [mat-dialog-close]="hasChanges" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+	@if(isNew()) {
+		<button matButton (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
+	}
+	@if(!isNew()) {
+		<button matButton (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
+	}
+	<button matButton (click)="save()">{{ 'action.save' | translate }}</button>
+	<button matButton [mat-dialog-close]="hasChanges" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>
