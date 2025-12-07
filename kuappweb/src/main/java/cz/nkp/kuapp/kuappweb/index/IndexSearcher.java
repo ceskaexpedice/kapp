@@ -67,6 +67,9 @@ public class IndexSearcher {
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(100)
                             .setMinCount(1))
+                    .withFacet("assigned_license", new TermsFacetMap("assigned_license")
+                            .setLimit(100)
+                            .setMinCount(1))
                     .withFacet("licenses", new TermsFacetMap("licenses")
                             .setLimit(100)
                             .setMinCount(1))
@@ -95,6 +98,13 @@ public class IndexSearcher {
 
             if (request.getParameter("licenses") != null) {
                 jrequest = jrequest.withFilter("licenses:" + request.getParameter("licenses"));
+            }
+
+            if (request.getParameter("digital_library") != null) {
+                jrequest = jrequest.withFilter("digital_library:" + request.getParameter("digital_library"));
+            }
+            if (request.getParameter("assigned_license") != null) {
+                jrequest = jrequest.withFilter("assigned_license:" + request.getParameter("assigned_license"));
             }
 
             if (request.getParameter("physical_locations") != null) {

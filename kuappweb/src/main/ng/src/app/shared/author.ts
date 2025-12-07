@@ -11,4 +11,8 @@ export interface Author {
   nameIdentifier?: string,
   authorsId: string,
   isLast: boolean
+
 }
+
+
+  

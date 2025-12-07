@@ -3,7 +3,14 @@
   <div class="app-fxLayout app-row app-fill app-gap-8">
     @if(solrResponse?.facets) {
       <div class="app-left">
-        <app-facets [fields]="['labels', 'state', 'licenses', 'physical_locations']" [facets]="solrResponse.facets"></app-facets>
+        <app-facets [fields]="[
+          'labels', 
+          'state',
+          'assigned_license', 
+          'licenses', 
+          'physical_locations',
+          'digital_library'
+          ]" [facets]="solrResponse.facets"></app-facets>
       </div>
     }
     <div class="app-fxFlex app-right app-oh app-mt-n2">
