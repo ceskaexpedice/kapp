@@ -192,7 +192,14 @@ export class ResultItem {
   }
 
   editDecisionDate() {
+    if (this.doc()['decision_date']) {
+      this.decisionDate = this.doc()['decision_date'];
+    }
     this.editingDate.set(true)
+  }
+
+  closeEditingDate() {
+    this.editingDate.set(false)
   }
 
   saveDecisionDate() {
