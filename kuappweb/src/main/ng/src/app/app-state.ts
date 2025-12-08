@@ -14,6 +14,7 @@ import { Batch } from "./shared/batch";
 
     public labels = signal<Label[]>([]);
     public batches = signal<Batch[]>([]);
+    public titleColumns = signal<{field: string, selected: boolean}[]>([]);
 
     // keycloak 
     code: string;

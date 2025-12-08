@@ -31,6 +31,7 @@ import { MatDialog } from '@angular/material/dialog';
 import { ResizecolDirective } from '../../shared/resizecol.directive';
 
 import { MatSortModule, Sort } from '@angular/material/sort';
+import { ColumnsSettingsDialog } from '../../components/columns-settings-dialog/columns-settings-dialog';
 
 @Component({
   selector: 'app-results',
@@ -64,9 +65,10 @@ export class Results {
     readonly dialog = inject(MatDialog);
 
   viewType = signal<string>('table_view');
-  displayedColumns = ['pid', 'title', 'state', 'dateIssued', 'sigla', 'indextime']; //Datum vydání; Producent/Umístění (duplicitně k fasetě); Datum importu(?)
+  displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'actions']); 
+  //['pid', 'title', 'state', 'dateIssued', 'sigla', 'indextime', 'actions']; //Datum vydání; Producent/Umístění (duplicitně k fasetě); Datum importu(?)
 
-  sort: Sort = {active: 'indextime', direction: 'desc'};
+  sort: Sort = {active: 'indextime', direction: 'desc'}; 
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
@@ -161,5 +163,17 @@ export class Results {
       this.sort = e;
       this.getData();
     }
+
+    setColumns() {
+    const dialogRef = this.dialog.open(ColumnsSettingsDialog, {
+      width: '600px'
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        console.log(result);
+        // this.displayedColumns = this.state.titleColumns().filter(c => c.selected).map(f => f.field)
+      }
+    });
+  }
 
 }

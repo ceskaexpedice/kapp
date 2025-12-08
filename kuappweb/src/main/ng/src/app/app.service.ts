@@ -121,6 +121,10 @@ export class AppService {
     return this.post('index/save_doc_batch', {pid,batch});
   }
 
+  saveTitleColumns(columns: {field: string, selected: boolean}[]): Observable<any> {
+    return this.post('index/save_title_columns', columns);
+  }
+
   saveAuthor(author: Author): Observable<any> {
     return this.post('index/save_author', author);
   }

@@ -204,6 +204,19 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
+        SAVE_TITLE_COLUMNS {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexTitleColumns(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         CREATE_BATCH_FROM_LABEL {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {

@@ -45,6 +45,12 @@ public class SolrIndexer {
         return ret;
     }
 
+    public static JSONObject indexTitleColumns(JSONArray js) {
+
+        JSONObject ret = saveConfig(js, "titleColumns");
+        return ret;
+    }
+
     public static JSONObject indexDocLabels(JSONObject js) {
 
         JSONObject ret = new JSONObject();

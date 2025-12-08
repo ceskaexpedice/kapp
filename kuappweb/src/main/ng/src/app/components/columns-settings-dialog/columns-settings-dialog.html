@@ -1,0 +1,20 @@
+<h1 mat-dialog-title>{{ 'dialog.columnsSettings.title' | translate }}</h1>
+<div mat-dialog-content class="app-scrollbar-fix">
+  <fieldset class="app-p-4 app-mb-3" cdkDropList (cdkDropListDropped)="drop($event)">
+    
+        <legend>{{ 'pages.settings.searchTree.legend' | translate }}</legend>
+        <div class="app-label app-mb-2">{{ 'pages.settings.searchTree.label' | translate }}</div>
+        @for(column of allColumns; track $index;) {
+        <div cdkDropListOrientation="vertical" cdkDrag>
+          <mat-checkbox name="column.field" [(ngModel)]="column.selected">{{ 'field.' + column.field | translate }}</mat-checkbox>
+        </div>
+      }
+  
+  
+  </fieldset>
+  
+</div>
+<div mat-dialog-actions cdkFocusRegionstart>
+  <button matButton="filled" (click)="save()" >{{ 'action.save' | translate }}</button>
+  <button matButton="outlined" [mat-dialog-close]="false" >{{ 'action.close' | translate }}</button>
+</div>
