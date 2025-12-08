@@ -380,6 +380,9 @@ public class HarvesterImpl implements Harvester {
                                 wrapper.setField(FromKramFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
                                 wrapper.setField(FromKramFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
 
+                                wrapper.addField(ApplFields.DIGITAL_LIBRARY, ctx.config().getAcronym(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_ADD_DISTINCT);
+
+
                                 Element dateIssued = XMLUtils.findElement(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("dateIssued"));
                                 if (dateIssued != null) {
 
@@ -487,6 +490,8 @@ public class HarvesterImpl implements Harvester {
                 doc.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
                 doc.setField(FromKramFields.TITLE_FIELD, ctx.item().getTitles());
                 doc.setField(ApplFields.IS_HIERARCHICAL_FIELD, ctx.item().isHierarchical());
+
+                doc.addField(ApplFields.DIGITAL_LIBRARY, ctx.config().getAcronym());
 
                 try {
                     InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());

@@ -47,6 +47,7 @@ public class Constants {
             public static final String DATE_MAX = "date.max";
             public static final String CONFIRMED_START_YEAR = "confirmed_start_year";
             public static final String CONFIRMED_END_YEAR = "confirmed_end_year";
+            public static final String DIGITAL_LIBRARY = "digital_library";
 
             public static final String DECISION_DATE = "decision_date";
         }

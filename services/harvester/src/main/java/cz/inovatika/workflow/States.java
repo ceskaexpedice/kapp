@@ -24,7 +24,11 @@ public enum States {
                         return NONCONTROLLED_PRIVATE;
                     }
                 }
-                return TO_CONTROL;
+                if (currentDoc.model().equals("monograph") || currentDoc.model().equals("monographunit")) {
+                    return TO_CONTROL;
+                } else {
+                    return NONCONTROLLED_PRIVATE;
+                }
             } else {
                 return PARENT_TO_CONTROLL;
             }
