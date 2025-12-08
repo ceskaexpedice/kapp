@@ -230,6 +230,7 @@ public class HarvesterImpl implements Harvester {
 
     private static void nkp() // throws IOException
     {
+        //TODO: Load configuration from disk
         Instance config = new Instance();
         config.setAcronym("nkp");
         config.setPhysicalLocations(Arrays.asList( "ABA000","ABA001"));
@@ -242,6 +243,7 @@ public class HarvesterImpl implements Harvester {
         workflowConfig.setOnsiteYear(70);
         workflowConfig.setPublicYear(110);
 
+        //TODO: Change it
         TouchStoreConfig touchConfig = new TouchStoreConfig("/Users/pavel/Projects/nkp-kuratorska-aplikace/touchstore");
         ApplicationConfig applicationConfig = new ApplicationConfig(List.of(config), workflowConfig, null, touchConfig);
 
@@ -305,7 +307,7 @@ public class HarvesterImpl implements Harvester {
         updateRequest.add(docs);
         if (docs.size() > 0) {
             updateRequest.process(solrClient, collection);
-            System.out.println("Indexed batch of " + docs.size() + " documents.");
+            LOGGER.info("Indexed batch of " + docs.size() + " documents.");
             solrClient.commit(collection);
         } else {
             LOGGER.log(Level.INFO, "No documents to be indexed.");
@@ -325,11 +327,6 @@ public class HarvesterImpl implements Harvester {
 
             String pid = ctx.item().getPid();
             LOGGER.info(String.format( "Processing '%s" , pid));
-            if (pid != null) {
-                if (pid.equals("uuid:016cacd0-9b5b-11ea-9ded-005056825209")) {
-                    System.out.println("-->");
-                }
-            }
             boolean exists = ctx.touchStore().exists(pid);
             if (exists) {
                 try {
