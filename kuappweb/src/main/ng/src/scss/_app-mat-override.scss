@@ -273,8 +273,9 @@ $home_cards: (
 
   @include mat.dialog-overrides((
     container-elevation-shadow: 5px,
-    container-shape: 7px,
-    container-color: var(--app-color-lightnes)
+    container-shape: 4px,
+    container-color: var(--app-color-lightnes),
+    container-min-width: 400px
   ));
   .app-dialog-title {
     @include mat.dialog-overrides((
