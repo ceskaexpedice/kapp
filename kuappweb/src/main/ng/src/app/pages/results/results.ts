@@ -65,7 +65,7 @@ export class Results {
     readonly dialog = inject(MatDialog);
 
   viewType = signal<string>('table_view');
-  displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'actions']); 
+  displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']); 
   //['pid', 'title', 'state', 'dateIssued', 'sigla', 'indextime', 'actions']; //Datum vydání; Producent/Umístění (duplicitně k fasetě); Datum importu(?)
 
   sort: Sort = {active: 'indextime', direction: 'desc'}; 
