@@ -9,6 +9,7 @@
   "current_licenses": "Current licence",
   "reason": "Reason",
   "history": "History",
+  "titleColumns_dialog": "Columns settings",
   "field": {
     "query": "Query",
     "title": "Title",

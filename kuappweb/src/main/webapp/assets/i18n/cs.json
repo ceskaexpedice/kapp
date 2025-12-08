@@ -11,6 +11,7 @@
   "reason": "Důvod",
   "history": "Historie",
   "batch_alert": "pro celou dávku",
+  "titleColumns_dialog": "Výběr sloupců",
   "field": {
     "query": "dotaz",
     "title": "Název",
