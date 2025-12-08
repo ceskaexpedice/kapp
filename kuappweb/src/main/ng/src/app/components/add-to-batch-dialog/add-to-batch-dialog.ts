@@ -16,5 +16,5 @@ import { TranslateModule } from '@ngx-translate/core';
   styleUrl: './add-to-batch-dialog.scss'
 })
 export class AddToBatchDialog {
-
+  pid: string;
 }

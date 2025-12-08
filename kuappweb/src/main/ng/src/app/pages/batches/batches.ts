@@ -127,6 +127,14 @@ export class Batches {
       panelClass: "app-dialog-add-to-batch"
     });
 
+    dialogRef.afterClosed().subscribe((pid: any) => {
+      if (pid) {
+      this.service.saveDocBatch(pid, this.selectedBatch().name).subscribe((res: any) => {
+        this.loadBatch();
+      });
+      }
+    });
+
 
     /* if (pid) {
       this.service.saveDocBatch(pid, this.selectedBatch().name).subscribe((res: any) => {
