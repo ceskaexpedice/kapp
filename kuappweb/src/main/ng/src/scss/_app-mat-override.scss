@@ -33,6 +33,21 @@ $home_cards: (
   }  
 }
 
+@mixin setIcon($size: null, $color: null, $position: null) {
+  @if ($size != null) {
+    font-size: #{$size}px;
+    height: #{$size}px;
+    width: #{$size}px;  
+  }
+  @if ($color != null) {
+    color: $color !important;
+  }
+  @if ($position != null) {
+    vertical-align: $position !important;  
+  }  
+}
+
+
 :root {
   @include mat.toolbar-overrides((
     container-background-color: var(--app-color-lightnes),
@@ -136,10 +151,7 @@ $home_cards: (
         icon-size: 22px
       ));
       .mat-icon {
-        $app-size: 22;
-        font-size: #{$app-size}px;
-        height: #{$app-size}px;
-        width: #{$app-size}px; 
+        @include setIcon(22);
       }
     }
   }
@@ -152,6 +164,15 @@ $home_cards: (
       ));
     }
   }
+  .mat-mdc-table {
+    @include mat.icon-button-overrides((
+      state-layer-size: 28px
+    ));
+    .mat-icon {
+      @include setIcon(18);
+    }
+  }
+
 
 
   @include mat.button-toggle-overrides((
