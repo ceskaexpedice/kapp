@@ -32,10 +32,12 @@ export class ColumnsSettingsDialog {
     }
 
   save() {
-    this.service.saveTitleColumns(this.allColumns).subscribe(resp => {
-      console.log(resp);
-      this.state.titleColumns.update(a => [...this.allColumns])
-    });
+    localStorage.setItem('titleColumns', JSON.stringify(this.allColumns));
+    this.state.titleColumns.update(a => [...this.allColumns])
+    // this.service.saveTitleColumns(this.allColumns).subscribe(resp => {
+    //   console.log(resp);
+    //   this.state.titleColumns.update(a => [...this.allColumns])
+    // });
   }
 
   reset() {
