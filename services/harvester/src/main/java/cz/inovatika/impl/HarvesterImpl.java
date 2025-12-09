@@ -3,7 +3,6 @@ package cz.inovatika.impl;
 import cz.inovatika.Constants;
 import cz.inovatika.authors.AuthorData;
 import cz.inovatika.Harvester;
-import cz.inovatika.XmlProcessor;
 import cz.inovatika.authors.AuthorDataUtils;
 import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.conf.TouchStoreConfig;
@@ -102,12 +101,9 @@ public class HarvesterImpl implements Harvester {
             LOGGER.info("query: " + query + " cursorMark: " + cursorMark);
             Element element = executeQuery(client, config.getUrl(), query);
 
-            List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> {
-                return elm.getNodeName().equals("doc");
-            }).stream().map(docElm -> {
+            List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> elm.getNodeName().equals("doc")).stream().map(docElm -> {
                 APIVersion version = config.getApiVersion();
-                HarvestingItem harvestingItem = version.createHarvestItemFromResultElement(docElm, config);
-                return harvestingItem;
+                return version.createHarvestItemFromResultElement(docElm, config);
             }).toList();
 
             String subquery = config.getApiVersion().prepareSubquery(harvestItems);
@@ -303,7 +299,7 @@ public class HarvesterImpl implements Harvester {
             throws SolrServerException, IOException {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.add(docs);
-        if (docs.size() > 0) {
+        if (!docs.isEmpty()) {
             updateRequest.process(solrClient, collection);
             System.out.println("Indexed batch of " + docs.size() + " documents.");
             solrClient.commit(collection);
@@ -354,12 +350,13 @@ public class HarvesterImpl implements Harvester {
                     }
 
                     boolean acceptLibrary = touchStorePhysicalLocations == null || touchStorePhysicalLocations.isEmpty();
-                    for (String prevSigla : touchStorePhysicalLocations) {
-                        if (cPhysicalLocations.contains(prevSigla)) {
-                            acceptLibrary = true;
-                            break;
+                    if(touchStorePhysicalLocations!=null)
+                        for (String prevSigla : touchStorePhysicalLocations) {
+                            if (cPhysicalLocations.contains(prevSigla)) {
+                                acceptLibrary = true;
+                                break;
+                            }
                         }
-                    }
 
                     if (acceptLibrary) {
                         InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
@@ -419,16 +416,14 @@ public class HarvesterImpl implements Harvester {
                                     }
                                 });
 
-                                IdentifierUtils.findIdentifiers(parsed).forEach((k,v) ->{
-                                    wrapper.setField(String.format("id_%s",k),v);
-                                });
+                                IdentifierUtils.findIdentifiers(parsed).forEach((k,v) -> wrapper.setField(String.format("id_%s",k),v));
 
-                                List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).collect(Collectors.toList());
+                                List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).toList();
                                 authorsBuffer.addAll(authorityDocuments);
 
                                 Integer dateRangeEnd = (Integer) wrapper.getFieldValue(ApplFields.DATE_RANGE_END_YEAR);
                                 if (dateRangeEnd != null && dateRangeEnd > 0) {
-                                    String user = "importer";
+                                    final String user = "importer";
                                     String message = String.format("Imported from '%s'", config.getUrl());
 
                                     WorkflowDoc workflowDoc = new WorkflowDoc(
@@ -443,7 +438,7 @@ public class HarvesterImpl implements Harvester {
 
                                     // state differs
                                     JSONObject oldDoc = getExistingDocument((String) wrapper.getDocument().getFieldValue(FromKramFields.PID_FIELD));
-                                    String oldState = oldDoc.getString("state");
+                                    String oldState = oldDoc != null ? oldDoc.getString("state") : null;
                                     States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
                                     if (oldState != null && !oldState.equals(newState.name())) {
                                         wf.executeTransition(ctx, workflowDoc, user, message, wrapper);
@@ -544,7 +539,7 @@ public class HarvesterImpl implements Harvester {
 
                         //XmlProcessor.trySetLastAuthor(doc, authorData);
 
-                        List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).collect(Collectors.toList());
+                        List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).toList();
                         authorsBuffer.addAll(authorityDocuments);
 
                         //JSONObject oldDoc = getExistingDocument((String) doc.getDocument().getFieldValue(FromKramFields.PID_FIELD));
@@ -552,7 +547,7 @@ public class HarvesterImpl implements Harvester {
 
                         Integer dateRangeEnd = (Integer) doc.getFieldValue(ApplFields.DATE_RANGE_END_YEAR);
                         if (ctx.item().isHierarchical() ||  (dateRangeEnd != null && dateRangeEnd > 0)) {
-                            String user = "importer";
+                            final String user = "importer";
                             String message = String.format("Imported from '%s'", config.getUrl());
                             WorkflowDoc workflowDoc = new WorkflowDoc(
                                     dateRangeEnd,
