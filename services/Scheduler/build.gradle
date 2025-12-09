@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+group = 'cz.inovatika'
+version = '1.0-SNAPSHOT'
+
+
+dependencies {
+
+    api project(':services:init')
+    api project(':services:harvester')
+
+    implementation("org.quartz-scheduler:quartz:2.5.2")
+
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
+
+}
+
