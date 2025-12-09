@@ -1,10 +1,6 @@
 /target/
-/build/
-services/build/
-services/harvester/build/
-services/harvester/bin/
-services/init/build/
-services/init/bin/
+**/build/
+**/bin/
 /.gradle/
 .vscode/launch.json
 .vscode/settings.json
