@@ -8,7 +8,7 @@ public class SchedulerMain {
     public static void main(String[] args) throws SchedulerException {
 
         // Parameterize the interval (in hours)
-        int hoursInterval = 24;
+        final int hoursInterval = 24;
 
         // Define the job and tie it to our Job class
         JobDetail job = JobBuilder.newJob(HarvesterJob.class)

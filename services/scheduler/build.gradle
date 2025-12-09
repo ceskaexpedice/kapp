@@ -1,11 +1,22 @@
 plugins {
     id 'java'
+    id 'application'
+    id 'com.gradleup.shadow' version '9.1.0'
 }
 
 group = 'cz.inovatika'
 version = '1.0-SNAPSHOT'
 
-
+application {
+    mainClass = 'cz.inovatika.SchedulerMain'
+}
+jar {
+    manifest {
+        attributes(
+                'Main-Class': 'cz.inovatika.SchedulerMain'
+        )
+    }
+}
 dependencies {
 
     api project(':services:init')
