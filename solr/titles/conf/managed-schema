@@ -319,6 +319,7 @@
   
   <field name="indextime" type="date" indexed="true" stored="true" default="NOW" /> 
   
+  <field name="licenses.facet" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   
   <copyField source="authors" dest="full_text"/>
   <copyField source="root.title" dest="full_text"/>

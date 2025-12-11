@@ -12,6 +12,14 @@
   "history": "Historie",
   "batch_alert": "pro celou dávku",
   "titleColumns_dialog": "Výběr sloupců",
+  "home": {
+    "titles": "Díla ",
+    "authors": "Autoři",
+    "authors_conflict": "Autoři s konfliktem v datech",
+    "authors_conflict_desc": "Seznam autorů, u kterých je rozdíl mezi AUT a Kuratorske app",
+    "titles_to_control": "Díla  ke kontrole",
+    "titles_to_control_desc": "Seznam díl ke kurátorské kontrole"
+  },
   "field": {
     "query": "dotaz",
     "title": "Název",
@@ -75,6 +83,6 @@
     "admin": "Administrace",
     "authors": "Autoři",
     "batches": "Dávky",
-    "titles": "Dila"
+    "titles": "Díla"
   }
 }
