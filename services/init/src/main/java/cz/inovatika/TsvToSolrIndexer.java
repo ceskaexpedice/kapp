@@ -13,13 +13,13 @@ import java.net.URLEncoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
-import java.text.Normalizer;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 //import java.util.Arrays;
 import java.util.*;
-import java.util.stream.Collectors;
+//import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -39,6 +39,8 @@ import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 import org.json.JSONObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
@@ -52,6 +54,7 @@ public class TsvToSolrIndexer {
     public static final String ROOT_TITLE_FIELD = "root.title";
     public static final String AUTHORS_KRAMERIUS_FIELD = "authors_kramerius";
     public static final String NAME_IDENTIFIER_FIELD = "nameIdentifier";
+    private static final Logger log = LoggerFactory.getLogger(TsvToSolrIndexer.class);
 
     private static String DIRECTORY_PATH = "../Data"; // change this
 
@@ -119,7 +122,7 @@ public class TsvToSolrIndexer {
                                 continue;
                             }
                             String value = entry.getValue();
-                            String Originalvalue = value;
+                            //String Originalvalue = value;
                             try {
                                 /*
                                  * if("1926-".equals(value)){
@@ -128,7 +131,7 @@ public class TsvToSolrIndexer {
                                  */
                                 switch (header) {
                                     case "authors" -> {
-                                        authorArray = value.split("  |\\|");
+                                        authorArray = value.split(" {2}|\\|");
                                         if (authorArray.length > 0 && !authorArray[0].isEmpty()) {
                                             doc.addField(header, authorArray);
                                         }
@@ -194,9 +197,9 @@ public class TsvToSolrIndexer {
                                             doc.setField(ROOT_TITLE_FIELD, item.optString("root_title"));
                                         } else {
                                             item = getItem(client, pid,
-                                                    "https://api.kramerius.mzk.cz/search/api/client/v7.0/search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), "UTF-8"));
-                                                    if (item != null && item.getJSONObject("response")
-                                                        .getJSONArray("docs").length() > 0) {
+                                                    "https://api.kramerius.mzk.cz/search/api/client/v7.0/search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), StandardCharsets.UTF_8));
+                                                    if (item != null && !item.getJSONObject("response")
+                                                            .getJSONArray("docs").isEmpty()) {
                                                 doc.setField(MODEL_FIELD, item.getJSONObject("response")
                                                         .getJSONArray("docs").getJSONObject(0).optString("model"));
                                                 doc.setField(ROOT_PID_FIELD, item.getJSONObject("response")
@@ -209,11 +212,11 @@ public class TsvToSolrIndexer {
                                     case "year_of_death_last_author", "public_since" -> {
                                         if (NumberUtils.isCreatable(value) && value.length() == 4) {
                                             doc.addField(header, value);
-                                        } else {
-                                            // if(!"?".equals(value))System.err.println("Unexpected year value on row: "
-                                            // + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ?
-                                            // Originalvalue : Originalvalue + " _ " + value));
-                                        }
+                                        } /*else {
+                                             if(!"?".equals(value))System.err.println("Unexpected year value on row: "
+                                             + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ?
+                                             Originalvalue : Originalvalue + " _ " + value));
+                                        }*/
                                     }
                                     default ->
                                         doc.addField(header, value);
@@ -221,12 +224,13 @@ public class TsvToSolrIndexer {
 
                             } catch (IndexOutOfBoundsException e) {
                                 System.err.println("Caught OOBexception in" + tsvFile.getName() + ": " + e.getMessage()
-                                        + "\n\tVALUE: " + Originalvalue);
+                                        + "\n\tVALUE: " + /*Original*/value);
                             }
                         }
                         parsePublicString(doc, recordNumber);
                         setState(doc);
                         ParseDates(doc, getField(doc, "date.str"), recordNumber, show_comma_info);
+                        assert nameIDArray != null;
                         XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
 
                         Arrays.asList(nameIDArray).forEach(author -> {
@@ -236,12 +240,9 @@ public class TsvToSolrIndexer {
                             }
                         });
 
-                        List<SolrInputDocument> authorDocs = Arrays.asList(nameIDArray).stream().map(AuthorData::toAuthoritySolrDocument).collect(Collectors.toList());
-                        if (authorDocs != null) {
-                            for (SolrInputDocument authorDoc : authorDocs) {
-                                if (authorDoc != null)
-                                    solrClient.add("authors", authorDoc);
-                            }
+                        for (SolrInputDocument authorDoc : Arrays.stream(nameIDArray).map(AuthorData::toAuthoritySolrDocument).toList()) {
+                            if (authorDoc != null)
+                                solrClient.add("authors", authorDoc);
                         }
                         if(doc.get("pid")==doc.get("root.pid")){
                             doc.addField(ROOT_TITLE_FIELD, doc.get("title"));
@@ -336,7 +337,7 @@ public class TsvToSolrIndexer {
         try {
             return solrClient.query("titles", q).getResults().getNumFound() > 0;
         } catch (SolrServerException | IOException e) {
-            System.err.println(e);
+            log.error(String.valueOf(e));
             return false;
         }
     }
@@ -424,7 +425,7 @@ public class TsvToSolrIndexer {
                     value = value + '-' + value.substring(1);
                 }
             }
-            value = value.replaceAll("\\[?19--\\??\\]?", "19");
+            value = value.replaceAll("\\[?19--\\??]?", "19");
             value = value.replaceAll("\\s+až\\s+", "-");// replace až with dash
             String kolem_fix = value.replaceAll("kolem r.\\s+", "?");// replace kolem with ?
             value = value.equals(kolem_fix) ? value : kolem_fix + "?";
@@ -433,19 +434,12 @@ public class TsvToSolrIndexer {
             XmlProcessor.parseDateBasic(doc, value, recordNumber, Originalvalue);
 
         } catch (Exception e) {
-            System.out.println("Critical Exception occured in:date_str: " + e.getMessage());
+            System.out.println("Critical Exception occurred in:date_str: " + e.getMessage());
         }
     }
 
     public static String normalize(String input) {
-        if (input == null) {
-            return "";
-        }
-        String result = input.toLowerCase(Locale.ROOT);
-        result = Normalizer.normalize(result, Normalizer.Form.NFD);
-        result = result.replaceAll("\\p{InCombiningDiacriticalMarks}+", "");
-        result = result.replaceAll("[^a-z0-9]", "");
-        return result;
+        return XmlProcessor.normalize(input);
     }
 
 }
