@@ -22,14 +22,14 @@ import java.util.logging.Logger;
 public class HarvesterJob implements Job {
     public static final Logger LOGGER = Logger.getLogger(Instance.class.getName());
     @Override
-    public void execute(JobExecutionContext context) throws JobExecutionException {
+    public void execute(JobExecutionContext context) {
         System.out.println("Running scheduled task: " + System.currentTimeMillis());
 
         performTask();
     }
 
     private void performTask() {
-        InputStream resourceAsStream = null;
+        InputStream resourceAsStream;
         try {
             resourceAsStream = new FileInputStream(System.getProperty("user.home") + "/.kapp/app.conf");
         } catch (FileNotFoundException e) {
