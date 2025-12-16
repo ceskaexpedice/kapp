@@ -6,6 +6,7 @@ import cz.inovatika.model.HarvesterContext;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.common.SolrDocument;
 
 import java.io.IOException;
@@ -40,7 +41,7 @@ public enum States {
                     return NONCONTROLLED_PRIVATE;
                 }
             } else {
-                return checkChildren(ctx, currentDoc);
+                return checkChildren(ctx);
             }
         }
 
@@ -168,7 +169,7 @@ public enum States {
     PARENT_OPEN("parent_open", LicensesAssignation.NONE, true) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
-            return checkChildren(ctx, currentDoc);
+            return checkChildren(ctx);
         }
 
         @Override
@@ -179,7 +180,7 @@ public enum States {
     PARENT_CLOSED("parent_closed", LicensesAssignation.NONE, true) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
-            return checkChildren(ctx, currentDoc);
+            return checkChildren(ctx);
         }
 
         @Override
@@ -200,7 +201,7 @@ public enum States {
         }
     }*/;
 
-    States checkChildren(HarvesterContext ctx, WorkflowDoc currentDoc) {
+    States checkChildren(HarvesterContext ctx) {
         try {
             SolrQuery q = new SolrQuery()
                     .setQuery("root.pid:\"" + ctx.item().getRootPid() + "\"")
@@ -222,7 +223,8 @@ public enum States {
             return PARENT_CLOSED;
         }
     }
-    private static SolrClient solrClient;
+    private final SolrClient solrClient;
+    private static final String SOLR_URL = "http://localhost:8983/solr";
     final String value;
     final boolean automaticSwitch;
     final LicensesAssignation licensesAssignation;
@@ -231,6 +233,7 @@ public enum States {
         this.value = value;
         this.automaticSwitch = automaticSwitch;
         this.licensesAssignation = licensesAssignation;
+        solrClient =  new HttpJdkSolrClient.Builder(SOLR_URL).build();
     }
 
     public abstract States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc);
