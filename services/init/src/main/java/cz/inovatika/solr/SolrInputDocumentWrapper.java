@@ -59,9 +59,8 @@ public class SolrInputDocumentWrapper {
         if (name.equals(idKey)) {
             return document.getFieldValue(idKey);
         }
-        
-        Object val = document.getFieldValue(name);
-        if (val != null && val instanceof Map<?, ?> m && m.keySet().stream().findFirst().orElse(null) instanceof String firstKey) {
+
+        if (document.getFieldValue(name) instanceof Map<?, ?> m && m.keySet().stream().findFirst().orElse(null) instanceof String firstKey) {
             return m.get(firstKey);
         }
 

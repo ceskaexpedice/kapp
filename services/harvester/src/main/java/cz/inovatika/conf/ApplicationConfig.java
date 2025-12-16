@@ -58,7 +58,7 @@ public class ApplicationConfig {
     }
     public static ApplicationConfig loadFromFile(String filename)throws ConfigException {
         try {
-            return loadFromStream(new FileInputStream(new File(filename)));
+            return loadFromStream(new FileInputStream(filename));
         } catch (ConfigException | FileNotFoundException e) {
             throw new ConfigException(e);
         }
