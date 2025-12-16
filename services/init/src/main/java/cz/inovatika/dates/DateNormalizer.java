@@ -7,12 +7,6 @@ public class DateNormalizer {
 
     public static final Logger LOGGER = Logger.getLogger(DateNormalizer.class.getName());
 
-    private int recordNumber = -1;
-
-    public DateNormalizer(int recordNumber) {
-        this.recordNumber = recordNumber;
-    }
-
     public DateNormalizer() {}
 
     public String normalize(String value) {
