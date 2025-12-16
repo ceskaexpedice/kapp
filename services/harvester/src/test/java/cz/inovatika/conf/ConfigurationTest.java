@@ -27,13 +27,13 @@ public class ConfigurationTest {
         Assertions.assertNotNull(config.getWorkflow());
         Assertions.assertEquals(110, config.getWorkflow().getPublicYear());
         int calculatePublicYear = config.getWorkflow().calculatePublicYear();
-        int expecationp = Year.now().minusYears(110).getValue();
-        Assertions.assertEquals(expecationp, calculatePublicYear);
+        int expectation = Year.now().minusYears(110).getValue();
+        Assertions.assertEquals(expectation, calculatePublicYear);
 
         Assertions.assertEquals(70, config.getWorkflow().getOnsiteYear());
         int calculateOnsiteYear = config.getWorkflow().calculateOnsiteYear();
-        int expecationo = Year.now().minusYears(70).getValue();
-        Assertions.assertEquals(expecationo, calculateOnsiteYear);
+        expectation = Year.now().minusYears(70).getValue();
+        Assertions.assertEquals(expectation, calculateOnsiteYear);
 
     }
 }
