@@ -285,12 +285,8 @@ public class TsvToSolrIndexer {
         }
         final String header = "public";
         switch (value.toLowerCase()) {
-            case "ano", "yes", "true" ->  {
-                doc.setField(header, true);
-            }
-            case "ne", "no", "false" ->  {
-                doc.setField(header, false);
-            }
+            case "ano", "yes", "true" -> doc.setField(header, true);
+            case "ne", "no", "false" -> doc.setField(header, false);
             default -> {
                 if(VERBOSEDEBUG) System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
             }
@@ -436,10 +432,6 @@ public class TsvToSolrIndexer {
         } catch (Exception e) {
             System.out.println("Critical Exception occurred in:date_str: " + e.getMessage());
         }
-    }
-
-    public static String normalize(String input) {
-        return XmlProcessor.normalize(input);
     }
 
 }
