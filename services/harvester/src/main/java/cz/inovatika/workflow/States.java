@@ -8,6 +8,7 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 
 import java.io.IOException;
 import java.util.logging.Level;
@@ -205,16 +206,11 @@ public enum States {
         try {
             SolrQuery q = new SolrQuery()
                     .setQuery("root.pid:\"" + ctx.item().getRootPid() + "\"")
-                    .setRows(0);
+                    .setRows(500).addFilterQuery("model:\"monographunit\" OR model:\"periodicalvolume\"");
             for (SolrDocument doc : solrClient.query("titles", q).getResults()) {
-                Object model = doc.get("model");
-                if (model != null) {
-                    if (model.equals("monographunit") || model.equals("periodicalvolume")) {
-                        Object state = doc.get("state");
-                        if (state != null && state.equals(TO_CONTROL.name())) {
-                            return PARENT_OPEN;
-                        }
-                    }
+                Object state = doc.get("state");
+                if (TO_CONTROL.name().equals(state)) {
+                    return PARENT_OPEN;
                 }
             }
             return PARENT_CLOSED;
@@ -223,8 +219,8 @@ public enum States {
             return PARENT_CLOSED;
         }
     }
-    private final SolrClient solrClient;
     private static final String SOLR_URL = "http://localhost:8983/solr";
+    private static final SolrClient solrClient =  new HttpJdkSolrClient.Builder(SOLR_URL).build();
     final String value;
     final boolean automaticSwitch;
     final LicensesAssignation licensesAssignation;
@@ -233,7 +229,24 @@ public enum States {
         this.value = value;
         this.automaticSwitch = automaticSwitch;
         this.licensesAssignation = licensesAssignation;
-        solrClient =  new HttpJdkSolrClient.Builder(SOLR_URL).build();
+    }
+    public static void updateParent(HarvesterContext child){
+        try {
+            SolrQuery q = new SolrQuery()
+                    .setQuery("root.pid:\"" + child.item().getRootPid() + "\"").addFilterQuery("model:\"monograph\" OR model:\"periodical\"")
+                    .setRows(1);
+            SolrDocumentList results = solrClient.query("titles", q).getResults();
+            if(results.getNumFound()==0){
+                //LOGGER.log(Level.WARNING, "Parent not found for item " + child.item().getRootPid());
+                return;
+            }
+            SolrDocument parent = results.getFirst();
+            //TODO Update the parent state based on children states
+
+
+        } catch (SolrServerException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error checking children states for item " + child.item().getRootPid(), e);
+        }
     }
 
     public abstract States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc);

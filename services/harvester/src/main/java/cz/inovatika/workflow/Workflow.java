@@ -16,12 +16,23 @@ public class Workflow {
 
     public States calculateAutomaticTransition(HarvesterContext ctx, WorkflowDoc currentDoc) {
         States state = currentDoc.state();
-        return state != null ?  state.calculateNextState(ctx, currentDoc) : null;
+        States newState = state != null ?  state.calculateNextState(ctx, currentDoc) : null;
+        /*
+        String model = currentDoc.model();
+        if(state!= newState && (model.equals("monographunit")) || model.equals("periodicalvolume")){
+            States.updateParent(ctx);
+        }*/
+        return newState;
     }
 
     public States calculateCuratorTransition(HarvesterContext ctx, WorkflowDoc currentDoc, States desiredState) {
         States state = currentDoc.state();
-        return state != null ?  currentDoc.state().transitionByCurator(ctx, currentDoc, desiredState) : null;
+        States newState = state != null ?  currentDoc.state().transitionByCurator(ctx, currentDoc, desiredState) : null;
+        /*String model = currentDoc.model();
+        if(state!=newState && (model.equals("monographunit")) || model.equals("periodicalvolume")){
+            States.updateParent(ctx);
+        }*/
+        return newState;
     }
 
     public void executeTransition(
