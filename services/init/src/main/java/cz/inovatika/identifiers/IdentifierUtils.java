@@ -12,9 +12,7 @@ public class IdentifierUtils {
 
     public static Map<String,String> findIdentifiers(Document biblioMods) {
         Map<String,String> map = new HashMap<>();
-        XMLUtils.getElementsRecursive(biblioMods.getDocumentElement(), (elm)-> {
-            return elm.getLocalName().equals("identifier");
-        }).forEach(identEl-> {
+        XMLUtils.getElementsRecursive(biblioMods.getDocumentElement(), (elm)-> elm.getLocalName().equals("identifier")).forEach(identEl-> {
             String type = identEl.getAttribute("type");
             String content= identEl.getTextContent();
             map.put(type,content);
