@@ -124,7 +124,7 @@ public class XmlProcessor {
         return name.getElementsByTagNameNS("http://www.loc.gov/mods/v3", localName);
     }
 */
-    public static List<SolrInputDocument> extractAuthorData(final List<AuthorData> authors) throws SolrServerException, IOException {
+    public static List<SolrInputDocument> extractAuthorData(final List<AuthorData> authors) {
         if (authors == null) {
             return null;
         }
@@ -193,8 +193,8 @@ public class XmlProcessor {
                     confirmedEnd = false;
                 }*/
 
-                yearStart = yearStart.replaceAll("[\\[\\]\\?]", "");
-                yearEnd = yearEnd.replaceAll("[\\[\\]\\?]", "");
+                yearStart = yearStart.replaceAll("[\\[\\]?]", "");
+                yearEnd = yearEnd.replaceAll("[\\[\\]?]", "");
                 /*
                 if ("?".equals(yearStart)) {
                     yearStart = "1900";
@@ -284,9 +284,7 @@ public class XmlProcessor {
     }
 
     private static void dateFormatError(int recordNumber, String Originalvalue, String value) {
-        String recNum = (recordNumber != 0) ? (" on row: " + recordNumber) : "";
-        System.err.println("Unexpected date format" + recNum + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
-    }
+        dateFormatError(recordNumber,Originalvalue,value,"Unexpected date format");}
 
     private static void dateFormatError(int recordNumber, String Originalvalue, String value, String message) {
         String recNum = (recordNumber != 0) ? (" on row: " + recordNumber) : "";
