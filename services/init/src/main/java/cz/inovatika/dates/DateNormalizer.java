@@ -7,9 +7,7 @@ public class DateNormalizer {
 
     public static final Logger LOGGER = Logger.getLogger(DateNormalizer.class.getName());
 
-    public DateNormalizer() {}
-
-    public String normalize(String value) {
+    public static String normalize(String value) {
         if (value == null || value.isEmpty()) {
             LOGGER.log(Level.WARNING, "value is null or empty");
             return value;
@@ -21,7 +19,7 @@ public class DateNormalizer {
         return value;
     }
 
-    private String cleanLanguageTerms(String value) {
+    private static String cleanLanguageTerms(String value) {
         if (value.contains("okolo r. 1900")) {
             return "1900?";
         }
@@ -32,8 +30,7 @@ public class DateNormalizer {
         }
         return value;
     }
-    
-    private String cleanPatterns(String value) {
+    private static String cleanPatterns(String value) {
         if (value.contains(",")) {
             value = value.split(",")[0].trim();
         }

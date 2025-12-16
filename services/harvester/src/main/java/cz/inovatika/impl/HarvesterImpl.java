@@ -542,7 +542,7 @@ public class HarvesterImpl implements Harvester {
             String dateText = dateIssued.getTextContent();
             wrapper.addField(FromKramFields.DATE_STR_FIELD, dateText);
 
-            DateRange parsedDateRange = new DateRangeParser().parse(new DateNormalizer().normalize(dateText));
+            DateRange parsedDateRange = new DateRangeParser().parse(DateNormalizer.normalize(dateText));
             if (parsedDateRange != null) {
                 parsedDateRange.mapToSolrDocument(wrapper);
             }
