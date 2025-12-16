@@ -11,39 +11,29 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TouchStoreImpl implements TouchStore {
+public record TouchStoreImpl(TouchStoreConfig touchStoreConfig) implements TouchStore {
 
-    public static final String PID_FILE="pid.txt";
-    public static final String ROOT_PID_FILE ="root_pid.txt";
+    public static final String PID_FILE = "pid.txt";
+    public static final String ROOT_PID_FILE = "root_pid.txt";
     public static final String MODS_FILE = "mods.xml";
     public static final String MD5_FILE = "mods_md5.txt";
     public static final String SOURCE_FILE = "source.txt";
     public static final String PHYSICAL_LOCATIONS = "physicalLocations.txt";
-
-    private final TouchStoreConfig touchStoreConfig;
-
-    public TouchStoreImpl(TouchStoreConfig touchStoreConfig) {
-        this.touchStoreConfig = touchStoreConfig;
-    }
-
-    public TouchStoreConfig getTouchStoreConfig() {
-        return touchStoreConfig;
-    }
 
     private Path calculatePath(String pid) {
         String basePath = this.touchStoreConfig.getBaseDir();
         String cleanUuid = pid.replace("uuid:", "").replaceAll("-", "");
         String dir1 = cleanUuid.substring(0, Math.min(4, cleanUuid.length()));
         String dir2 = cleanUuid.length() > 4 ? cleanUuid.substring(4, Math.min(8, cleanUuid.length())) : null;
-        String dir3 = cleanUuid.length() > 8 ? cleanUuid.substring(8, Math.min(10,cleanUuid.length())) : null;
+        String dir3 = cleanUuid.length() > 8 ? cleanUuid.substring(8, Math.min(10, cleanUuid.length())) : null;
 
         if (dir2 == null) {
-            return Paths.get(basePath,  dir1);
+            return Paths.get(basePath, dir1);
         }
         if (dir3 == null) {
-            return Paths.get(basePath, dir1,  dir2);
+            return Paths.get(basePath, dir1, dir2);
         }
-        return Paths.get(basePath, dir1,  dir2, dir3);
+        return Paths.get(basePath, dir1, dir2, dir3);
 
     }
 
