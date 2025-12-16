@@ -4,7 +4,6 @@ import cz.inovatika.impl.HarvesterImpl;
 
 import org.quartz.Job;
 import org.quartz.JobExecutionContext;
-import org.quartz.JobExecutionException;
 
 import cz.inovatika.model.Instance;
 
