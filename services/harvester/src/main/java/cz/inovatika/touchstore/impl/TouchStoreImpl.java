@@ -44,11 +44,8 @@ public class TouchStoreImpl implements TouchStore {
         if (dir3 == null) {
             return Paths.get(basePath, dir1,  dir2);
         }
-        if (dir2 != null && dir3 != null) {
-            return Paths.get(basePath, dir1,  dir2, dir3);
-        }
+        return Paths.get(basePath, dir1,  dir2, dir3);
 
-        return null;
     }
 
     @Override
@@ -57,20 +54,20 @@ public class TouchStoreImpl implements TouchStore {
         Path createdPath = Files.createDirectories(path);
 
         Path md5File = createdPath.resolve(MD5_FILE);
-        Files.write(md5File, md5.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Files.writeString(md5File, md5);
 
         Path sourceFile = createdPath.resolve(SOURCE_FILE);
-        Files.write(sourceFile, source.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Files.writeString(sourceFile, source);
 
         Path physicalLocationsfile = createdPath.resolve(PHYSICAL_LOCATIONS);
-        String collect = physicalLocations.stream().collect(Collectors.joining("\n"));
-        Files.write(physicalLocationsfile,  collect.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        String collect = String.join("\n", physicalLocations);
+        Files.writeString(physicalLocationsfile, collect);
 
         Path pidFile = createdPath.resolve(PID_FILE);
-        Files.write(pidFile,  pid.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Files.writeString(pidFile, pid);
 
         Path rootPidFile = createdPath.resolve(ROOT_PID_FILE);
-        Files.write(rootPidFile,  rootPid.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Files.writeString(rootPidFile, rootPid);
     }
 
     @Override
@@ -79,7 +76,7 @@ public class TouchStoreImpl implements TouchStore {
         Path createdPath = Files.createDirectories(path);
 
         Path modsFile = createdPath.resolve(MODS_FILE);
-        Files.write(modsFile,  mods.getBytes(java.nio.charset.StandardCharsets.UTF_8));
+        Files.writeString(modsFile, mods);
     }
 
     @Override
