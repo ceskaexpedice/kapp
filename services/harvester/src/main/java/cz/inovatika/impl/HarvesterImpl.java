@@ -441,6 +441,7 @@ public class HarvesterImpl implements Harvester {
                                     // state differs
                                     JSONObject oldDoc = getExistingDocument((String) wrapper.getDocument().getFieldValue(FromKramFields.PID_FIELD));
                                     String oldState = oldDoc.getString("state");
+
                                     States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
                                     if (oldState != null && !oldState.equals(newState.name())) {
                                         wf.executeTransition(ctx, workflowDoc, user, message, wrapper);

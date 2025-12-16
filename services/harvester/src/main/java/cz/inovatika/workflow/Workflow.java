@@ -33,6 +33,7 @@ public class Workflow {
             String message,
             SolrInputDocumentWrapper idoc
     ) {
+        // PARENT_TO_CONTROLL
         States newState = calculateAutomaticTransition(ctx, currentDoc);
 
         WorkflowDoc newDoc = new WorkflowDoc(

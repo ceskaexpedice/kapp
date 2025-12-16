@@ -30,7 +30,7 @@ public enum States {
                     return NONCONTROLLED_PRIVATE;
                 }
             } else {
-                return PARENT_TO_CONTROLL;
+                return PARENT_TO_CONTROL;
             }
         }
 
@@ -152,7 +152,8 @@ public enum States {
             return null;
         }
     },
-    PARENT_TO_CONTROLL("parent_to_controll",LicensesAssignation.NONE, true) {
+
+    PARENT_TO_CONTROL("parent_to_control",LicensesAssignation.NONE, true) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
             return PARENT_CONTROLLED;
@@ -164,7 +165,19 @@ public enum States {
         }
     },
 
-    PARENT_CONTROLLED("parent_to_controll",LicensesAssignation.NONE, true) {
+    PARENT_NON_CONTROLLED("parent_non_controlled",LicensesAssignation.NONE, true) {
+        @Override
+        public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
+            return PARENT_CONTROLLED;
+        }
+
+        @Override
+        public States transitionByCurator(HarvesterContext ctx, WorkflowDoc currentDoc, States desiredState) {
+            return null;
+        }
+    },
+
+    PARENT_CONTROLLED("parent_controlled",LicensesAssignation.NONE, true) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
             return PARENT_CONTROLLED;
