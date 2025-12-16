@@ -2,8 +2,7 @@ package cz.inovatika.conf;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonIOException;
-import com.google.gson.JsonSyntaxException;
+
 import cz.inovatika.model.Instance;
 import cz.inovatika.model.InstantTypeAdapter;
 
@@ -12,13 +11,16 @@ import java.time.Instant;
 import java.util.List;
 import java.util.Objects;
 
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonSyntaxException;
+
 public class ApplicationConfig {
 
 
-    private TouchStoreConfig touchStoreConfig;
-    private WorkflowConfig workflow;
-    private List<Instance> instances;
-    private SolrConfig solr;
+    private final TouchStoreConfig touchStoreConfig;
+    private final WorkflowConfig workflow;
+    private final List<Instance> instances;
+    private final SolrConfig solr;
 
 
     public ApplicationConfig(List<Instance> instances, WorkflowConfig workflow, SolrConfig solr, TouchStoreConfig touchStoreConfig) {
@@ -50,14 +52,14 @@ public class ApplicationConfig {
                     .registerTypeAdapter(Instant.class, new InstantTypeAdapter())
                     .create();
             return gson.fromJson(new InputStreamReader(is), ApplicationConfig.class);
-        } catch (Exception e) {
+        } catch (JsonIOException | JsonSyntaxException e) {
             throw new ConfigException(e);
         }
     }
-    public static ApplicationConfig loadFromFile(String filename) {
+    public static ApplicationConfig loadFromFile(String filename)throws ConfigException {
         try {
             return loadFromStream(new FileInputStream(new File(filename)));
-        } catch (Exception e) {
+        } catch (ConfigException | FileNotFoundException e) {
             throw new ConfigException(e);
         }
     }

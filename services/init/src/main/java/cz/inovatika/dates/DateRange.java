@@ -1,6 +1,5 @@
 package cz.inovatika.dates;
 
-import cz.inovatika.Constants;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 
 import java.time.Year;
@@ -24,7 +23,7 @@ public record DateRange(
         int yearEnd = Integer.parseInt(this.endYear());
 
         if (yearStart > yearEnd || yearEnd > Year.now().getValue()) {
-            LOGGER.log(Level.SEVERE, "Suspicious year range: " + this.startYear() + "-" + this.endYear());
+            LOGGER.log(Level.SEVERE, "Suspicious year range: {0}-{1}", new Object[]{this.startYear(), this.endYear()});
         }
 
         docWrapper.setField(ApplFields.DATE_RANGE_START_YEAR, yearStart);

@@ -5,8 +5,6 @@ import cz.inovatika.model.Instance;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.InputStream;
 import java.time.Year;
 import java.util.List;

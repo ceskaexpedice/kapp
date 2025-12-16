@@ -2,7 +2,6 @@ package cz.inovatika.authors;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import cz.inovatika.XmlProcessor;
 import cz.inovatika.utils.XMLUtils;

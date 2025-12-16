@@ -21,7 +21,7 @@ public class TouchStoreImpl implements TouchStore {
     public static final String SOURCE_FILE = "source.txt";
     public static final String PHYSICAL_LOCATIONS = "physicalLocations.txt";
 
-    private TouchStoreConfig touchStoreConfig;
+    private final TouchStoreConfig touchStoreConfig;
 
     public TouchStoreImpl(TouchStoreConfig touchStoreConfig) {
         this.touchStoreConfig = touchStoreConfig;

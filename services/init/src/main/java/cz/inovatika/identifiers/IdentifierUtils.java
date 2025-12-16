@@ -3,7 +3,6 @@ package cz.inovatika.identifiers;
 import cz.inovatika.utils.XMLUtils;
 import org.w3c.dom.Document;
 
-import javax.lang.model.element.Element;
 import java.util.HashMap;
 import java.util.Map;
 

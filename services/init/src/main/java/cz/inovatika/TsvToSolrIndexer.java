@@ -56,14 +56,7 @@ public class TsvToSolrIndexer {
     private static String DIRECTORY_PATH = "../Data"; // change this
 
     private static SolrClient solrClient;
-
-    static void add_year_since(String year, SolrInputDocument doc, boolean confirmed) {
-        XmlProcessor.add_year_range(year, confirmed, "1999", false, doc);
-    }
-
-    static void add_year_before(String year, SolrInputDocument doc, boolean confirmed) {
-        XmlProcessor.add_year_range("0", false, year, confirmed, doc);
-    }
+    private final static boolean VERBOSEDEBUG = false;
 
     public static void main(String[] args) throws ParserConfigurationException {
         if (args.length > 0) {
@@ -187,7 +180,7 @@ public class TsvToSolrIndexer {
                                         }
 
                                         //nameIDArray =  XmlProcessor.processBiblioMods(xml, doc);
-                                        nameIDArray = AuthorDataUtils.parseAuthorData(xml).toArray(new AuthorData[0]);
+                                        nameIDArray = AuthorDataUtils.parseAuthorData(xml).toArray(AuthorData[]::new);
 
                                         // String query = "q=pid:" + URLEncoder.encode(
                                         // ClientUtils.escapeQueryChars(pid), "UTF-8") ;
@@ -298,7 +291,7 @@ public class TsvToSolrIndexer {
                 doc.setField(header, false);
             }
             default -> {
-                // System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
+                if(VERBOSEDEBUG) System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
             }
         }
     }
@@ -358,11 +351,6 @@ public class TsvToSolrIndexer {
             System.err.println("Response body:\n" + response.body());
             return null;
         }
-    }
-
-    private static void dateFormatError(int recordNumber, String Originalvalue, String value) {
-        System.err.println("Unexpected date format on row: " + recordNumber + "\n\tVALUE: "
-                + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
 
     private static JSONObject getItem(HttpClient client, String pid, String url)

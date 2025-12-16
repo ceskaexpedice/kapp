@@ -3,9 +3,7 @@ package cz.inovatika.utils;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.io.PrintStream;
 import java.io.Reader;
-import java.io.StringReader;
 import java.io.Writer;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,7 +51,7 @@ public class XMLUtils {
      */
     public static Document parseDocument(Reader reader) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-        LOGGER.log(Level.FINE, "builder factory instance :"+newInstance.getClass().getResource(newInstance.getClass().getSimpleName()+".class"));
+        LOGGER.log(Level.FINE, "builder factory instance :{0}", newInstance.getClass().getResource(newInstance.getClass().getSimpleName()+".class"));
         DocumentBuilder builder = newInstance.newDocumentBuilder();
         return builder.parse(new InputSource(reader));
     }
@@ -69,7 +67,7 @@ public class XMLUtils {
      */
     public static Document parseDocument(Reader reader, boolean namespaceaware) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        LOGGER.log(Level.FINE, "builder factory instance :"+factory.getClass().getResource(factory.getClass().getSimpleName()+".class"));
+        LOGGER.log(Level.FINE, "builder factory instance :{0}", factory.getClass().getResource(factory.getClass().getSimpleName()+".class"));
         factory.setNamespaceAware(namespaceaware);
         DocumentBuilder builder = factory.newDocumentBuilder();
         return builder.parse(new InputSource(reader));
@@ -85,7 +83,7 @@ public class XMLUtils {
      */
     public static Document parseDocument(InputStream is) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory newInstance = DocumentBuilderFactory.newInstance();
-        LOGGER.log(Level.FINE, "builder factory instance :"+newInstance.getClass().getResource(newInstance.getClass().getSimpleName()+".class"));
+        LOGGER.log(Level.FINE, "builder factory instance :{0}", newInstance.getClass().getResource(newInstance.getClass().getSimpleName()+".class"));
         DocumentBuilder builder = newInstance.newDocumentBuilder();
         return builder.parse(is);
     }
@@ -101,7 +99,7 @@ public class XMLUtils {
      */
     public static Document parseDocument(InputStream is, boolean namespaceaware) throws ParserConfigurationException, SAXException, IOException {
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
-        LOGGER.log(Level.FINE, "builder factory instance :"+factory.getClass().getResource(factory.getClass().getSimpleName()+".class"));
+        LOGGER.log(Level.FINE, "builder factory instance :{0}", factory.getClass().getResource(factory.getClass().getSimpleName()+".class"));
         factory.setNamespaceAware(namespaceaware);
         DocumentBuilder builder = factory.newDocumentBuilder();
         return builder.parse(is);
@@ -109,13 +107,13 @@ public class XMLUtils {
 
     /**
      * Returns child elements from given top element
-     * @param topElm
-     * @return
+     * @param topElm element whose children we want
+     * @return ChildNode elements
      */
     public static List<Element> getElements(Element topElm) {
         if (topElm == null) throw new IllegalArgumentException("topElm cannot be null");
         synchronized(topElm.getOwnerDocument()) {
-            List<Element> retVals = new ArrayList<Element>();
+            List<Element> retVals = new ArrayList<>();
             NodeList childNodes = topElm.getChildNodes();
             for (int i = 0, ll = childNodes.getLength(); i < ll; i++) {
                 Node n = childNodes.item(i);
@@ -131,12 +129,12 @@ public class XMLUtils {
      * Returns child elements from given top element and accepted by given filter
      * @param topElm Top element
      * @param filter Filter
-     * @return
+     * @return Filtered Elements
      */
     public static List<Element> getElements(Element topElm, ElementsFilter filter ) {
         if (topElm == null) throw new IllegalArgumentException("topElm cannot be null");
         synchronized(topElm.getOwnerDocument()) {
-            List<Element> retVals = new ArrayList<Element>();
+            List<Element> retVals = new ArrayList<>();
             NodeList childNodes = topElm.getChildNodes();
             for (int i = 0, ll = childNodes.getLength(); i < ll; i++) {
                 Node n = childNodes.item(i);
@@ -154,8 +152,8 @@ public class XMLUtils {
     public static List<Element> getElementsRecursive(Element topElm, ElementsFilter filter) {
         if (topElm == null) throw new IllegalArgumentException("topElm cannot be null");
         synchronized(topElm.getOwnerDocument()) {
-            List<Element> elms = new ArrayList<Element>();
-            Stack<Element> stack = new Stack<Element>();
+            List<Element> elms = new ArrayList<>();
+            Stack<Element> stack = new Stack<>();
             stack.push(topElm);
             while (!stack.isEmpty()) {
                 Element curElm = stack.pop();
@@ -193,14 +191,14 @@ public class XMLUtils {
     public static Element findElement(Element topElm, String nodeName) {
         if (topElm == null) throw new IllegalArgumentException("topElm cannot be null");
         synchronized(topElm.getOwnerDocument()) {
-            Stack<Element> stack = new Stack<Element>();
+            Stack<Element> stack = new Stack<>();
             stack.push(topElm);
             while (!stack.isEmpty()) {
                 Element curElm = stack.pop();
                 if (curElm.getNodeName().equals(nodeName)) {
                     return curElm;
                 }
-                List<Node> nodesToProcess = new ArrayList<Node>();
+                List<Node> nodesToProcess = new ArrayList<>();
 
                 NodeList childNodes = curElm.getChildNodes();
                 for (int i = 0, ll = childNodes.getLength(); i < ll; i++) {
@@ -222,21 +220,21 @@ public class XMLUtils {
     /**
      * Finds element in DOM tree
      * @param topElm Top element
-     * @param nodeName Node name
+     * @param type Node type
      * @return returns found node
      */
     public static List<Node> findNodesByType(Element topElm, int type) {
-        List<Node> retvals = new ArrayList<Node>();
+        List<Node> retvals = new ArrayList<>();
         if (topElm == null) throw new IllegalArgumentException("topElm cannot be null");
         synchronized(topElm.getOwnerDocument()) {
-            Stack<Node> stack = new Stack<Node>();
+            Stack<Node> stack = new Stack<>();
             stack.push(topElm);
             while (!stack.isEmpty()) {
                 Node curElm = stack.pop();
                 if (curElm.getNodeType() == type) {
                     retvals.add(curElm);
                 }
-                List<Node> nodesToProcess = new ArrayList<Node>();
+                List<Node> nodesToProcess = new ArrayList<>();
 
                 NodeList childNodes = curElm.getChildNodes();
                 for (int i = 0, ll = childNodes.getLength(); i < ll; i++) {
@@ -263,14 +261,14 @@ public class XMLUtils {
     public static Element findElement(Element topElm, String localName, String namespace) {
         if (topElm == null) throw new IllegalArgumentException("topElm cannot be null");
         synchronized(topElm.getOwnerDocument()) {
-            Stack<Element> stack = new Stack<Element>();
+            Stack<Element> stack = new Stack<>();
             stack.push(topElm);
             while (!stack.isEmpty()) {
                 Element curElm = stack.pop();
                 if ((curElm.getLocalName() != null && curElm.getLocalName().equals(localName)) && (namespacesAreSame(curElm.getNamespaceURI(), namespace))) {
                     return curElm;
                 }
-                List<Node> nodesToProcess = new ArrayList<Node>();
+                List<Node> nodesToProcess = new ArrayList<>();
                 NodeList childNodes = curElm.getChildNodes();
                 for (int i = 0, ll = childNodes.getLength(); i < ll; i++) {
                     Node item = childNodes.item(i);
@@ -294,7 +292,7 @@ public class XMLUtils {
     public static Element findElement(Element topElm, ElementsFilter filter) {
         if (topElm == null) throw new IllegalArgumentException("topElm cannot be null");
         synchronized(topElm.getOwnerDocument()) {
-            Stack<Element> stack = new Stack<Element>();
+            Stack<Element> stack = new Stack<>();
             stack.push(topElm);
             while (!stack.isEmpty()) {
                 Element curElm = stack.pop();
@@ -302,7 +300,7 @@ public class XMLUtils {
                     return curElm;
                 }
 
-                List<Node> nodesToProcess = new ArrayList<Node>();
+                List<Node> nodesToProcess = new ArrayList<>();
                 NodeList childNodes = curElm.getChildNodes();
                 for (int i = 0, ll = childNodes.getLength(); i < ll; i++) {
                     Node item = childNodes.item(i);

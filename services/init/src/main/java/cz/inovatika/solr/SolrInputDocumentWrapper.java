@@ -12,7 +12,6 @@ public class SolrInputDocumentWrapper {
         ATOMIC_CHANGE,
     }
 
-
     public enum TypeOfOperation {
         ATOMIC_ADD,
         ATOMIC_REMOVE,
@@ -20,17 +19,15 @@ public class SolrInputDocumentWrapper {
         ATOMIC_SET
     }
 
-    private String idKey;
-    private SolrInputDocument document;
-    private TypeOfChange typeOfChange;
+    private final String idKey;
+    private final SolrInputDocument document;
+    private final TypeOfChange typeOfChange;
 
     public SolrInputDocumentWrapper(String idKey, SolrInputDocument document, TypeOfChange typeOfChange) {
         this.idKey = idKey;
         this.document = document;
         this.typeOfChange = typeOfChange;
     }
-
-
 
     private static Map<String, Object> atomicOperation(String modifier, Object value) {
         Map<String, Object> updateMap = new HashMap<>();
@@ -47,70 +44,69 @@ public class SolrInputDocumentWrapper {
     }
 
     public void setField(String name, Object value) {
-        changeField(name, value,  TypeOfOperation.ATOMIC_SET);
+        changeField(name, value, TypeOfOperation.ATOMIC_SET);
     }
 
     public void removeField(String name) {
-        changeField(name, null,  TypeOfOperation.ATOMIC_REMOVE);
+        changeField(name, null, TypeOfOperation.ATOMIC_REMOVE);
     }
 
     public Object getFieldValue(String name) {
         if (typeOfChange == TypeOfChange.SIMPLE) {
             return document.getFieldValue(name);
-        } else {
-            if (name.equals(idKey)) {
-                return document.getFieldValue(idKey);
-            } else {
-                Map<String, Object>  map = (Map<String, Object>) document.getFieldValue(name);
-                String firstKey =  map.keySet().stream().findFirst().orElse(null);
-                if (firstKey != null) {
-                    return map.get(firstKey);
-                } else return null;
-            }
         }
+
+        if (name.equals(idKey)) {
+            return document.getFieldValue(idKey);
+        }
+        
+        Object val = document.getFieldValue(name);
+        if (val != null && val instanceof Map<?, ?> m && m.keySet().stream().findFirst().orElse(null) instanceof String firstKey) {
+            return m.get(firstKey);
+        }
+
+        return null;
     }
 
     private void changeField(String name, Object value, TypeOfOperation ofOperation) {
         switch (typeOfChange) {
-            case SIMPLE:
+            case SIMPLE ->
                 document.addField(name, value);
-            break;
-            case ATOMIC_CHANGE:
+            case ATOMIC_CHANGE -> {
                 switch (ofOperation) {
-                    case ATOMIC_ADD:
+                    case ATOMIC_ADD -> {
                         if (name.equals(idKey)) {
                             document.setField(name, value);
                         } else {
                             document.addField(name, atomicOperation("add", value));
                         }
-                        break;
-                    case ATOMIC_ADD_DISTINCT:
+                    }
+                    case ATOMIC_ADD_DISTINCT -> {
                         if (name.equals(idKey)) {
                             document.setField(name, value);
                         } else {
                             document.addField(name, atomicOperation("add-distinct", value));
                         }
-                        break;
-                    case ATOMIC_SET:
+                    }
+                    case ATOMIC_SET -> {
                         if (name.equals(idKey)) {
                             document.setField(name, value);
                         } else {
                             document.addField(name, atomicOperation("set", value));
                         }
-                        break;
-                    case ATOMIC_REMOVE:
+                    }
+                    case ATOMIC_REMOVE -> {
                         if (name.equals(idKey)) {
                             document.setField(name, value);
                         } else {
                             document.addField(name, atomicOperation("remove", value));
                         }
-                        break;
+                    }
                 }
-            break;
+            }
 
         }
     }
-
 
     public SolrInputDocument getDocument() {
         return document;

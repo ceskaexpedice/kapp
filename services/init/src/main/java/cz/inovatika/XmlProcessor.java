@@ -2,7 +2,6 @@ package cz.inovatika;
 
 import java.io.IOException;
 import java.text.Normalizer;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -10,15 +9,12 @@ import java.util.stream.Collectors;
 
 import cz.inovatika.authors.AuthorData;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
-import org.w3c.dom.Document;
-import org.w3c.dom.Element;
-import org.w3c.dom.Node;
+//import org.w3c.dom.Element;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-import org.w3c.dom.NodeList;
+//import org.w3c.dom.NodeList;
 
 //TODO: Rewrite !!
 public class XmlProcessor {
@@ -119,7 +115,7 @@ public class XmlProcessor {
 //        }
 //        return nameIDArr;
 //    }
-
+/*
     static Element getElementByLocalTagName(Element name, String localName) {
         return (Element) name.getElementsByTagNameNS("http://www.loc.gov/mods/v3", localName).item(0);
     }
@@ -127,7 +123,7 @@ public class XmlProcessor {
     static NodeList getNodelistByLocalTagName(Element name, String localName) {
         return name.getElementsByTagNameNS("http://www.loc.gov/mods/v3", localName);
     }
-
+*/
     public static List<SolrInputDocument> extractAuthorData(final List<AuthorData> authors) throws SolrServerException, IOException {
         if (authors == null) {
             return null;
