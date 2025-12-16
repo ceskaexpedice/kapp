@@ -3,12 +3,22 @@ package cz.inovatika.workflow;
 import cz.inovatika.conf.WorkflowConfig;
 import cz.inovatika.model.HarvesterContext;
 
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.common.SolrDocument;
+
+import java.io.IOException;
+import java.util.logging.Level;
+
+import static cz.inovatika.model.Instance.LOGGER;
+
 public enum States {
 
     // https://docs.google.com/document/d/1zMXdaKiAhshUANmxTD1MHnBibjituskJnGEq-LHz7jU/edit?tab=t.0
-
-
-    /** new imported documents */
+    /**
+     * new imported documents
+     */
     IMPORTED("imported", LicensesAssignation.NONE, true) {
 
         @Override
@@ -24,13 +34,13 @@ public enum States {
                         return NONCONTROLLED_PRIVATE;
                     }
                 }
-                if (currentDoc.model().equals("monograph") || currentDoc.model().equals("monographunit")) {
+                if (/*currentDoc.model().equals("monograph") ||//Should be already caught by isHierarchical()*/currentDoc.model().equals("monographunit")) {
                     return TO_CONTROL;
                 } else {
                     return NONCONTROLLED_PRIVATE;
                 }
             } else {
-                return PARENT_TO_CONTROL;
+                return checkChildren(ctx, currentDoc);
             }
         }
 
@@ -39,8 +49,9 @@ public enum States {
             return null;
         }
     },
-
-    /** non controlled private > 70 let */
+    /**
+     * non controlled private > 70 let
+     */
     NONCONTROLLED_PRIVATE("noncontrolled_private", LicensesAssignation.ONSITE, false) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
@@ -52,8 +63,9 @@ public enum States {
             return NONCONTROLLED_PRIVATE;
         }
     },
-
-    /** controlled < 110 let */
+    /**
+     * controlled < 110 let
+     */
     NONCONTROLLED_PUBLIC("noncontrolled_public", LicensesAssignation.PUBLIC, false) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
@@ -65,9 +77,10 @@ public enum States {
             return NONCONTROLLED_PUBLIC;
         }
     },
-
-    /** to control , curator decision */
-    TO_CONTROL("to_control", LicensesAssignation.NONE ,false) {
+    /**
+     * to control , curator decision
+     */
+    TO_CONTROL("to_control", LicensesAssignation.NONE, false) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
             return null;
@@ -76,13 +89,13 @@ public enum States {
         @Override
         public States transitionByCurator(HarvesterContext ctx, WorkflowDoc currentDoc, States desiredState) {
             switch (desiredState) {
-                case CONTROLLED_PRIVATE,
-                     CONTROLLED_PUBLIC,
-                     CONTROLLED_UNKNOWN -> {
+                case CONTROLLED_PRIVATE, CONTROLLED_PUBLIC, CONTROLLED_UNKNOWN -> {
                     return desiredState;
                 }
+                default -> {
+                    return null;
+                }
             }
-            return null;
         }
     },
     CONTROLLED_PUBLIC("controlled_public", LicensesAssignation.PUBLIC, false) {
@@ -152,11 +165,10 @@ public enum States {
             return null;
         }
     },
-
-    PARENT_TO_CONTROL("parent_to_control",LicensesAssignation.NONE, true) {
+    PARENT_OPEN("parent_open", LicensesAssignation.NONE, true) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
-            return PARENT_CONTROLLED;
+            return checkChildren(ctx, currentDoc);
         }
 
         @Override
@@ -164,18 +176,17 @@ public enum States {
             return null;
         }
     },
-
-    PARENT_NON_CONTROLLED("parent_non_controlled",LicensesAssignation.NONE, true) {
+    PARENT_CLOSED("parent_closed", LicensesAssignation.NONE, true) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
-            return PARENT_CONTROLLED;
+            return checkChildren(ctx, currentDoc);
         }
 
         @Override
         public States transitionByCurator(HarvesterContext ctx, WorkflowDoc currentDoc, States desiredState) {
             return null;
         }
-    },
+    }/*,
 
     PARENT_CONTROLLED("parent_controlled",LicensesAssignation.NONE, true) {
         @Override
@@ -187,11 +198,34 @@ public enum States {
         public States transitionByCurator(HarvesterContext ctx, WorkflowDoc currentDoc, States desiredState) {
             return null;
         }
-    };
+    }*/;
 
-    String value;
-    boolean automaticSwitch;
-    LicensesAssignation licensesAssignation;
+    States checkChildren(HarvesterContext ctx, WorkflowDoc currentDoc) {
+        try {
+            SolrQuery q = new SolrQuery()
+                    .setQuery("root.pid:\"" + ctx.item().getRootPid() + "\"")
+                    .setRows(0);
+            for (SolrDocument doc : solrClient.query("titles", q).getResults()) {
+                Object model = doc.get("model");
+                if (model != null) {
+                    if (model.equals("monographunit") || model.equals("periodicalvolume")) {
+                        Object state = doc.get("state");
+                        if (state != null && state.equals(TO_CONTROL.name())) {
+                            return PARENT_OPEN;
+                        }
+                    }
+                }
+            }
+            return PARENT_CLOSED;
+        } catch (SolrServerException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error checking children states for item " + ctx.item().getRootPid(), e);
+            return PARENT_CLOSED;
+        }
+    }
+    private static SolrClient solrClient;
+    final String value;
+    final boolean automaticSwitch;
+    final LicensesAssignation licensesAssignation;
 
     States(String value, LicensesAssignation licensesAssignation, boolean automaticSwitch) {
         this.value = value;

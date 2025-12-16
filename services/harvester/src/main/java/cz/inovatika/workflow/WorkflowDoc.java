@@ -1,7 +1,6 @@
 package cz.inovatika.workflow;
 
 import cz.inovatika.Constants;
-import cz.inovatika.model.Instance;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import org.json.JSONObject;
 
@@ -50,11 +49,10 @@ public record WorkflowDoc(
     }
 
     private JSONObject historyItem(String d, String message) {
-        JSONObject h = new JSONObject()
+        return new JSONObject()
                 .put(DATE_JSON_KEY, d)
                 .put(REASON_JSON_KEY, message)
                 .put(USER_JSON_KEY, this.user)
                 .put(STATE_JSON_KEY, this.state.name());
-        return h;
     }
 }

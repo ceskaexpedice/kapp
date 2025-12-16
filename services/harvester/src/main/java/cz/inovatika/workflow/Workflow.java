@@ -1,9 +1,7 @@
 package cz.inovatika.workflow;
 
 import cz.inovatika.model.HarvesterContext;
-import cz.inovatika.model.Instance;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
-import org.json.JSONObject;
 
 
 import java.time.LocalDateTime;
@@ -33,7 +31,7 @@ public class Workflow {
             String message,
             SolrInputDocumentWrapper idoc
     ) {
-        // PARENT_TO_CONTROLL
+        // PARENT_TO_CONTROL
         States newState = calculateAutomaticTransition(ctx, currentDoc);
 
         WorkflowDoc newDoc = new WorkflowDoc(
