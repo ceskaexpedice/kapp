@@ -1,7 +1,7 @@
 package cz.inovatika;
 
-import java.io.IOException;
 import java.text.Normalizer;
+import java.time.Year;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 
 import cz.inovatika.authors.AuthorData;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
 //import org.w3c.dom.Element;
@@ -304,7 +303,7 @@ public class XmlProcessor {
         try {
             int yearStart = Integer.parseInt(year_start);
             int yearEnd = Integer.parseInt(year_end);
-            if (yearStart > yearEnd || yearEnd > 2025) {//TODO: Get current year (or the next one even better)
+            if (yearStart > yearEnd || yearEnd > Year.now().getValue()) {
                 System.out.println("Suspicious year range: " + year_start + "-" + year_end);
 
             }
