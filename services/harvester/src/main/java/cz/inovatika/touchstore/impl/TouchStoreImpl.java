@@ -41,7 +41,7 @@ public class TouchStoreImpl implements TouchStore {
         if (dir2 == null) {
             return Paths.get(basePath,  dir1);
         }
-        if (dir2 != null && dir3 == null) {
+        if (dir3 == null) {
             return Paths.get(basePath, dir1,  dir2);
         }
         if (dir2 != null && dir3 != null) {
