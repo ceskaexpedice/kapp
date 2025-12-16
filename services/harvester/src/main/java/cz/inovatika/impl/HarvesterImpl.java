@@ -97,7 +97,7 @@ public class HarvesterImpl implements Harvester {
 
             String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id,
                     config.getApiVersion().getIdentifier(config) + " asc", fl);
-            LOGGER.info("query: " + query + " cursorMark: " + cursorMark);
+            LOGGER.log(Level.INFO, "query: {0} cursorMark: {1}", new Object[]{query, cursorMark});
             Element element = executeQuery(client, config.getUrl(), query);
 
             List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> elm.getNodeName().equals("doc")).stream().map(docElm -> {
@@ -107,7 +107,7 @@ public class HarvesterImpl implements Harvester {
 
             String subquery = config.getApiVersion().prepareSubquery(harvestItems);
             if (!StringUtil.isEmpty(subquery)) {
-                LOGGER.info("subquery: " + subquery);
+                LOGGER.log(Level.INFO, "subquery: {0}", subquery);
                 Element subResult = executeQuery(client, config.getUrl(), subquery);
                 config.getApiVersion().processSubqueryResult(harvestItems, subResult);
             }
@@ -355,7 +355,7 @@ public class HarvesterImpl implements Harvester {
                     if (acceptLibrary) {
                         InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
                         if (inputStream == null) {
-                            LOGGER.log(Level.SEVERE, "Failed to get MODS for PID: " + ctx.item().getPid());
+                            LOGGER.log(Level.SEVERE, "Failed to get MODS for PID: {0}", ctx.item().getPid());
                             return;
                         }
                         BiblioModsEntity entity = BiblioModsEntity.create(inputStream);
@@ -435,7 +435,7 @@ public class HarvesterImpl implements Harvester {
                 }
             } else {
 
-                Stopwatch sw = Stopwatch.createStarted();
+                //Stopwatch sw = Stopwatch.createStarted();
 
                 SolrInputDocumentWrapper doc = new SolrInputDocumentWrapper(
                         FromKramFields.PID_FIELD,
@@ -456,7 +456,7 @@ public class HarvesterImpl implements Harvester {
                 try {
                     InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
                     if (inputStream == null) {
-                        LOGGER.log(Level.SEVERE, "Failed to get MODS for PID: " + ctx.item().getPid());
+                        LOGGER.log(Level.SEVERE, "Failed to get MODS for PID: {0}", ctx.item().getPid());
                         return;
                     }
                     BiblioModsEntity entity = BiblioModsEntity.create(inputStream);
@@ -508,7 +508,7 @@ public class HarvesterImpl implements Harvester {
                         }
                         bufferSend(buffer, authorsBuffer, solrClient, doc);
                     } else {
-                        LOGGER.log(Level.SEVERE, "Failed to process MODS for PID: " + ctx.item().getPid());
+                        LOGGER.log(Level.SEVERE, "Failed to process MODS for PID: {0}", ctx.item().getPid());
                     }
                 } catch (final Exception e) {
                     throw new RuntimeException(e);
