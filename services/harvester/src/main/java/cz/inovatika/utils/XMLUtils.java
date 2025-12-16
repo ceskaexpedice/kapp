@@ -405,6 +405,6 @@ public class XMLUtils {
          * @param element
          * @return
          */
-        public boolean acceptElement(Element element);
+        boolean acceptElement(Element element);
     }
 }
