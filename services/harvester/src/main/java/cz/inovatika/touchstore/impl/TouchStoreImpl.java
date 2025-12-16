@@ -38,7 +38,7 @@ public class TouchStoreImpl implements TouchStore {
         String dir2 = cleanUuid.length() > 4 ? cleanUuid.substring(4, Math.min(8, cleanUuid.length())) : null;
         String dir3 = cleanUuid.length() > 8 ? cleanUuid.substring(8, Math.min(10,cleanUuid.length())) : null;
 
-        if (dir2 == null && dir3 == null) {
+        if (dir2 == null) {
             return Paths.get(basePath,  dir1);
         }
         if (dir2 != null && dir3 == null) {
