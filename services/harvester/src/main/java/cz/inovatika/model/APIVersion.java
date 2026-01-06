@@ -326,9 +326,12 @@ public enum APIVersion {
 
         // monographs
         monographUnitPids.forEach(k-> {
+            try{
             String rootPid = k.getKey();
             if (map.containsKey(rootPid)) {
                 map.get(rootPid).setHierarchical(true);
+            }} catch (Exception e) {
+                LOGGER.warning(e.getMessage());
             }
         });
 

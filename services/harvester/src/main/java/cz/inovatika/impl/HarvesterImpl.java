@@ -81,7 +81,7 @@ public class HarvesterImpl implements Harvester {
     }
 
     public void harvest(ApplicationConfig applicationConfig, Instance config, Consumer<HarvesterContext> consumer, HttpClient client) {
-        TouchStore touchStore = new TouchStoreImpl(applicationConfig.getTouchStoreConfig());
+        TouchStore touchStore = new TouchStoreImpl(applicationConfig.touchStoreConfig());
 
         String cursorMark = null;
         String queryCursorMark;
@@ -97,22 +97,26 @@ public class HarvesterImpl implements Harvester {
 
             String query = pidCursorQuery(iterationQuery, cursorMark, ROWS, fq, "search", id,
                     config.getApiVersion().getIdentifier(config) + " asc", fl);
-            LOGGER.log(Level.INFO, "query: {0} cursorMark: {1}", new Object[]{query, cursorMark});
+            //LOGGER.log(Level.INFO, "query: {0} cursorMark: {1}", new Object[]{query, cursorMark});
             Element element = executeQuery(client, config.getUrl(), query);
-
+            LOGGER.log(Level.INFO,"query executed");
             List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> elm.getNodeName().equals("doc")).stream().map(docElm -> {
                 APIVersion version = config.getApiVersion();
                 return version.createHarvestItemFromResultElement(docElm, config);
             }).toList();
+            LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
 
             String subquery = config.getApiVersion().prepareSubquery(harvestItems);
             if (!StringUtil.isEmpty(subquery)) {
                 LOGGER.log(Level.INFO, "subquery: {0}", subquery);
                 Element subResult = executeQuery(client, config.getUrl(), subquery);
+                LOGGER.log(Level.INFO, "subresult executed");
                 config.getApiVersion().processSubqueryResult(harvestItems, subResult);
+                LOGGER.log(Level.INFO, "subresult processed");
             }
-
+            LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
             for (HarvestingItem harvestingItem : harvestItems) {
+                LOGGER.log(Level.INFO, "harvestingItem: {0}", harvestingItem.getTitles());
                 HarvesterContext context = new HarvesterContext(applicationConfig, harvestingItem, touchStore, client, config);
                 consumer.accept(context);
             }
@@ -126,24 +130,40 @@ public class HarvesterImpl implements Harvester {
     }
 
     public static Element executeQuery(HttpClient httpClient, String url, String query) {
+        String t = null;
         try {
-            String t = executeSolrQuery(httpClient, url, query);
+            LOGGER.log(Level.INFO, "Executing query");
+            t = executeSolrQuery(httpClient, url, query+"&wt=xml");
             Document doc = XMLUtils.parseDocument(new StringReader(t));
+            LOGGER.log(Level.INFO, "Solr doc name: {0}", doc.getDocumentElement().getNodeName());
             return doc.getDocumentElement();
-        } catch (ParserConfigurationException | SAXException | IOException | InterruptedException e) {
+        } catch (SAXException e) {
+            LOGGER.log(Level.SEVERE, "Error parsing Solr response: ", e);
+            LOGGER.log(Level.INFO, "Solr response body: {0}", t);
+            LOGGER.log(Level.INFO,"Query:{0}", url + "/" + query);
+            throw new RuntimeException(e);
+        } catch (ParserConfigurationException | IOException | InterruptedException e) {
+            LOGGER.log(Level.SEVERE, "Error executing Solr query", e);
+            //LOGGER.log(Level.INFO, "Error executing query: {0}", query);
             throw new RuntimeException(e);
         }
     }
 
     private static String executeSolrQuery(HttpClient client, String url, String query)
             throws IOException, InterruptedException {
+        //LOGGER.log(Level.INFO, "Response sent to Solr: {0}", URI.create(url + "/" + query));
         HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
                 .uri(URI.create(url + "/" + query))
                 .GET()
                 .build(), HttpResponse.BodyHandlers.ofInputStream());
+        if(response==null)LOGGER.log(Level.WARNING, "Response not received");
+        else LOGGER .log(Level.WARNING, "Response received with status: {0}", response.statusCode());
         if (response != null && response.statusCode() == 200) {
             InputStream is = response.body();
-            return IOUtils.toString(is, StandardCharsets.UTF_8);
+            String r = IOUtils.toString(is, StandardCharsets.UTF_8);
+            LOGGER.log(Level.INFO, "Solr response: {0}", r);
+
+            return r;
         } else {
             throw new RuntimeException("HTTP error: " + (response != null ? response.statusCode() : "null"));
         }
@@ -237,7 +257,7 @@ public class HarvesterImpl implements Harvester {
         workflowConfig.setOnsiteYear(70);
         workflowConfig.setPublicYear(110);
 
-        TouchStoreConfig touchConfig = new TouchStoreConfig("/Users/pavel/Projects/nkp-kuratorska-aplikace/touchstore");
+        TouchStoreConfig touchConfig = new TouchStoreConfig("/touchstore");
         ApplicationConfig applicationConfig = new ApplicationConfig(List.of(config), workflowConfig, null, touchConfig);
 
 
@@ -266,7 +286,7 @@ public class HarvesterImpl implements Harvester {
         workflowConfig.setOnsiteYear(70);
         workflowConfig.setPublicYear(110);
 
-        TouchStoreConfig touchConfig = new TouchStoreConfig("/Users/pavel/Projects/nkp-kuratorska-aplikace/touchstore");
+        TouchStoreConfig touchConfig = new TouchStoreConfig("/touchstore");
         ApplicationConfig applicationConfig = new ApplicationConfig(List.of(config), workflowConfig, null, touchConfig);
         try {
             System.out.println("inovatika harvesting started");
@@ -279,15 +299,18 @@ public class HarvesterImpl implements Harvester {
 
     @Override
     public void harvestAndBatch(ApplicationConfig applicationConfig, Instance config) throws SolrServerException, IOException {
+        LOGGER.log(Level.INFO, "Harvesting started, BatchSize: {0}",BATCH_SIZE);
         List<SolrInputDocument> buffer = new ArrayList<>(BATCH_SIZE);
         ArrayList<SolrInputDocument> authorBuffer = new ArrayList<>(AUTHOR_BATCH_SIZE + 20);
         harvest(applicationConfig, config, ctx -> processHarvest(config, ctx, buffer, authorBuffer, solrClient));
         if (!buffer.isEmpty()) { // BATCH_SIZE
+            LOGGER.log(Level.INFO, "Sending batch");
             sendBatch(solrClient, Constants.Collection.TITLES_COLLECTION, buffer);
             buffer.clear();
 
         }
         if (!authorBuffer.isEmpty()) { // BATCH_SIZE
+            LOGGER.log(Level.INFO, "Sending authorbatch");
             sendBatch(solrClient, Constants.Collection.AUTHORS_COLLECTION, authorBuffer);
             authorBuffer.clear();
 
@@ -423,6 +446,7 @@ public class HarvesterImpl implements Harvester {
                                     }
                                 }
                             } catch (ParserConfigurationException | SAXException e) {
+                                LOGGER.severe(e.getMessage());
                                 throw new RuntimeException(e);
                             }
                         }
@@ -431,6 +455,7 @@ public class HarvesterImpl implements Harvester {
 
                     }
                 } catch (IOException | InterruptedException | NoSuchAlgorithmException | SolrServerException e) {
+                    LOGGER.severe(e.getMessage());
                     throw new RuntimeException(e);
                 }
             } else {
@@ -511,6 +536,7 @@ public class HarvesterImpl implements Harvester {
                         LOGGER.log(Level.SEVERE, "Failed to process MODS for PID: {0}", ctx.item().getPid());
                     }
                 } catch (final Exception e) {
+                    LOGGER.severe(e.getMessage());
                     throw new RuntimeException(e);
                 }
             }
