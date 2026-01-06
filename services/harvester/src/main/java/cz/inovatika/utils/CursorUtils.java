@@ -4,6 +4,7 @@ import org.w3c.dom.Element;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
@@ -51,20 +52,15 @@ public class CursorUtils {
     }
 
     public static String pidCursorQuery(String mq, String cursor, int rows, String fq, String endpoint, String identifierField, String sorting, String...flFields)  {
-        try {
-            String flParam = flFields != null && flFields.length > 0 ? identifierField+","+ Arrays.stream(flFields).collect(Collectors.joining(",")) :  identifierField;
-            String fullQuery = null;
-            if (fq !=null && (!fq.trim().equals(""))) {
-                fullQuery = "?q="+ mq + (cursor != null ? String.format("&rows=%d&cursorMark=%s", rows, cursor) : String.format("&rows=%d&cursorMark=*", rows))+"&sort=" + URLEncoder.encode(sorting, "UTF-8")+"&fl="+ flParam +"&fq=" + URLEncoder.encode(fq,"UTF-8");
-            } else {
-                fullQuery = "?q="+ mq + (cursor != null ? String.format("&rows=%d&cursorMark=%s", rows, cursor) : String.format("&rows=%d&cursorMark=*", rows))+"&sort=" + URLEncoder.encode(sorting, "UTF-8")+"&fl="+ flParam;
-            }
-
-            String query = endpoint + fullQuery+"&wt=xml";
-            return query;
-        } catch (UnsupportedEncodingException e) {
-            throw new RuntimeException(e);
+        String flParam = flFields != null && flFields.length > 0 ? identifierField+","+ String.join(",", flFields) :  identifierField;
+        String fullQuery = endpoint +"?q="+ mq;
+        String coreQuery = cursor != null ? String.format("&rows=%d&cursorMark=%s", rows, cursor) : String.format("&rows=%d&cursorMark=*", rows);
+        fullQuery += coreQuery +"&sort=" + URLEncoder.encode(sorting, StandardCharsets.UTF_8)+"&fl="+ flParam;
+        if (fq !=null && (!fq.trim().isEmpty())) {
+            fullQuery += "&fq=" + URLEncoder.encode(fq, StandardCharsets.UTF_8);
         }
+
+        return fullQuery+"&wt=xml";
     }
 
 
