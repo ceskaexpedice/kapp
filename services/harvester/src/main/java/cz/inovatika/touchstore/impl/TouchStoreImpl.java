@@ -21,7 +21,7 @@ public record TouchStoreImpl(TouchStoreConfig touchStoreConfig) implements Touch
     public static final String PHYSICAL_LOCATIONS = "physicalLocations.txt";
 
     private Path calculatePath(String pid) {
-        String basePath = this.touchStoreConfig.getBaseDir();
+        String basePath = this.touchStoreConfig.baseDir();
         String cleanUuid = pid.replace("uuid:", "").replaceAll("-", "");
         String dir1 = cleanUuid.substring(0, Math.min(4, cleanUuid.length()));
         String dir2 = cleanUuid.length() > 4 ? cleanUuid.substring(4, Math.min(8, cleanUuid.length())) : null;

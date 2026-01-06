@@ -1,14 +1,5 @@
 package cz.inovatika.conf;
 
-public class TouchStoreConfig {
+public record TouchStoreConfig(String baseDir) {
 
-    private String baseDir;
-
-    public TouchStoreConfig(String baseDir) {
-        this.baseDir = baseDir;
-    }
-
-    public String getBaseDir() {
-        return baseDir;
-    }
 }
