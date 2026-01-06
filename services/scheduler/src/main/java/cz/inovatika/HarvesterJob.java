@@ -32,6 +32,8 @@ public class HarvesterJob implements Job {
         try {
             resourceAsStream = new FileInputStream(System.getProperty("user.home") + "/.kapp/app.conf");
         } catch (FileNotFoundException e) {
+            LOGGER.log(Level.SEVERE, "Scheduled task failed", e);
+            e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
         ApplicationConfig applicationConfig = ApplicationConfig.loadFromStream(resourceAsStream);
@@ -47,6 +49,8 @@ public class HarvesterJob implements Job {
             }
 
         } catch (final IOException | SolrServerException e) {
+            LOGGER.log(Level.SEVERE, "Scheduled task failed", e);
+            e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
     }
