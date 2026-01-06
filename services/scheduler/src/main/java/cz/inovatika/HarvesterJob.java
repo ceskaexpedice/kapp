@@ -53,6 +53,6 @@ public class HarvesterJob implements Job {
             e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
-        catch (Exception e) {LOGGER.severe(e.getMessage());}
+        catch (Exception e) {LOGGER.severe(e.getMessage());e.printStackTrace(System.err);throw new RuntimeException(e);}
     }
 }
