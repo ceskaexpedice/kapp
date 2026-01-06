@@ -37,7 +37,7 @@ public class HarvesterJob implements Job {
             throw new RuntimeException(e);
         }
         ApplicationConfig applicationConfig = ApplicationConfig.loadFromStream(resourceAsStream);
-        List<Instance> instances = applicationConfig.getInstances();
+        List<Instance> instances = applicationConfig.instances();
 
         // h.harvest(config,System.out::println);
         try {

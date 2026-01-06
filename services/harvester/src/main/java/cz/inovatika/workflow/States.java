@@ -26,7 +26,7 @@ public enum States {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
             if (!currentDoc.isHierarchical()) {
-                WorkflowConfig wConfig = ctx.applicationConfig().getWorkflow();
+                WorkflowConfig wConfig = ctx.applicationConfig().workflow();
                 if (wConfig != null && currentDoc.dateRangeEndYear() != null) {
                     int year = currentDoc.dateRangeEndYear();
                     if (wConfig.isPublicYear(year)) {

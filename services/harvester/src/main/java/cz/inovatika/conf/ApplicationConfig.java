@@ -14,37 +14,9 @@ import java.util.Objects;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 
-public class ApplicationConfig {
+public record ApplicationConfig(List<Instance> instances, WorkflowConfig workflow, SolrConfig solr,
+                                TouchStoreConfig touchStoreConfig) {
 
-
-    private final TouchStoreConfig touchStoreConfig;
-    private final WorkflowConfig workflow;
-    private final List<Instance> instances;
-    private final SolrConfig solr;
-
-
-    public ApplicationConfig(List<Instance> instances, WorkflowConfig workflow, SolrConfig solr, TouchStoreConfig touchStoreConfig) {
-        this.instances = instances;
-        this.workflow = workflow;
-        this.solr = solr;
-        this.touchStoreConfig = touchStoreConfig;
-    }
-
-    public List<Instance> getInstances() {
-        return instances;
-    }
-
-    public WorkflowConfig getWorkflow() {
-        return workflow;
-    }
-
-    public SolrConfig getSolr() {
-        return solr;
-    }
-
-    public TouchStoreConfig getTouchStoreConfig() {
-        return touchStoreConfig;
-    }
 
     public static ApplicationConfig loadFromStream(InputStream is) throws ConfigException {
         try {
@@ -56,7 +28,8 @@ public class ApplicationConfig {
             throw new ConfigException(e);
         }
     }
-    public static ApplicationConfig loadFromFile(String filename)throws ConfigException {
+
+    public static ApplicationConfig loadFromFile(String filename) throws ConfigException {
         try {
             return loadFromStream(new FileInputStream(filename));
         } catch (ConfigException | FileNotFoundException e) {
