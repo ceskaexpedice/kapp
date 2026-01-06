@@ -104,19 +104,16 @@ public class HarvesterImpl implements Harvester {
                 APIVersion version = config.getApiVersion();
                 return version.createHarvestItemFromResultElement(docElm, config);
             }).toList();
-            LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
 
             String subquery = config.getApiVersion().prepareSubquery(harvestItems);
             if (!StringUtil.isEmpty(subquery)) {
-                LOGGER.log(Level.INFO, "subquery: {0}", subquery);
+                //LOGGER.log(Level.INFO, "subquery: {0}", subquery);
                 Element subResult = executeQuery(client, config.getUrl(), subquery);
-                LOGGER.log(Level.INFO, "subresult executed");
                 config.getApiVersion().processSubqueryResult(harvestItems, subResult);
-                LOGGER.log(Level.INFO, "subresult processed");
             }
             LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
             for (HarvestingItem harvestingItem : harvestItems) {
-                LOGGER.log(Level.INFO, "harvestingItem: {0}", harvestingItem.getTitles());
+                //LOGGER.log(Level.INFO, "harvestingItem: {0}", harvestingItem.getTitles());
                 HarvesterContext context = new HarvesterContext(applicationConfig, harvestingItem, touchStore, client, config);
                 consumer.accept(context);
             }
@@ -161,8 +158,7 @@ public class HarvesterImpl implements Harvester {
         if (response != null && response.statusCode() == 200) {
             InputStream is = response.body();
             String r = IOUtils.toString(is, StandardCharsets.UTF_8);
-            LOGGER.log(Level.INFO, "Solr response: {0}", r);
-
+            //LOGGER.log(Level.INFO, "Solr response: {0}", r);
             return r;
         } else {
             throw new RuntimeException("HTTP error: " + (response != null ? response.statusCode() : "null"));
@@ -299,6 +295,7 @@ public class HarvesterImpl implements Harvester {
 
     @Override
     public void harvestAndBatch(ApplicationConfig applicationConfig, Instance config) throws SolrServerException, IOException {
+        if(solrClient == null) {solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build();}
         LOGGER.log(Level.INFO, "Harvesting started, BatchSize: {0}",BATCH_SIZE);
         List<SolrInputDocument> buffer = new ArrayList<>(BATCH_SIZE);
         ArrayList<SolrInputDocument> authorBuffer = new ArrayList<>(AUTHOR_BATCH_SIZE + 20);
@@ -342,7 +339,7 @@ public class HarvesterImpl implements Harvester {
         {
 
             String pid = ctx.item().getPid();
-            LOGGER.info(String.format( "Processing '%s" , pid));
+            //LOGGER.info(String.format( "Processing '%s" , pid));
             boolean exists = ctx.touchStore().exists(pid);
             if (exists) {
                 try {
