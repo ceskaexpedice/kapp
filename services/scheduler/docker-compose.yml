@@ -1,0 +1,7 @@
+services:
+  scheduler:
+    image: scheduler:latest
+    container_name: kappScheduler
+    volumes:
+      - ./mnt/import/.kapp:/root/.kapp
+    restart: unless-stopped
