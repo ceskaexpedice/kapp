@@ -127,16 +127,14 @@ public class HarvesterImpl implements Harvester {
     }
 
     public static Element executeQuery(HttpClient httpClient, String url, String query) {
-        String t = null;
         try {
-            LOGGER.log(Level.INFO, "Executing query");
-            t = executeSolrQuery(httpClient, url, query+"&wt=xml");
+            //LOGGER.log(Level.INFO, "Executing query");
+            String t = executeSolrQuery(httpClient, url, query + "&wt=xml");
             Document doc = XMLUtils.parseDocument(new StringReader(t));
-            LOGGER.log(Level.INFO, "Solr doc name: {0}", doc.getDocumentElement().getNodeName());
+            //LOGGER.log(Level.INFO, "Solr doc name: {0}", doc.getDocumentElement().getNodeName());
             return doc.getDocumentElement();
         } catch (SAXException e) {
             LOGGER.log(Level.SEVERE, "Error parsing Solr response: ", e);
-            LOGGER.log(Level.INFO, "Solr response body: {0}", t);
             LOGGER.log(Level.INFO,"Query:{0}", url + "/" + query);
             throw new RuntimeException(e);
         } catch (ParserConfigurationException | IOException | InterruptedException e) {
@@ -154,10 +152,9 @@ public class HarvesterImpl implements Harvester {
                 .GET()
                 .build(), HttpResponse.BodyHandlers.ofInputStream());
         if(response==null)LOGGER.log(Level.WARNING, "Response not received");
-        else LOGGER .log(Level.WARNING, "Response received with status: {0}", response.statusCode());
+        else if (response.statusCode()!=200) LOGGER.log(Level.WARNING, "Response received with status: {0}", response.statusCode());
         if (response != null && response.statusCode() == 200) {
-            InputStream is = response.body();
-            String r = IOUtils.toString(is, StandardCharsets.UTF_8);
+            String r = IOUtils.toString(response.body(), StandardCharsets.UTF_8);
             //LOGGER.log(Level.INFO, "Solr response: {0}", r);
             return r;
         } else {
@@ -401,23 +398,11 @@ public class HarvesterImpl implements Harvester {
                                 }
 
                                 // store to touch store
-                                ctx.touchStore().touch(pid, entity.getMd5Sum(), config.getAcronym(), ctx.item().getRootPid(), physicalLocation);
-                                ctx.touchStore().storeMods(pid, entity.getBiblioMods().trim());
-
-                                // Authors
-                                List<AuthorData> authorData = AuthorDataUtils.parseAuthorData(parsed);
-                                wrapper.addField(FromKramFields.AUTHORS_FIELD, authorData.stream().map(AuthorData::getFull).toList());
-                                authorData.forEach(author -> {
-                                    wrapper.addField(FromKramFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
-                                    if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
-                                        wrapper.addField(FromKramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
-                                    }
-                                });
+                                storeToTouchStore(config, ctx, pid, entity, physicalLocation);
 
                                 IdentifierUtils.findIdentifiers(parsed).forEach((k,v) -> wrapper.setField(String.format("id_%s",k),v));
-
-                                List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).toList();
-                                authorsBuffer.addAll(authorityDocuments);
+                                // Authors
+                                processAuthors(wrapper,authorsBuffer,parsed);
 
                                 Integer dateRangeEnd = (Integer) wrapper.getFieldValue(ApplFields.DATE_RANGE_END_YEAR);
                                 if (dateRangeEnd != null && dateRangeEnd > 0) {
@@ -451,7 +436,7 @@ public class HarvesterImpl implements Harvester {
                         bufferSend(buffer, authorsBuffer, solrClient, wrapper);
 
                     }
-                } catch (IOException | InterruptedException | NoSuchAlgorithmException | SolrServerException e) {
+                } catch (IOException | InterruptedException | NoSuchAlgorithmException e) {
                     LOGGER.severe(e.getMessage());
                     throw new RuntimeException(e);
                 }
@@ -495,23 +480,12 @@ public class HarvesterImpl implements Harvester {
                         }
 
                         // store to touch store
-                        ctx.touchStore().touch(pid, entity.getMd5Sum(), config.getAcronym(), ctx.item().getRootPid(), physicalLocation);
-                        ctx.touchStore().storeMods(pid, entity.getBiblioMods().trim());
-
-                        // Authors
-                        List<AuthorData> authorData = AuthorDataUtils.parseAuthorData(parsed);
-                        doc.addField(FromKramFields.AUTHORS_FIELD, authorData.stream().map(AuthorData::getFull).toList());
-                        authorData.forEach(author -> {
-                            doc.addField(FromKramFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
-                            if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
-                                doc.addField(FromKramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
-                            }
-                        });
+                        storeToTouchStore(config, ctx, pid, entity, physicalLocation);
 
                         IdentifierUtils.findIdentifiers(parsed).forEach((k,v) -> doc.setField(String.format("id_%s",k),v));
+                        // Authors
+                        processAuthors(doc,authorsBuffer,parsed);
 
-                        List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).toList();
-                        authorsBuffer.addAll(authorityDocuments);
 
                         Integer dateRangeEnd = (Integer) doc.getFieldValue(ApplFields.DATE_RANGE_END_YEAR);
                         if (ctx.item().isHierarchical() ||  (dateRangeEnd != null && dateRangeEnd > 0)) {
@@ -525,8 +499,7 @@ public class HarvesterImpl implements Harvester {
                                     ctx.item().getModel(),
                                     ctx.item().isHierarchical(),
                                     LicensesAssignation.NONE);
-                            Workflow wf = new Workflow();
-                            wf.executeTransition(ctx, workflowDoc, user, message, doc);
+                            new Workflow().executeTransition(ctx, workflowDoc, user, message, doc);
                         }
                         bufferSend(buffer, authorsBuffer, solrClient, doc);
                     } else {
@@ -541,10 +514,34 @@ public class HarvesterImpl implements Harvester {
 
     }
 
-    private static void bufferSend(List<SolrInputDocument> buffer, List<SolrInputDocument> authorsBuffer, SolrClient solrClient, SolrInputDocumentWrapper doc) throws SolrServerException, IOException {
+    private static void storeToTouchStore(Instance config, HarvesterContext ctx, String pid, BiblioModsEntity entity, List<String> physicalLocation) throws IOException {
+        ctx.touchStore().touch(pid, entity.getMd5Sum(), config.getAcronym(), ctx.item().getRootPid(), physicalLocation);
+        ctx.touchStore().storeMods(pid, entity.getBiblioMods().trim());
+    }
+
+    private static void processAuthors(SolrInputDocumentWrapper doc,List<SolrInputDocument> authorsBuffer, Document parsed) {
+        List<AuthorData> authorData = AuthorDataUtils.parseAuthorData(parsed);
+        doc.addField(FromKramFields.AUTHORS_FIELD, authorData.stream().map(AuthorData::getFull).toList());
+        authorData.forEach(author -> {
+            doc.addField(FromKramFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
+            if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
+                doc.addField(FromKramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+            }
+        });
+
+
+        List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).toList();
+        authorsBuffer.addAll(authorityDocuments);
+    }
+
+    private static void bufferSend(List<SolrInputDocument> buffer, List<SolrInputDocument> authorsBuffer, SolrClient solrClient, SolrInputDocumentWrapper doc){
         buffer.add(doc.getDocument());
         if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
-            sendBatch(solrClient, Constants.Collection.TITLES_COLLECTION, buffer);
+            try{
+            sendBatch(solrClient, Constants.Collection.TITLES_COLLECTION, buffer);} catch (IOException | SolrServerException e) {
+                LOGGER.log(Level.SEVERE, "Failed to send title batch",e);
+                throw new RuntimeException(e);
+            }
             buffer.clear();
             try {
                 checkTime();
@@ -553,7 +550,11 @@ public class HarvesterImpl implements Harvester {
             }
         }
         if (authorsBuffer.size() >= BATCH_SIZE) { // BATCH_SIZE
-            sendBatch(solrClient, "authors", authorsBuffer);
+            try{
+            sendBatch(solrClient, "authors", authorsBuffer);} catch (IOException | SolrServerException e) {
+                LOGGER.log(Level.SEVERE, "Failed to send authors batch",e);
+                throw new RuntimeException(e);
+            }
             authorsBuffer.clear();
         }
     }
