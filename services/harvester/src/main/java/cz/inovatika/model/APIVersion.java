@@ -1,6 +1,7 @@
 package cz.inovatika.model;
 
 import cz.inovatika.utils.XMLUtils;
+
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
 
@@ -19,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -65,6 +67,7 @@ public enum APIVersion {
         }
 
 
+        @Override
         public HarvestingItem createHarvestItemFromResultElement(Element docResultElement, Instance instance) {
             final HarvestingItem item = new HarvestingItem();
             item.setInstance(instance);
@@ -128,7 +131,7 @@ public enum APIVersion {
             if (dostupnost != null) {
                 licenses.add(dostupnost.getTextContent().trim().equals("private") ? "onsite":"public");
             }
-            item.setLicenses(licenses.toArray(new String[licenses.size()]));
+            item.setLicenses(licenses.toArray(String[]::new));
             return item;
         }
 
@@ -158,7 +161,7 @@ public enum APIVersion {
             if (response != null && response.statusCode() == 200) {
                 return response.body();
             } else {
-                LOGGER.severe("HTTP error: " + (response != null ? response.statusCode() : "null"));
+                LOGGER.log(Level.SEVERE, "HTTP error: {0}", response != null ? response.statusCode() : "null");
                 return null;
             }
         }
@@ -270,7 +273,7 @@ public enum APIVersion {
                     }
                 }
             }
-            item.setLicenses(licenses.toArray(new String[licenses.size()]));
+            item.setLicenses(licenses.toArray(String[]::new));
             return item;
         }
 
@@ -300,7 +303,7 @@ public enum APIVersion {
             if (response != null && response.statusCode() == 200) {
                 return response.body();
             } else {
-                LOGGER.severe("HTTP error: " + (response != null ? response.statusCode() : "null"));
+                LOGGER.log(Level.SEVERE, "HTTP error: {0}", response != null ? response.statusCode() : "null");
                 return null;
             }
         }

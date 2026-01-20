@@ -58,7 +58,7 @@ public class TsvToSolrIndexer {
 
     private static String DIRECTORY_PATH = "../Data"; // change this
 
-    private static SolrClient solrClient;
+    private final static SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build();
     private final static boolean VERBOSEDEBUG = false;
 
     public static void main(String[] args) throws ParserConfigurationException {
@@ -88,7 +88,6 @@ public class TsvToSolrIndexer {
             System.err.println("Failed to load TSV mappings: " + e.getMessage());
             return;
         }
-        solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build();
         try {
             File[] tsvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".tsv"));
 

@@ -40,8 +40,7 @@ public record ApplicationConfig(List<Instance> instances, WorkflowConfig workflo
     @Override
     public boolean equals(Object o) {
         if (o == null || getClass() != o.getClass()) return false;
-        ApplicationConfig that = (ApplicationConfig) o;
-        return Objects.equals(instances, that.instances);
+        return Objects.equals(instances, ((ApplicationConfig) o).instances);
     }
 
     @Override
