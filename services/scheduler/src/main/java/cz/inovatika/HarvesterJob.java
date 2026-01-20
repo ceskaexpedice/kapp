@@ -3,28 +3,35 @@ import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.impl.HarvesterImpl;
 
 import org.quartz.Job;
+import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 
 import cz.inovatika.model.Instance;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
-import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
-
-import org.apache.solr.client.solrj.SolrServerException;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class HarvesterJob implements Job {
-    public static final Logger LOGGER = Logger.getLogger(Instance.class.getName());
+    public static final Logger LOGGER = Logger.getLogger(HarvesterJob.class.getName());
     @Override
     public void execute(JobExecutionContext context) {
         System.out.println("Running scheduled task: " + System.currentTimeMillis());
+        JobDataMap dataMap = context.getMergedJobDataMap();
+        String runType = dataMap.getString("runType");
+        switch (runType) {
+            case "FULL" -> {LOGGER.log(Level.INFO, "Full scheduled task: {0}", System.currentTimeMillis());
+                throw new UnsupportedOperationException("Full harvest via scheduler is not supported yet.");
+            }
+            case "INCREMENTAL" -> performTask();
+            default -> throw new IllegalArgumentException("Invalid runType: " + runType);
+        }
 
-        performTask();
+
     }
 
     private void performTask() {
@@ -39,20 +46,17 @@ public class HarvesterJob implements Job {
         ApplicationConfig applicationConfig = ApplicationConfig.loadFromStream(resourceAsStream);
         List<Instance> instances = applicationConfig.instances();
 
-        // h.harvest(config,System.out::println);
+        Harvester h = new HarvesterImpl();
         try {
-
-            Harvester h = new HarvesterImpl();
             for (Instance i : instances) {
                 LOGGER.log(Level.INFO, "Starting: {0}", i.getAcronym());
-                h.harvestAndBatch(applicationConfig,i);
+                h.start();
             }
 
-        } catch (final IOException | SolrServerException e) {
+        } catch (final Exception e) {
             LOGGER.log(Level.SEVERE, "Scheduled task failed", e);
             e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
-        catch (Exception e) {LOGGER.severe(e.getMessage());e.printStackTrace(System.err);throw new RuntimeException(e);}
     }
 }

@@ -1,12 +1,11 @@
 package cz.inovatika.workflow;
 
 import cz.inovatika.conf.WorkflowConfig;
+import cz.inovatika.impl.HarvesterImpl;
 import cz.inovatika.model.HarvesterContext;
 
-import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
@@ -206,21 +205,23 @@ public enum States {
         try {
             SolrQuery q = new SolrQuery()
                     .setQuery("root.pid:\"" + ctx.item().getRootPid() + "\"")
-                    .setRows(500).addFilterQuery("model:\"monographunit\" OR model:\"periodicalvolume\"");
-            for (SolrDocument doc : solrClient.query("titles", q).getResults()) {
+                    .setRows(300).addFilterQuery("model:\"monographunit\" OR model:\"periodicalvolume\"");
+            for (SolrDocument doc : HarvesterImpl.solrClient.query("titles", q).getResults()) {
                 Object state = doc.get("state");
                 if (TO_CONTROL.name().equals(state)) {
+                    LOGGER.log(Level.INFO, "Children found for {0}", ctx.item().getRootPid());
                     return PARENT_OPEN;
                 }
             }
+            LOGGER.log(Level.INFO, "No children found for {0}", ctx.item().getRootPid());
             return PARENT_CLOSED;
         } catch (SolrServerException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error checking children states for item " + ctx.item().getRootPid(), e);
             return PARENT_CLOSED;
         }
     }
-    private static final String SOLR_URL = "http://localhost:8983/solr";
-    private static final SolrClient solrClient =  new HttpJdkSolrClient.Builder(SOLR_URL).build();
+    //private static final String SOLR_URL = "http://localhost:8983/solr";
+    //private static final SolrClient solrClient =  new HttpJdkSolrClient.Builder(SOLR_URL).build();
     final String value;
     final boolean automaticSwitch;
     final LicensesAssignation licensesAssignation;
@@ -235,7 +236,7 @@ public enum States {
             SolrQuery q = new SolrQuery()
                     .setQuery("root.pid:\"" + child.item().getRootPid() + "\"").addFilterQuery("model:\"monograph\" OR model:\"periodical\"")
                     .setRows(1);
-            SolrDocumentList results = solrClient.query("titles", q).getResults();
+            SolrDocumentList results = HarvesterImpl.solrClient.query("titles", q).getResults();
             if(results.getNumFound()==0){
                 //LOGGER.log(Level.WARNING, "Parent not found for item " + child.item().getRootPid());
                 return;

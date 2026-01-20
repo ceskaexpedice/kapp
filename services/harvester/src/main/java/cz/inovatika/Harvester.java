@@ -3,9 +3,6 @@ package cz.inovatika;
 import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.model.HarvesterContext;
 import cz.inovatika.model.Instance;
-import org.apache.solr.client.solrj.SolrServerException;
-
-import java.io.IOException;
 import java.util.function.Consumer;
 
 
@@ -41,7 +38,5 @@ public interface Harvester {
      */
     public void harvest(ApplicationConfig applicationConfig, Instance harvestingInstanceConfig, Consumer<HarvesterContext> consumer);
 
-
-
-    public void harvestAndBatch(ApplicationConfig applicationConfig, Instance harvestingInstanceConfig)throws SolrServerException, IOException;
+    public void start();
 }
