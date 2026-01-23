@@ -4,6 +4,7 @@ import { Observable, map, finalize, catchError, of } from 'rxjs';
 import { Label } from './shared/label';
 import { Batch } from './shared/batch';
 import { Author } from './shared/author';
+import { Contract } from './shared/contract';
 
 @Injectable({
   providedIn: 'root'
@@ -151,6 +152,27 @@ export class AppService {
 
   login(): Observable<any> {
     return this.post('user/login', {});
+  }
+
+  searchContracts(params: HttpParams): Observable<any> {
+    return this.get('index/contracts', params);
+  }
+
+  getContract(id: string): Observable<any> {
+    return this.get('index/get_contract', {id});
+  }
+
+  uploadContract(form: any): Observable<any> {
+    return this.post('index/upload_batch', form);
+  }
+
+  saveContract(c: Contract): Observable<any> {
+    return this.post('index/save_contract', c);
+  }
+
+  checkFileExists(filename: string, ) {
+    const url = `/index/check_file_exists?name=${filename}`;
+    return this.get(url);
   }
   
 }

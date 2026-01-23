@@ -7,7 +7,8 @@ $home_cards: (
   authors: #8BC34A,
   imports: #009688,
   authors-with-conflict: #607D8B,
-  non-revised-titles: #FF9800
+  non-revised-titles: #FF9800,
+  repo: #523305
 );
 
 @mixin setHomeCard() {

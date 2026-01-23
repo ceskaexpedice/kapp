@@ -10,6 +10,7 @@
     <a [routerLink]="['titles']" routerLinkActive="app-active-link" matButton>{{ 'navbar.titles' | translate}}</a>
     <a [routerLink]="['authors']" routerLinkActive="app-active-link" matButton>{{ 'navbar.authors' | translate}}</a>
     <a [routerLink]="['batches']" routerLinkActive="app-active-link" matButton>{{ 'navbar.batches' | translate}}</a>
+    <a [routerLink]="['contracts']" routerLinkActive="app-active-link" matButton>{{ 'navbar.contracts' | translate}}</a>
     @if(auth.user()) {
       <a matButton (click)="viewUser()">{{ auth.user().name }}</a>
     } @else {

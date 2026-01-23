@@ -68,6 +68,18 @@
 					<button matButton="outlined" (click)="toControll()" mat-raised-button>{{ 'action.view' | translate }}</button>
 				</mat-card-actions>
 			</mat-card>
+			
+			<mat-card appearance="outlined" class="app-card-repo">
+				<mat-card-header>
+					<mat-card-title>{{ 'home.contracts' | translate }} </mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					{{ 'home.contracts_desc' | translate }}
+				</mat-card-content>
+				<mat-card-actions align="end" class="app-mat-card-actions">
+					<button matButton="outlined" (click)="contracts()" mat-raised-button>{{ 'action.view' | translate }}</button>
+				</mat-card-actions>
+			</mat-card>
 		</div>
 	</div>
 </div>
