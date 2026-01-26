@@ -24,12 +24,13 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 @Component({
   selector: 'app-contracts',
   imports: [
-    TranslateModule, FormsModule,  
+    TranslateModule, FormsModule,
     MatDialogModule, MatMenuModule, MatProgressBarModule,
     MatIconModule, MatButtonModule, MatCardModule,
     MatFormFieldModule, MatInputModule,
     AngularSplitModule, MatTableModule,
-    MatTooltipModule],
+    MatTooltipModule
+],
   templateUrl: './contracts.html',
   styleUrl: './contracts.scss'
 })
@@ -43,7 +44,6 @@ export class Contracts {
   private router = inject(Router);
 
   loading = signal<boolean>(false);
-
 
   solrResponse: any;
   docs = signal<any[]>([]);
@@ -65,8 +65,7 @@ export class Contracts {
   selectedFile: File;
   uploadProgress: number | null;
   progressMsg: string;
-
-
+  selctedFileExists = signal<boolean>(false);
 
   constructor() {
     effect(() => {
@@ -78,12 +77,6 @@ export class Contracts {
 
   addFilters(p: any, usedFacets: { field: string, value: string }[]) {
     // p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
-    // p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
-    // p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
-    // p.physical_locations = usedFacets.filter(k => k.field === 'physical_locations').map(k => k.value);
-    // p.assigned_license = usedFacets.filter(k => k.field === 'assigned_license').map(k => k.value);
-    // p.licenses = usedFacets.filter(k => k.field === 'licenses').map(k => k.value);
-    // p.digital_library = usedFacets.filter(k => k.field === 'digital_library').map(k => k.value);
   }
 
   clearQ() {
@@ -149,7 +142,27 @@ export class Contracts {
 
   onFileSelected(event: any) {
     this.selectedFile = event.target.files[0];
-    this.uploadFile();
+    this.checkUpload();
+  }
+
+  
+
+  checkUpload() {
+    if (this.overwrite) {
+      this.uploadFile();
+      return;
+    }
+    this.selctedFileExists.set(false);
+    this.service.checkContractExists(this.selectedFile.name).subscribe((resp: any) => {
+      if (resp.exists) {
+        // alert('File already exists. Check option to overwrite');
+        this.selctedFileExists.set(true);
+      } else if (resp.error) {
+        alert('Error: ' + resp.error);
+      } else {
+        this.uploadFile()
+      }
+    })
   }
 
   uploadFile(){

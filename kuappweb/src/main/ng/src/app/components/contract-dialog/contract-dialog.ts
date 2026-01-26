@@ -96,20 +96,6 @@ export class ContractDialog {
     }
   }
 
-  checkUpload() {
-    if (this.overwrite) {
-      this.uploadFile();
-      return;
-    }
-    this.service.checkFileExists(this.selectedFile.name).subscribe((resp: any) => {
-      if (resp.exists) {
-        alert('File already exists. Check option to overwrite');
-      } else {
-        this.uploadFile()
-      }
-    })
-  }
-
   save() {
   this.service.saveContract(this.contract()).subscribe((resp: any) => {
         console.log(resp)

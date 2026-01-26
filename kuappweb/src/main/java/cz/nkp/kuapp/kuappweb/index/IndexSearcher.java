@@ -391,7 +391,6 @@ public class IndexSearcher {
             if (request.getParameter("q") != null) {
                 q = request.getParameter("q");
             }
-            System.out.println(q);
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withParam("df", "search_text") 
@@ -405,7 +404,6 @@ public class IndexSearcher {
                     .setSort("indextime desc")
                     .returnFields("*")
                     .setLimit(rows);
-            System.out.println(jrequest);
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "contracts");
             InputStream is = (InputStream) resp.get("stream");

@@ -170,8 +170,8 @@ export class AppService {
     return this.post('index/save_contract', c);
   }
 
-  checkFileExists(filename: string, ) {
-    const url = `/index/check_file_exists?name=${filename}`;
+  checkContractExists(filename: string, ) {
+    const url = `/index/check_contract_exists?filename=${filename}`;
     return this.get(url);
   }
   

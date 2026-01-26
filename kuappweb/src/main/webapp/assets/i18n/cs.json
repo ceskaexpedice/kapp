@@ -12,6 +12,7 @@
   "history": "Historie",
   "batch_alert": "pro celou dávku",
   "titleColumns_dialog": "Výběr sloupců",
+  "contract_exists": "Soubor {{filename}} jiz existuje.",
   "home": {
     "titles": "Díla ",
     "authors": "Autoři",
@@ -19,8 +20,8 @@
     "authors_conflict_desc": "Seznam autorů, u kterých je rozdíl mezi AUT a Kuratorske app",
     "titles_to_control": "Díla  ke kontrole",
     "titles_to_control_desc": "Seznam díl ke kurátorské kontrole",
-    "contracts": "Evidenci smluv",
-    "contracts_desc": "Evidenci smluv"
+    "contracts": "Evidence smluv",
+    "contracts_desc": "Evidence smluv"
   },
   "field": {
     "query": "dotaz",
@@ -47,13 +48,22 @@
     "release_date": "Datum uvolnění",
     "dateIssued": "Datum vydání", 
     "sigla": "Producent/Umístění", 
-    "indextime": "Datum importu"
+    "indextime": "Datum importu",
+    "filename": "Název souboru", 
+    "cislo_smlouvy": "Číslo smlouvy", 
+    "nazev_poskytovatele": "Název poskytovatele", 
+    "ico": "IČO", 
+    "datum_uzavreni": "Datum uzavření", 
+    "datum_platnosti": "Datum platnosti", 
+    "kontaktni_osoby": "Kontaktní osoby", 
+    "souhrn": "Souhrn"
   },
   "action": {
     "view": "Zobrazit",
     "search": "Hledat",
     "close": "Zavřít",
     "save": "Uložit",
+    "overwrite": "Přepsat",
     "set_as_last": "Nastavit jako poslední",
     "set_state": "Nastavit stav",
     "check_author": "Hledat autora v AUT",
@@ -67,7 +77,8 @@
     "add_batch_from_label": "Vytvořit dávku z štítku",
     "import_batch": "Importovat soubor do dávky",
     "card_view": "Karty",
-    "table_view": "Tabulka"
+    "table_view": "Tabulka",
+    "contract_upload": "Nahrát smluovu"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "NEKONTROLOVANÉ",
@@ -86,6 +97,6 @@
     "authors": "Autoři",
     "batches": "Dávky",
     "titles": "Díla",
-    "contracts": "Evidenci smluv"
+    "contracts": "Evidence smluv"
   }
 }

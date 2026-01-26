@@ -25,6 +25,7 @@
         <url-pattern>/titles</url-pattern>
         <url-pattern>/authors</url-pattern>
         <url-pattern>/results</url-pattern>
+        <url-pattern>/contracts</url-pattern>
     </servlet-mapping>
     <session-config>
         <session-timeout>

@@ -10,6 +10,7 @@
   "reason": "Reason",
   "history": "History",
   "titleColumns_dialog": "Columns settings",
+  "contract_exists": "File {{filename}} already exists",
   "home": {
     "titles": "Titles",
     "authors": "Authors",
@@ -45,13 +46,22 @@
     "release_date": "Release date",
     "dateIssued": "Date issued", 
     "sigla": "Location", 
-    "indextime": "Index time"
+    "indextime": "Index time",
+    "filename": "File name", 
+    "cislo_smlouvy": "Contract Number", 
+    "nazev_poskytovatele": "Provider name", 
+    "ico": "IČO", 
+    "datum_uzavreni": "Sign date", 
+    "datum_platnosti": "Validity date", 
+    "kontaktni_osoby": "Contacts", 
+    "souhrn": "Summary"
   },
   "action": {
     "view": "View",
     "search": "Search",
     "close": "Close",
     "save": "Save",
+    "overwrite": "Overwrite",
     "set_as_last": "Set as last",
     "set_state": "Set state",
     "check_author": "Search autor in AUT",
@@ -65,7 +75,8 @@
     "add_batch_from_label": "Create batch from label",
     "import_batch": "Import batch",
     "card_view": "Cards",
-    "table_view": "Table"
+    "table_view": "Table",
+    "contract_upload": "Upload contract"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "NEKONTROLOVANÉ",

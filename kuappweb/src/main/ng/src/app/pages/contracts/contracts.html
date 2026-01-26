@@ -32,13 +32,13 @@
                     <button matPrefix mat-stroked-button color="primary" class="app-mr-2 app-ml-2"
                         (click)="fileUpload.click()">{{
                         'action.contract_upload' | translate }}</button>
-                    <span> {{selectedFile?.name}}</span>
+                        
+                    @if (selctedFileExists()) {
+                        <span class="app-color-warn">&#160;{{ 'contract_exists' | translate : {filename:selectedFile?.name} }} &#160;</span> 
+                        <button mat-stroked-button matSuffix (click)="uploadFile()">{{ 'action.overwrite' | translate}}</button>
+                    }
+                    
                 </div>
-
-
-                <!-- <button matButton="outlined" (click)="showContract(null)"
-                    [title]="'action.contract_upload' | translate"><mat-icon>download</mat-icon>{{'action.contract_upload'
-                    | translate}}</button> -->
             </div>
             <div class="app-table-wrapper">
                 <table mat-table [dataSource]="docs()" class="app-hover app-striped app-w-100">
