@@ -17,17 +17,19 @@ import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Contract } from '../../shared/contract';
+import { MatCheckbox } from "@angular/material/checkbox";
 
 @Component({
   selector: 'app-contract-dialog',
   imports: [
-    TranslateModule, FormsModule, 
-    MatDialogModule, MatMenuModule, 
+    TranslateModule, FormsModule,
+    MatDialogModule, MatMenuModule,
     MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
     MatProgressBarModule,
-    MatListModule, MatTooltipModule
-  ],
+    MatListModule, MatTooltipModule,
+    MatCheckbox
+],
   templateUrl: './contract-dialog.html',
   styleUrl: './contract-dialog.scss'
 })

@@ -314,6 +314,11 @@ $home_cards: (
       container-min-width: 600px
     ));
   }
+  .app-dialog-contract {
+    @include mat.dialog-overrides((
+      container-min-width: 1000px
+    ));
+  }
 
 
   @for $i from 0 through 5 {

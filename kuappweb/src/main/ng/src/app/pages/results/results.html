@@ -77,6 +77,23 @@
               <td mat-cell *matCellDef="let doc">{{ 'state.' + doc.state | translate }}</td>
             </ng-container>
 
+            <ng-container matColumnDef="authors">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.authors' |
+                  translate}}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                @for(a of doc.authors_kramerius; track $index) {
+                <div>
+                  <span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
+                </div>
+                @for(l of a.links; track $index) {
+                <a target="_blank" [href]="l.url" class="app-value">
+                  <span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
+                </a>
+                }
+                }
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="dateIssued">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.dateIssued' |
                   translate}}</span></th>
@@ -93,23 +110,6 @@
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.indextime' |
                   translate}}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc.indextime | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
-            </ng-container>
-
-            <ng-container matColumnDef="authors">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.authors' |
-                  translate}}</span></th>
-              <td mat-cell *matCellDef="let doc">
-                @for(a of doc.authors_kramerius; track $index) {
-                <div>
-                  <span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
-                </div>
-                @for(l of a.links; track $index) {
-                <a target="_blank" [href]="l.url" class="app-value">
-                  <span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
-                </a>
-                }
-                }
-              </td>
             </ng-container>
 
             <ng-container matColumnDef="decision_date">

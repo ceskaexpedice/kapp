@@ -1,4 +1,4 @@
-<h2 mat-dialog-title>{{ 'action.set_state' | translate}}
+<h2 mat-dialog-title>{{ 'contract' | translate}}
 
 </h2>
 <mat-dialog-content>
@@ -6,56 +6,77 @@
     <mat-progress-bar mode="indeterminate" [value]="uploadProgress"></mat-progress-bar>
     <div>{{ progressMsg }}</div>
     }
-
-		<div class="app-fxLayout app-row ">
-            <mat-form-field appearance="outline" class="app-w-100">
-				<mat-label>{{ 'field.title' | translate }}</mat-label>
-				<input matInput [(ngModel)]="contract().title" />
-			</mat-form-field>
+<div class="app-fxLayout app-mt-4">
+		<div class="app-fxLayout app-column ">
+			<div class="app-fxLayout app-row ">
+				<mat-form-field appearance="outline" class="app-w-100">
+					<mat-label>{{ 'field.title' | translate }}</mat-label>
+					<input matInput [(ngModel)]="contract().title" />
+				</mat-form-field>
+			</div>
+			<div class="app-fxLayout app-row">
+				<mat-form-field appearance="outline" class="app-w-100">
+					<mat-label>{{ 'field.cislo_smlouvy' | translate }}</mat-label>
+					<input matInput [(ngModel)]="contract().cislo_smlouvy" />
+				</mat-form-field>
+			</div>
+			<div class="app-fxLayout app-row">
+				<mat-form-field appearance="outline" class="app-w-100">
+					<mat-label>{{ 'field.datum_uzavreni' | translate }}</mat-label>
+					<input matInput [(ngModel)]="contract().datum_uzavreni" />
+				</mat-form-field>
+			</div>
+			<div class="app-fxLayout app-row">
+				<mat-form-field appearance="outline" class="app-w-100">
+					<mat-label>{{ 'field.datum_platnosti' | translate }}</mat-label>
+					<input matInput [(ngModel)]="contract().datum_platnosti" />
+				</mat-form-field>
+			</div>
+			<div class="app-fxLayout app-row ">
+				<mat-form-field appearance="outline" class="app-w-100">
+					<mat-label>{{ 'field.nazev_poskytovatele' | translate }}</mat-label>
+					<input matInput [(ngModel)]="contract().nazev_poskytovatele" />
+				</mat-form-field>
+			</div>
+			<div class="app-fxLayout app-row">
+				<mat-form-field appearance="outline" class="app-w-100">
+					<mat-label>{{ 'field.ico' | translate }}</mat-label>
+					<input matInput [(ngModel)]="contract().ico" />
+				</mat-form-field>
+			</div>
+			<div class="app-fxLayout app-row ">
+				<mat-form-field appearance="outline" class="app-w-100">
+					<mat-label>{{ 'field.kontaktni_osoby' | translate }}</mat-label>
+					<textarea matInput rows="3" [(ngModel)]="contract().kontaktni_osoby" ></textarea>
+				</mat-form-field>
+			</div>
+			<div class="app-fxLayout app-row ">
+					<mat-checkbox appearance="outline" [(ngModel)]="contract().hlavni">{{ 'field.hlavni' | translate }}</mat-checkbox>
+					<mat-form-field appearance="outline" >
+						<mat-label>{{ 'field.dodatky' | translate }}</mat-label>
+						<input [disabled]="!contract().hlavni" matInput rows="3" [(ngModel)]="contract().dodatky" />
+					</mat-form-field>
+					<mat-form-field appearance="outline" >
+						<mat-label>{{ 'field.hlavni_smlouva' | translate }}</mat-label>
+						<input [disabled]="contract().hlavni" matInput rows="3" [(ngModel)]="contract().hlavni_smlouva" />
+					</mat-form-field>
+			</div>
+			<div class="app-fxLayout app-row ">
+				<mat-form-field appearance="outline" class="app-w-100">
+					<mat-label>{{ 'field.digitalni_knihovny' | translate }}</mat-label>
+					<input matInput rows="3" [(ngModel)]="contract().digitalni_knihovny" />
+				</mat-form-field>
+			</div>
 		</div>
-		<div class="app-fxLayout app-row app-fill">
-            <mat-form-field appearance="outline" class="app-w-100">
-				<mat-label>{{ 'field.cislo_smlouvy' | translate }}</mat-label>
-				<input matInput [(ngModel)]="contract().cislo_smlouvy" />
-			</mat-form-field>
+		<div class="app-fxLayout app-column app-w-100">
+			<div class="app-fxLayout app-row ">
+				<mat-form-field appearance="outline" class="app-w-100 app-fill">
+					<mat-label>{{ 'field.souhrn' | translate }}</mat-label>
+					<textarea matInput rows="10" [(ngModel)]="contract().souhrn" ></textarea>
+				</mat-form-field>
+			</div>
 		</div>
-		<div class="app-fxLayout app-row app-fill">
-            <mat-form-field appearance="outline" class="app-w-100">
-				<mat-label>{{ 'field.datum_uzavreni' | translate }}</mat-label>
-				<input matInput [(ngModel)]="contract().datum_uzavreni" />
-			</mat-form-field>
-		</div>
-		<div class="app-fxLayout app-row app-fill">
-            <mat-form-field appearance="outline" class="app-w-100">
-				<mat-label>{{ 'field.datum_platnosti' | translate }}</mat-label>
-				<input matInput [(ngModel)]="contract().datum_platnosti" />
-			</mat-form-field>
-		</div>
-		<div class="app-fxLayout app-row ">
-            <mat-form-field appearance="outline" class="app-w-100">
-				<mat-label>{{ 'field.nazev_poskytovatele' | translate }}</mat-label>
-				<input matInput [(ngModel)]="contract().nazev_poskytovatele" />
-			</mat-form-field>
-		</div>
-		<div class="app-fxLayout app-row app-fill">
-            <mat-form-field appearance="outline" class="app-w-100">
-				<mat-label>{{ 'field.ico' | translate }}</mat-label>
-				<input matInput [(ngModel)]="contract().ico" />
-			</mat-form-field>
-		</div>
-		<div class="app-fxLayout app-row ">
-            <mat-form-field appearance="outline" class="app-w-100">
-				<mat-label>{{ 'field.kontaktni_osoby' | translate }}</mat-label>
-				<textarea matInput rows="3" [(ngModel)]="contract().kontaktni_osoby" ></textarea>
-			</mat-form-field>
-		</div>
-		<div class="app-fxLayout app-row ">
-            <mat-form-field appearance="outline" class="app-w-100">
-				<mat-label>{{ 'field.souhrn' | translate }}</mat-label>
-				<textarea matInput rows="3" [(ngModel)]="contract().souhrn" ></textarea>
-			</mat-form-field>
-		</div>
-
+</div>
 </mat-dialog-content>
 <mat-dialog-actions>
     <!-- <button matButton (click)="uploadFile()">{{ 'action.upload' | translate }}</button> -->

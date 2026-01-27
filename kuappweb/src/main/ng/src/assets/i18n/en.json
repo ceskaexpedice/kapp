@@ -11,6 +11,7 @@
   "history": "History",
   "titleColumns_dialog": "Columns settings",
   "contract_exists": "File {{filename}} already exists",
+  "contract": "Contract",
   "home": {
     "titles": "Titles",
     "authors": "Authors",
@@ -54,6 +55,9 @@
     "datum_uzavreni": "Sign date", 
     "datum_platnosti": "Validity date", 
     "kontaktni_osoby": "Contacts", 
+    "digitalni_knihovny": "Digital libraries",
+    "hlavni": "Main contract",
+    "dodatky": "Attachments to contracts",
     "souhrn": "Summary"
   },
   "action": {
@@ -83,6 +87,8 @@
     "NONCONTROLLED_PUBLIC": "NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ",
     "TO_CONTROL": "KE KONTROLE",
     "PARENT_TO_CONTROLL": "KE KONTROLE NADŘAZENÉHO",
+    "PARENT_OPEN": "KE KONTROLE NADŘAZENÉHO",
+    "PARENT_CLOSED": "NADŘAZENÉ ZKONTROLOVANÉ",
     "CONTROLLED_PUBLIC": "KONTROLOVANÉ - VOLNÉ",
     "CONTROLLED_PRIVATE": "KONTROLOVANÉ- NEVEŘEJNÉ",
     "CONTROLLED_UNKNOWN": "KONTROLOVANÉ - NEZNÁMÉ"

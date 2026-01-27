@@ -17,6 +17,12 @@
   <field name="datum_uzavreni" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="datum_platnosti" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="kontaktni_osoby" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="digitalni_knihovny" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="dodatky" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="hlavni" type="boolean" multiValued="false" indexed="true" stored="true"/>
+
+
+
   <field name="souhrn" type="text_general_lemmatized" multiValued="true" indexed="true" stored="true"/>
   <field name="full_text" type="text_general_lemmatized" multiValued="true" indexed="false" stored="true"/>
   <field name="search_text" type="text_general_lemmatized" multiValued="true" indexed="true" stored="false"/>

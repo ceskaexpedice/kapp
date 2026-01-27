@@ -323,6 +323,11 @@ public class SolrIndexer {
             doc.setField("datum_platnosti", js.optString("datum_platnosti"));
             doc.setField("kontaktni_osoby", js.optString("kontaktni_osoby"));
             doc.setField("souhrn", js.optString("souhrn"));
+            doc.setField("digitalni_knihovny", js.optString("digitalni_knihovny"));
+            doc.setField("hlavni_smlouva", js.optString("hlavni_smlouva"));
+            doc.setField("hlavni", js.optBoolean("hlavni"));
+            doc.setField("dodatky", js.optString("dodatky"));
+  
             solr.add("contracts", doc);
             solr.commit("contracts");
             ret.put("msg", "saved");

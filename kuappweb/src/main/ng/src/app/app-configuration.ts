@@ -68,10 +68,11 @@ console.log('Loading config...')
                         this.state.batches.set(b);
                     }
                     
-                    // const c = resp.config.find((a: any) => a.id === 'titleColumns');
-                    const c = localStorage.getItem('titleColumns');
+                    const c = resp.config.find((a: any) => a.id === 'titleColumns')?.value;
+                    // const c = localStorage.getItem('titleColumns');
                     if (c) {
-                        this.state.titleColumns.update(a => [...JSON.parse(c)]);
+                        //this.state.titleColumns.update(a => [...JSON.parse(c)]);
+                        this.state.titleColumns.update(a => [...c]);
                     } else {
                         this.state.titleColumns.update(a => [...this.config.titleColumns]);
                     }
