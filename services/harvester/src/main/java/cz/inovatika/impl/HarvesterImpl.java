@@ -1,7 +1,8 @@
 package cz.inovatika.impl;
 
 import cz.inovatika.Constants;
-import cz.inovatika.XmlProcessor;
+import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
+import cz.inovatika.Constants.TitlesCollectionFields.FromKramFields;
 import cz.inovatika.authors.AuthorData;
 import cz.inovatika.Harvester;
 import cz.inovatika.authors.AuthorDataUtils;
@@ -26,7 +27,8 @@ import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
+//import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
@@ -63,8 +65,6 @@ import com.google.common.base.Stopwatch;
 
 import java.util.concurrent.TimeUnit;
 
-import static cz.inovatika.Constants.TitlesCollectionFields.*;
-
 public class HarvesterImpl implements Harvester {
 
     public static final Logger LOGGER = Logger.getLogger(HarvesterImpl.class.getName());
@@ -73,8 +73,7 @@ public class HarvesterImpl implements Harvester {
     private final int ROWS = 100;
     private static final int BATCH_SIZE = 200;
     private static final int AUTHOR_BATCH_SIZE = 250;
-    public static final SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).withConnectionTimeout(100,TimeUnit.SECONDS)
-            .withIdleTimeout(60,TimeUnit.SECONDS).build();
+    public static final SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).withConnectionTimeout(100,TimeUnit.SECONDS).build();
 
     private static final boolean RUNINOVATIKA = false;
     private static final boolean RUNNKP = true;
@@ -173,9 +172,9 @@ public class HarvesterImpl implements Harvester {
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
-    static final int intervalMinutes = 60;
+    static final int INTERVALMINUTES = 60;
     static LocalTime start = LocalTime.now();
-    static LocalTime end = start.plusMinutes(intervalMinutes);
+    static LocalTime end = start.plusMinutes(INTERVALMINUTES);
     static long sleepSeconds = 2;
     static boolean exitOnOutOfInterval = true;
 

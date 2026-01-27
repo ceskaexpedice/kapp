@@ -13,3 +13,13 @@ services:
       - "8983:8983"
     volumes:
       - ./../../kuratorska-aplikace-web/solr:/var/solr
+  tomcat:
+    image: tomcat:9.0.107-jdk21-temurin  # You can choose a different version if needed
+    container_name: tomcat
+    ports:
+      - "8080:8080"           # Expose Tomcat on localhost:8080
+    volumes:
+      - ./webapps:/usr/local/tomcat/webapps  # Map local webapps folder to Tomcat
+    environment:
+      - JAVA_OPTS=-Xms512m -Xmx1024m
+    restart: unless-stopped
