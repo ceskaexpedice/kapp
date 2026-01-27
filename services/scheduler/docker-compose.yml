@@ -5,3 +5,11 @@ services:
     volumes:
       - ./mnt/import/.kapp:/root/.kapp
     restart: unless-stopped
+
+  solr:
+    image: solr:9
+    container_name: solr-kappScheduler
+    ports:
+      - "8983:8983"
+    volumes:
+      - ./solr:/var/solr
