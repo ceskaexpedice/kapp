@@ -312,7 +312,6 @@ public class SolrIndexer {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             SolrInputDocument doc = new SolrInputDocument();
-            doc.setField("id", js.getString("filename"));
             doc.setField("name", js.optString("name"));
             doc.setField("title", js.optString("title"));
             doc.setField("filename", js.optString("filename"));

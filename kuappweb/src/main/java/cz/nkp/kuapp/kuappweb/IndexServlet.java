@@ -9,7 +9,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
-import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.logging.Level;
@@ -20,7 +19,6 @@ import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 import javax.servlet.http.Part;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
@@ -32,8 +30,8 @@ import org.json.JSONObject;
  * @author alberto
  */
 @WebServlet(name = "IndexServlet", urlPatterns = {"/index/*"})
-@MultipartConfig(location = "/tmp", fileSizeThreshold = 1024 * 1024,
-        maxFileSize = 1024 * 1024 * 10, // 10MB
+@MultipartConfig(location = "/tmp", fileSizeThreshold = 1024 * 1024 * 50,
+        maxFileSize = 1024 * 1024 * 50, // 10MB
         maxRequestSize = 1024 * 1024 * 50)   // 50MB)
 public class IndexServlet extends HttpServlet {
 
@@ -259,7 +257,7 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
-        SAVE_AUTHOR { 
+        SAVE_AUTHOR {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
@@ -346,10 +344,10 @@ public class IndexServlet extends HttpServlet {
 //                String filename = req.getParameter("filename");
 //                File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
 //                ret.put("exists", targetFile.exists());
-                
-                JSONObject json = IndexSearcher.getContract(req.getParameter("filename"));
-                ret.put("exists", json.getJSONObject("response").getInt("numFound") > 0);
-                
+
+                    JSONObject json = IndexSearcher.getContract(req.getParameter("filename"));
+                    ret.put("exists", json.getJSONObject("response").getInt("numFound") > 0);
+
                 } catch (Exception ex) {
                     ret.put("error", ex);
                 }
@@ -361,28 +359,38 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject ret = new JSONObject();
                 try {
-                //for (Part part : request.getParts()) {
-                Part part = req.getPart("file");
-                LOGGER.log(Level.INFO, "Part name -> {0}", part.getHeader("content-disposition"));
-                String filename = req.getParameter("name");
-                // String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
-                byte[] pdfBytes = part.getInputStream().readAllBytes();
-                
-                File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
-                OutputStream outStream = new FileOutputStream(targetFile);
-                outStream.write(pdfBytes);
-    
-                String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
-                
-                ret = GeminiAnalyzer.analyze(base64Pdf);
+                    //for (Part part : request.getParts()) {
+                    Part part = req.getPart("file");
+                    LOGGER.log(Level.INFO, "Part name -> {0}", part.getHeader("content-disposition"));
+                    String filename = req.getParameter("name");
+                    // String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
+                    byte[] pdfBytes = part.getInputStream().readAllBytes();
+
+                    File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
+                    OutputStream outStream = new FileOutputStream(targetFile);
+                    outStream.write(pdfBytes);
+
+                    if (Boolean.parseBoolean(req.getParameter("analyze"))) {
+                        String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
+                        JSONObject gemini = GeminiAnalyzer.analyze(base64Pdf);
+                        
+                        // candidates[0].content.parts[0].text
+                        ret = new JSONObject(gemini.getJSONArray("candidates")
+                                .getJSONObject(0)
+                                .getJSONObject("content")
+                                .getJSONArray("parts")
+                                .getJSONObject(0)
+                                .getString("text"));
+                    } else {
+                        ret.put("filename", filename);
+                    }
                 } catch (Exception ex) {
                     ret.put("error", ex);
                 }
                 return ret;
             }
         },
-        
-        SAVE_CONTRACT { 
+        SAVE_CONTRACT {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();

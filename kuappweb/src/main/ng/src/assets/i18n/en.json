@@ -12,6 +12,8 @@
   "titleColumns_dialog": "Columns settings",
   "contract_exists": "File {{filename}} already exists",
   "contract": "Contract",
+  "contract_analyze": "Analyze with GEMINI",
+  "uploading": "Processing",
   "home": {
     "titles": "Titles",
     "authors": "Authors",

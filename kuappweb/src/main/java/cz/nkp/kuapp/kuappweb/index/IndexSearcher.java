@@ -397,9 +397,9 @@ public class IndexSearcher {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withParam("df", "search_text") 
-//                    .withFacet("labels", new TermsFacetMap("labels")
-//                            .setLimit(1000)
-//                            .setMinCount(1))
+                    .withFacet("hlavni", new TermsFacetMap("hlavni")
+                            .setLimit(1000)
+                            .setMinCount(1))
 //                    .withFacet("state", new TermsFacetMap("state")
 //                            .setLimit(1000)
 //                            .setMinCount(1)) 
@@ -407,6 +407,14 @@ public class IndexSearcher {
                     .setSort("indextime desc")
                     .returnFields("*")
                     .setLimit(rows);
+            
+
+            if (request.getParameter("dodatky") != null) {
+                
+                jrequest = jrequest.withFilter("hlavni:false");
+                jrequest = jrequest.withFilter("dodatky:" + request.getParameter("dodatky") + "*");
+            }
+            
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "contracts");
             InputStream is = (InputStream) resp.get("stream");

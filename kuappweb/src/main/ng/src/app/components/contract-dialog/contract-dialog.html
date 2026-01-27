@@ -2,11 +2,11 @@
 
 </h2>
 <mat-dialog-content>
-    @if (loading()) {
-    <mat-progress-bar mode="indeterminate" [value]="uploadProgress"></mat-progress-bar>
-    <div>{{ progressMsg }}</div>
-    }
-<div class="app-fxLayout app-mt-4">
+	@if (loading()) {
+	<mat-progress-bar mode="indeterminate" [value]="uploadProgress"></mat-progress-bar>
+	<div>{{ progressMsg }}</div>
+	}
+	<div class="app-fxLayout app-mt-4">
 		<div class="app-fxLayout app-column ">
 			<div class="app-fxLayout app-row ">
 				<mat-form-field appearance="outline" class="app-w-100">
@@ -47,19 +47,32 @@
 			<div class="app-fxLayout app-row ">
 				<mat-form-field appearance="outline" class="app-w-100">
 					<mat-label>{{ 'field.kontaktni_osoby' | translate }}</mat-label>
-					<textarea matInput rows="3" [(ngModel)]="contract().kontaktni_osoby" ></textarea>
+					<textarea matInput rows="3" [(ngModel)]="contract().kontaktni_osoby"></textarea>
 				</mat-form-field>
 			</div>
 			<div class="app-fxLayout app-row ">
-					<mat-checkbox appearance="outline" [(ngModel)]="contract().hlavni">{{ 'field.hlavni' | translate }}</mat-checkbox>
-					<mat-form-field appearance="outline" >
-						<mat-label>{{ 'field.dodatky' | translate }}</mat-label>
-						<input [disabled]="!contract().hlavni" matInput rows="3" [(ngModel)]="contract().dodatky" />
-					</mat-form-field>
-					<mat-form-field appearance="outline" >
-						<mat-label>{{ 'field.hlavni_smlouva' | translate }}</mat-label>
-						<input [disabled]="contract().hlavni" matInput rows="3" [(ngModel)]="contract().hlavni_smlouva" />
-					</mat-form-field>
+				<mat-checkbox appearance="outline" [(ngModel)]="contract().hlavni">{{ 'field.isHlavni' | translate
+					}}</mat-checkbox>
+				@if (contract().hlavni) {
+				<mat-chip-listbox class="mat-mdc-chip-set-stacked" aria-label="Cutest dog breeds">
+					@for (d of contract().dodatky; track d) {
+					<mat-chip-option selected>{{d}}</mat-chip-option>
+					}
+				</mat-chip-listbox>
+				<input [matAutocomplete]="autoDodatky" matInput rows="3" [(ngModel)]="dodatek"
+					(keyup)="checkDodatky($event)" />
+				<mat-autocomplete #autoDodatky="matAutocomplete" (optionSelected)="setDodatek()">
+					@for(a of dodatky(); track idx; let idx = $index){
+					<mat-option [value]="a">
+						{{a}}
+					</mat-option>
+					}
+				</mat-autocomplete>
+				}
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'field.hlavni_smlouva' | translate }}</mat-label>
+					<input [disabled]="contract().hlavni" matInput rows="3" [(ngModel)]="contract().hlavni_smlouva" />
+				</mat-form-field>
 			</div>
 			<div class="app-fxLayout app-row ">
 				<mat-form-field appearance="outline" class="app-w-100">
@@ -69,17 +82,33 @@
 			</div>
 		</div>
 		<div class="app-fxLayout app-column app-w-100">
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100 app-fill">
-					<mat-label>{{ 'field.souhrn' | translate }}</mat-label>
-					<textarea matInput rows="10" [(ngModel)]="contract().souhrn" ></textarea>
-				</mat-form-field>
-			</div>
+			<mat-tab-group>
+				<mat-tab [label]="'field.souhrn' | translate">
+					<div class="app-fxLayout app-row   app-mt-4">
+						<mat-form-field appearance="outline" class="app-w-100 app-fill">
+							<mat-label>{{ 'field.souhrn' | translate }}</mat-label>
+							<textarea matInput rows="10" [(ngModel)]="contract().souhrn"></textarea>
+						</mat-form-field>
+					</div>
+				</mat-tab>
+				<mat-tab [label]="'PDF'">
+					<div class="app-w-100 app-fill">
+						
+					<ngx-extended-pdf-viewer
+						[src]="'/api/pdf?filename=' + contract().filename"
+						[textLayer]="true" 
+						[showHandToolButton]="true" 
+						[showPresentationModeButton]="true">
+					</ngx-extended-pdf-viewer>
+					</div>
+
+				</mat-tab>
+			</mat-tab-group>
 		</div>
-</div>
+	</div>
 </mat-dialog-content>
 <mat-dialog-actions>
-    <!-- <button matButton (click)="uploadFile()">{{ 'action.upload' | translate }}</button> -->
-    <button matButton (click)="save()">{{ 'action.save' | translate }}</button>
-    <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+	<!-- <button matButton (click)="uploadFile()">{{ 'action.upload' | translate }}</button> -->
+	<button matButton (click)="save()">{{ 'action.save' | translate }}</button>
+	<button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>

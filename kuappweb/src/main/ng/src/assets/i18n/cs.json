@@ -14,6 +14,9 @@
   "titleColumns_dialog": "Výběr sloupců",
   "contract_exists": "Soubor {{filename}} jiz existuje.",
   "contract": "Smlouva",
+  "contract_analyze": "Analyzovat pomocí GEMINI",
+  "uploading": "Nahrávám",
+  "processing": "Zpracování",
   "home": {
     "titles": "Díla ",
     "authors": "Autoři",
@@ -58,7 +61,8 @@
     "datum_platnosti": "Datum platnosti", 
     "kontaktni_osoby": "Kontaktní osoby", 
     "digitalni_knihovny": "Digitální knihovny",
-    "hlavni": "Hlavní smlouva",
+    "isHlavni": "Je hlavní smlouva",
+    "hlavni_smlouva": "Hlavní smlouva",
     "dodatky": "Dodatky ke smlouvě",
     "souhrn": "Souhrn"
   },

@@ -1,7 +1,7 @@
 <div class="app-container-fluid app-h-100">
     @if (loading()) {
     <mat-progress-bar mode="indeterminate" [value]="uploadProgress"></mat-progress-bar>
-    <div>{{ progressMsg }}</div>
+    <div>{{ progressMsg | translate }}</div>
     }
     <div class="app-fxLayout app-row app-fill app-gap-8">
         <div class="app-left">
@@ -37,14 +37,16 @@
                         <span class="app-color-warn">&#160;{{ 'contract_exists' | translate : {filename:selectedFile?.name} }} &#160;</span> 
                         <button mat-stroked-button matSuffix (click)="uploadFile()">{{ 'action.overwrite' | translate}}</button>
                     }
+
+                    <mat-checkbox [(ngModel)]="analyze">{{'contract_analyze' | translate}}</mat-checkbox>
                     
                 </div>
             </div>
             <div class="app-table-wrapper">
                 <table mat-table [dataSource]="docs()" class="app-hover app-striped app-w-100">
                     <ng-container matColumnDef="id">
-                        <th mat-header-cell *matHeaderCellDef> ID </th>
-                        <td mat-cell *matCellDef="let doc"> <a (click)="viewDoc(doc)">{{doc['id']}}</a> </td>
+                        <th mat-header-cell *matHeaderCellDef> {{ 'field.filename' | translate}} </th>
+                        <td mat-cell *matCellDef="let doc"> <a (click)="viewDoc(doc)">{{doc.filename}}</a> </td>
                     </ng-container>
                     <ng-container matColumnDef="title">
                         <th mat-header-cell *matHeaderCellDef> {{ 'field.title' | translate}} </th>

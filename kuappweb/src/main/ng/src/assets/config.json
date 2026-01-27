@@ -15,16 +15,9 @@
         "controlled_unknown"
     ],
     "licenses": [
-        "dnnto",
-        "dnntt",
-        "public",
-        "onsite",
-        "onsite-sheetmusic",
-        "officialworks",
-        "orphan",
-        "special-needs",
-        "cover-and-content"
-    ],
+        {"state": "controlled_public", "licenses": ["public"]},
+        {"state": "controlled_private", "licenses": ["on-site", "smlouva"]}
+        ],
     "titleColumns": [
         {"field": "pid", "selected": true},
         {"field": "title", "selected": true},

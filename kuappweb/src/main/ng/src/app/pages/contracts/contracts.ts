@@ -20,6 +20,7 @@ import { Contract } from '../../shared/contract';
 import { Router } from '@angular/router';
 import { Sort } from '@angular/material/sort';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
+import { MatCheckbox } from "@angular/material/checkbox";
 
 @Component({
   selector: 'app-contracts',
@@ -29,7 +30,8 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
     MatIconModule, MatButtonModule, MatCardModule,
     MatFormFieldModule, MatInputModule,
     AngularSplitModule, MatTableModule,
-    MatTooltipModule
+    MatTooltipModule,
+    MatCheckbox
 ],
   templateUrl: './contracts.html',
   styleUrl: './contracts.scss'
@@ -62,6 +64,7 @@ export class Contracts {
   
   name: string;
   overwrite = false;
+  analyze = true;
   selectedFile: File;
   uploadProgress: number | null;
   progressMsg: string;
@@ -124,7 +127,7 @@ export class Contracts {
   
 
   viewDoc(doc: any) {
-            this.service.getContract(doc.id).subscribe((resp: any) => {
+            this.service.getContract(doc.filename).subscribe((resp: any) => {
               if (resp.response?.docs?.length > 0) {
                 this.doc.set(resp.response.docs[0]);
                 this.showContract(doc)
@@ -166,29 +169,34 @@ export class Contracts {
 
       formData.append('name', this.name ? this.name : this.selectedFile.name),
       formData.append('overwrite', this.overwrite.toString());
+      formData.append('analyze', this.analyze.toString());
 
-      this.http.post("api/index/upload_contract", formData, {
+      this.http.post("/api/index/upload_contract", formData, {
         reportProgress: true,
         observe: 'events'
       }).subscribe((event: HttpEvent<any>) => {
         switch (event.type) {
           case HttpEventType.UploadProgress:
-            this.progressMsg = 'uploading...';
+            this.progressMsg = 'uploading';
             if (event.total) {
               this.uploadProgress = Math.round(100 * (event.loaded / event.total));
             }
             if (this.uploadProgress > 99) {
-              this.progressMsg = 'processing...';
+              this.progressMsg = 'processing';
             }
             // console.log('Uploaded ' + event.loaded + ' out of ' + event.total + ' bytes');
             break;
           case HttpEventType.Response:
             this.progressMsg = 'Finished uploading!';
             this.loading.set(false);
-            const gemini = JSON.parse(event.body.candidates[0].content.parts[0].text);
-            gemini.filename = this.selectedFile.name;
-            gemini.name = this.name;
-            this.showContract(gemini);
+            if (event.body.error) {
+              console.log(event.body.error);
+            } else {
+              const gemini = event.body;
+              gemini.filename = this.selectedFile.name;
+              gemini.name = this.name;
+              this.showContract(gemini);
+            }
             break;
         }
       });

@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { HttpClient, HttpEvent, HttpEventType } from '@angular/common/http';
+import { HttpClient, HttpEvent, HttpEventType, HttpParams } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,6 +18,9 @@ import { AppService } from '../../app.service';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Contract } from '../../shared/contract';
 import { MatCheckbox } from "@angular/material/checkbox";
+import { MatAutocompleteModule } from '@angular/material/autocomplete';
+import {MatTabsModule} from '@angular/material/tabs';
+import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 
 @Component({
   selector: 'app-contract-dialog',
@@ -26,22 +29,22 @@ import { MatCheckbox } from "@angular/material/checkbox";
     MatDialogModule, MatMenuModule,
     MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
-    MatProgressBarModule,
-    MatListModule, MatTooltipModule,
-    MatCheckbox
-],
+    MatProgressBarModule, MatAutocompleteModule,
+    MatListModule, MatTooltipModule, MatTabsModule,
+    MatCheckbox, NgxExtendedPdfViewerModule
+  ],
   templateUrl: './contract-dialog.html',
   styleUrl: './contract-dialog.scss'
 })
 export class ContractDialog {
-  
+
   readonly service = inject(AppService);
   readonly state = inject(AppState);
   readonly dialog = inject(MatDialog);
-  readonly data = inject<{doc: Contract}>(MAT_DIALOG_DATA);
+  readonly data = inject<{ doc: Contract }>(MAT_DIALOG_DATA);
 
   loading = signal<boolean>(false);
-  
+
   name: string;
   overwrite = false;
   selectedFile: File;
@@ -50,7 +53,11 @@ export class ContractDialog {
 
   contract = signal<Contract>(new Contract());
 
-  constructor(private http: HttpClient) {}
+  dodatek: string;
+  dodatky = signal<string[]>([]);
+
+
+  constructor(private http: HttpClient) { }
 
   ngOnInit() {
     this.contract.set(this.data.doc);
@@ -60,14 +67,14 @@ export class ContractDialog {
     this.selectedFile = event.target.files[0];
   }
 
-  uploadFile(){
+  uploadFile() {
     if (this.selectedFile) {
       this.loading.set(true);
       const formData = new FormData();
       formData.append('file', this.selectedFile);
 
       formData.append('name', this.name ? this.name : this.selectedFile.name),
-      formData.append('overwrite', this.overwrite.toString());
+        formData.append('overwrite', this.overwrite.toString());
 
       this.http.post("api/index/upload_contract", formData, {
         reportProgress: true,
@@ -99,8 +106,25 @@ export class ContractDialog {
   }
 
   save() {
-  this.service.saveContract(this.contract()).subscribe((resp: any) => {
-        // console.log(resp)
-      })
-    }
+    this.service.saveContract(this.contract()).subscribe((resp: any) => {
+      // console.log(resp)
+    })
+  }
+
+  checkDodatky(e: any) {
+    const val = e.target ? e.target.value : e;
+
+    const p: any = {};
+    p.dodatky = val;
+    
+    this.service.searchContracts(p as HttpParams).subscribe((resp: any) => {
+      this.dodatky.set(resp.response.docs);
+    });
+
+  }
+
+  setDodatek() {
+    this.contract().dodatky.push(this.dodatek);
+    this.dodatek = null;
+  }
 }
