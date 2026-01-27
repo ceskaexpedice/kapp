@@ -1,0 +1,86 @@
+<div class="app-container-fluid app-h-100">
+    @if (loading()) {
+    <mat-progress-bar mode="indeterminate" [value]="uploadProgress"></mat-progress-bar>
+    <div>{{ progressMsg }}</div>
+    }
+    <div class="app-fxLayout app-row app-fill app-gap-8">
+        <div class="app-left">
+
+        </div>
+        <div class="app-fxFlex app-right">
+
+            <div class="app-fxLayout app-row app-baseline app-mb-4 app-gap-4">
+                <div class="app-fxFlex">
+                    <mat-form-field appearance="outline" class="app-view-rounded">
+                        <mat-label>{{ 'action.search' | translate }}</mat-label>
+                        <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
+                            (keyup.enter)="doSearch()">
+                        @if (state.q) {
+                        <button matIconButton matSuffix (click)="clearQ()"
+                            class="app-color-warn"><mat-icon>close</mat-icon></button>
+                        }
+                        <button matIconButton matSuffix (click)="doSearch()"><mat-icon>search</mat-icon></button>
+                    </mat-form-field>
+                </div>
+            </div>
+
+            <div class="app-fxLayout app-row app-gap-2 app-mb-4">
+
+
+                <input type="file" #fileUpload style="display:none;" (change)="onFileSelected($event)">
+                <div class="app-fxLayout app-row app-center-v">
+                    <button matPrefix mat-stroked-button color="primary" class="app-mr-2 app-ml-2"
+                        (click)="fileUpload.click()">{{
+                        'action.contract_upload' | translate }}</button>
+                        
+                    @if (selctedFileExists()) {
+                        <span class="app-color-warn">&#160;{{ 'contract_exists' | translate : {filename:selectedFile?.name} }} &#160;</span> 
+                        <button mat-stroked-button matSuffix (click)="uploadFile()">{{ 'action.overwrite' | translate}}</button>
+                    }
+                    
+                </div>
+            </div>
+            <div class="app-table-wrapper">
+                <table mat-table [dataSource]="docs()" class="app-hover app-striped app-w-100">
+                    <ng-container matColumnDef="id">
+                        <th mat-header-cell *matHeaderCellDef> ID </th>
+                        <td mat-cell *matCellDef="let doc"> <a (click)="viewDoc(doc)">{{doc['id']}}</a> </td>
+                    </ng-container>
+                    <ng-container matColumnDef="title">
+                        <th mat-header-cell *matHeaderCellDef> {{ 'field.title' | translate}} </th>
+                        <td mat-cell *matCellDef="let doc">
+                            <div class="app-text-cutter-wrapper" [matTooltip]="doc.title">
+                                <span class="app-text-cutter">{{ doc.title }}</span>
+                            </div>
+                        </td>
+                    </ng-container>
+                    <ng-container matColumnDef="cislo_smlouvy">
+                        <th mat-header-cell *matHeaderCellDef> {{ 'field.cislo_smlouvy' | translate}} </th>
+                        <td mat-cell *matCellDef="let doc"> {{ doc.cislo_smlouvy | translate }} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="nazev_poskytovatele">
+                        <th mat-header-cell *matHeaderCellDef> {{ 'field.nazev_poskytovatele' | translate}} </th>
+                        <td mat-cell *matCellDef="let doc"> {{ doc.nazev_poskytovatele | translate }} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="ico">
+                        <th mat-header-cell *matHeaderCellDef> {{ 'field.ico' | translate}} </th>
+                        <td mat-cell *matCellDef="let doc"> {{ doc.ico | translate }} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="datum_uzavreni">
+                        <th mat-header-cell *matHeaderCellDef> {{ 'field.datum_uzavreni' | translate}} </th>
+                        <td mat-cell *matCellDef="let doc"> {{ doc.datum_uzavreni | translate }} </td>
+                    </ng-container>
+                    <ng-container matColumnDef="action">
+                        <th mat-header-cell *matHeaderCellDef> </th>
+                        <td mat-cell *matCellDef="let doc">
+                            <mat-icon>delete</mat-icon>
+                        </td>
+                    </ng-container>
+                    <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+                    <tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+                </table>
+            </div>
+
+        </div>
+    </div>
+</div>

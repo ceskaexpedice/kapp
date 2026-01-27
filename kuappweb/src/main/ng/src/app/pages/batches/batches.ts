@@ -22,6 +22,7 @@ import { TitleDialog } from '../../components/title-dialog/title-dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatListItem, MatListModule } from "@angular/material/list";
 import { MatTooltipModule } from '@angular/material/tooltip';
+import { AddToBatchDialog } from '../../components/add-to-batch-dialog/add-to-batch-dialog';
 
 @Component({
   selector: 'app-batches',
@@ -119,12 +120,27 @@ export class Batches {
   }
 
   addDoc() {
-    const pid = window.prompt("PID?");
-    if (pid) {
+    //const pid = window.prompt("PID?");
+
+    const dialogRef = this.dialog.open(AddToBatchDialog, {
+      data: { pid: String },
+      panelClass: "app-dialog-add-to-batch"
+    });
+
+    dialogRef.afterClosed().subscribe((pid: any) => {
+      if (pid) {
+      this.service.saveDocBatch(pid, this.selectedBatch().name).subscribe((res: any) => {
+        this.loadBatch();
+      });
+      }
+    });
+
+
+    /* if (pid) {
       this.service.saveDocBatch(pid, this.selectedBatch().name).subscribe((res: any) => {
         this.loadBatch();
       })
-    }
+    } */
   }
 
   importBatch() {

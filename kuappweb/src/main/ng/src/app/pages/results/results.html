@@ -89,8 +89,23 @@
               <td mat-cell *matCellDef="let doc">{{ doc.indextime | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns;" (click)="viewDoc(row)"
+            <ng-container matColumnDef="decision_date">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>{{ 'field.decision_date' | translate}}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc.decision_date | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="release_date">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>{{ 'field.release_date' | translate}}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc.release_date | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="action">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><button mat-icon-button (click)="setColumns()"><mat-icon>more_vert</mat-icon></button></th>
+              <td mat-cell *matCellDef="let doc"></td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
+            <tr mat-row *matRowDef="let row; columns: displayedColumns();" (click)="viewDoc(row)"
               class="app-cursor-pointer"></tr>
           </table>
         </div>

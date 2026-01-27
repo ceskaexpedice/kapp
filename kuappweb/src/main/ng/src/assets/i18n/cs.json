@@ -11,6 +11,18 @@
   "reason": "Důvod",
   "history": "Historie",
   "batch_alert": "pro celou dávku",
+  "titleColumns_dialog": "Výběr sloupců",
+  "contract_exists": "Soubor {{filename}} jiz existuje.",
+  "home": {
+    "titles": "Díla ",
+    "authors": "Autoři",
+    "authors_conflict": "Autoři s konfliktem v datech",
+    "authors_conflict_desc": "Seznam autorů, u kterých je rozdíl mezi AUT a Kuratorske app",
+    "titles_to_control": "Díla  ke kontrole",
+    "titles_to_control_desc": "Seznam díl ke kurátorské kontrole",
+    "contracts": "Evidence smluv",
+    "contracts_desc": "Evidence smluv"
+  },
   "field": {
     "query": "dotaz",
     "title": "Název",
@@ -36,13 +48,22 @@
     "release_date": "Datum uvolnění",
     "dateIssued": "Datum vydání", 
     "sigla": "Producent/Umístění", 
-    "indextime": "Datum importu"
+    "indextime": "Datum importu",
+    "filename": "Název souboru", 
+    "cislo_smlouvy": "Číslo smlouvy", 
+    "nazev_poskytovatele": "Název poskytovatele", 
+    "ico": "IČO", 
+    "datum_uzavreni": "Datum uzavření", 
+    "datum_platnosti": "Datum platnosti", 
+    "kontaktni_osoby": "Kontaktní osoby", 
+    "souhrn": "Souhrn"
   },
   "action": {
     "view": "Zobrazit",
     "search": "Hledat",
     "close": "Zavřít",
     "save": "Uložit",
+    "overwrite": "Přepsat",
     "set_as_last": "Nastavit jako poslední",
     "set_state": "Nastavit stav",
     "check_author": "Hledat autora v AUT",
@@ -56,15 +77,17 @@
     "add_batch_from_label": "Vytvořit dávku z štítku",
     "import_batch": "Importovat soubor do dávky",
     "card_view": "Karty",
-    "table_view": "Tabulka"
+    "table_view": "Tabulka",
+    "contract_upload": "Nahrát smluovu"
   },
   "state": {
-    "noncontrolled_private": "NEKONTROLOVANÉ",
-    "noncontrolled_public": "NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ",
-    "to_control": "KE KONTROLE",
-    "controlled_public": "KONTROLOVANÉ - VOLNÉ",
-    "controlled_private": "KONTROLOVANÉ- NEVEŘEJNÉ",
-    "controlled_unknown": "KONTROLOVANÉ - NEZNÁMÉ"
+    "NONCONTROLLED_PRIVATE": "NEKONTROLOVANÉ",
+    "NONCONTROLLED_PUBLIC": "NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ",
+    "TO_CONTROL": "KE KONTROLE",
+    "PARENT_TO_CONTROLL": "KE KONTROLE NADŘAZENÉHO",
+    "CONTROLLED_PUBLIC": "KONTROLOVANÉ - VOLNÉ",
+    "CONTROLLED_PRIVATE": "KONTROLOVANÉ- NEVEŘEJNÉ",
+    "CONTROLLED_UNKNOWN": "KONTROLOVANÉ - NEZNÁMÉ"
   },
   "admin": {
     "labels": "Administrace štítků"
@@ -73,6 +96,7 @@
     "admin": "Administrace",
     "authors": "Autoři",
     "batches": "Dávky",
-    "titles": "Dila"
+    "titles": "Díla",
+    "contracts": "Evidence smluv"
   }
 }

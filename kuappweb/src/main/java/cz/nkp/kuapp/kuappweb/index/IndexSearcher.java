@@ -375,4 +375,68 @@ public class IndexSearcher {
         }
         return ret;
     }
+    
+    public static JSONObject searchContracts(HttpServletRequest request) {
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            String rowsP = request.getParameter("rows");
+            int rows = 0;
+            if (rowsP != null && !rowsP.isBlank()) {
+                rows = Integer.parseInt(rowsP);
+            }
+            
+            int offset = 0;
+            if (request.getParameter("offset") != null) {
+                offset = Integer.parseInt(request.getParameter("offset"));
+            }
+            //String q = "nameIdentifier:*";
+            String q = "*";
+            if (request.getParameter("q") != null) {
+                q = request.getParameter("q");
+            }
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery(q)
+                    .withParam("df", "search_text") 
+//                    .withFacet("labels", new TermsFacetMap("labels")
+//                            .setLimit(1000)
+//                            .setMinCount(1))
+//                    .withFacet("state", new TermsFacetMap("state")
+//                            .setLimit(1000)
+//                            .setMinCount(1)) 
+                    .setOffset(offset)
+                    .setSort("indextime desc")
+                    .returnFields("*")
+                    .setLimit(rows);
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> resp = solr.request(jrequest, "contracts");
+            InputStream is = (InputStream) resp.get("stream");
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
+    public static JSONObject getContract(String id) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery("id:\""+id + "\"")
+                    .returnFields("*")
+                    .setLimit(1);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> resp = solr.request(jrequest, "contracts");
+            InputStream is = (InputStream) resp.get("stream");
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
 }

@@ -5,10 +5,13 @@ import cz.nkp.kuapp.kuappweb.index.IndexSearcher;
 import cz.nkp.kuapp.kuappweb.index.SolrIndexer;
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -204,6 +207,19 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
+        SAVE_TITLE_COLUMNS {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexTitleColumns(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         CREATE_BATCH_FROM_LABEL {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -296,6 +312,83 @@ public class IndexServlet extends HttpServlet {
                     ret = SolrIndexer.addDocToBatch(reader.readLine(), batch);
                 }
                 return ret;
+            }
+        },
+        CONTRACTS {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.searchContracts(req);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        GET_CONTRACT {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getContract(req.getParameter("id"));
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        CHECK_CONTRACT_EXISTS {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject ret = new JSONObject();
+                try {
+                String filename = req.getParameter("filename");
+                File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
+                ret.put("exists", targetFile.exists());
+                } catch (Exception ex) {
+                    ret.put("error", ex);
+                }
+                return ret;
+            }
+        },
+        UPLOAD_CONTRACT {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject ret = new JSONObject();
+                try {
+                //for (Part part : request.getParts()) {
+                Part part = req.getPart("file");
+                LOGGER.log(Level.INFO, "Part name -> {0}", part.getHeader("content-disposition"));
+                String filename = req.getParameter("name");
+                // String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
+                byte[] pdfBytes = part.getInputStream().readAllBytes();
+                
+                File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
+                OutputStream outStream = new FileOutputStream(targetFile);
+                outStream.write(pdfBytes);
+    
+                String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
+                
+                ret = GeminiAnalyzer.analyze(base64Pdf);
+                } catch (Exception ex) {
+                    ret.put("error", ex);
+                }
+                return ret;
+            }
+        },
+        
+        SAVE_CONTRACT { 
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.saveContract(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
             }
         },
         CHANGE_STATE {

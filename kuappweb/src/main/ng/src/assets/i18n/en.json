@@ -9,6 +9,18 @@
   "current_licenses": "Current licence",
   "reason": "Reason",
   "history": "History",
+  "titleColumns_dialog": "Columns settings",
+  "contract_exists": "File {{filename}} already exists",
+  "home": {
+    "titles": "Titles",
+    "authors": "Authors",
+    "authors_conflict": "Authors with conflict",
+    "authors_conflict_desc": "List of authors with differences between AUT and Kuratorske app",
+    "titles_to_control": "Non revised titles",
+    "titles_to_control_desc": "List of titles to control by Kurator",
+    "contracts": "Contract repository",
+    "contracts_desc": "Contract repository"
+  },
   "field": {
     "query": "Query",
     "title": "Title",
@@ -34,13 +46,22 @@
     "release_date": "Release date",
     "dateIssued": "Date issued", 
     "sigla": "Location", 
-    "indextime": "Index time"
+    "indextime": "Index time",
+    "filename": "File name", 
+    "cislo_smlouvy": "Contract Number", 
+    "nazev_poskytovatele": "Provider name", 
+    "ico": "IČO", 
+    "datum_uzavreni": "Sign date", 
+    "datum_platnosti": "Validity date", 
+    "kontaktni_osoby": "Contacts", 
+    "souhrn": "Summary"
   },
   "action": {
     "view": "View",
     "search": "Search",
     "close": "Close",
     "save": "Save",
+    "overwrite": "Overwrite",
     "set_as_last": "Set as last",
     "set_state": "Set state",
     "check_author": "Search autor in AUT",
@@ -54,15 +75,17 @@
     "add_batch_from_label": "Create batch from label",
     "import_batch": "Import batch",
     "card_view": "Cards",
-    "table_view": "Table"
+    "table_view": "Table",
+    "contract_upload": "Upload contract"
   },
   "state": {
-    "noncontrolled_private": "NEKONTROLOVANÉ",
-    "noncontrolled_public": "NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ",
-    "to_control": "KE KONTROLE",
-    "controlled_public": "KONTROLOVANÉ - VOLNÉ",
-    "controlled_private": "KONTROLOVANÉ- NEVEŘEJNÉ",
-    "controlled_unknown": "KONTROLOVANÉ - NEZNÁMÉ"
+    "NONCONTROLLED_PRIVATE": "NEKONTROLOVANÉ",
+    "NONCONTROLLED_PUBLIC": "NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ",
+    "TO_CONTROL": "KE KONTROLE",
+    "PARENT_TO_CONTROLL": "KE KONTROLE NADŘAZENÉHO",
+    "CONTROLLED_PUBLIC": "KONTROLOVANÉ - VOLNÉ",
+    "CONTROLLED_PRIVATE": "KONTROLOVANÉ- NEVEŘEJNÉ",
+    "CONTROLLED_UNKNOWN": "KONTROLOVANÉ - NEZNÁMÉ"
   },
   "admin": {
     "labels": "Labels administration"
@@ -72,6 +95,7 @@
     "titles": "Titles",
     "authors": "Authors",
     "batches": "Batches",
-    "login": "Login"
+    "login": "Login",
+    "contracts": "Contracts"
   }
 }

@@ -1,0 +1,11 @@
+<h2 mat-dialog-title>{{ 'Přidej do dávky' | translate }}</h2>
+<mat-dialog-content class="app-pt-2">
+  <mat-form-field appearance="outline" class="app-w-100">
+    <mat-label>{{ 'PID' | translate }}</mat-label>
+    <input [(ngModel)]="pid" matInput />
+  </mat-form-field>
+</mat-dialog-content>
+<mat-dialog-actions>
+	<button matButton [disabled]="!pid" [mat-dialog-close]="pid">{{ 'Přidat' | translate }}</button>
+	<button matButton mat-dialog-close cdkFocusInitial>{{ 'action.close' | translate }}</button>
+</mat-dialog-actions>

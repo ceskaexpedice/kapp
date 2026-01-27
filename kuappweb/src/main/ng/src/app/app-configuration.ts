@@ -45,6 +45,10 @@ import { Label } from './shared/label';
         return this.config.licenses;
     }
 
+    public get titleColumns() {
+        return this.config.titleColumns;
+    }
+
     constructor(
         private http: HttpClient,
         public state: AppState) { }
@@ -54,14 +58,22 @@ import { Label } from './shared/label';
     }
 
     public load() {
+console.log('Loading config...')
         return this.http.get('assets/config.json').pipe(
             switchMap((cfg: any) => {
                 this.config = cfg as Configuration;
                 return this.http.get('api/index/config').pipe(tap((resp: any) => {
-                    
                     const b = resp.config.find((a: any) => a.id === 'batches').value;
                     if (b.length > 0) {
                         this.state.batches.set(b);
+                    }
+                    
+                    // const c = resp.config.find((a: any) => a.id === 'titleColumns');
+                    const c = localStorage.getItem('titleColumns');
+                    if (c) {
+                        this.state.titleColumns.update(a => [...JSON.parse(c)]);
+                    } else {
+                        this.state.titleColumns.update(a => [...this.config.titleColumns]);
                     }
                     
                     const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels').value;

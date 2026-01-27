@@ -45,6 +45,12 @@ public class SolrIndexer {
         return ret;
     }
 
+    public static JSONObject indexTitleColumns(JSONArray js) {
+
+        JSONObject ret = saveConfig(js, "titleColumns");
+        return ret;
+    }
+
     public static JSONObject indexDocLabels(JSONObject js) {
 
         JSONObject ret = new JSONObject();
@@ -292,6 +298,33 @@ public class SolrIndexer {
             solr.add("titles", doc);
             solr.commit("titles");
             LOGGER.log(Level.INFO, "state for {0} changed", js.getString("pid"));
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
+    public static JSONObject saveContract(JSONObject js) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField("id", js.getString("filename"));
+            doc.setField("name", js.optString("name"));
+            doc.setField("title", js.optString("title"));
+            doc.setField("filename", js.optString("filename"));
+            doc.setField("cislo_smlouvy", js.optString("cislo_smlouvy"));
+            doc.setField("nazev_poskytovatele", js.optString("nazev_poskytovatele"));
+            doc.setField("ico", js.optString("ico"));
+            doc.setField("datum_uzavreni", js.optString("datum_uzavreni"));
+            doc.setField("datum_platnosti", js.optString("datum_platnosti"));
+            doc.setField("kontaktni_osoby", js.optString("kontaktni_osoby"));
+            doc.setField("souhrn", js.optString("souhrn"));
+            solr.add("contracts", doc);
+            solr.commit("contracts");
             ret.put("msg", "saved");
 
         } catch (Exception ex) {

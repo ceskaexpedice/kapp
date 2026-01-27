@@ -50,4 +50,12 @@ export class Home {
     this.doSearch('titles');
   }
 
+  contracts() {
+
+    const params = {
+      q: this.q
+    }
+    this.router.navigate(['/contracts'], { queryParams: params, queryParamsHandling: 'merge' });
+  }
+
 }

@@ -114,6 +114,7 @@
 					</mat-form-field> -->
 					<input [(ngModel)]="decisionDate" matInput />
 					<a (click)="saveDecisionDate()" class="app-value"><mat-icon>save</mat-icon></a>
+					<a (click)="closeEditingDate()" class="app-value"><mat-icon>cancel</mat-icon></a>
 				} @else {
 					<div class="app-value">
 						<span>{{ doc()['decision_date']}}</span>

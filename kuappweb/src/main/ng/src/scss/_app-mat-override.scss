@@ -7,7 +7,8 @@ $home_cards: (
   authors: #8BC34A,
   imports: #009688,
   authors-with-conflict: #607D8B,
-  non-revised-titles: #FF9800
+  non-revised-titles: #FF9800,
+  repo: #523305
 );
 
 @mixin setHomeCard() {
@@ -32,6 +33,21 @@ $home_cards: (
     }
   }  
 }
+
+@mixin setIcon($size: null, $color: null, $position: null) {
+  @if ($size != null) {
+    font-size: #{$size}px;
+    height: #{$size}px;
+    width: #{$size}px;  
+  }
+  @if ($color != null) {
+    color: $color !important;
+  }
+  @if ($position != null) {
+    vertical-align: $position !important;  
+  }  
+}
+
 
 :root {
   @include mat.toolbar-overrides((
@@ -136,10 +152,7 @@ $home_cards: (
         icon-size: 22px
       ));
       .mat-icon {
-        $app-size: 22;
-        font-size: #{$app-size}px;
-        height: #{$app-size}px;
-        width: #{$app-size}px; 
+        @include setIcon(22);
       }
     }
   }
@@ -152,6 +165,15 @@ $home_cards: (
       ));
     }
   }
+  .mat-mdc-table {
+    @include mat.icon-button-overrides((
+      state-layer-size: 28px
+    ));
+    .mat-icon {
+      @include setIcon(18);
+    }
+  }
+
 
 
   @include mat.button-toggle-overrides((
@@ -247,6 +269,11 @@ $home_cards: (
         }
       }
     }
+    .mat-column-action {
+      width: 40px;
+      padding: 0;
+      text-align: center;
+    }
   }
 
 
@@ -273,8 +300,9 @@ $home_cards: (
 
   @include mat.dialog-overrides((
     container-elevation-shadow: 5px,
-    container-shape: 7px,
-    container-color: var(--app-color-lightnes)
+    container-shape: 4px,
+    container-color: var(--app-color-lightnes),
+    container-min-width: 400px
   ));
   .app-dialog-title {
     @include mat.dialog-overrides((

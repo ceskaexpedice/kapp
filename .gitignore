@@ -10,3 +10,7 @@ solr/**/data
 solr/userfiles
 solr/filestore
 kuappweb/src/main/webapp/index.html
+kuappweb/src/main/webapp/index.html
+kuappweb/src/main/webapp/assets/config.json
+kuappweb/src/main/webapp/assets/i18n/cs.json
+kuappweb/src/main/webapp/assets/i18n/en.json

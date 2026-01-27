@@ -3,7 +3,7 @@
 		<div class="app-fxLayout app-row app-wrap app-center-v app-center-h app-cards-wrapper">
 			<mat-card appearance="outlined" class="app-card-titles">
 				<mat-card-header>
-					<mat-card-title>{{ 'Titles' | translate }}</mat-card-title>
+					<mat-card-title>{{ 'home.titles' | translate }}</mat-card-title>
 				</mat-card-header>
 				<mat-card-content>
 					<mat-form-field appearance="outline">
@@ -19,7 +19,7 @@
 
 			<mat-card appearance="outlined" class="app-card-authors">
 				<mat-card-header>
-					<mat-card-title>{{ 'Authors' | translate }} </mat-card-title>
+					<mat-card-title>{{ 'home.authors' | translate }} </mat-card-title>
 				</mat-card-header>
 				<mat-card-content>
 					<mat-form-field appearance="outline">
@@ -47,10 +47,10 @@
 
 			<mat-card appearance="outlined" class="app-card-authors-with-conflict">
 				<mat-card-header>
-						<mat-card-title>{{ 'Authors with conflict' | translate }}</mat-card-title>
+						<mat-card-title>{{ 'home.authors_conflict' | translate }}</mat-card-title>
 				</mat-card-header>
 				<mat-card-content>
-					Seznam autoru u kterych je rozdil mezi AUT a Kuratorske app
+					{{ 'home.authors_conflict_desc' | translate }}
 				</mat-card-content>
 				<mat-card-actions align="end" class="app-mat-card-actions">
 					<button matButton="outlined" [routerLink]="['/authors']" queryParamsHandling="preserve" mat-raised-button>{{ 'action.view' | translate }}</button>
@@ -59,13 +59,25 @@
 			
 			<mat-card appearance="outlined" class="app-card-non-revised-titles">
 				<mat-card-header>
-					<mat-card-title>{{ 'Non revised titles' | translate }} </mat-card-title>
+					<mat-card-title>{{ 'home.titles_to_control' | translate }} </mat-card-title>
 				</mat-card-header>
 				<mat-card-content>
-					Seznam dil k kontrole
+					{{ 'home.titles_to_control_desc' | translate }}
 				</mat-card-content>
 				<mat-card-actions align="end" class="app-mat-card-actions">
 					<button matButton="outlined" (click)="toControll()" mat-raised-button>{{ 'action.view' | translate }}</button>
+				</mat-card-actions>
+			</mat-card>
+			
+			<mat-card appearance="outlined" class="app-card-repo">
+				<mat-card-header>
+					<mat-card-title>{{ 'home.contracts' | translate }} </mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					{{ 'home.contracts_desc' | translate }}
+				</mat-card-content>
+				<mat-card-actions align="end" class="app-mat-card-actions">
+					<button matButton="outlined" (click)="contracts()" mat-raised-button>{{ 'action.view' | translate }}</button>
 				</mat-card-actions>
 			</mat-card>
 		</div>
