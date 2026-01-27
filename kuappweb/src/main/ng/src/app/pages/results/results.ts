@@ -101,6 +101,7 @@ export class Results {
     p.assigned_license = usedFacets.filter(k => k.field === 'assigned_license').map(k => k.value);
     p.licenses = usedFacets.filter(k => k.field === 'licenses').map(k => k.value);
     p.digital_library = usedFacets.filter(k => k.field === 'digital_library').map(k => k.value);
+    p.model = usedFacets.filter(k => k.field === 'model').map(k => k.value);
   }
 
   clearQ() {

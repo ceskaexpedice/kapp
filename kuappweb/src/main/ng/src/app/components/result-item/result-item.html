@@ -79,10 +79,24 @@
 			<span class="app-label">{{ 'field.indextime' | translate }}:</span>
 			<span class="app-value">{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}</span>
 		</div>
+
 		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.licenses' | translate }}:</span>
-			<span class="app-value">{{ doc()['licenses']}}</span>
+			<span class="app-label">{{ 'field.assigned_license' | translate }}:</span>
+			<span class="app-value"><b>{{ doc()['assigned_license']}}</b></span>
 		</div>
+
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.dls' | translate }}:</span>
+			<span class="app-value"><b>{{ doc()['digital_library']}}</b></span>
+		</div>
+
+
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.kramlicenses' | translate }}:</span>
+			<span class="app-value">{{ doc()['licenses_nkp']}}</span>
+		</div>
+
+
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.note' | translate }}:</span>
 			<div class="app-value">
