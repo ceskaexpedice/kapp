@@ -68,7 +68,7 @@ import static cz.inovatika.Constants.TitlesCollectionFields.*;
 public class HarvesterImpl implements Harvester {
 
     public static final Logger LOGGER = Logger.getLogger(HarvesterImpl.class.getName());
-    private static final String SOLR_URL = "http://localhost:8983/solr";
+    private static final String SOLR_URL = "http://solr-kappScheduler:8983/solr";
 
     private final int ROWS = 100;
     private static final int BATCH_SIZE = 200;
