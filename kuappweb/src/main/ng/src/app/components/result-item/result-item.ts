@@ -40,6 +40,7 @@ export class ResultItem {
   labels: Label[] = [];
 
   hasCollapsed = false;
+  //hasCollapsed = true;
   isCollapsed = signal<boolean>(true);
 
   editingDate = signal(false);
@@ -53,6 +54,9 @@ export class ResultItem {
   ) {
     effect(() => {
       this.labels = [];
+      let doc = this.doc();
+
+      //this.hasCollapsed = this.doc()['is_hierarchical'];
       if (this.doc()['labels']) {
         this.doc()['labels'].forEach((name: string) => {
           const l = this.state.labels().find(la => la.name === name);
@@ -63,7 +67,7 @@ export class ResultItem {
         });
       }
 
-      if (this.expanded()) {
+      if (this.expanded() || this.doc()['is_hierarchical']) {
         this.hasCollapsed = true;
         this.getRelated();
       }
@@ -74,7 +78,15 @@ export class ResultItem {
     this.related.set([]);
     this.service.getRelated(this.doc()['root.pid']).subscribe((resp: any) => {
       if (resp.response?.docs?.length > 0) {
-        this.related.set(resp.response.docs);
+        //    p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
+        // let ddcs = [];
+        // resp.response.docs.forEach((d: any) => {
+        //   if (d['pid'] != d['root.pid']) {
+        //     ddcs.push(d);
+        //   }
+        // });  
+        resp.response.docs.filter((d: any) => d['pid'] != d['root.pid']);
+        this.related.set(resp.response.docs.filter((d: any) => d['pid'] != d['root.pid']));
       }
     });
   }
