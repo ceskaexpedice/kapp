@@ -1,6 +1,7 @@
 package cz.inovatika.impl;
 
 import cz.inovatika.Constants;
+import cz.inovatika.XmlProcessor;
 import cz.inovatika.authors.AuthorData;
 import cz.inovatika.Harvester;
 import cz.inovatika.authors.AuthorDataUtils;
@@ -520,6 +521,10 @@ public class HarvesterImpl implements Harvester {
             doc.addField(FromKramFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
             if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
                 doc.addField(FromKramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+                doc.addField(FromKramFields.AUTHORS_IDS, author.getNameIdentifier());
+            } else {
+                String id = author.getFull()+author.getDate();
+                doc.addField(FromKramFields.AUTHORS_IDS, id);
             }
         });
 

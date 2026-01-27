@@ -12,8 +12,10 @@ public class Constants {
 
         public static class FromKramFields {
 
-           public static final String AUTHORS_KRAMERIUS_FIELD = "authors_kramerius";
+            public static final String AUTHORS_KRAMERIUS_FIELD = "authors_kramerius";
+            public static final String AUTHORS_IDS = "authors_ids";
             public static final String NAME_IDENTIFIER_FIELD = "nameIdentifier";
+
             public static final String AUTHORS_FIELD = "authors";
             public static final String BIBLIO_MODS_FIELD = "biblio_mods";
             public static final String BIBLIO_MODS_MD_5_FIELD = "biblio_mods_md5";
