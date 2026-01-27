@@ -1,0 +1,3 @@
+[submodule "kuratorska-aplikace-web"]
+	path = kuratorska-aplikace-web
+	url = git@gitlab.com:inovatika/nkp/kuratorska-aplikace-web.git

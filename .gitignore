@@ -4,3 +4,4 @@
 /.gradle/
 .vscode/launch.json
 .vscode/settings.json
+services/scheduler/docker-compose.override.yml

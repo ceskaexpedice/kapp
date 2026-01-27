@@ -12,4 +12,4 @@ services:
     ports:
       - "8983:8983"
     volumes:
-      - ./solr:/var/solr
+      - ./../../kuratorska-aplikace-web/solr:/var/solr
