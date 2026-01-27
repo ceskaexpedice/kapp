@@ -28,6 +28,7 @@
     "titleColumns": [
         {"field": "pid", "selected": true},
         {"field": "title", "selected": true},
+        {"field": "authors", "selected": true},
         {"field": "state", "selected": true},
         {"field": "dateIssued", "selected": true},
         {"field": "indextime", "selected": true},

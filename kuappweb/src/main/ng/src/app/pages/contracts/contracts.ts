@@ -117,14 +117,7 @@ export class Contracts {
         });
     
         dialogRef.afterClosed().subscribe(result => {
-          console.log(result)
-          // if (result) {
-          //   this.service.getDoc(this.doc().id).subscribe((resp: any) => {
-          //     if (resp.response?.docs?.length > 0) {
-          //       this.doc.set(resp.response.docs[0]);
-          //     }
-          //   });
-          // }
+          this.getData();
         });
   }
 
@@ -195,7 +188,6 @@ export class Contracts {
             const gemini = JSON.parse(event.body.candidates[0].content.parts[0].text);
             gemini.filename = this.selectedFile.name;
             gemini.name = this.name;
-            console.log(gemini)
             this.showContract(gemini);
             break;
         }

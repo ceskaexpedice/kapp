@@ -416,12 +416,12 @@ public class IndexSearcher {
         return ret;
     }
     
-    public static JSONObject getContract(String id) {
+    public static JSONObject getContract(String filename){
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("id:\""+id + "\"")
+                    .setQuery("filename:\""+filename + "\"")
                     .returnFields("*")
                     .setLimit(1);
 

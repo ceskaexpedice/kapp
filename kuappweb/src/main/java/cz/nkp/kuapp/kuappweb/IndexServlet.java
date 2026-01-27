@@ -343,9 +343,13 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject ret = new JSONObject();
                 try {
-                String filename = req.getParameter("filename");
-                File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
-                ret.put("exists", targetFile.exists());
+//                String filename = req.getParameter("filename");
+//                File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
+//                ret.put("exists", targetFile.exists());
+                
+                JSONObject json = IndexSearcher.getContract(req.getParameter("filename"));
+                ret.put("exists", json.getJSONObject("response").getInt("numFound") > 0);
+                
                 } catch (Exception ex) {
                     ret.put("error", ex);
                 }

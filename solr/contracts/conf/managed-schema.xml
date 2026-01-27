@@ -1,16 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <schema name="kuapp-contracts" version="1.6">
-
-  ['id', '', '', '', 'ico', '', '', ''];
-
   
-  <uniqueKey>id</uniqueKey>
+  <uniqueKey>filename</uniqueKey>
   
   <field name="_version_" type="plong" indexed="false" stored="false"/>
   <field name="indextime" type="pdate" default="NOW" indexed="true" stored="true"/>
   
-  <field name="id" type="string" multiValued="false" indexed="true" stored="true"/>
+  <!-- <field name="id" type="string" multiValued="false" indexed="true" stored="true"/> -->
   <field name="filename" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="name" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="cislo_smlouvy" type="string" multiValued="false" indexed="true" stored="true"/>

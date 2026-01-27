@@ -98,7 +98,7 @@ export class ContractDialog {
 
   save() {
   this.service.saveContract(this.contract()).subscribe((resp: any) => {
-        console.log(resp)
+        // console.log(resp)
       })
     }
 }

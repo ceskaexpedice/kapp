@@ -2,16 +2,17 @@
 <div class="app-container-fluid app-h-100">
   <div class="app-fxLayout app-row app-fill app-gap-8">
     @if(solrResponse?.facets) {
-      <div class="app-left">
-        <app-facets [fields]="[
+    <div class="app-left">
+      <app-facets [fields]="[
           'labels', 
           'state',
           'assigned_license', 
           'licenses', 
           'physical_locations',
-          'digital_library'
+          'digital_library',
+          'model'
           ]" [facets]="solrResponse.facets"></app-facets>
-      </div>
+    </div>
     }
     <div class="app-fxFlex app-right app-oh app-mt-n2">
       <div class="app-fxLayout app-row app-gap-4 app-toolbar app-pt-2">
@@ -51,16 +52,18 @@
       <div>
         @if (viewType() === 'table_view' && view() === 'titles') {
         <div class="app-table-wrapper app-oa-y">
-          <table mat-table [dataSource]="docs()" class="app-hover app-striped app-resize"
-          matSort [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction" (matSortChange)="sortTable($event)">
+          <table mat-table [dataSource]="docs()" class="app-hover app-striped app-resize" matSort
+            [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction"
+            (matSortChange)="sortTable($event)">
 
             <ng-container matColumnDef="pid">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>PID</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>PID</span></th>
               <td mat-cell *matCellDef="let doc">{{doc['pid']}}</td>
             </ng-container>
 
             <ng-container matColumnDef="title">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>{{ 'field.title' | translate}}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.title' |
+                  translate}}</span></th>
               <td mat-cell *matCellDef="let doc">
                 <div class="app-text-cutter-wrapper">
                   <span class="app-text-cutter">{{ doc.title }}</span>
@@ -69,37 +72,61 @@
             </ng-container>
 
             <ng-container matColumnDef="state">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>{{ 'field.state' | translate}}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.state' |
+                  translate}}</span></th>
               <td mat-cell *matCellDef="let doc">{{ 'state.' + doc.state | translate }}</td>
             </ng-container>
 
             <ng-container matColumnDef="dateIssued">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>{{ 'field.dateIssued' | translate}}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.dateIssued' |
+                  translate}}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc.dateIssued | date : 'dd.MM.yyyy' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="sigla">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>{{ 'field.sigla' | translate}}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.sigla' |
+                  translate}}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc['physical_locations.facet'] }}</td>
             </ng-container>
 
             <ng-container matColumnDef="indextime">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>{{ 'field.indextime' | translate}}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.indextime' |
+                  translate}}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc.indextime | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
             </ng-container>
 
+            <ng-container matColumnDef="authors">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.authors' |
+                  translate}}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                @for(a of doc.authors_kramerius; track $index) {
+                <div>
+                  <span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
+                </div>
+                @for(l of a.links; track $index) {
+                <a target="_blank" [href]="l.url" class="app-value">
+                  <span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
+                </a>
+                }
+                }
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="decision_date">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>{{ 'field.decision_date' | translate}}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.decision_date'
+                  | translate}}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc.decision_date | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="release_date">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span  mat-sort-header>{{ 'field.release_date' | translate}}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.release_date'
+                  | translate}}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc.release_date | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="action">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><button mat-icon-button (click)="setColumns()"><mat-icon>more_vert</mat-icon></button></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><button mat-icon-button
+                  (click)="setColumns()"><mat-icon>more_vert</mat-icon></button></th>
               <td mat-cell *matCellDef="let doc"></td>
             </ng-container>
 
@@ -109,15 +136,15 @@
           </table>
         </div>
         } @else {
-          @if (view() === 'titles') {
-            @for(doc of docs(); track $index){
-            <app-result-item [doc]="doc" [expanded]="expanded(doc['root.pid'])"></app-result-item>
-            }
-          } @else {
-            @for(doc of docs(); track $index){
-            <app-author-item [doc]="doc"></app-author-item>
-            }
-          }
+        @if (view() === 'titles') {
+        @for(doc of docs(); track $index){
+        <app-result-item [doc]="doc" [expanded]="expanded(doc['root.pid'])"></app-result-item>
+        }
+        } @else {
+        @for(doc of docs(); track $index){
+        <app-author-item [doc]="doc"></app-author-item>
+        }
+        }
         }
       </div>
     </div>
