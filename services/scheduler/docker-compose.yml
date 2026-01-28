@@ -19,7 +19,7 @@ services:
     ports:
       - "8080:8080"           # Expose Tomcat on localhost:8080
     volumes:
-      - ./webapps:/usr/local/tomcat/webapps  # Map local webapps folder to Tomcat
+      - ./../../kuratorska-aplikace-web/kuappweb/target:/usr/local/tomcat/webapps  # Map local webapps folder to Tomcat
     environment:
       - JAVA_OPTS=-Xms512m -Xmx1024m
     restart: unless-stopped
