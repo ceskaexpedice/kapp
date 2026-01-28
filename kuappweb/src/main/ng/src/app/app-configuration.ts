@@ -58,7 +58,7 @@ import { Label } from './shared/label';
     }
 
     public load() {
-console.log('Loading config...')
+        console.log('Loading config...')
         return this.http.get('assets/config.json').pipe(
             switchMap((cfg: any) => {
                 this.config = cfg as Configuration;
@@ -68,11 +68,18 @@ console.log('Loading config...')
                         this.state.batches.set(b);
                     }
                     
-                    const c = resp.config.find((a: any) => a.id === 'titleColumns')?.value;
-                    // const c = localStorage.getItem('titleColumns');
+                    // const c = resp.config.find((a: any) => a.id === 'titleColumns')?.value;
+                    const c = localStorage.getItem('titleColumns');
                     if (c) {
-                        //this.state.titleColumns.update(a => [...JSON.parse(c)]);
-                        this.state.titleColumns.update(a => [...c]);
+                        const cols: {field: string, selected: boolean}[] = JSON.parse(c);
+                        // Check if new columns are in config. Then add to state
+                        this.config.titleColumns.forEach(col => {
+                            if (!cols.find((lc: {field: string, selected: boolean}) => lc.field === col.field)) {
+                                cols.push(col);
+                            }
+                        });
+                        this.state.titleColumns.update(a => [...cols]);
+                        //this.state.titleColumns.update(a => [...c]);
                     } else {
                         this.state.titleColumns.update(a => [...this.config.titleColumns]);
                     }
@@ -88,6 +95,19 @@ console.log('Loading config...')
                     });
                     this.state.labels.set(labelsC);
                     
+                    const licenses: string[] = resp.config.find((a: any) => a.id === 'licenses')?.value;
+                    if (licenses) {
+                        this.state.licenses.set(licenses);
+                    } else {
+                        this.state.licenses.set([...this.config.licenses]);
+                    }
+                    
+                    const dk: string[] = resp.config.find((a: any) => a.id === 'digitalni_knihovny')?.value;
+                    if (dk) {
+                        this.state.digitalni_knihovny.set(dk);
+                    } else {
+                        this.state.digitalni_knihovny.set([...this.config.digitalni_knihovny]);
+                    }
 
                 }));
             }),

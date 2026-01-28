@@ -106,6 +106,14 @@ export class AppService {
     return this.get('index/get_links', params)
   }
 
+  saveDK(dk: string[]): Observable<any> {
+    return this.post('index/save_dk', dk);
+  }
+
+  saveLicenses(licenses: string[]): Observable<any> {
+    return this.post('index/save_licenses', licenses);
+  }
+
   saveLabels(labels: Label[]): Observable<any> {
     return this.post('index/save_labels', labels);
   }

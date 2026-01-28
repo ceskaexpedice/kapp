@@ -44,6 +44,7 @@
     "physical_locations": "Umisteni",
     "public": "Veřejný",
     "public_since": "Veřejný od",
+    "license": "Licence",
     "licenses": "Licence",
     "note": "Komentář",
     "pid": "PID",
@@ -100,7 +101,13 @@
     "CONTROLLED_UNKNOWN": "KONTROLOVANÉ - NEZNÁMÉ"
   },
   "admin": {
-    "labels": "Administrace štítků"
+    "labels": "Administrace štítků",
+    "licenses": "Administrace licencí",
+    "dk": "Administrace digitalních knihoven",
+    "new_label_name": "Nový štítek",
+    "new_label_color": "Barva",
+    "new_license": "Nová licence",
+    "new_dk": "Nová digitalní knihovna"
   },
   "navbar": {
     "admin": "Administrace",

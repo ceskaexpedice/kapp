@@ -41,6 +41,7 @@
     "physical_locations": "Umisteni",
     "public": "Public",
     "public_since": "Public since",
+    "license": "License",
     "licenses": "Licenses",
     "note": "Note",
     "pid": "PID",
@@ -96,7 +97,13 @@
     "CONTROLLED_UNKNOWN": "KONTROLOVANÉ - NEZNÁMÉ"
   },
   "admin": {
-    "labels": "Labels administration"
+    "labels": "Labels administration",
+    "licenses": "Licenses administration",
+    "dk": "Digital libraries administration",
+    "new_label_name": "New label",
+    "new_label_color": "Color",
+    "new_license": "New license",
+    "new_dk": "New digital library"
   },
   "navbar": {
     "admin": "Administration",

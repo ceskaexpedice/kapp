@@ -10,13 +10,14 @@ export class Contract {
   ico: string; 
   datum_uzavreni: string; 
   datum_platnosti: string; 
-  kontaktni_osoby: string; 
+  kontaktni_osoby: string[]; 
   digitalni_knihovny: string[] = ['NK'];
   hlavni: boolean = true;
   hlavni_smlouva: string; 
-  dodatky: string[];
+  dodatky: string[] = [];
   cislo_dodatku: string;
   souhrn: string;
+  license: string;
 
 }
 

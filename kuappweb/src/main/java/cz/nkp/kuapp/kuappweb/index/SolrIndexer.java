@@ -39,6 +39,18 @@ public class SolrIndexer {
         return ret;
     }
 
+    public static JSONObject indexDK(JSONArray js) {
+
+        JSONObject ret = saveConfig(js, "digitalni_knihovna");
+        return ret;
+    }
+
+    public static JSONObject indexLicenses(JSONArray js) {
+
+        JSONObject ret = saveConfig(js, "licenses");
+        return ret;
+    }
+
     public static JSONObject indexLabels(JSONArray js) {
 
         JSONObject ret = saveConfig(js, "labels");
@@ -320,12 +332,13 @@ public class SolrIndexer {
             doc.setField("ico", js.optString("ico"));
             doc.setField("datum_uzavreni", js.optString("datum_uzavreni"));
             doc.setField("datum_platnosti", js.optString("datum_platnosti"));
-            doc.setField("kontaktni_osoby", js.optString("kontaktni_osoby"));
+            doc.setField("kontaktni_osoby", js.optJSONArray("kontaktni_osoby"));
             doc.setField("souhrn", js.optString("souhrn"));
-            doc.setField("digitalni_knihovny", js.optString("digitalni_knihovny"));
+            doc.setField("digitalni_knihovny", js.optJSONArray("digitalni_knihovny"));
             doc.setField("hlavni_smlouva", js.optString("hlavni_smlouva"));
             doc.setField("hlavni", js.optBoolean("hlavni"));
-            doc.setField("dodatky", js.optString("dodatky"));
+            doc.setField("dodatky", js.optJSONArray("dodatky"));
+            doc.setField("license", js.optJSONArray("license"));
   
             solr.add("contracts", doc);
             solr.commit("contracts");

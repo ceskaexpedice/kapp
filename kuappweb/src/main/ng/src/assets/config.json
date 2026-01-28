@@ -6,18 +6,32 @@
          "clientId": "kapp",
          "loginType": "all" 
     },
-    "states": [
-        "noncontrolled_private",
-        "noncontrolled_public",
-        "to_control",
-        "controlled_public",
-        "controlled_private",
-        "controlled_unknown"
+    "digitalni_knihovny": [
+        "NKP",
+        "MZK"
     ],
     "licenses": [
-        {"state": "controlled_public", "licenses": ["public"]},
-        {"state": "controlled_private", "licenses": ["on-site", "smlouva"]}
-        ],
+        "public",
+        "on-site",
+        "nkp_local",
+        "nkp_local_dedic",
+        "nkp_local_nakladatel",
+        "mzk_local",
+        "mzk_local_dedic",
+        "mzk_local_nakladatel"
+    ],
+    "states": [
+        {"value": "noncontrolled_private", "licenses": []},
+        {"value": "noncontrolled_public", "licenses": []},
+        {"value": "to_control", "licenses": []},
+        {"value": "controlled_public", "licenses": ["public"]},
+        {"value": "controlled_private", "licenses": ["on-site"]},
+        {"value": "controlled_private_license", "licenses": ["on-site", "nkp_local", "nkp_local_dedic", "nkp_local_nakladatel", "mzk_local", "mzk_local_dedic", "mzk_local_nakladatel"]},
+        {"value": "controlled_unknown", "licenses": ["on-site"]},
+        {"value": "controlled_unknown_public", "licenses": ["public"]},
+        {"value": "controlled_no_ap", "licenses": ["public"]},
+        {"value": "controlled_prohibited", "licenses": ["on-site"]}
+    ],
     "titleColumns": [
         {"field": "pid", "selected": true},
         {"field": "title", "selected": true},

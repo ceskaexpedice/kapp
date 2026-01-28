@@ -167,6 +167,32 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
+        SAVE_DK {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexDK(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        SAVE_LICENSES {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexLicenses(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         LABELS {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -361,13 +387,11 @@ public class IndexServlet extends HttpServlet {
                 try {
                     //for (Part part : request.getParts()) {
                     Part part = req.getPart("file");
-                    LOGGER.log(Level.INFO, "Part name -> {0}", part.getHeader("content-disposition"));
-                    String filename = req.getParameter("name");
-                    // String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
+                    String filename = part.getSubmittedFileName();
                     byte[] pdfBytes = part.getInputStream().readAllBytes();
 
-                    File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
-                    OutputStream outStream = new FileOutputStream(targetFile);
+                    // File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
+                    OutputStream outStream = new FileOutputStream(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
                     outStream.write(pdfBytes);
 
                     if (Boolean.parseBoolean(req.getParameter("analyze"))) {

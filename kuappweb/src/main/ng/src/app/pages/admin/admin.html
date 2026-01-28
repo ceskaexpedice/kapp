@@ -20,11 +20,11 @@
 				}	
 				<div class="app-fxLayout app-row app-gap-2">
 					<mat-form-field appearance="outline">
-						<mat-label>New label name</mat-label>
+						<mat-label>{{ 'admin.new_label_name' | translate }}</mat-label>
 						<input matInput [(ngModel)]="nl.name" />
 					</mat-form-field>
 					<mat-form-field appearance="outline">
-						<mat-label>New label color</mat-label>
+						<mat-label>{{ 'admin.new_label_color' | translate }}</mat-label>
 						<input matInput [(ngModel)]="nl.color" />
 					</mat-form-field>
 					<!-- <button matButton="outlined" [style.background-color]="nl.color" [style.color]="nl.text_color">{{ nl.name }}</button> -->
@@ -35,6 +35,56 @@
 			</mat-card-content>
 			<mat-card-actions class="app-mat-card-actions">
 				<button matButton="outlined" (click)="saveLabels()">{{ 'action.save' | translate }}</button>
+			</mat-card-actions>
+		</mat-card>
+
+		<mat-card appearance="outlined" class="app-ml-4">
+			<mat-card-header class="app-mb-4">
+				<mat-card-title> {{ 'admin.licenses' | translate}} </mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				@for(l of licenses; track $index) {
+					<div class="app-fxLayout app-row app-gap-2">
+						{{ l }}
+					</div>
+				}	
+				<div class="app-fxLayout app-row app-gap-2">
+					<mat-form-field appearance="outline">
+						<mat-label>{{ 'admin.new_license' | translate }}</mat-label>
+						<input matInput [(ngModel)]="new_license" />
+					</mat-form-field>
+					<button matButton="outlined"  (click)="addLicense()" class="app-btn-add">
+						<mat-icon>add_circle</mat-icon>Přidat
+					</button>
+				</div>
+			</mat-card-content>
+			<mat-card-actions class="app-mat-card-actions">
+				<button matButton="outlined" (click)="saveLicenses()">{{ 'action.save' | translate }}</button>
+			</mat-card-actions>
+		</mat-card>
+
+		<mat-card appearance="outlined" class="app-ml-4">
+			<mat-card-header class="app-mb-4">
+				<mat-card-title> {{ 'admin.dk' | translate}} </mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				@for(l of dk; track $index) {
+					<div class="app-fxLayout app-row app-gap-2">
+						{{ l }}
+					</div>
+				}	
+				<div class="app-fxLayout app-row app-gap-2">
+					<mat-form-field appearance="outline">
+						<mat-label>{{ 'admin.new_dk' | translate }}</mat-label>
+						<input matInput [(ngModel)]="new_dk" />
+					</mat-form-field>
+					<button matButton="outlined"  (click)="addDK()" class="app-btn-add">
+						<mat-icon>add_circle</mat-icon>Přidat
+					</button>
+				</div>
+			</mat-card-content>
+			<mat-card-actions class="app-mat-card-actions">
+				<button matButton="outlined" (click)="saveDK()">{{ 'action.save' | translate }}</button>
 			</mat-card-actions>
 		</mat-card>
 	</div>
