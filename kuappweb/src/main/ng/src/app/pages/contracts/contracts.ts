@@ -57,7 +57,7 @@ export class Contracts {
   numFound: number = 0;
   pageIndex = 0;
   pageSizeOptions = [10, 25, 100];
-  sort: Sort = { active: 'indextime', direction: 'desc' };
+  sort: Sort = { active: 'filename', direction: 'asc' };
 
   //displayedColumns = ['id', 'filename', 'cislo_smlouvy', 'nazev_poskytovatele', 'ico', 'datum_uzavreni', 'datum_platnosti', 'kontaktni_osoby'];
   displayedColumns = ['filename', 'title', 'cislo_smlouvy', 'nazev_poskytovatele', 'ico', 'datum_uzavreni'];

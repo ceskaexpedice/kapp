@@ -68,6 +68,7 @@
     "search": "Search",
     "close": "Close",
     "save": "Save",
+    "export": "Export",
     "overwrite": "Overwrite",
     "set_as_last": "Set as last",
     "set_state": "Set state",

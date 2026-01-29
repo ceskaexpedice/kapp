@@ -14,11 +14,11 @@ export class AppService {
   constructor(
     private http: HttpClient) { }
 
-  private get(path: string, params = {}): Observable<Object> {
+  private get(path: string, params = {}, responseType: any = null): Observable<Object> {
     const headers = new HttpHeaders({
       //'Accept-Language': this.getLang()
     })
-    return this.http.get(encodeURI(`api/${path}`), { params: params, headers })
+    return this.http.get(encodeURI(`api/${path}`), { params: params, headers, responseType })
       .pipe(map((r: any) => {
         if (r.response?.status === -1) {
           r.response.errors = { path: [{ errorMessage: r.response.errorMessage }] };
@@ -78,8 +78,11 @@ export class AppService {
     return of({ response: { 'status': error.status, 'message': error.message, 'errors': [error.error] } });
   }
 
-  searchTitles(params: HttpParams): Observable<any> {
-    return this.get('index/titles', params)
+  searchTitles(params: HttpParams, csv: boolean = false): Observable<any> {
+    
+    const headers = csv ? 'plain/text' : null;
+    
+    return this.get('index/titles', params, headers)
   }
 
   getDoc(pid: string): Observable<any> {

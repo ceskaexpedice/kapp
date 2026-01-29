@@ -3,7 +3,6 @@ package cz.nkp.kuapp.kuappweb.index;
 import cz.nkp.kuapp.kuappweb.Options;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -37,10 +36,13 @@ public class IndexSearcher {
             if (rowsP != null && !rowsP.isBlank()) {
                 rows = Integer.parseInt(rowsP);
             }
+            if (request.getParameter("export") != null) {
+                rows = 1000; 
+            }
             
             int offset = 0;
             if (request.getParameter("offset") != null) {
-                offset = Integer.parseInt(request.getParameter("offset"));
+                offset = Integer.parseInt(request.getParameter("offset")); 
             }
             
             String sort = "indextime desc";
@@ -114,10 +116,20 @@ public class IndexSearcher {
                 jrequest = jrequest.withFilter("{!tag=fffl}physical_locations.facet:(\"" + String.join("\" OR \"", request.getParameterValues("physical_locations")) + "\")");
             }
 
-            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            if (request.getParameter("export") != null) {
+                jrequest.setResponseParser(new InputStreamResponseParser("csv"));
+            } else {
+                jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            }
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+            
+            if (request.getParameter("export") != null) { 
+                ret.put("csv",IOUtils.toString(is, "UTF-8")); 
+            } else {
+                ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+            }
+            
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);

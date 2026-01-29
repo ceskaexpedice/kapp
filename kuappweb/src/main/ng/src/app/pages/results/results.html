@@ -30,6 +30,7 @@
         </div>
         <div>
           @if (view() === 'titles') {
+          <button matButton matSuffix (click)="export()"><mat-icon>file_download</mat-icon>{{ 'action.export' | translate }}</button>
           <mat-button-toggle-group name="viewType" aria-label="viewType" [(ngModel)]="viewType">
             <mat-button-toggle value="table_view"><mat-icon>table_view</mat-icon> {{'action.table_view' |
               translate}}</mat-button-toggle>
@@ -106,6 +107,12 @@
               <td mat-cell *matCellDef="let doc">{{ doc['physical_locations.facet'] }}</td>
             </ng-container>
 
+            <ng-container matColumnDef="license">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.license' |
+                  translate}}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc['assigned_license'] }}</td>
+            </ng-container>
+
             <ng-container matColumnDef="indextime">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.indextime' |
                   translate}}</span></th>
@@ -130,10 +137,13 @@
               <td mat-cell *matCellDef="let doc"></td>
             </ng-container>
 
-            <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
+            <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true" [matContextMenuTriggerFor]="contextMenu"></tr>
             <tr mat-row *matRowDef="let row; columns: displayedColumns();" (click)="viewDoc(row)"
               class="app-cursor-pointer"></tr>
           </table>
+          <mat-menu #contextMenu>
+            <button mat-menu-item (click)="setColumns()"><mat-icon>more_vert</mat-icon>{{ 'titleColumns_dialog' | translate }}</button>
+          </mat-menu>
         </div>
         } @else {
         @if (view() === 'titles') {
