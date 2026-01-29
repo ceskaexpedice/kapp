@@ -1,6 +1,6 @@
 services:
   scheduler:
-    image: jiriminov/kappScheduler
+    image: jiriminov/kappscheduler:latest
     container_name: kappScheduler
     volumes:
       - ./mnt/import/.kapp:/root/.kapp
@@ -18,8 +18,6 @@ services:
     container_name: kuappweb
     ports:
       - "8080:8080" 
-    volumes:
-      - ./../../kuratorska-aplikace-web/kuappweb/target:/usr/local/tomcat/webapps 
     environment:
       - JAVA_OPTS=-Xms512m -Xmx1024m
     restart: unless-stopped

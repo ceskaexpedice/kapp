@@ -24,7 +24,7 @@ jib {
     }
 
     to {
-        image = 'jiriminov/kappScheduler'
+        image = 'jiriminov/kappscheduler:latest'
         tags = [project.version]
     }
 
