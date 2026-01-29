@@ -36,7 +36,7 @@ export class StateDialog {
   initialState: string;
   initialLicenses: string[];
   newState: string;
-  newLicenses: string;
+  newLicenses: string[];
   reason: string;
   currentHistory: any;
 
@@ -51,10 +51,16 @@ export class StateDialog {
       this.initialLicenses = this.data.doc['licenses'];
     }
     this.allowedLicenses.set([...this.config.states.find(s => s.value === this.initialState).licenses]);
+    if (this.allowedLicenses().length > 0) {
+      this.newLicenses = [this.allowedLicenses()[0]]
+    }
   }
 
   setState() {
     this.allowedLicenses.set([...this.config.states.find(s => s.value === this.newState).licenses]);
+    if (this.allowedLicenses().length > 0) {
+      this.newLicenses = [this.allowedLicenses()[0]];
+    }
   }
 
   save() {
