@@ -12,6 +12,7 @@ import { MatProgressBar } from '@angular/material/progress-bar';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatCardModule } from '@angular/material/card';
 import { Label } from '../../shared/label';
+import { AppConfiguration } from '../../app-configuration';
 
 @Component({
   selector: 'app-admin',
@@ -29,9 +30,17 @@ export class Admin {
   labels: Label[];
   nl: Label = {name: ''};
 
+  licenses:string[] = [];
+  new_license: string;
+
+  dk:string[] = [];
+  new_dk: string;
+
   ngOnInit() {
     const p: any = {};
     this.labels = this.state.labels();
+    this.licenses = [...this.state.licenses()];
+    this.dk = [...this.state.digitalni_knihovny()];
   }
 
   addLabel(l: Label) {
@@ -42,11 +51,40 @@ export class Admin {
     }
   }
 
-
   saveLabels() {
     this.state.labels.set(this.labels);
     this.service.saveLabels(this.state.labels()).subscribe(resp => {
       console.log(resp)
     });
+  }
+
+  addLicense() {
+    if (!this.licenses.find(l => l === this.new_license)) {
+      this.licenses.push(this.new_license);
+      this.new_license = null;
+      //this.saveLicenses();
+    }
+  }
+
+  saveLicenses() {
+    this.state.licenses.set(this.licenses);
+    this.service.saveLicenses(this.state.licenses()).subscribe(resp => {
+        console.log(resp)
+      });
+  }
+
+  addDK() {
+    if (!this.licenses.find(l => l === this.new_license)) {
+      this.licenses.push(this.new_license);
+      this.new_license = null;
+      //this.saveLicenses();
+    }
+  }
+
+  saveDK() {
+    this.state.digitalni_knihovny.set(this.dk);
+    this.service.saveDK(this.state.digitalni_knihovny()).subscribe(resp => {
+        console.log(resp)
+      });
   }
 }

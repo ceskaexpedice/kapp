@@ -21,6 +21,7 @@ import { MatCheckbox } from "@angular/material/checkbox";
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import {MatTabsModule} from '@angular/material/tabs';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
+import { MatSelectModule } from '@angular/material/select';
 
 @Component({
   selector: 'app-contract-dialog',
@@ -31,8 +32,9 @@ import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
     MatChipsModule, MatFormFieldModule, MatInputModule,
     MatProgressBarModule, MatAutocompleteModule,
     MatListModule, MatTooltipModule, MatTabsModule,
-    MatCheckbox, NgxExtendedPdfViewerModule
-  ],
+    MatCheckbox, NgxExtendedPdfViewerModule,
+    MatSelectModule
+],
   templateUrl: './contract-dialog.html',
   styleUrl: './contract-dialog.scss'
 })
@@ -53,14 +55,22 @@ export class ContractDialog {
 
   contract = signal<Contract>(new Contract());
 
+  kontaktni_osoby: string = '';
+
   dodatek: string;
   dodatky = signal<string[]>([]);
+
+  hlavni_smlouva: string;
+  hlavni_smlouvy = signal<string[]>([]);
 
 
   constructor(private http: HttpClient) { }
 
   ngOnInit() {
     this.contract.set(this.data.doc);
+    if (this.contract().kontaktni_osoby) {
+    this.kontaktni_osoby = this.contract().kontaktni_osoby.join("\n");
+    }
   }
 
   onFileSelected(event: any) {
@@ -106,6 +116,7 @@ export class ContractDialog {
   }
 
   save() {
+    this.contract().kontaktni_osoby = this.kontaktni_osoby.split('\n');
     this.service.saveContract(this.contract()).subscribe((resp: any) => {
       // console.log(resp)
     })
@@ -115,16 +126,47 @@ export class ContractDialog {
     const val = e.target ? e.target.value : e;
 
     const p: any = {};
-    p.dodatky = val;
+    p.dodatek = val;
+    p.rows = 10;
     
     this.service.searchContracts(p as HttpParams).subscribe((resp: any) => {
-      this.dodatky.set(resp.response.docs);
+      this.dodatky.set(resp.response.docs.map((d: Contract) => d.filename));
+    });
+
+  }
+
+  checkHlavni(e: any) {
+    const val = e.target ? e.target.value : e;
+
+    const p: any = {};
+    p.hlavni_smlouva = val;
+    p.rows = 10;
+    
+    this.service.searchContracts(p as HttpParams).subscribe((resp: any) => {
+      this.hlavni_smlouvy.set(resp.response.docs.map((d: Contract) => d.filename));
     });
 
   }
 
   setDodatek() {
+    if (!this.contract().dodatky) {
+      this.contract().dodatky = [];
+    }
     this.contract().dodatky.push(this.dodatek);
+    console.log(this.contract().dodatky)
     this.dodatek = null;
   }
+
+  setHlavniSmlouva() {
+    //this.contract().hlavni_smlouva = this.hlavni_smlouva
+    //this.hlavni_smlouva = null;
+  }
+
+  removeDodatek(d: string) {
+      const index = this.contract().dodatky.indexOf(d);
+      if (index > -1) {
+        this.contract().dodatky.splice(index, 1);
+      }
+    }
+  
 }

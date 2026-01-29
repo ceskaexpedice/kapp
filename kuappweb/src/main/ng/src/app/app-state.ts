@@ -12,6 +12,8 @@ import { Batch } from "./shared/batch";
     public q: string = '';
     usedFacets = signal<{ field: string, value: string }[]>([]);
 
+    public digitalni_knihovny = signal<string[]>([]);
+    public licenses = signal<string[]>([]);
     public labels = signal<Label[]>([]);
     public batches = signal<Batch[]>([]);
     public titleColumns = signal<{field: string, selected: boolean}[]>([]);

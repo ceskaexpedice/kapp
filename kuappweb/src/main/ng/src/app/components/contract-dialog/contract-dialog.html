@@ -7,7 +7,7 @@
 	<div>{{ progressMsg }}</div>
 	}
 	<div class="app-fxLayout app-mt-4">
-		<div class="app-fxLayout app-column ">
+		<div class="app-fxLayout app-column " style="width: 450px;">
 			<div class="app-fxLayout app-row ">
 				<mat-form-field appearance="outline" class="app-w-100">
 					<mat-label>{{ 'field.title' | translate }}</mat-label>
@@ -47,39 +47,77 @@
 			<div class="app-fxLayout app-row ">
 				<mat-form-field appearance="outline" class="app-w-100">
 					<mat-label>{{ 'field.kontaktni_osoby' | translate }}</mat-label>
-					<textarea matInput rows="3" [(ngModel)]="contract().kontaktni_osoby"></textarea>
+					<textarea matInput rows="3" [(ngModel)]="kontaktni_osoby"></textarea>
 				</mat-form-field>
 			</div>
 			<div class="app-fxLayout app-row ">
-				<mat-checkbox appearance="outline" [(ngModel)]="contract().hlavni">{{ 'field.isHlavni' | translate
-					}}</mat-checkbox>
-				@if (contract().hlavni) {
-				<mat-chip-listbox class="mat-mdc-chip-set-stacked" aria-label="Cutest dog breeds">
-					@for (d of contract().dodatky; track d) {
-					<mat-chip-option selected>{{d}}</mat-chip-option>
+				<mat-form-field appearance="outline" class="app-w-100">
+					<mat-label>{{ 'field.license' | translate }}</mat-label>
+					<mat-select [(ngModel)]="contract().license" multiple="true">
+					@for (l of state.licenses(); track l) {
+						<mat-option [value]="l">{{ l }}</mat-option>
 					}
-				</mat-chip-listbox>
-				<input [matAutocomplete]="autoDodatky" matInput rows="3" [(ngModel)]="dodatek"
-					(keyup)="checkDodatky($event)" />
-				<mat-autocomplete #autoDodatky="matAutocomplete" (optionSelected)="setDodatek()">
-					@for(a of dodatky(); track idx; let idx = $index){
-					<mat-option [value]="a">
-						{{a}}
-					</mat-option>
-					}
-				</mat-autocomplete>
-				}
-				<mat-form-field appearance="outline">
-					<mat-label>{{ 'field.hlavni_smlouva' | translate }}</mat-label>
-					<input [disabled]="contract().hlavni" matInput rows="3" [(ngModel)]="contract().hlavni_smlouva" />
+				</mat-select>
 				</mat-form-field>
 			</div>
 			<div class="app-fxLayout app-row ">
 				<mat-form-field appearance="outline" class="app-w-100">
 					<mat-label>{{ 'field.digitalni_knihovny' | translate }}</mat-label>
-					<input matInput rows="3" [(ngModel)]="contract().digitalni_knihovny" />
+					<mat-select [(ngModel)]="contract().digitalni_knihovny" multiple="true">
+					@for (l of state.digitalni_knihovny(); track l) {
+						<mat-option [value]="l">{{ l }}</mat-option>
+					}
+				</mat-select>
 				</mat-form-field>
 			</div>
+			<div class="app-fxLayout app-row ">
+				<mat-checkbox appearance="outline" [(ngModel)]="contract().hlavni">{{ 'field.isHlavni' | translate
+					}}</mat-checkbox>
+			</div>
+				@if (contract().hlavni) {
+			<div class="app-fxLayout app-row ">
+				<mat-form-field appearance="outline" class="app-w-100">
+				<mat-label>{{'field.dodatky' | translate}}</mat-label>
+					<input [matAutocomplete]="autoDodatky" matInput [(ngModel)]="dodatek"
+						(keyup)="checkDodatky($event)" />
+					<mat-autocomplete #autoDodatky="matAutocomplete" (optionSelected)="setDodatek()">
+						@for(a of dodatky(); track idx; let idx = $index){
+						<mat-option [value]="a">
+							{{a}}
+						</mat-option>
+						}
+					</mat-autocomplete>
+				</mat-form-field>
+				
+			</div>
+			<div class="app-fxLayout app-row ">
+					<mat-chip-set class="mat-mdc-chip-set-stacked" aria-label="Dodatky">
+					@for (d of contract().dodatky; track d) {
+					<mat-chip (removed)="removeDodatek(d)" [style.background-color]="'var(--mat-sys-primary)'">{{d}}
+						<button matChipRemove [attr.aria-label]="'remove ' + d">
+							<mat-icon>cancel</mat-icon>
+						</button>
+					</mat-chip>
+					}
+					</mat-chip-set>
+			</div>
+				} @else {
+					
+					<div class="app-fxLayout app-row ">
+						<mat-form-field appearance="outline"class="app-w-100">
+							<input [matAutocomplete]="autoHs" matInput [(ngModel)]="contract().hlavni_smlouva"
+								(keyup)="checkHlavni($event)" />
+							<mat-autocomplete #autoHs="matAutocomplete" (optionSelected)="setHlavniSmlouva()">
+								@for(a of hlavni_smlouvy(); track idx; let idx = $index){
+								<mat-option [value]="a">
+									{{a}}
+								</mat-option>
+								}
+							</mat-autocomplete>
+						</mat-form-field>
+						
+					</div>
+				}
 		</div>
 		<div class="app-fxLayout app-column app-w-100">
 			<mat-tab-group>
@@ -93,13 +131,10 @@
 				</mat-tab>
 				<mat-tab [label]="'PDF'">
 					<div class="app-w-100 app-fill">
-						
-					<ngx-extended-pdf-viewer
-						[src]="'/api/pdf?filename=' + contract().filename"
-						[textLayer]="true" 
-						[showHandToolButton]="true" 
-						[showPresentationModeButton]="true">
-					</ngx-extended-pdf-viewer>
+
+						<ngx-extended-pdf-viewer [src]="'/api/pdf?filename=' + contract().filename" [textLayer]="true"
+							[showHandToolButton]="true" [showPresentationModeButton]="true">
+						</ngx-extended-pdf-viewer>
 					</div>
 
 				</mat-tab>

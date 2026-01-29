@@ -44,6 +44,7 @@
     "physical_locations": "Umisteni",
     "public": "Veřejný",
     "public_since": "Veřejný od",
+    "license": "Licence",
     "licenses": "Licence",
     "note": "Komentář",
     "pid": "PID",
@@ -71,6 +72,7 @@
     "search": "Hledat",
     "close": "Zavřít",
     "save": "Uložit",
+    "export": "Export",
     "overwrite": "Přepsat",
     "set_as_last": "Nastavit jako poslední",
     "set_state": "Nastavit stav",
@@ -89,18 +91,28 @@
     "contract_upload": "Nahrát smluovu"
   },
   "state": {
-    "NONCONTROLLED_PRIVATE": "NEKONTROLOVANÉ",
-    "NONCONTROLLED_PUBLIC": "NEKONTROLOVANÉ - ZPŘÍSTUPNĚNÉ",
-    "TO_CONTROL": "KE KONTROLE",
-    "PARENT_TO_CONTROLL": "KE KONTROLE NADŘAZENÉHO",
-    "PARENT_OPEN": "KE KONTROLE NADŘAZENÉHO",
-    "PARENT_CLOSED": "NADŘAZENÉ ZKONTROLOVANÉ",
-    "CONTROLLED_PUBLIC": "KONTROLOVANÉ - VOLNÉ",
-    "CONTROLLED_PRIVATE": "KONTROLOVANÉ- NEVEŘEJNÉ",
-    "CONTROLLED_UNKNOWN": "KONTROLOVANÉ - NEZNÁMÉ"
+    "NONCONTROLLED_PRIVATE": "nekontrolované",
+    "NONCONTROLLED_PUBLIC": "nekontrolované - zpřístupněné",
+    "TO_CONTROL": "ke kontrole",
+    "PARENT_TO_CONTROLL": "ke kontrole nadřazeného",
+    "PARENT_OPEN": "ke kontrole nadřazeného",
+    "PARENT_CLOSED": "nadřazené zkontrolované",
+    "CONTROLLED_PUBLIC": "kontrolované - volné",
+    "CONTROLLED_PRIVATE": "kontrolované- neveřejné",
+    "CONTROLLED_UNKNOWN": "kontrolované - neznámé",
+    "CONTROLLED_UNKNOWN_PUBLIC": "kontrolované - neznámé - volné",
+    "CONTROLLED_NO_AP": "kontrolované - bez autorskych prav",
+    "CONTROLLED_PROHIBITED": "kontrolované - znepristupnene",
+    "CONTROLLED_PRIVATE_LICENSE": "kontrolované - neveřejné licence"
   },
   "admin": {
-    "labels": "Administrace štítků"
+    "labels": "Administrace štítků",
+    "licenses": "Administrace licencí",
+    "dk": "Administrace digitalních knihoven",
+    "new_label_name": "Nový štítek",
+    "new_label_color": "Barva",
+    "new_license": "Nová licence",
+    "new_dk": "Nová digitalní knihovna"
   },
   "navbar": {
     "admin": "Administrace",

@@ -6,18 +6,37 @@
          "clientId": "kapp",
          "loginType": "all" 
     },
-    "states": [
-        "noncontrolled_private",
-        "noncontrolled_public",
-        "to_control",
-        "controlled_public",
-        "controlled_private",
-        "controlled_unknown"
+    "digitalni_knihovny": [
+        "NKP",
+        "MZK"
     ],
     "licenses": [
-        {"state": "controlled_public", "licenses": ["public"]},
-        {"state": "controlled_private", "licenses": ["on-site", "smlouva"]}
-        ],
+        "public",
+        "onsite",
+        "nkp_local",
+        "nkp_local_dedic",
+        "nkp_local_nakladatel",
+        "mzk_local",
+        "mzk_local_dedic",
+        "mzk_local_nakladatel"
+    ],
+    "states": [
+        {"value": "NONCONTROLLED_PRIVATE", "licenses": []},
+        {"value": "NONCONTROLLED_PUBLIC", "licenses": []},
+        {"value": "TO_CONTROL", "licenses": []},
+        {"value": "CONTROLLED_PUBLIC", "licenses": ["public"]},
+        {"value": "CONTROLLED_PRIVATE", "licenses": ["onsite"]},
+        {"value": "CONTROLLED_PRIVATE_LICENSE", "licenses": ["onsite", "nkp_local", "nkp_local_dedic", "nkp_local_nakladatel", "mzk_local", "mzk_local_dedic", "mzk_local_nakladatel"]},
+        {"value": "CONTROLLED_UNKNOWN", "licenses": ["onsite"]},
+        {"value": "CONTROLLED_UNKNOWN_PUBLIC", "licenses": ["public"]},
+        {"value": "CONTROLLED_NO_AP", "licenses": ["public"]},
+        {"value": "CONTROLLED_PROHIBITED", "licenses": ["onsite"]},
+        {"value": "PARENT_TO_CONTROLL", "licenses": ["onsite"]},
+        {"value": "PARENT_OPEN", "licenses": ["onsite"]},
+        {"value": "PARENT_CLOSED", "licenses": ["onsite"]}
+    ],
+
+
     "titleColumns": [
         {"field": "pid", "selected": true},
         {"field": "title", "selected": true},
@@ -27,6 +46,7 @@
         {"field": "indextime", "selected": true},
         {"field": "decision_date", "selected": false},
         {"field": "release_date", "selected": false},
+        {"field": "license", "selected": false},
         {"field": "sigla", "selected": true}
     ]
 }

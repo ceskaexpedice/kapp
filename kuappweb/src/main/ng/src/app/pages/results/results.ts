@@ -23,7 +23,7 @@ import { JSONFacet } from '../../shared/facet';
 import { HttpParams } from '@angular/common/http';
 import { ResultItem } from "../../components/result-item/result-item";
 import { MatInputModule } from '@angular/material/input';
-import {MatButtonToggleModule} from '@angular/material/button-toggle';
+import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { AuthorItem } from "../../components/author-item/author-item";
 import { Observable } from 'rxjs';
 import { TitleDialog } from '../../components/title-dialog/title-dialog';
@@ -32,6 +32,7 @@ import { ResizecolDirective } from '../../shared/resizecol.directive';
 
 import { MatSortModule, Sort } from '@angular/material/sort';
 import { ColumnsSettingsDialog } from '../../components/columns-settings-dialog/columns-settings-dialog';
+import { MatMenuModule } from "@angular/material/menu";
 
 @Component({
   selector: 'app-results',
@@ -43,7 +44,8 @@ import { ColumnsSettingsDialog } from '../../components/columns-settings-dialog/
     MatFormFieldModule, MatIconModule, MatInputModule, MatButtonToggleModule,
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem,
-    AuthorItem
+    AuthorItem,
+    MatMenuModule
   ],
   templateUrl: './results.html',
   styleUrl: './results.scss'
@@ -62,24 +64,24 @@ export class Results {
   pageSizeOptions = [10, 25, 100];
 
   private router = inject(Router);
-    readonly dialog = inject(MatDialog);
+  readonly dialog = inject(MatDialog);
 
   viewType = signal<string>('table_view');
-  displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']); 
+  displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']);
   //['pid', 'title', 'state', 'dateIssued', 'sigla', 'indextime', 'actions']; //Datum vydání; Producent/Umístění (duplicitně k fasetě); Datum importu(?)
 
-  sort: Sort = {active: 'indextime', direction: 'desc'}; 
+  sort: Sort = { active: 'indextime', direction: 'desc' };
 
   constructor(
     @Inject(DOCUMENT) private document: Document,
-    
+
     public state: AppState,
     private service: AppService,
     private config: AppConfiguration
   ) {
     effect(() => {
-    const usedFacets = this.state.usedFacets();
-    this.getData();
+      const usedFacets = this.state.usedFacets();
+      this.getData();
 
     })
   }
@@ -116,11 +118,14 @@ export class Results {
       q: this.state.q
     }
     this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
-    this.getData();
+    this.getData(false);
   }
 
-  getData() {
-    this.docs.set([]);
+  export() {
+    this.getData(true);
+  }
+
+  getData(csv: boolean = false) {
     const p: any = {};
     p.rows = this.rows;
     p.offset = this.pageIndex * p.rows;
@@ -128,18 +133,36 @@ export class Results {
       p.q = this.state.q;
     }
     p.sort = this.sort.active + " " + this.sort.direction;
+    if (csv) {
+      p.export = true;
+    } else {
+      this.docs.set([]);
+    }
     this.addFilters(p, this.state.usedFacets());
     let s: Observable<any>;
     if (this.view() === 'titles') {
-      s = this.service.searchTitles(p as HttpParams);
+      s = this.service.searchTitles(p as HttpParams, csv);
     } else {
       s = this.service.searchAuthors(p as HttpParams);
     }
     s.subscribe((resp: any) => {
+      if (csv) {
+        this.downLoadFile(resp)
+        return;
+      }
       this.solrResponse = resp;
       this.numFound = this.solrResponse.response.numFound;
       this.docs.set(this.solrResponse.response.docs);
     });
+  }
+
+  downLoadFile(data: any) {
+    let blob = new Blob([data], { type: 'text/csv;charset=utf-8' });
+    let url = window.URL.createObjectURL(blob);
+    let pwa = window.open(url);
+    if (!pwa || pwa.closed || typeof pwa.closed == 'undefined') {
+      alert('Please disable your Pop-up blocker and try again.');
+    }
   }
 
   expanded(pid: string) {
@@ -148,24 +171,24 @@ export class Results {
   }
 
   viewDoc(doc: any) {
-  
-      const dialogRef = this.dialog.open(TitleDialog, {
-        data: doc,
-        panelClass: "app-dialog-title"
-      });
-  
-      dialogRef.afterClosed().subscribe(result => {
-        if (result) {
-        }
-      });
-    }
 
-    sortTable(e: Sort) {
-      this.sort = e;
-      this.getData();
-    }
+    const dialogRef = this.dialog.open(TitleDialog, {
+      data: doc,
+      panelClass: "app-dialog-title"
+    });
 
-    setColumns() {
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+      }
+    });
+  }
+
+  sortTable(e: Sort) {
+    this.sort = e;
+    this.getData(false);
+  }
+
+  setColumns() {
     const dialogRef = this.dialog.open(ColumnsSettingsDialog, {
       width: '600px'
     });

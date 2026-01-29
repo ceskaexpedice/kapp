@@ -18,9 +18,10 @@ import { AppService } from '../../app.service';
 import { ContractDialog } from '../../components/contract-dialog/contract-dialog';
 import { Contract } from '../../shared/contract';
 import { Router } from '@angular/router';
-import { Sort } from '@angular/material/sort';
+import { MatSortModule, Sort } from '@angular/material/sort';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatCheckbox } from "@angular/material/checkbox";
+import { ResizecolDirective } from '../../shared/resizecol.directive';
 
 @Component({
   selector: 'app-contracts',
@@ -28,11 +29,11 @@ import { MatCheckbox } from "@angular/material/checkbox";
     TranslateModule, FormsModule,
     MatDialogModule, MatMenuModule, MatProgressBarModule,
     MatIconModule, MatButtonModule, MatCardModule,
-    MatFormFieldModule, MatInputModule,
+    MatFormFieldModule, MatInputModule, MatSortModule,
     AngularSplitModule, MatTableModule,
-    MatTooltipModule,
+    MatTooltipModule, ResizecolDirective,
     MatCheckbox
-],
+  ],
   templateUrl: './contracts.html',
   styleUrl: './contracts.scss'
 })
@@ -51,17 +52,17 @@ export class Contracts {
   docs = signal<any[]>([]);
   hasFacets = signal<boolean>(false);
   doc = signal<Contract>(null);
-  
-  rows = 25;
+
+  rows = 1000;
   numFound: number = 0;
   pageIndex = 0;
   pageSizeOptions = [10, 25, 100];
-  sort: Sort = {active: 'indextime', direction: 'desc'}; 
+  sort: Sort = { active: 'filename', direction: 'asc' };
 
   //displayedColumns = ['id', 'filename', 'cislo_smlouvy', 'nazev_poskytovatele', 'ico', 'datum_uzavreni', 'datum_platnosti', 'kontaktni_osoby'];
-  displayedColumns = ['id', 'title', 'cislo_smlouvy', 'nazev_poskytovatele', 'ico', 'datum_uzavreni'];
+  displayedColumns = ['filename', 'title', 'cislo_smlouvy', 'nazev_poskytovatele', 'ico', 'datum_uzavreni'];
 
-  
+
   name: string;
   overwrite = false;
   analyze = true;
@@ -72,8 +73,8 @@ export class Contracts {
 
   constructor() {
     effect(() => {
-    const usedFacets = this.state.usedFacets();
-    this.getData();
+      const usedFacets = this.state.usedFacets();
+      this.getData();
 
     })
   }
@@ -105,7 +106,7 @@ export class Contracts {
     }
     p.sort = this.sort.active + " " + this.sort.direction;
     this.addFilters(p, this.state.usedFacets());
-    
+
     this.service.searchContracts(p as HttpParams).subscribe((resp: any) => {
       this.solrResponse = resp;
       this.numFound = this.solrResponse.response.numFound;
@@ -113,26 +114,29 @@ export class Contracts {
     });
   }
 
-  showContract(doc: Contract) {
-    const dialogRef = this.dialog.open(ContractDialog, {
-          data: {doc},
-          panelClass: "app-dialog-contract"
-        });
-    
-        dialogRef.afterClosed().subscribe(result => {
-          this.getData();
-        });
+  sortTable(e: Sort) {
+    this.sort = e;
+    this.getData();
   }
 
-  
+  showContract(doc: Contract) {
+    const dialogRef = this.dialog.open(ContractDialog, {
+      data: { doc },
+      panelClass: "app-dialog-contract"
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      this.getData();
+    });
+  }
 
   viewDoc(doc: any) {
-            this.service.getContract(doc.filename).subscribe((resp: any) => {
-              if (resp.response?.docs?.length > 0) {
-                this.doc.set(resp.response.docs[0]);
-                this.showContract(doc)
-              }
-            });
+    this.service.getContract(doc.filename).subscribe((resp: any) => {
+      if (resp.response?.docs?.length > 0) {
+        this.doc.set(resp.response.docs[0]);
+        this.showContract(doc)
+      }
+    });
 
   }
 
@@ -141,7 +145,7 @@ export class Contracts {
     this.checkUpload();
   }
 
-  
+
 
   checkUpload() {
     if (this.overwrite) {
@@ -161,14 +165,14 @@ export class Contracts {
     })
   }
 
-  uploadFile(){
+  uploadFile() {
     if (this.selectedFile) {
       this.loading.set(true);
       const formData = new FormData();
       formData.append('file', this.selectedFile);
 
       formData.append('name', this.name ? this.name : this.selectedFile.name),
-      formData.append('overwrite', this.overwrite.toString());
+        formData.append('overwrite', this.overwrite.toString());
       formData.append('analyze', this.analyze.toString());
 
       this.http.post("/api/index/upload_contract", formData, {

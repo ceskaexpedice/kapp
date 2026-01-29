@@ -71,7 +71,7 @@
 			
 			<mat-card appearance="outlined" class="app-card-repo">
 				<mat-card-header>
-					<mat-card-title>{{ 'home.contracts' | translate }} </mat-card-title>
+					<mat-card-title (click)="contracts()">{{ 'home.contracts' | translate }} </mat-card-title>
 				</mat-card-header>
 				<mat-card-content>
 					{{ 'home.contracts_desc' | translate }}

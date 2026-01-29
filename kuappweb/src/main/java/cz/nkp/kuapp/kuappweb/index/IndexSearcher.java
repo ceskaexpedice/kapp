@@ -3,7 +3,6 @@ package cz.nkp.kuapp.kuappweb.index;
 import cz.nkp.kuapp.kuappweb.Options;
 import java.io.InputStream;
 import java.net.URI;
-import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -37,10 +36,13 @@ public class IndexSearcher {
             if (rowsP != null && !rowsP.isBlank()) {
                 rows = Integer.parseInt(rowsP);
             }
+            if (request.getParameter("export") != null) {
+                rows = 1000; 
+            }
             
             int offset = 0;
             if (request.getParameter("offset") != null) {
-                offset = Integer.parseInt(request.getParameter("offset"));
+                offset = Integer.parseInt(request.getParameter("offset")); 
             }
             
             String sort = "indextime desc";
@@ -114,10 +116,20 @@ public class IndexSearcher {
                 jrequest = jrequest.withFilter("{!tag=fffl}physical_locations.facet:(\"" + String.join("\" OR \"", request.getParameterValues("physical_locations")) + "\")");
             }
 
-            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            if (request.getParameter("export") != null) {
+                jrequest.setResponseParser(new InputStreamResponseParser("csv"));
+            } else {
+                jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            }
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+            
+            if (request.getParameter("export") != null) { 
+                ret.put("csv",IOUtils.toString(is, "UTF-8")); 
+            } else {
+                ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+            }
+            
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -389,7 +401,13 @@ public class IndexSearcher {
             if (request.getParameter("offset") != null) {
                 offset = Integer.parseInt(request.getParameter("offset"));
             }
-            //String q = "nameIdentifier:*";
+            
+            
+            String sort = "indextime desc";
+            if (request.getParameter("sort") != null) {
+                sort = request.getParameter("sort");
+            }
+            
             String q = "*";
             if (request.getParameter("q") != null) {
                 q = request.getParameter("q");
@@ -400,19 +418,18 @@ public class IndexSearcher {
                     .withFacet("hlavni", new TermsFacetMap("hlavni")
                             .setLimit(1000)
                             .setMinCount(1))
-//                    .withFacet("state", new TermsFacetMap("state")
-//                            .setLimit(1000)
-//                            .setMinCount(1)) 
                     .setOffset(offset)
-                    .setSort("indextime desc")
+                    .setSort(sort)
                     .returnFields("*")
                     .setLimit(rows);
-            
 
-            if (request.getParameter("dodatky") != null) {
-                
+            if (request.getParameter("dodatek") != null) {
                 jrequest = jrequest.withFilter("hlavni:false");
-                jrequest = jrequest.withFilter("dodatky:" + request.getParameter("dodatky") + "*");
+                jrequest = jrequest.withFilter("filename_search:" + request.getParameter("dodatek") + "*");
+            }
+            if (request.getParameter("hlavni_smlouva") != null) {
+                jrequest = jrequest.withFilter("hlavni:true");
+                jrequest = jrequest.withFilter("filename_search:" + request.getParameter("hlavni_smlouva") + "*");
             }
             
             jrequest.setResponseParser(new InputStreamResponseParser("json"));

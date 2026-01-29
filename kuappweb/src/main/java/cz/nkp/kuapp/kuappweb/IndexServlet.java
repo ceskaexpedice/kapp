@@ -58,7 +58,12 @@ public class IndexServlet extends HttpServlet {
                 Actions actionToDo = Actions.valueOf(actionNameParam.toUpperCase());
                 JSONObject json = actionToDo.doPerform(request, response);
                 if (json != null) {
-                    response.getWriter().println(json.toString(2));
+                    if (request.getParameter("export") != null) {
+                        response.setContentType("plain/text;charset=UTF-8");
+                        response.getWriter().println(json.getString("csv"));
+                    } else {
+                        response.getWriter().println(json.toString(2));  
+                    }
                 }
 
             } else {
@@ -161,6 +166,32 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     json = IndexSearcher.searchAuthors(req);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        SAVE_DK {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexDK(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        SAVE_LICENSES {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexLicenses(js);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -361,13 +392,11 @@ public class IndexServlet extends HttpServlet {
                 try {
                     //for (Part part : request.getParts()) {
                     Part part = req.getPart("file");
-                    LOGGER.log(Level.INFO, "Part name -> {0}", part.getHeader("content-disposition"));
-                    String filename = req.getParameter("name");
-                    // String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
+                    String filename = part.getSubmittedFileName();
                     byte[] pdfBytes = part.getInputStream().readAllBytes();
 
-                    File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
-                    OutputStream outStream = new FileOutputStream(targetFile);
+                    // File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
+                    OutputStream outStream = new FileOutputStream(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
                     outStream.write(pdfBytes);
 
                     if (Boolean.parseBoolean(req.getParameter("analyze"))) {

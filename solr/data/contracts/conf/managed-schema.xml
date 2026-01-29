@@ -20,14 +20,18 @@
   <field name="digitalni_knihovny" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="dodatky" type="string" multiValued="true" indexed="true" stored="true"/>
   <field name="hlavni" type="boolean" multiValued="false" indexed="true" stored="true"/>
+  <field name="hlavni_smlouva" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="license" type="string" multiValued="true" indexed="true" stored="true"/>
 
 
 
-  <field name="souhrn" type="text_general_lemmatized" multiValued="true" indexed="true" stored="true"/>
+  <field name="souhrn" type="text_general_lemmatized" multiValued="false" indexed="true" stored="true"/>
   <field name="full_text" type="text_general_lemmatized" multiValued="true" indexed="false" stored="true"/>
   <field name="search_text" type="text_general_lemmatized" multiValued="true" indexed="true" stored="false"/>
+  <field name="filename_search" type="text_general_lemmatized" multiValued="false" indexed="true" stored="true"/>
 
   <copyField source="*" dest="search_text"/>
+  <copyField source="filename" dest="filename_search"/>
 
 
   <fieldType name="_nest_path_" class="solr.NestPathField" maxCharsForDocValues="-1" omitNorms="true" omitTermFreqAndPositions="true" stored="false" multiValued="false"/>
