@@ -13,7 +13,7 @@ export class Configuration {
   userClientBaseUrl: string;
   keycloak: {clientId: string, loginType: string, logoutUrl: string};
   
-  states: string[];
+  states: {value: string, licenses: string[]}[];
   titleColumns: {field: string, selected: boolean}[];
   licenses: string[];
   digitalni_knihovny: string[];

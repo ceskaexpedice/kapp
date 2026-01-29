@@ -40,6 +40,8 @@ export class StateDialog {
   reason: string;
   currentHistory: any;
 
+  allowedLicenses = signal<string[]>([]);;
+
   ngOnInit() {
     if (this.data.isBatch) {
       this.initialState = this.data.states.join(', ');
@@ -48,6 +50,11 @@ export class StateDialog {
       this.initialState = this.data.doc['state'];
       this.initialLicenses = this.data.doc['licenses'];
     }
+    this.allowedLicenses.set([...this.config.states.find(s => s.value === this.initialState).licenses]);
+  }
+
+  setState() {
+    this.allowedLicenses.set([...this.config.states.find(s => s.value === this.newState).licenses]);
   }
 
   save() {

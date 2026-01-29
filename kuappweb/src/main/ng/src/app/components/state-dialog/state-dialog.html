@@ -27,9 +27,9 @@
 		<div class="app-fxLayout app-row app-gap-2">
 			<mat-form-field appearance="outline" class="app-fxFlex">
 				<mat-label>{{ 'new_state' | translate }}</mat-label>
-				<mat-select [(ngModel)]="newState" required>
+				<mat-select [(ngModel)]="newState" required (selectionChange)="setState()" >
 					@for (l of config.states; track l) {
-						<mat-option [value]="l">{{ 'state.' + l | translate}}</mat-option>
+						<mat-option [value]="l.value">{{ 'state.' + l.value | translate}}</mat-option>
 					}
 				</mat-select>
 			</mat-form-field>
@@ -37,7 +37,7 @@
 			<mat-form-field appearance="outline" class="app-fxFlex">
 				<mat-label>{{ 'licenses' | translate }}</mat-label>
 				<mat-select [(ngModel)]="newLicenses" multiple >
-					@for (l of config.licenses; track l) {
+					@for (l of allowedLicenses(); track l) {
 						<mat-option [value]="l">{{ l}}</mat-option>
 					}
 				</mat-select>
