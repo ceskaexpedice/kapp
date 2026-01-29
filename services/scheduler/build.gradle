@@ -2,6 +2,7 @@ plugins {
     id 'java'
     id 'application'
     id 'com.gradleup.shadow' version '9.1.0'
+    id 'com.google.cloud.tools.jib' version '3.4.1'
 }
 
 group = 'cz.inovatika'
@@ -15,6 +16,22 @@ jar {
         attributes(
                 'Main-Class': 'cz.inovatika.SchedulerMain'
         )
+    }
+}
+jib {
+    from {
+        image = 'eclipse-temurin:21-jre'
+    }
+
+    to {
+        image = 'jiriminov/kappScheduler'
+        tags = [project.version]
+    }
+
+    container {
+        mainClass = 'cz.inovatika.SchedulerMain'
+        ports = ['8080'] // remove if not needed
+        jvmFlags = ['-Xms256m', '-Xmx512m']
     }
 }
 dependencies {

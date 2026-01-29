@@ -1,6 +1,6 @@
 services:
   scheduler:
-    image: scheduler:latest
+    image: jiriminov/kappScheduler
     container_name: kappScheduler
     volumes:
       - ./mnt/import/.kapp:/root/.kapp
@@ -14,12 +14,12 @@ services:
     volumes:
       - ./../../kuratorska-aplikace-web/solr:/var/solr
   tomcat:
-    image: tomcat:9.0.107-jdk21-temurin  # You can choose a different version if needed
-    container_name: tomcat
+    image: jiriminov/kuappweb:latest
+    container_name: kuappweb
     ports:
-      - "8080:8080"           # Expose Tomcat on localhost:8080
+      - "8080:8080" 
     volumes:
-      - ./../../kuratorska-aplikace-web/kuappweb/target:/usr/local/tomcat/webapps  # Map local webapps folder to Tomcat
+      - ./../../kuratorska-aplikace-web/kuappweb/target:/usr/local/tomcat/webapps 
     environment:
       - JAVA_OPTS=-Xms512m -Xmx1024m
     restart: unless-stopped
