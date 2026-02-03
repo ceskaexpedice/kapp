@@ -2,6 +2,7 @@ package cz.inovatika;
 import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.impl.HarvesterImpl;
 
+import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
@@ -16,6 +17,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+@DisallowConcurrentExecution
 public class HarvesterJob implements Job {
     public static final Logger LOGGER = Logger.getLogger(HarvesterJob.class.getName());
     @Override
@@ -44,14 +46,11 @@ public class HarvesterJob implements Job {
             throw new RuntimeException(e);
         }
         ApplicationConfig applicationConfig = ApplicationConfig.loadFromStream(resourceAsStream);
-        List<Instance> instances = applicationConfig.instances();
 
         Harvester h = new HarvesterImpl();
         try {
-            for (Instance i : instances) {
-                LOGGER.log(Level.INFO, "Starting: {0}", i.getAcronym());
-                h.start();
-            }
+            h.start(applicationConfig);
+
 
         } catch (final Exception e) {
             LOGGER.log(Level.SEVERE, "Scheduled task failed", e);
