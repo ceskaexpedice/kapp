@@ -209,19 +209,17 @@ public enum States {
             for (SolrDocument doc : HarvesterImpl.solrClient.query("titles", q).getResults()) {
                 Object state = doc.get("state");
                 if (TO_CONTROL.name().equals(state)) {
-                    LOGGER.log(Level.INFO, "Children found for {0}", ctx.item().getRootPid());
+                    //LOGGER.log(Level.INFO, "Children found for {0}", ctx.item().getRootPid());
                     return PARENT_OPEN;
                 }
             }
-            LOGGER.log(Level.INFO, "No children found for {0}", ctx.item().getRootPid());
+            //LOGGER.log(Level.INFO, "No children found for {0}", ctx.item().getRootPid());
             return PARENT_CLOSED;
         } catch (SolrServerException | IOException e) {
             LOGGER.log(Level.SEVERE, "Error checking children states for item " + ctx.item().getRootPid(), e);
             return PARENT_CLOSED;
         }
     }
-    //private static final String SOLR_URL = "http://localhost:8983/solr";
-    //private static final SolrClient solrClient =  new HttpJdkSolrClient.Builder(SOLR_URL).build();
     final String value;
     final boolean automaticSwitch;
     final LicensesAssignation licensesAssignation;

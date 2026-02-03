@@ -142,7 +142,7 @@ public class XmlProcessor {
             aDoc.addField("termsOfAddress", author.getTermsOfAddress());
 
             if (author.getDate() != null) {
-                parseDateBasic(aDoc, author.getDate(), -1/*FUCK OFF*/, author.getDate());
+                parseDateBasic(aDoc, author.getDate(), 0, author.getDate());
             }
             return aDoc;
         }).collect(Collectors.toList());
@@ -286,7 +286,7 @@ public class XmlProcessor {
         dateFormatError(recordNumber,Originalvalue,value,"Unexpected date format");}
 
     private static void dateFormatError(int recordNumber, String Originalvalue, String value, String message) {
-        String recNum = (recordNumber != 0) ? (" on row: " + recordNumber) : "";
+        String recNum = (recordNumber > 0) ? (" on row: " + recordNumber) : "";
         System.err.println(message + recNum + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
     }
 
