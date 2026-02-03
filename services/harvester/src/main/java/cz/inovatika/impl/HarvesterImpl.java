@@ -103,7 +103,7 @@ public class HarvesterImpl implements Harvester {
                     apiVersion.getIdentifier(config) + " asc",
                     apiVersion.fieldList()
             );
-            //LOGGER.log(Level.INFO, "query: {0} cursorMark: {1}", new Object[]{query, cursorMark});
+            LOGGER.log(Level.INFO, "query: {0}", query);
             Element element = executeQuery(client, config.getUrl(), query);
             LOGGER.log(Level.INFO, "query executed");
             List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> elm.getNodeName().equals("doc")).stream().map(docElm
@@ -114,7 +114,7 @@ public class HarvesterImpl implements Harvester {
             } else {
                 LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
                 String subquery = apiVersion.prepareSubquery(harvestItems);
-                if (!subquery.isEmpty()) {
+                if (subquery!=null && !subquery.isEmpty()) {
                     //LOGGER.log(Level.INFO, "subquery: {0}", subquery);
                     Element subResult = executeQuery(client, config.getUrl(), subquery);
                     apiVersion.processSubqueryResult(harvestItems, subResult);
