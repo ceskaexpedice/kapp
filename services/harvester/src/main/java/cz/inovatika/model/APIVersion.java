@@ -1,7 +1,6 @@
 package cz.inovatika.model;
 
 import cz.inovatika.utils.XMLUtils;
-
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
 
@@ -47,20 +46,20 @@ public enum APIVersion {
 
         @Override
         public String iterationQuery() {
-            String query = "fedora.model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=PID+pid_path+root_pid+fedora.model";
-            return query;
+
+            return "fedora.model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=PID+pid_path+root_pid+fedora.model";
         }
 
         @Override
         public String[] fieldList() {
-            return new String[]{"PID", "pid_path", "root_pid", "fedora.model","dc.title","dnnt-labels","dostupnost"};
+            return new String[]{"PID", "pid_path", "root_pid", "fedora.model", "dc.title", "dnnt-labels", "dostupnost"};
         }
 
         @Override
         public String prepareSubquery(List<HarvestingItem> items) {
             List<HarvestingItem> monograph = getMonographs(items);
             if (!monograph.isEmpty()) {
-                String  or = monograph.stream().map(HarvestingItem::getPid).map(it -> '"'+it+'"').collect(Collectors.joining(" OR "));
+                String or = monograph.stream().map(HarvestingItem::getPid).map(it -> '"' + it + '"').collect(Collectors.joining(" OR "));
                 return String.format("search?q=root_pid:(%s)+AND+fedora.model:monographunit&fl=PID+fedora.model+root_pid&rows=%d", URLEncoder.encode(or, StandardCharsets.UTF_8), monograph.size());
             }
             return null;
@@ -119,7 +118,7 @@ public enum APIVersion {
             if (dnntLabels != null) {
                 List<String> elementsRecursive = XMLUtils.getElementsRecursive(dnntLabels, elm -> {
                     return elm.getNodeName().equals("str");
-                }).stream().map(Element::getTextContent).collect(Collectors.toList());
+                }).stream().map(Element::getTextContent).toList();
                 licenses.addAll(elementsRecursive);
             }
 
@@ -129,7 +128,7 @@ public enum APIVersion {
                 return (nodeName.equals("str") && name.equals("dostupnost"));
             });
             if (dostupnost != null) {
-                licenses.add(dostupnost.getTextContent().trim().equals("private") ? "onsite":"public");
+                licenses.add(dostupnost.getTextContent().trim().equals("private") ? "onsite" : "public");
             }
             item.setLicenses(licenses.toArray(String[]::new));
             return item;
@@ -146,7 +145,7 @@ public enum APIVersion {
             Instant lastUpdated = instance.getLastUpdated();
             if (lastUpdated != null) {
                 String solrDateString = SOLR_DATE_FORMATTER.format(lastUpdated);
-                return String.format("modified_date:[%s TO NOW]",solrDateString);
+                return String.format("modified_date:[%s TO NOW]", solrDateString);
             }
             return null;
         }
@@ -179,24 +178,21 @@ public enum APIVersion {
 
         @Override
         public String iterationQuery() {
-            String query = "model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
-            return query;
+            return "model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
         }
 
         @Override
         public String[] fieldList() {
-            return new String[]{"pid", "own_pid_path", "root.pid", "model", "titles.search","licenses_of_ancestors","licenses"};
+            return new String[]{"pid", "own_pid_path", "root.pid", "model", "titles.search", "licenses_of_ancestors", "licenses"};
         }
-
-
 
 
         @Override
         public String prepareSubquery(List<HarvestingItem> items) {
             List<HarvestingItem> monograph = getMonographs(items);
             if (!monograph.isEmpty()) {
-                String  or = monograph.stream().map(HarvestingItem::getPid).map(it -> '"'+it+'"').collect(Collectors.joining(" OR "));
-                return String.format("search?q=root.pid:(%s)+AND+model:monographunit&fl=pid+model+root.pid&rows=%d", URLEncoder.encode(or, StandardCharsets.UTF_8),monograph.size());
+                String or = monograph.stream().map(HarvestingItem::getPid).map(it -> '"' + it + '"').collect(Collectors.joining(" OR "));
+                return String.format("search?q=root.pid:(%s)+AND+model:monographunit&fl=pid+model+root.pid&rows=%d", URLEncoder.encode(or, StandardCharsets.UTF_8), monograph.size());
             }
             return null;
         }
@@ -254,20 +250,19 @@ public enum APIVersion {
             if (dLicenses != null) {
                 List<String> elementsRecursive = XMLUtils.getElementsRecursive(dLicenses, elm -> {
                     return elm.getNodeName().equals("str");
-                }).stream().map(Element::getTextContent).collect(Collectors.toList());
+                }).stream().map(Element::getTextContent).toList();
                 licenses.addAll(elementsRecursive);
             }
 
             Element aLicenses = XMLUtils.findElement(docResultElement, (elm) -> {
-                String nodeName = elm.getNodeName();
                 String name = elm.getAttribute("name");
-                return (nodeName.equals("arr") && name.equals("licenses_of_ancestors"));
+                return (elm.getNodeName().equals("arr") && name.equals("licenses_of_ancestors"));
             });
             if (aLicenses != null) {
-                List<String> elementsRecursive = XMLUtils.getElementsRecursive(dLicenses, elm -> {
+                List<String> elementsRecursive = XMLUtils.getElementsRecursive(aLicenses, elm -> {
                     return elm.getNodeName().equals("str");
-                }).stream().map(Element::getTextContent).collect(Collectors.toList());
-                for (String l:elementsRecursive) {
+                }).stream().map(Element::getTextContent).toList();
+                for (String l : elementsRecursive) {
                     if (!licenses.contains(l)) {
                         licenses.add(l);
                     }
@@ -287,7 +282,7 @@ public enum APIVersion {
             Instant lastUpdated = instance.getLastUpdated();
             if (lastUpdated != null) {
                 String solrDateString = SOLR_DATE_FORMATTER.format(lastUpdated);
-                return String.format("indexed:[%s TO NOW]",solrDateString);
+                return String.format("indexed:[%s TO NOW]", solrDateString);
             }
             return null;
         }
@@ -316,25 +311,31 @@ public enum APIVersion {
             map.put(item.getPid(), item);
         });
 
-        List<Pair<String,String>> monographUnitPids = XMLUtils.getElementsRecursive(resultElm, (elm) -> {
+        List<Pair<String, String>> monographUnitPids = XMLUtils.getElementsRecursive(resultElm, (elm) -> {
             return elm.getNodeName().equals("doc");
         }).stream().map(docElm -> {
             Element pidElm = XMLUtils.findElement(docElm, elm -> elm.getAttribute("name").equals(pidKey));
             Element rootPid = XMLUtils.findElement(docElm, elm -> elm.getAttribute("name").equals(rootPidKey));
-            if (pidElm != null && rootPid !=null) {
+            if (pidElm != null && rootPid != null) {
                 return Pair.of(rootPid.getTextContent(), pidElm.getTextContent());
             }
             return null;
         }).toList();
 
         // monographs
-        monographUnitPids.forEach(k-> {
-            try{
-            String rootPid = k.getKey();
-            if (map.containsKey(rootPid)) {
-                map.get(rootPid).setHierarchical(true);
-            }} catch (Exception e) {
-                LOGGER.warning(e.getMessage());
+        monographUnitPids.forEach(k -> {
+            try {
+                if (k == null) {
+                    LOGGER.warning("monographUnitPid \"k\" is null");
+                    return;
+                }
+                String rootPid = k.getKey();
+                if (map.containsKey(rootPid)) {
+                    map.get(rootPid).setHierarchical(true);
+                }
+            } catch (Exception e) {
+                LOGGER.severe(e.getMessage());
+                throw new RuntimeException(e);
             }
         });
 
@@ -345,10 +346,9 @@ public enum APIVersion {
     }
 
     private static List<HarvestingItem> getMonographs(List<HarvestingItem> items) {
-        List<HarvestingItem> monograph = items.stream().filter(item -> {
+        return items.stream().filter(item -> {
             return item.getModel().equals("monograph");
         }).toList();
-        return monograph;
     }
 
     // --- Abstract Methods ---
@@ -389,11 +389,11 @@ public enum APIVersion {
     /**
      * Fetches the full metadata (MODS stream) for a specific item using a version-appropriate URL.
      *
-     * @param client The {@link HttpClient} to use for the HTTP request.
+     * @param client   The {@link HttpClient} to use for the HTTP request.
      * @param instance The instance configuration for context (e.g., base URL).
-     * @param item The {@link HarvestingItem} containing the PID of the record to fetch.
+     * @param item     The {@link HarvestingItem} containing the PID of the record to fetch.
      * @return An {@link InputStream} containing the MODS XML data, or {@code null} if the request failed (HTTP error).
-     * @throws IOException If an I/O error occurs during the request.
+     * @throws IOException          If an I/O error occurs during the request.
      * @throws InterruptedException If the operation is interrupted.
      */
     public abstract InputStream fetchMods(HttpClient client, Instance instance, HarvestingItem item) throws IOException, InterruptedException;
@@ -403,7 +403,7 @@ public enum APIVersion {
      * The method must handle version-specific field names and XML structure.
      *
      * @param docResultElement The {@code <doc>} XML element from the Solr response.
-     * @param instance The harvester instance configuration for context.
+     * @param instance         The harvester instance configuration for context.
      * @return A populated {@link HarvestingItem}.
      */
     public abstract HarvestingItem createHarvestItemFromResultElement(Element docResultElement, Instance instance);
