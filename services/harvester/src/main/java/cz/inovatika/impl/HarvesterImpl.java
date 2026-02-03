@@ -73,7 +73,7 @@ public class HarvesterImpl implements Harvester {
     private final int ROWS = 100;
     private static final int BATCH_SIZE = 200;
     private static final int AUTHOR_BATCH_SIZE = 250;
-    public static final SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).withConnectionTimeout(100,TimeUnit.SECONDS).build();
+    public static final SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).withConnectionTimeout(100, TimeUnit.SECONDS).build();
 
     private static final boolean RUNINOVATIKA = false;
     private static final boolean RUNNKP = true;
@@ -94,34 +94,36 @@ public class HarvesterImpl implements Harvester {
             APIVersion apiVersion = config.getApiVersion();
 
             String query = pidCursorQuery(
-                apiVersion.iterationQuery(),
-                cursorMark,
-                ROWS,
-                apiVersion.incrementFQ(config),
-                "search",
-                apiVersion.getIdentifier(config),
-                config.getApiVersion().getIdentifier(config) + " asc",
-                apiVersion.fieldList()
+                    apiVersion.iterationQuery(),
+                    cursorMark,
+                    ROWS,
+                    apiVersion.incrementFQ(config),
+                    "search",
+                    apiVersion.getIdentifier(config),
+                    apiVersion.getIdentifier(config) + " asc",
+                    apiVersion.fieldList()
             );
             //LOGGER.log(Level.INFO, "query: {0} cursorMark: {1}", new Object[]{query, cursorMark});
             Element element = executeQuery(client, config.getUrl(), query);
             LOGGER.log(Level.INFO, "query executed");
             List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> elm.getNodeName().equals("doc")).stream().map(docElm
-                    -> config.getApiVersion().createHarvestItemFromResultElement(docElm, config)
+                    -> apiVersion.createHarvestItemFromResultElement(docElm, config)
             ).toList();
-
-            String subquery = config.getApiVersion().prepareSubquery(harvestItems);
-            if (!subquery.isEmpty()) {
-                //LOGGER.log(Level.INFO, "subquery: {0}", subquery);
-                Element subResult = executeQuery(client, config.getUrl(), subquery);
-                config.getApiVersion().processSubqueryResult(harvestItems, subResult);
+            if (harvestItems.isEmpty()) {
+                LOGGER.log(Level.INFO, "Ran out of items to harvest");
+            } else {
+                LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
+                String subquery = apiVersion.prepareSubquery(harvestItems);
+                if (!subquery.isEmpty()) {
+                    //LOGGER.log(Level.INFO, "subquery: {0}", subquery);
+                    Element subResult = executeQuery(client, config.getUrl(), subquery);
+                    apiVersion.processSubqueryResult(harvestItems, subResult);
+                }
+                for (HarvestingItem harvestingItem : harvestItems) {
+                    //LOGGER.log(Level.INFO, "harvestingItem: {0}", harvestingItem.getTitles());
+                    consumer.accept(new HarvesterContext(applicationConfig, harvestingItem, touchStore, client, config));
+                }
             }
-            LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
-            for (HarvestingItem harvestingItem : harvestItems) {
-                //LOGGER.log(Level.INFO, "harvestingItem: {0}", harvestingItem.getTitles());
-                consumer.accept(new HarvesterContext(applicationConfig, harvestingItem, touchStore, client, config));
-            }
-
             cursorMark = findCursorMark(element);
             queryCursorMark = findQueryCursorMark(element);
 
@@ -152,9 +154,9 @@ public class HarvesterImpl implements Harvester {
             throws IOException, InterruptedException {
         //LOGGER.log(Level.INFO, "Response sent to Solr: {0}", URI.create(url + "/" + query));
         HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
-                .uri(URI.create(url + "/" + query))
-                .GET()
-                .build(),
+                        .uri(URI.create(url + "/" + query))
+                        .GET()
+                        .build(),
                 HttpResponse.BodyHandlers.ofInputStream());
         if (response == null) {
             LOGGER.log(Level.WARNING, "Response not received");
@@ -175,8 +177,8 @@ public class HarvesterImpl implements Harvester {
     static final int INTERVALMINUTES = 60;
     static LocalTime start = LocalTime.now();
     static LocalTime end = start.plusMinutes(INTERVALMINUTES);
-    static long sleepSeconds = 2;
-    static boolean exitOnOutOfInterval = true;
+    static long sleepSeconds = 3600;
+    static boolean exitOnOutOfInterval = false;
 
     public static void main(String[] args) {
 
@@ -214,18 +216,15 @@ public class HarvesterImpl implements Harvester {
                 // Overnight range like 22:00–06:00
                 inRange = !now.isBefore(start) || now.isBefore(end);
             }
-
-            if (inRange) {
-                return;
+            if (inRange) return;
+            if (exitOnOutOfInterval) {
+                LOGGER.info("Not in interval, exiting. (exitOnOutOfInterval==true)");
+                System.exit(0);
             } else {
-                if (exitOnOutOfInterval) {
-                    LOGGER.info("Not in interval, exiting. (exitOnOutOfInterval==true)");
-                    System.exit(0);
-                } else {
-                    LOGGER.log(Level.INFO, "Outside allowed time ({0}). Sleeping...", now.format(TIME_FMT));
-                    Thread.sleep(sleepSeconds * 1000);
-                }
+                LOGGER.log(Level.INFO, "Outside allowed time ({0}). Sleeping...", now.format(TIME_FMT));
+                Thread.sleep(sleepSeconds * 1000);
             }
+
         }
 
     }
@@ -233,8 +232,10 @@ public class HarvesterImpl implements Harvester {
     private void nkp() // throws IOException
     {
         Instance config = new Instance();
+        config.setTimestampPath(
+                String.join(File.separator, System.getProperty("user.dir"), "timestamps", "nkp", "timestamp"));
         config.setAcronym("nkp");
-        config.setPhysicalLocations(Arrays.asList("ABA000", "ABA001"));
+        config.setPhysicalLocations(Arrays.asList("ABA000"));
         config.setApiVersion(APIVersion.v5);
         config.setSolrCloud(false);
         config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-01T00:00:21.221Z"));
@@ -279,14 +280,31 @@ public class HarvesterImpl implements Harvester {
             throw new RuntimeException(e);
         }
     }
+
+    /// Testing version with hardwired configuration
     @Override
-    public void start(){
+    public void start() {
         if (RUNINOVATIKA) {
             inovatika();
         }
         if (RUNNKP) {
             nkp();
         }
+    }
+
+    /// Production version that takes information from ApplicationConfig
+    @Override
+    public void start(ApplicationConfig applicationConfig) {
+        List<Instance> instances = applicationConfig.instances();
+        for (Instance i : instances) {
+            try {
+                LOGGER.log(Level.INFO, "Starting: {0}", i.getAcronym());
+                harvestAndBatch(applicationConfig, i);
+            } catch (final IOException | SolrServerException e) {
+                throw new RuntimeException(e);
+            }
+        }
+
     }
 
     public void harvestAndBatch(ApplicationConfig applicationConfig, Instance config) throws SolrServerException, IOException {
@@ -296,13 +314,13 @@ public class HarvesterImpl implements Harvester {
         harvest(applicationConfig, config, ctx -> processHarvest(config, ctx, buffer, authorBuffer));
         if (!buffer.isEmpty()) { // BATCH_SIZE
             LOGGER.log(Level.INFO, "Sending batch");
-            sendBatch( Constants.Collection.TITLES_COLLECTION, buffer);
+            sendBatch(Constants.Collection.TITLES_COLLECTION, buffer);
             buffer.clear();
 
         }
         if (!authorBuffer.isEmpty()) { // BATCH_SIZE
-            LOGGER.log(Level.INFO, "Sending authorbatch");
-            sendBatch( Constants.Collection.AUTHORS_COLLECTION, authorBuffer);
+            LOGGER.log(Level.INFO, "Sending author_batch");
+            sendBatch(Constants.Collection.AUTHORS_COLLECTION, authorBuffer);
             authorBuffer.clear();
 
         }
@@ -328,7 +346,7 @@ public class HarvesterImpl implements Harvester {
     }
 
     private static void processHarvest(final Instance config, final HarvesterContext ctx,
-            List<SolrInputDocument> buffer, List<SolrInputDocument> authorsBuffer) {
+                                       List<SolrInputDocument> buffer, List<SolrInputDocument> authorsBuffer) {
         {
 
             String pid = ctx.item().getPid();
@@ -429,7 +447,7 @@ public class HarvesterImpl implements Harvester {
                             }
                         }
 
-                        bufferSend(buffer, authorsBuffer,  wrapper);
+                        bufferSend(buffer, authorsBuffer, wrapper);
 
                     }
                 } catch (IOException | InterruptedException | NoSuchAlgorithmException e) {
@@ -499,7 +517,8 @@ public class HarvesterImpl implements Harvester {
                     } else {
                         LOGGER.log(Level.SEVERE, "Failed to process MODS for PID: {0}", ctx.item().getPid());
                     }
-                } catch (final IOException | InterruptedException | NoSuchAlgorithmException | ParserConfigurationException | SAXException e) {
+                } catch (final IOException | InterruptedException | NoSuchAlgorithmException |
+                               ParserConfigurationException | SAXException e) {
                     LOGGER.severe(e.getMessage());
                     throw new RuntimeException(e);
                 }
@@ -522,7 +541,7 @@ public class HarvesterImpl implements Harvester {
                 doc.addField(FromKramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
                 doc.addField(FromKramFields.AUTHORS_IDS, author.getNameIdentifier());
             } else {
-                String id = author.getFull()+author.getDate();
+                String id = author.getFull() + author.getDate();
                 doc.addField(FromKramFields.AUTHORS_IDS, id);
             }
         });
@@ -549,7 +568,7 @@ public class HarvesterImpl implements Harvester {
         }
         if (authorsBuffer.size() >= BATCH_SIZE) { // BATCH_SIZE
             try {
-                sendBatch( "authors", authorsBuffer);
+                sendBatch("authors", authorsBuffer);
             } catch (IOException | SolrServerException e) {
                 LOGGER.log(Level.SEVERE, "Failed to send authors batch", e);
                 throw new RuntimeException(e);
