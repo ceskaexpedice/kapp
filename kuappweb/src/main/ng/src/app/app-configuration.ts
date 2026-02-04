@@ -63,9 +63,9 @@ import { Label } from './shared/label';
             switchMap((cfg: any) => {
                 this.config = cfg as Configuration;
                 return this.http.get('api/index/config').pipe(tap((resp: any) => {
-                    const b = resp.config.find((a: any) => a.id === 'batches').value;
-                    if (b.length > 0) {
-                        this.state.batches.set(b);
+                    const b = resp.config.find((a: any) => a.id === 'batches');
+                    if (b?.value.length > 0) {
+                        this.state.batches.set(b.value);
                     }
                     
                     // const c = resp.config.find((a: any) => a.id === 'titleColumns')?.value;
@@ -84,16 +84,18 @@ import { Label } from './shared/label';
                         this.state.titleColumns.update(a => [...this.config.titleColumns]);
                     }
                     
-                    const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels').value;
-                    labelsC.forEach(l => {
-                        const r = parseInt(l.color.substring(1,3), 16);
-                        const g = parseInt(l.color.substring(3,5), 16);
-                        const b = parseInt(l.color.substring(5,7), 16);
-                        // const c = parseInt(l.color.substring(1), 16);
-                        const c = r+g+b;
-                        l.text_color = c > 256 ? '#000' : '#fff';
-                    });
-                    this.state.labels.set(labelsC);
+                    const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels')?.value;
+                    if (labelsC) {
+                        labelsC.forEach(l => {
+                            const r = parseInt(l.color.substring(1,3), 16);
+                            const g = parseInt(l.color.substring(3,5), 16);
+                            const b = parseInt(l.color.substring(5,7), 16);
+                            // const c = parseInt(l.color.substring(1), 16);
+                            const c = r+g+b;
+                            l.text_color = c > 256 ? '#000' : '#fff';
+                        });
+                        this.state.labels.set(labelsC);
+                    }
                     
                     const licenses: string[] = resp.config.find((a: any) => a.id === 'licenses')?.value;
                     if (licenses) {
