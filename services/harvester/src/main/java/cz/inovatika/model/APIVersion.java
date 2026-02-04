@@ -47,7 +47,7 @@ public enum APIVersion {
         @Override
         public String iterationQuery() {
 
-            return "fedora.model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=PID+pid_path+root_pid+fedora.model";
+            return "fedora.model:(monograph+OR+monographunit)";//+OR+periodical+OR+periodicalvolume)";//&fl=PID+pid_path+root_pid+fedora.model";
         }
 
         @Override
@@ -145,7 +145,7 @@ public enum APIVersion {
             Instant lastUpdated = instance.getLastUpdated();
             if (lastUpdated != null) {
                 String solrDateString = SOLR_DATE_FORMATTER.format(lastUpdated);
-                return String.format("modified_date:[%s TO NOW]", solrDateString);
+                return String.format("modified_date:[%s TO *]", solrDateString);
             }
             return null;
         }
@@ -178,7 +178,7 @@ public enum APIVersion {
 
         @Override
         public String iterationQuery() {
-            return "model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
+            return "root.model:monograph";//"model:(monograph+OR+monographunit)";//+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
         }
 
         @Override
@@ -282,7 +282,7 @@ public enum APIVersion {
             Instant lastUpdated = instance.getLastUpdated();
             if (lastUpdated != null) {
                 String solrDateString = SOLR_DATE_FORMATTER.format(lastUpdated);
-                return String.format("indexed:[%s TO NOW]", solrDateString);
+                return String.format("indexed:[%s TO *]", solrDateString);
             }
             return null;
         }
@@ -326,7 +326,8 @@ public enum APIVersion {
         monographUnitPids.forEach(k -> {
             try {
                 if (k == null) {
-                    LOGGER.warning("monographUnitPid \"k\" is null");
+                    //LOGGER.warning("monographUnitPid \"k\" is null");
+                    //TODO figure out why this is null so often
                     return;
                 }
                 String rootPid = k.getKey();

@@ -41,7 +41,7 @@ public class HarvesterJob implements Job {
         try {
             resourceAsStream = new FileInputStream(System.getProperty("user.home") + "/.kapp/app.conf");
         } catch (FileNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "Scheduled task failed", e);
+            LOGGER.log(Level.SEVERE, "Failed to load configuration", e);
             e.printStackTrace(System.err);
             throw new RuntimeException(e);
         }
@@ -50,6 +50,7 @@ public class HarvesterJob implements Job {
         Harvester h = new HarvesterImpl();
         try {
             h.start(applicationConfig);
+            LOGGER.info("Harvesting Completed.");
 
 
         } catch (final Exception e) {

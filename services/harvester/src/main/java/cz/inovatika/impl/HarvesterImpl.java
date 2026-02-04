@@ -78,6 +78,30 @@ public class HarvesterImpl implements Harvester {
     private static final boolean RUNINOVATIKA = false;
     private static final boolean RUNNKP = true;
 
+
+    public String makeFQ(List<String> filters){
+        StringBuilder fq = new StringBuilder();
+        for(String filter : filters){
+            if (filter==null || filter.isEmpty())continue;
+            if(!fq.isEmpty()){
+                fq.append(" AND ");}
+            fq.append(filter);
+        }
+        return fq.toString();
+    }
+    public String physicalLocationToFQ(List<String>physicalLocations){
+        String header = "physical_locations.facet:(";
+        StringBuilder fq = new StringBuilder();
+        fq.append(header);//TODO: this might break with k5 - add to APIVersion later
+        for(String physicalLocation : physicalLocations){
+            if(!fq.toString().equals(header)){
+                fq.append(" OR ");
+            }
+            fq.append(physicalLocation);
+        }
+        return fq.append(")").toString();
+    }
+
     @Override
     public void harvest(ApplicationConfig applicationConfig, Instance harvestingInstanceConfig, Consumer<HarvesterContext> consumer) {
         harvest(applicationConfig, harvestingInstanceConfig, consumer, HttpClient.newHttpClient());
@@ -97,7 +121,10 @@ public class HarvesterImpl implements Harvester {
                     apiVersion.iterationQuery(),
                     cursorMark,
                     ROWS,
-                    apiVersion.incrementFQ(config),
+                    makeFQ(Arrays.asList(
+                            apiVersion.incrementFQ(config),
+                            physicalLocationToFQ(config.getPhysicalLocations())
+                    )),
                     "search",
                     apiVersion.getIdentifier(config),
                     apiVersion.getIdentifier(config) + " asc",
@@ -297,6 +324,8 @@ public class HarvesterImpl implements Harvester {
     public void start(ApplicationConfig applicationConfig) {
         List<Instance> instances = applicationConfig.instances();
         for (Instance i : instances) {
+            i.setTimestampPath(
+                    String.join(File.separator, System.getProperty("user.dir"), "timestamps", i.getAcronym(), "timestamp"));
             try {
                 LOGGER.log(Level.INFO, "Starting: {0}", i.getAcronym());
                 harvestAndBatch(applicationConfig, i);
