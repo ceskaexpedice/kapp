@@ -79,6 +79,14 @@ export class Contracts {
     })
   }
 
+  ngOnInit() {
+    window.addEventListener("dragover", (e) => {
+      if ([...e.dataTransfer.items].some((item) => item.kind === "file")) {
+        e.preventDefault();
+      }
+    });
+  }
+
   addFilters(p: any, usedFacets: { field: string, value: string }[]) {
     // p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
   }
@@ -138,6 +146,13 @@ export class Contracts {
       }
     });
 
+  }
+
+  onFileDrop(e: any) {
+    e.preventDefault();
+    e.stopPropagation();
+    this.selectedFile = e.dataTransfer.files[0];
+    this.checkUpload();
   }
 
   onFileSelected(event: any) {
