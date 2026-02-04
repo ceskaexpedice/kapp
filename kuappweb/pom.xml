@@ -89,11 +89,11 @@
                 <version>3.4.3</version>
                 <configuration>
                     <from>
-                        <image>docker://tomcat:9.0.107-jdk21-temurin</image>
+                        <image>tomcat:9.0.107-jdk21-temurin</image>
                     </from>
 
                     <to>
-                        <image>kuappweb:latest</image>
+                        <image>jiriminov/kuappweb:latest</image>
                     </to>
 
                     <container>
