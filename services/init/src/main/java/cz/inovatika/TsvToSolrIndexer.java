@@ -22,6 +22,7 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
+import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
 import cz.inovatika.authors.AuthorData;
 import cz.inovatika.authors.AuthorDataUtils;
 import org.apache.commons.csv.CSVFormat;
@@ -108,7 +109,7 @@ public class TsvToSolrIndexer {
                     }
                     for (CSVRecord record : parser) {
                         SolrInputDocument doc = new SolrInputDocument();
-                        doc.addField("labels","from Excel");
+                        doc.addField(ApplFields.LABELS_FIELD,"from Excel");
                         int recordNumber = (int) record.getRecordNumber() + 1; // +1 to account for header
                         String pid;
                         String rootPid;
@@ -297,15 +298,15 @@ public class TsvToSolrIndexer {
             }
             default -> {
                 System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
-                doc.addField("labels","Incorrect public/onsite value in Excel");
+                doc.addField(ApplFields.LABELS_FIELD,"Incorrect public/onsite value in Excel");
             }
         }
     }
 
     private static void setState(SolrInputDocument doc) {
         String val;
-        if (doc.containsKey("public")) {
-            val = (boolean) doc.getFieldValue("public") ? "controlled_public" : "controlled_private";
+        if (doc.containsKey("assigned_license")) {
+            val =  doc.getFieldValue("assigned_license").equals("public") ? "controlled_public" : "controlled_private";
         } else if (doc.containsKey("public_since")) {
             int public_since = Integer.parseInt(doc.getFieldValue("public_since").toString());
             if (public_since > LocalDate.now().getYear()) {
