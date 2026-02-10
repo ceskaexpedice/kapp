@@ -6,6 +6,7 @@ import org.w3c.dom.Element;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.ConnectException;
 import java.net.URI;
 import java.net.URLEncoder;
 import java.net.http.HttpClient;
@@ -153,16 +154,7 @@ public enum APIVersion {
         @Override
         public InputStream fetchMods(HttpClient client, Instance instance, HarvestingItem item) throws IOException, InterruptedException {
             String modsUrl = String.format(instance.getUrl() + (instance.getUrl().endsWith("/") ? "" : "/") + "item/%s/streams/BIBLIO_MODS", item.getPid());
-            HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
-                    .uri(URI.create(modsUrl))
-                    .GET()
-                    .build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (response != null && response.statusCode() == 200) {
-                return response.body();
-            } else {
-                LOGGER.log(Level.SEVERE, "HTTP error: {0}", response != null ? response.statusCode() : "null");
-                return null;
-            }
+            return sendRequest(client,modsUrl);
         }
     },
 
@@ -178,7 +170,7 @@ public enum APIVersion {
 
         @Override
         public String iterationQuery() {
-            return "root.model:monograph";//"model:(monograph+OR+monographunit)";//+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
+            return "model:(monograph+OR+monographunit)";//+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
         }
 
         @Override
@@ -291,18 +283,31 @@ public enum APIVersion {
         public InputStream fetchMods(HttpClient client, Instance instance, HarvestingItem item) throws IOException, InterruptedException {
             String url = instance.getUrl();
             String modsUrl = String.format(url + (url.endsWith("/") ? "" : "/") + "items/%s/metadata/mods", item.getPid());
-            HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
-                    .uri(URI.create(modsUrl))
-                    .GET()
-                    .build(), HttpResponse.BodyHandlers.ofInputStream());
-            if (response != null && response.statusCode() == 200) {
-                return response.body();
-            } else {
-                LOGGER.log(Level.SEVERE, "HTTP error: {0}", response != null ? response.statusCode() : "null");
-                return null;
-            }
+            return sendRequest(client,modsUrl);
         }
     };
+    public InputStream sendRequest(HttpClient client, String modsUrl) throws InterruptedException, IOException {
+        int attempts = 0;
+        while(attempts++ < 10) {
+            try {
+                HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
+                        .uri(URI.create(modsUrl))
+                        .GET()
+                        .build(), HttpResponse.BodyHandlers.ofInputStream());
+                if (response != null && response.statusCode() == 200) {
+                    return response.body();
+                } else {
+                    LOGGER.log(Level.SEVERE, "HTTP error: {0}", response != null ? response.statusCode() : "null");
+                    return null;
+                }
+            } catch (InterruptedException | ConnectException exception) {
+                LOGGER.warning("Unable to send request, sleeping and trying again for: "+attempts+" time(s)"+ exception.getMessage());
+                Thread.sleep(5000);
+
+            }
+        }
+        throw new RuntimeException("Unable to send request"+attempts+" times");
+    }
 
     static void processSubqueryResult(List<HarvestingItem> items, Element resultElm, String pidKey, String rootPidKey) {
 
