@@ -70,13 +70,13 @@ public class HarvesterImpl implements Harvester {
     public static final Logger LOGGER = Logger.getLogger(HarvesterImpl.class.getName());
     private static final String SOLR_URL = "http://solr-kappScheduler:8983/solr";
 
-    private final int ROWS = 100;
     private static final int BATCH_SIZE = 200;
     private static final int AUTHOR_BATCH_SIZE = 250;
     public static final SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).withConnectionTimeout(100, TimeUnit.SECONDS).build();
 
     private static final boolean RUNINOVATIKA = false;
     private static final boolean RUNNKP = true;
+    private static final boolean IGNORE_CHECKTIME = true;
 
 
     public String makeFQ(List<String> filters){
@@ -120,10 +120,10 @@ public class HarvesterImpl implements Harvester {
             String query = pidCursorQuery(
                     apiVersion.iterationQuery(),
                     cursorMark,
-                    ROWS,
-                    makeFQ(Arrays.asList(
-                            apiVersion.incrementFQ(config),
-                            physicalLocationToFQ(config.getPhysicalLocations())
+                    config.getROWS(),
+                    makeFQ(Collections.singletonList(//Arrays.asList(
+                            apiVersion.incrementFQ(config)/*,
+                            physicalLocationToFQ(config.getPhysicalLocations())*/
                     )),
                     "search",
                     apiVersion.getIdentifier(config),
@@ -180,23 +180,26 @@ public class HarvesterImpl implements Harvester {
     private static String executeSolrQuery(HttpClient client, String url, String query)
             throws IOException, InterruptedException {
         //LOGGER.log(Level.INFO, "Response sent to Solr: {0}", URI.create(url + "/" + query));
-        HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
+        int attempt = 0;
+        HttpResponse<InputStream> response = null;
+        while (attempt++<10){
+            response = client.send(HttpRequest.newBuilder()
                         .uri(URI.create(url + "/" + query))
                         .GET()
                         .build(),
                 HttpResponse.BodyHandlers.ofInputStream());
-        if (response == null) {
-            LOGGER.log(Level.WARNING, "Response not received");
-        } else if (response.statusCode() != 200) {
-            LOGGER.log(Level.WARNING, "Response received with status: {0}", response.statusCode());
-        }
         if (response != null && response.statusCode() == 200) {
-            String r = IOUtils.toString(response.body(), StandardCharsets.UTF_8);
+            //String r =
             //LOGGER.log(Level.INFO, "Solr response: {0}", r);
-            return r;
+            return IOUtils.toString(response.body(), StandardCharsets.UTF_8);
         } else {
-            throw new RuntimeException("HTTP error: " + (response != null ? response.statusCode() : "null"));
+            LOGGER.log(Level.WARNING, (response == null) ? "Response not received" : "Response received with status:" + response.statusCode());
+
+            LOGGER.log(Level.INFO,"Going to try again. Attempt {0} ", attempt);
+            Thread.sleep(1000);
         }
+        }
+        throw new RuntimeException("HTTP error: Could not connect to Solr server");
     }
 
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
@@ -224,7 +227,7 @@ public class HarvesterImpl implements Harvester {
             exitOnOutOfInterval = false;
         }
         try {
-            checkTime();
+            if(!IGNORE_CHECKTIME) checkTime();
         } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
@@ -463,11 +466,13 @@ public class HarvesterImpl implements Harvester {
 
                                     // state differs
                                     JSONObject oldDoc = getExistingDocument((String) wrapper.getDocument().getFieldValue(FromKramFields.PID_FIELD));
-                                    String oldState = oldDoc != null ? oldDoc.getString("state") : null;
-                                    States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
-                                    String message = String.format("Imported from '%s'", config.getUrl());
-                                    if (oldState != null && !oldState.equals(newState.name())) {
-                                        wf.executeTransition(ctx, workflowDoc, user, message, wrapper);
+                                    if (oldDoc != null &&oldDoc.has("state")) {
+                                        String oldState =  oldDoc.getString("state");
+                                        States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
+                                        String message = String.format("Imported from '%s'", config.getUrl());
+                                        if (oldState != null && !oldState.equals(newState.name())) {
+                                            wf.executeTransition(ctx, workflowDoc, user, message, wrapper);
+                                        }
                                     }
                                 }
                             } catch (ParserConfigurationException | SAXException e) {
@@ -499,6 +504,7 @@ public class HarvesterImpl implements Harvester {
                 doc.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
                 doc.setField(FromKramFields.TITLE_FIELD, ctx.item().getTitles());
                 doc.setField(ApplFields.IS_HIERARCHICAL_FIELD, ctx.item().isHierarchical());
+                doc.addField(FromKramFields.LABELS_FIELD,ctx.item().getInstance().getAcronym());
 
                 doc.addField(ApplFields.DIGITAL_LIBRARY, ctx.config().getAcronym());
 
@@ -590,7 +596,7 @@ public class HarvesterImpl implements Harvester {
             }
             buffer.clear();
             try {
-                checkTime();
+                if(!IGNORE_CHECKTIME) checkTime();
             } catch (InterruptedException | IOException e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }

@@ -37,6 +37,8 @@ public class Instance {
 
     private List<String> physicalLocations = new ArrayList<>();
 
+    private int ROWS = 100;
+
     public Instance() {}
 
     /**
@@ -130,6 +132,14 @@ public class Instance {
     public List<String> getPhysicalLocations() {
         return physicalLocations;
     }
+    /**
+     * @return amount of rows in a single query
+     */
+    public int getROWS() {return ROWS;}
+
+    /**
+     * Set row count for solr query */
+    public void setROWS(int rows) { ROWS = rows;}
 
     public void setPhysicalLocations(List<String> physicalLocations) {
         this.physicalLocations = physicalLocations;
