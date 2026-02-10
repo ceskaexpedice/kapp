@@ -1,6 +1,9 @@
 services:
   scheduler:
     image: jiriminov/kappscheduler:latest
+    depends_on:
+      solr:
+        condition: service_healthy
     container_name: kappScheduler
     volumes:
       - ./mnt/import/.kapp:/root/.kapp
@@ -13,6 +16,12 @@ services:
       - "8983:8983"
     volumes:
       - ./../../kuratorska-aplikace-web/solr:/var/solr
+    healthcheck:
+      test: [ "CMD", "curl", "-f", "http://localhost:8983/solr/admin/cores?action=STATUS" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
   tomcat:
     image: jiriminov/kuappweb:latest
     container_name: kuappweb
