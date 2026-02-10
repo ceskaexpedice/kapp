@@ -29,7 +29,6 @@ public class Constants {
             public static final String LICENSES_FIELD = "licenses";
             public static final String LICENSES_DL_FIELD = "licenses_";
 
-            public static final String LABELS_FIELD = "labels";
 
         }
 
@@ -54,6 +53,7 @@ public class Constants {
             public static final String DIGITAL_LIBRARY = "digital_library";
 
             public static final String DECISION_DATE = "decision_date";
+            public static final String LABELS_FIELD = "labels";
         }
     }
 
