@@ -163,7 +163,7 @@ public class AuthorData {
         aDoc.addField("termsOfAddress", this.getTermsOfAddress());
 
         if (this.getDate() != null) {
-            XmlProcessor.parseDateBasic(aDoc, this.getDate(), -1/*FUCK OFF*/, this.getDate());
+            XmlProcessor.parseDateBasic(aDoc, this.getDate(), -1, this.getDate());
         }
         return aDoc;
 
