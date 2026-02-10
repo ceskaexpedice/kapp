@@ -504,7 +504,6 @@ public class HarvesterImpl implements Harvester {
                 doc.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
                 doc.setField(FromKramFields.TITLE_FIELD, ctx.item().getTitles());
                 doc.setField(ApplFields.IS_HIERARCHICAL_FIELD, ctx.item().isHierarchical());
-                doc.addField(FromKramFields.LABELS_FIELD,ctx.item().getInstance().getAcronym());
 
                 doc.addField(ApplFields.DIGITAL_LIBRARY, ctx.config().getAcronym());
 
