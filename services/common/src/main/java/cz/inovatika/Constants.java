@@ -29,6 +29,8 @@ public class Constants {
             public static final String LICENSES_FIELD = "licenses";
             public static final String LICENSES_DL_FIELD = "licenses_";
 
+            public static final String LABELS_FIELD = "labels";
+
         }
 
         public static class ApplFields {
