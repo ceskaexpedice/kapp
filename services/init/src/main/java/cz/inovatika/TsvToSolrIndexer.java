@@ -1,11 +1,7 @@
 package cz.inovatika;
 
-import java.io.File;
-import java.io.FileReader;
-import java.io.IOException;
+import java.io.*;
 //import java.io.InputStream;
-import java.io.Reader;
-import java.io.StringReader;
 import java.net.ConnectException;
 import java.net.URI;
 //import java.net.URLDecoder;
@@ -19,6 +15,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 //import java.util.Arrays;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 //import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
@@ -34,6 +31,7 @@ import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -48,7 +46,7 @@ import org.xml.sax.SAXException;
 //TODO: Refactor !!
 public class TsvToSolrIndexer {
 
-    private static final String SOLR_URL = "http://localhost:8983/solr";
+    private static final String SOLR_URL = "http://localhost:8983/solr";//"http://solr-kappScheduler:8983/solr";//
     public static final String MODEL_FIELD = "model";
     public static final String ROOT_PID_FIELD = "root.pid";
     public static final String ROOT_TITLE_FIELD = "root.title";
@@ -56,10 +54,11 @@ public class TsvToSolrIndexer {
     public static final String NAME_IDENTIFIER_FIELD = "nameIdentifier";
     private static final Logger log = LoggerFactory.getLogger(TsvToSolrIndexer.class);
 
-    private static String DIRECTORY_PATH = "../Data"; // change this
+    private static String DIRECTORY_PATH = System.getProperty("user.home") + "/.kapp/Data";//"../Data"; // change this
+    private static final String TSV_MAPPINGS = System.getProperty("user.home") + "/.kapp/tsv-mappings.json";//"services/init/src/main/resources/tsv-mappings.json"
+    private final static SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).withConnectionTimeout(100,TimeUnit.SECONDS).build();
 
-    private final static SolrClient solrClient = new HttpJdkSolrClient.Builder(SOLR_URL).build();
-    private final static boolean VERBOSEDEBUG = false;
+    private final static String MZKLink = "https://api.kramerius.mzk.cz/search/api/client/v7.0/";
 
     public static void main(String[] args) throws ParserConfigurationException {
         if (args.length > 0) {
@@ -80,10 +79,9 @@ public class TsvToSolrIndexer {
             return;
         }
         // before looping files, load config:
-        Path mappingsPath = Path.of("services/init/src/main/resources/tsv-mappings.json");
         ConfigMappingsLoader mappingsLoader;
         try {
-            mappingsLoader = new ConfigMappingsLoader(mappingsPath);
+            mappingsLoader = new ConfigMappingsLoader(Path.of(TSV_MAPPINGS));
         } catch (IOException e) {
             System.err.println("Failed to load TSV mappings: " + e.getMessage());
             return;
@@ -110,6 +108,7 @@ public class TsvToSolrIndexer {
                     }
                     for (CSVRecord record : parser) {
                         SolrInputDocument doc = new SolrInputDocument();
+                        doc.addField("labels","from Excel");
                         int recordNumber = (int) record.getRecordNumber() + 1; // +1 to account for header
                         String pid;
                         String rootPid;
@@ -177,7 +176,7 @@ public class TsvToSolrIndexer {
                                             // MZK. K7
                                             // https://api.kramerius.mzk.cz/search/api/client/v7.0/items/uuid:4f0d2790-37d6-11e6-8746-005056825209/metadata/mods
                                             xml = getBiblioMods(client, builder, pid,
-                                                    "https://api.kramerius.mzk.cz/search/api/client/v7.0/items/" + pid
+                                                    MZKLink+"items/" + pid
                                                             + "/metadata/mods");
                                         }
 
@@ -196,7 +195,7 @@ public class TsvToSolrIndexer {
                                             doc.setField(ROOT_TITLE_FIELD, item.optString("root_title"));
                                         } else {
                                             item = getItem(client, pid,
-                                                    "https://api.kramerius.mzk.cz/search/api/client/v7.0/search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), StandardCharsets.UTF_8));
+                                                    MZKLink+"search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), StandardCharsets.UTF_8));
                                                     if (item != null && !item.getJSONObject("response")
                                                             .getJSONArray("docs").isEmpty()) {
                                                 doc.setField(MODEL_FIELD, item.getJSONObject("response")
@@ -222,7 +221,7 @@ public class TsvToSolrIndexer {
                                 }
 
                             } catch (IndexOutOfBoundsException e) {
-                                System.err.println("Caught OOBexception in" + tsvFile.getName() + ": " + e.getMessage()
+                                System.err.println("Caught OutOfBoundsException in" + tsvFile.getName() + ": " + e.getMessage()
                                         + "\n\tVALUE: " + /*Original*/value);
                             }
                         }
@@ -249,8 +248,12 @@ public class TsvToSolrIndexer {
                         //doc.addField("state_user", "TableParser");
                         solrClient.add("titles", doc); 
                     }
-
-                } catch (Exception e) {
+                }catch (ConnectException e) {
+                        System.err.println("Kramerius connection error " + e.getMessage());
+                        e.printStackTrace();
+                        System.exit(1);
+                    }
+                 catch (Exception e) {
                     System.out.println("Critical Exception: in file:" + tsvFile.getName() + "of type:" + e.getClass()
                             + ": " + e.getMessage());
                     // sent_request = true;
@@ -282,12 +285,19 @@ public class TsvToSolrIndexer {
         if (value == null) {
             return;
         }
-        final String header = "public";
+        //final String header = "public";
         switch (value.toLowerCase()) {
-            case "ano", "yes", "true" -> doc.setField(header, true);
-            case "ne", "no", "false" -> doc.setField(header, false);
+            case "ano", "yes", "true" -> {
+                //doc.setField(header, true);
+                doc.addField("assigned_license","public");
+            }
+            case "ne", "no", "false" -> {
+                //doc.setField(header, false);
+                doc.addField("assigned_license","onsite");
+            }
             default -> {
-                if(VERBOSEDEBUG) System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
+                System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
+                doc.addField("labels","Incorrect public/onsite value in Excel");
             }
         }
     }
@@ -397,7 +407,7 @@ public class TsvToSolrIndexer {
                 System.err.println("Empty date on row: " + recordNumber);
                 return;
             }
-            value = XmlProcessor.replaceWordsWithQMarks(value, recordNumber, Originalvalue);
+            value = XmlProcessor.replaceWordsWithQMarks(doc,value, recordNumber, Originalvalue);
             
             if (value.contains(",")) {
                 String og = value;
