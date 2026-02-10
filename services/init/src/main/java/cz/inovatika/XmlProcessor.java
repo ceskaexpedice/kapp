@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.stream.Collectors;
 
+import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
 import cz.inovatika.authors.AuthorData;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -289,7 +290,7 @@ public class XmlProcessor {
         String recNum = (recordNumber > 0) ? (" on row: " + recordNumber) : "";
 
         System.err.println(message + recNum + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
-        doc.addField("labels", "failedToParseData");
+        doc.addField(ApplFields.LABELS_FIELD, "failedToParseData");
     }
 
     static void addyear(String year, SolrInputDocument doc, boolean confirmed) {
@@ -307,7 +308,7 @@ public class XmlProcessor {
             int yearEnd = Integer.parseInt(year_end);
             if (yearStart > yearEnd || yearEnd > Year.now().getValue()) {
                 System.out.println("Suspicious year range: " + year_start + "-" + year_end);
-                doc.addField("labels", "Suspicious year range");
+                doc.addField(ApplFields.LABELS_FIELD, "Suspicious year range");
             }
             doc.addField("date_range_start.year", yearStart);
             doc.addField("date_range_end.year", yearEnd);
@@ -319,7 +320,7 @@ public class XmlProcessor {
             doc.addField("confirmed_end_year", confirmed_end);
         } catch (NumberFormatException e) {
             System.err.println("Failed to parse year range: " + year_start + "-" + year_end);
-            doc.addField("labels","failedToParseData");
+            doc.addField(ApplFields.LABELS_FIELD,"failedToParseData");
         }
     }
 
