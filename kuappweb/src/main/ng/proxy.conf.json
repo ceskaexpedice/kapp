@@ -1,6 +1,6 @@
 {
   "/api/**": {
-    "target": "http://localhost:8080/kuappweb/api/",
+    "target": "http://localhost:8080/api/",
     "ignorePath": false,
     "logLevel": "debug",
     "pathRewrite": {
