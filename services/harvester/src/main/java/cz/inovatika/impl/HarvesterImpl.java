@@ -26,12 +26,15 @@ import cz.inovatika.workflow.WorkflowDoc;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
+import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.SolrServerException;
 //import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
+import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.ModifiableSolrParams;
 import org.json.JSONObject;
 import org.noggit.JSONUtil;
 import org.w3c.dom.Document;
@@ -50,6 +53,7 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
+import java.time.Duration;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
@@ -70,9 +74,13 @@ public class HarvesterImpl implements Harvester {
     public static final Logger LOGGER = Logger.getLogger(HarvesterImpl.class.getName());
     private static final String SOLR_URL = "http://solr-kappScheduler:8983/solr";
 
-    private static final int BATCH_SIZE = 200;
-    private static final int AUTHOR_BATCH_SIZE = 250;
-    public static final SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).withConnectionTimeout(100, TimeUnit.SECONDS).build();
+    private static final int BATCH_SIZE = 100;
+    private static final int AUTHOR_BATCH_SIZE = 150;
+    public static final SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL)
+            .withConnectionTimeout(200, TimeUnit.SECONDS)
+            .withIdleTimeout(5,TimeUnit.MINUTES)
+            .withRequestTimeout(5,TimeUnit.MINUTES).useHttp1_1(true)
+            .build();
 
     private static final boolean RUNINOVATIKA = false;
     private static final boolean RUNNKP = true;
@@ -104,7 +112,12 @@ public class HarvesterImpl implements Harvester {
 
     @Override
     public void harvest(ApplicationConfig applicationConfig, Instance harvestingInstanceConfig, Consumer<HarvesterContext> consumer) {
-        harvest(applicationConfig, harvestingInstanceConfig, consumer, HttpClient.newHttpClient());
+        harvest(applicationConfig, harvestingInstanceConfig, consumer,
+                HttpClient.newBuilder()
+                        .version(HttpClient.Version.HTTP_1_1)
+                        .connectTimeout(Duration.ofMinutes(1))
+                        .followRedirects(HttpClient.Redirect.NORMAL)
+                        .build());
     }
 
     public void harvest(ApplicationConfig applicationConfig, Instance config, Consumer<HarvesterContext> consumer, HttpClient client) {
@@ -361,11 +374,25 @@ public class HarvesterImpl implements Harvester {
     private static void sendBatch(String collection, final List<SolrInputDocument> docs)
             throws SolrServerException, IOException {
         UpdateRequest updateRequest = new UpdateRequest();
+        updateRequest.setCommitWithin(120_000);
         updateRequest.add(docs);
         if (!docs.isEmpty()) {
-            updateRequest.process(HarvesterImpl.solrClient, collection);
-            LOGGER.log(Level.INFO, "Indexed batch of {0} documents.", docs.size());
-            solrClient.commit(collection);
+
+            for(int attempt = 0; attempt<10;attempt++) {
+            try{
+                UpdateResponse response =  updateRequest.process(HarvesterImpl.solrClient, collection);
+                if(response.getStatus()!=0)LOGGER.log(Level.WARNING,"Solr update returned non-zero status: {0}, QTime: {1}",
+                        new Object[]{response.getStatus(), response.getQTime()});
+                solrClient.commit(collection);
+                LOGGER.log(Level.INFO, "Indexed batch of {0} documents.", docs.size());
+                break;
+            }catch (IOException | SolrServerException e){
+                LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt);
+            }}
+            try{
+            Thread.sleep(1000);}catch(InterruptedException e){
+                LOGGER.log(Level.WARNING, "Interrupted");
+            }
         } else {
             LOGGER.log(Level.INFO, "No documents to be indexed.");
         }
