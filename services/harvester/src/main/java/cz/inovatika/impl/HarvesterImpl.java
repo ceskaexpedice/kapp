@@ -16,7 +16,8 @@ import cz.inovatika.identifiers.IdentifierUtils;
 import cz.inovatika.model.*;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.touchstore.TouchStore;
-import cz.inovatika.touchstore.impl.TouchStoreImpl;
+import cz.inovatika.touchstore.TouchStoreFactory;
+import cz.inovatika.touchstore.impl.FileSystemTouchStoreImpl;
 import cz.inovatika.workflow.LicensesAssignation;
 import cz.inovatika.workflow.States;
 import cz.inovatika.utils.XMLUtils;
@@ -26,7 +27,6 @@ import cz.inovatika.workflow.WorkflowDoc;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.client.solrj.SolrResponse;
 import org.apache.solr.client.solrj.SolrServerException;
 //import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
@@ -34,7 +34,6 @@ import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.params.ModifiableSolrParams;
 import org.json.JSONObject;
 import org.noggit.JSONUtil;
 import org.w3c.dom.Document;
@@ -72,7 +71,8 @@ import java.util.concurrent.TimeUnit;
 public class HarvesterImpl implements Harvester {
 
     public static final Logger LOGGER = Logger.getLogger(HarvesterImpl.class.getName());
-    private static final String SOLR_URL = "http://solr-kappScheduler:8983/solr";
+    //private static final String SOLR_URL = "http://solr-kappScheduler:8983/solr";
+    private static final String SOLR_URL = "http://localhost:8983/solr";
 
     private static final int BATCH_SIZE = 100;
     private static final int AUTHOR_BATCH_SIZE = 150;
@@ -121,7 +121,7 @@ public class HarvesterImpl implements Harvester {
     }
 
     public void harvest(ApplicationConfig applicationConfig, Instance config, Consumer<HarvesterContext> consumer, HttpClient client) {
-        TouchStore touchStore = new TouchStoreImpl(applicationConfig.touchStoreConfig());
+        TouchStore touchStore = applicationConfig.touchStoreConfig().factory().create(this.solrClient, applicationConfig.touchStoreConfig());
 
         String cursorMark = null;
         String queryCursorMark;
@@ -171,6 +171,10 @@ public class HarvesterImpl implements Harvester {
 
         config.saveLastUpdatedToPath();
     }
+
+//    private static FileSystemTouchStoreImpl createTouchStore(ApplicationConfig applicationConfig) {
+//        return new FileSystemTouchStoreImpl(applicationConfig.touchStoreConfig());
+//    }
 
     public static Element executeQuery(HttpClient httpClient, String url, String query) {
         try {
@@ -288,7 +292,9 @@ public class HarvesterImpl implements Harvester {
         workflowConfig.setOnsiteYear(70);
         workflowConfig.setPublicYear(110);
 
-        TouchStoreConfig touchConfig = new TouchStoreConfig("/touchstore");
+        TouchStoreFactory factory = TouchStoreFactory.solr;
+
+        TouchStoreConfig touchConfig = new TouchStoreConfig(factory, "/touchstore");
         ApplicationConfig applicationConfig = new ApplicationConfig(List.of(config), workflowConfig, null, touchConfig);
 
         try {
@@ -314,7 +320,7 @@ public class HarvesterImpl implements Harvester {
         workflowConfig.setOnsiteYear(70);
         workflowConfig.setPublicYear(110);
 
-        TouchStoreConfig touchConfig = new TouchStoreConfig("/touchstore");
+        TouchStoreConfig touchConfig = new TouchStoreConfig(TouchStoreFactory.file, "/touchstore");
         ApplicationConfig applicationConfig = new ApplicationConfig(List.of(config), workflowConfig, null, touchConfig);
         try {
             LOGGER.info("inovatika harvesting started");
@@ -658,17 +664,6 @@ public class HarvesterImpl implements Harvester {
         }
     }
 
-    private static boolean documentExists(String pid) {
-        SolrQuery q = new SolrQuery()
-                .setQuery("pid:\"" + pid + "\"")
-                .setRows(0);
-        try {
-            return solrClient.query("titles", q).getResults().getNumFound() > 0;
-        } catch (SolrServerException | IOException e) {
-            LOGGER.log(Level.SEVERE, null, e);
-            return false;
-        }
-    }
 
     private static void storeState(Instance config, SolrInputDocument idoc, JSONObject oldDoc, States nState) {
 

@@ -1,5 +1,6 @@
 package cz.inovatika.conf;
 
-public record TouchStoreConfig(String baseDir) {
+import cz.inovatika.touchstore.TouchStoreFactory;
 
+public record TouchStoreConfig(TouchStoreFactory factory, String baseDir) {
 }

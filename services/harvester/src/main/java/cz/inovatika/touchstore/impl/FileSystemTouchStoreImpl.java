@@ -11,7 +11,7 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public record TouchStoreImpl(TouchStoreConfig touchStoreConfig) implements TouchStore {
+public record FileSystemTouchStoreImpl(TouchStoreConfig touchStoreConfig) implements TouchStore {
 
     public static final String PID_FILE = "pid.txt";
     public static final String ROOT_PID_FILE = "root_pid.txt";
