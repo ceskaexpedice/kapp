@@ -38,7 +38,7 @@
     "id": "Identifier",
     "last_author": "lAST AUTHOR",
     "year_of_death_last_author": "Last author death",
-    "physical_locations": "Umisteni",
+    "physical_locations": "Sigla",
     "public": "Public",
     "public_since": "Public since",
     "license": "License",
@@ -61,7 +61,9 @@
     "digitalni_knihovny": "Digital libraries",
     "hlavni": "Main contract",
     "dodatky": "Attachments to contracts",
-    "souhrn": "Summary"
+    "souhrn": "Summary",
+    "assigned_license": "Assigned license",
+    "model": "Model"
   },
   "action": {
     "view": "View",

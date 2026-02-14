@@ -32,7 +32,7 @@
     "title": "Název",
     "author": "Autor",
     "authors": "Autoři",
-    "labels": "Label",
+    "labels": "Označení",
     "state": "Stav",
     "date": "Datum",
     "date_birth": "Datum narození",
@@ -41,7 +41,7 @@
     "id": "Identifikator",
     "last_author": "Poslední autor",
     "year_of_death_last_author": "Rok úmrtí posledního autora",
-    "physical_locations": "Umisteni",
+    "physical_locations": "Sigla",
     "public": "Veřejný",
     "public_since": "Veřejný od",
     "license": "Licence",
@@ -65,7 +65,9 @@
     "isHlavni": "Je hlavní smlouva",
     "hlavni_smlouva": "Hlavní smlouva",
     "dodatky": "Dodatky ke smlouvě",
-    "souhrn": "Souhrn"
+    "souhrn": "Souhrn",
+    "assigned_license": "Přiřazená licence",
+    "model": "Model"
   },
   "action": {
     "view": "Zobrazit",

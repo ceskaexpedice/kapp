@@ -249,7 +249,8 @@ $home_cards: (
     header-container-height: 32px, 
     header-headline-color: var(--app-color-gray-6),
     row-item-container-height: 28px,
-    row-item-outline-color: var(--app-color-gray-3)
+    row-item-outline-color: var(--app-color-gray-3),
+    row-item-label-text-size: 13px
   ));
   .mat-mdc-table {
     &.app-striped {
@@ -331,6 +332,10 @@ $home_cards: (
       max-width: 60px;
       padding: 0;
       text-align: center;
+      
+      .mdc-icon-button{
+        color: var(--app-color-primary);
+      }
     }
   }
 
