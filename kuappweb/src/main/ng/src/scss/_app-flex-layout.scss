@@ -40,8 +40,16 @@
     align-items: center;
   }
 
+   &.app-end-v {
+    align-items: end;
+  }
+
   &.app-center-h {
     place-content: center;
+  }
+
+  &.app-end-h {
+    place-content: end;
   }
 
   &.app-baseline {
