@@ -4,6 +4,9 @@
 
 :root {
  // colors
+ --app-color-primary: var(--mat-sys-primary);
+ --app-color-secondary: var(--mat-sys-secondary);
+ --app-color-warn: var(--mat-sys-error);
  --app-color-lightnes: #ffffff;
  --app-color-lightnes-rgb: 255, 255, 255;
  --app-color-darknes: #000000;
@@ -30,4 +33,5 @@
   
   // material
   --app-menu-item-height: 32px; 
+  --app-button-height: 36px;
 }

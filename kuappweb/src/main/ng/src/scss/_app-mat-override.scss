@@ -142,7 +142,9 @@ $home_cards: (
 
   @include mat.button-overrides((
     outlined-outline-color: var(--app-color-gray-3),
-    outlined-container-height: 36px
+    outlined-container-height: var(--app-button-height),
+    filled-container-height: var(--app-button-height),
+    text-container-height: var(--app-button-height)
   ));
   .mat-mdc-form-field {
     .mat-mdc-form-field-icon-suffix {
@@ -177,7 +179,7 @@ $home_cards: (
 
 
   @include mat.button-toggle-overrides((
-    height: 36px,
+    height: var(--app-button-height),
     divider-color: var(--app-color-gray-3),
     selected-state-background-color: var(--app-color-gray-2),
     text-color: var(--app-color-gray-7),

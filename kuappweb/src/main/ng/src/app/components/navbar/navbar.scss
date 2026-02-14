@@ -12,4 +12,13 @@
       color: var(--app-color-gray-7);
     }
   }
+
+  a {
+    &.mdc-button {
+      &.app-active-link {
+        background-color: var(--app-color-primary);
+        color: var(--app-color-lightnes);
+      }
+    }
+  }
 }
