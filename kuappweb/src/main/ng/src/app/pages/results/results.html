@@ -126,7 +126,7 @@
               </th>
               <td mat-cell *matCellDef="let doc" style="padding: 0 !important;">
                 <div class="app-fxLayout app-row app-gap-1 app-center-h">
-                  <button mat-icon-button [matTooltip]="'action.add_author' | translate"><mat-icon>person_add</mat-icon></button>
+                  <button mat-icon-button (click)="addAuthor(doc['pid'])" [matTooltip]="'action.add_author' | translate"><mat-icon>person_add</mat-icon></button>
                   <button mat-icon-button [matTooltip]="'action.add_doc_to_bacth' | translate"><mat-icon>playlist_add</mat-icon></button>
                 </div>
               </td>

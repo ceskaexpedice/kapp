@@ -1,5 +1,5 @@
 import { DatePipe } from '@angular/common';
-import { Component, computed, DOCUMENT, effect, inject, Inject, signal } from '@angular/core';
+import { Component, computed, DOCUMENT, effect, inject, Inject, signal, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -34,6 +34,8 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { ColumnsSettingsDialog } from '../../components/columns-settings-dialog/columns-settings-dialog';
 import { MatMenuModule } from "@angular/material/menu";
 
+import { AuthorDialog } from '../../components/author-dialog/author-dialog';
+
 @Component({
   selector: 'app-results',
   imports: [
@@ -51,7 +53,7 @@ import { MatMenuModule } from "@angular/material/menu";
   styleUrl: './results.scss'
 })
 export class Results {
-
+  doc = model<any>();
   loading: boolean;
   solrResponse: any;
   docs = signal<any[]>([]);
@@ -196,6 +198,22 @@ export class Results {
       if (result) {
         console.log(result);
         // this.displayedColumns = this.state.titleColumns().filter(c => c.selected).map(f => f.field)
+      }
+    });
+  }
+
+  addAuthor(val: any) {
+    const dialogRef = this.dialog.open(AuthorDialog, {
+      data: {pid:val, author:null},
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+        this.service.getDoc(this.doc().pid).subscribe((resp: any) => {
+          if (resp.response?.docs?.length > 0) {
+            this.doc.set(resp.response.docs[0]);
+          }
+        });
       }
     });
   }
