@@ -150,6 +150,41 @@ a {
       margin-left: 2px;
     }
   }
+}
 
-  
+.app-badge {
+  color: var(--app-color-lightnes);
+  background-color: #607D8B;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  display: inline-flex;
+  align-self: end;
+  padding: 0 8px;
+  height: 20px;
+  align-items: center;
+  border-radius: calc(20px / 2);
+  min-width: 100px;
+  justify-content: center;
+
+  &.app-noncontrolled_private {
+    background-color: #5a975d;
+  }
+  &.app-noncontrolled_public {
+    background-color: #0097A7;
+  }
+  &.app-to_control {
+    background-color: #0288D1;
+  }
+
+
+  &.app-text-cutter-wrapper {
+    display: flex;
+    min-width: 100px;
+    max-width: 200px;
+
+    .app-text-cutter {
+      padding: 0 8px;
+    }
+  }
 }

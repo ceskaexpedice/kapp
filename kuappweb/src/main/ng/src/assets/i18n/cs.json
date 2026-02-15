@@ -105,7 +105,8 @@
     "CONTROLLED_UNKNOWN_PUBLIC": "kontrolované - neznámé - volné",
     "CONTROLLED_NO_AP": "kontrolované - bez autorskych prav",
     "CONTROLLED_PROHIBITED": "kontrolované - znepristupnene",
-    "CONTROLLED_PRIVATE_LICENSE": "kontrolované - neveřejné licence"
+    "CONTROLLED_PRIVATE_LICENSE": "kontrolované - neveřejné licence",
+    "undefined": "neznamé"
   },
   "admin": {
     "labels": "Administrace štítků",

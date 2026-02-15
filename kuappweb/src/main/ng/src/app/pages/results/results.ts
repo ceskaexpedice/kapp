@@ -1,4 +1,4 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, LowerCasePipe, NgClass } from '@angular/common';
 import { Component, computed, DOCUMENT, effect, inject, Inject, signal, model } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -35,6 +35,7 @@ import { ColumnsSettingsDialog } from '../../components/columns-settings-dialog/
 import { MatMenuModule } from "@angular/material/menu";
 
 import { AuthorDialog } from '../../components/author-dialog/author-dialog';
+import { Batch } from '../../shared/batch';
 
 @Component({
   selector: 'app-results',
@@ -45,10 +46,9 @@ import { AuthorDialog } from '../../components/author-dialog/author-dialog';
     MatButtonModule, MatTableModule, MatPaginatorModule,
     MatFormFieldModule, MatIconModule, MatInputModule, MatButtonToggleModule,
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
-    ResultItem,
-    AuthorItem,
-    MatMenuModule
-  ],
+    ResultItem, AuthorItem, MatMenuModule, LowerCasePipe,
+    NgClass
+],
   templateUrl: './results.html',
   styleUrl: './results.scss'
 })
@@ -202,6 +202,8 @@ export class Results {
     });
   }
 
+
+  // pedro
   addAuthor(val: any) {
     const dialogRef = this.dialog.open(AuthorDialog, {
       data: {pid:val, author:null},
@@ -216,6 +218,20 @@ export class Results {
         });
       }
     });
+  }
+
+  inBatch(s: string, val: any) {
+    return val['batch']?.includes(s)
+  }
+  
+  addToBatch(b: Batch) {
+    this.saveDocBatch(b.name);
+  }
+  
+  saveDocBatch(bs: string) {
+    this.service.saveDocBatch(this.doc()['pid'], bs).subscribe((res: any) => {
+      console.log(res)
+    })
   }
 
 }
