@@ -209,9 +209,9 @@ export class Results {
 
 
   // pedro
-  addAuthor(val: any) {
+  addAuthor() {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: {pid:val, author:null},
+      data: {pid:this.doc().pid, author:null},
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -225,8 +225,8 @@ export class Results {
     });
   }
 
-  inBatch(s: string, val: any) {
-    return val['batch']?.includes(s)
+  inBatch(s: string) {
+    return this.doc()['batch']?.includes(s)
   }
   
   addToBatch(b: Batch) {

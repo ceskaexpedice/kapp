@@ -139,7 +139,7 @@
               </th>
               <td mat-cell *matCellDef="let doc" style="padding: 0 !important;">
                 <div class="app-fxLayout app-row app-gap-1 app-center-h">
-                  <button mat-icon-button (click)="addAuthor(doc['pid'])" [matTooltip]="'action.add_author' | translate">
+                  <button mat-icon-button (click)="addAuthor()" [matTooltip]="'action.add_author' | translate">
                     <mat-icon>person_add</mat-icon>
                   </button>
                   <button mat-icon-button [matMenuTriggerFor]="batchesMenu" [matTooltip]="'action.add_doc_to_bacth' | translate">
@@ -152,7 +152,7 @@
                 <mat-menu #batchesMenu="matMenu">
                   @for(a of state.batches(); track $index) {
                     <button mat-menu-item (click)="addToBatch(a)">
-                      <mat-icon>{{ inBatch(a.name, doc['pid']) ? 'check' : 'none'}}</mat-icon>{{ a.name }}
+                      <!-- <mat-icon>{{ inBatch(a.name) ? 'check' : 'none'}}</mat-icon> -->{{ a.name }}
                     </button>
                   }
                 </mat-menu>
