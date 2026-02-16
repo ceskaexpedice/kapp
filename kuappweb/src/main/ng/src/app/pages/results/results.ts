@@ -70,6 +70,9 @@ export class Results {
 
   viewType = signal<string>('table_view');
   displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']);
+  columnsToDisplayWithExpand = computed<string[]>(() => [...this.displayedColumns()]);
+  expandedElement: any | null = null;
+
   //['pid', 'title', 'state', 'dateIssued', 'sigla', 'indextime', 'actions']; //Datum vydání; Producent/Umístění (duplicitně k fasetě); Datum importu(?)
 
   sort: Sort = { active: 'indextime', direction: 'desc' };
@@ -234,4 +237,12 @@ export class Results {
     })
   }
 
+  // -- expanded table row
+  isExpanded(element: any) {
+    return this.expandedElement === element;
+  }
+  toggle(element: any) {
+    this.expandedElement = this.isExpanded(element) ? null : element;
+  }
+  
 }

@@ -83,6 +83,25 @@ $home_cards: (
       }
     }
   }
+  app-results {
+    .mat-mdc-table {
+      app-result-item {
+        @include mat.card-overrides((
+          outlined-outline-width: 0
+        ));
+      }
+      .mat-mdc-card {
+        padding-bottom: 8px;
+        
+        .mat-mdc-card-header {
+          padding-top: 8px;
+        }
+        .mat-mdc-card-actions {
+          display: none;
+        }
+      }
+    }
+  }
   app-result-item,
   app-author-item {
     &:not(:last-child) {
@@ -331,7 +350,7 @@ $home_cards: (
     }
 
     .mat-column-action {
-      max-width: 60px;
+      max-width: 90px;
       padding: 0;
       text-align: center;
       

@@ -55,7 +55,7 @@
         <div class="app-table-wrapper app-oa-y">
           <table mat-table [dataSource]="docs()" class="app-hover app-striped app-resize" matSort
             [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction"
-            (matSortChange)="sortTable($event)">
+            (matSortChange)="sortTable($event)" multiTemplateDataRows>
 
             <ng-container matColumnDef="pid">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>PID</span></th>
@@ -132,8 +132,15 @@
               </th>
               <td mat-cell *matCellDef="let doc" style="padding: 0 !important;">
                 <div class="app-fxLayout app-row app-gap-1 app-center-h">
-                  <button mat-icon-button (click)="addAuthor(doc['pid'])" [matTooltip]="'action.add_author' | translate"><mat-icon>person_add</mat-icon></button>
-                  <button mat-icon-button [matMenuTriggerFor]="batchesMenu" [matTooltip]="'action.add_doc_to_bacth' | translate"><mat-icon>playlist_add</mat-icon></button>
+                  <button mat-icon-button (click)="addAuthor(doc['pid'])" [matTooltip]="'action.add_author' | translate">
+                    <mat-icon>person_add</mat-icon>
+                  </button>
+                  <button mat-icon-button [matMenuTriggerFor]="batchesMenu" [matTooltip]="'action.add_doc_to_bacth' | translate">
+                    <mat-icon>playlist_add</mat-icon>
+                  </button>
+                  <button matIconButton aria-label="expand row" (click)="toggle(doc); $event.stopPropagation()" class="app-btn-toggle" [class.app-btn-toggle-expanded]="isExpanded(doc)" [matTooltip]="'test' | translate">
+                    <mat-icon>keyboard_arrow_down</mat-icon>
+                  </button>
                 </div>
                 <mat-menu #batchesMenu="matMenu">
                   @for(a of state.batches(); track $index) {
@@ -145,8 +152,35 @@
               </td>
             </ng-container>
 
+
+            <!-- <ng-container matColumnDef="expand">
+              <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
+              <td mat-cell *matCellDef="let element">
+                <button
+                  matIconButton
+                  aria-label="expand row"
+                  (click)="toggle(element); $event.stopPropagation()"
+                  class="example-toggle-button"
+                  [class.example-toggle-button-expanded]="isExpanded(element)">
+                  <mat-icon>keyboard_arrow_down</mat-icon>
+                </button>
+              </td>
+            </ng-container> -->
+
+            <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+            <ng-container matColumnDef="expandedDetail">
+              <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand().length">
+                <div class="app-element-detail-wrapper" [class.app-element-detail-wrapper-expanded]="isExpanded(element)">
+                  <div class="app-element-detail">
+                    <app-result-item [doc]="element" [expanded]="expanded(element['root.pid'])"></app-result-item>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
             <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true" [matContextMenuTriggerFor]="contextMenu"></tr>
-            <tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr><!--(click)="viewDoc(row)" class="app-cursor-pointer"-->
+            <tr mat-row *matRowDef="let row; columns: columnsToDisplayWithExpand();" class="app-element-row" [class.app-expanded-row]="isExpanded(row)"></tr><!--(click)="viewDoc(row)" class="app-cursor-pointer"--><!--(click)="toggle(row)"-->
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="app-detail-row"></tr>
           </table>
           <mat-menu #contextMenu>
             <button mat-menu-item (click)="setColumns()"><mat-icon>more_vert</mat-icon>{{ 'titleColumns_dialog' | translate }}</button>

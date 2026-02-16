@@ -3,5 +3,49 @@
 }
 
 .app-right {
+  .mat-mdc-table {
+    tr {
+      &.app-element-row {
+        td {
+          border-bottom-width: 0;
 
+          .app-btn-toggle {
+            transition: transform 225ms cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .app-btn-toggle-expanded {
+            transform: rotate(180deg);
+          }
+        }
+      }
+      &.app-detail-row {
+        height: 0;
+
+        td {
+          padding: 0;
+
+          .app-element-detail-wrapper {
+            overflow: hidden;
+            display: grid;
+            grid-template-rows: 0fr;
+            grid-template-columns: 100%;
+            transition: grid-template-rows 225ms cubic-bezier(0.4, 0, 0.2, 1);
+          }
+
+          .app-element-detail-wrapper-expanded {
+            grid-template-rows: 1fr;
+          }
+
+          .app-element-detail {
+            min-height: 0;
+          }
+        }
+      }
+    }  
+  }
 }
+
+
+
+
+
