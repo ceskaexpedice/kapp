@@ -5,6 +5,7 @@ import { routes } from './app.routes';
 import { HttpClient, provideHttpClient } from '@angular/common/http';
 import { AppState } from './app-state';
 import { AppService } from './app.service';
+import { UIService } from './ui.service';
 import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AppConfiguration } from './app-configuration';
@@ -27,6 +28,6 @@ export const appConfig: ApplicationConfig = {
     }),
     provideHttpClient(),
     { provide: APP_INITIALIZER, useFactory: (config: AppConfiguration) => () => config.load(), deps: [AppConfiguration], multi: true },
-    TranslateService, AppState, AppService
+    TranslateService, AppState, AppService, UIService
   ]
 };

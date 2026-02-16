@@ -5,15 +5,19 @@
   "usedFilters": "Used filters",
   "numFound": "num. found",
   "current_state": "Current state",
+  "current_states": "Current states",
   "new_state": "New state",
   "current_licenses": "Current licence",
   "reason": "Reason",
   "history": "History",
+  "batch_alert": "for the entire dose",
   "titleColumns_dialog": "Columns settings",
   "contract_exists": "File {{filename}} already exists",
   "contract": "Contract",
   "contract_analyze": "Analyze with GEMINI",
   "uploading": "Processing",
+  "processing": "Processing",
+  "copy_text_to_clipboard": "Copy text to clipboard",
   "home": {
     "titles": "Titles",
     "authors": "Authors",
@@ -120,5 +124,10 @@
     "batches": "Batches",
     "login": "Login",
     "contracts": "Contracts"
+  },
+  "snackbar": {
+    "copyTextToClipboard": {
+      "success": "Text successfully copied to clipboard"
+    }
   }
 }

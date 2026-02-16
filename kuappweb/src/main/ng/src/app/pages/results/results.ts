@@ -19,6 +19,7 @@ import { ActivatedRoute, ActivatedRouteSnapshot, Router, RouterModule } from '@a
 import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
+import { UIService } from '../../ui.service';
 import { JSONFacet } from '../../shared/facet';
 import { HttpParams } from '@angular/common/http';
 import { ResultItem } from "../../components/result-item/result-item";
@@ -81,6 +82,7 @@ export class Results {
     @Inject(DOCUMENT) private document: Document,
 
     public state: AppState,
+    public ui: UIService,
     private service: AppService,
     private config: AppConfiguration
   ) {

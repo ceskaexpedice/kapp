@@ -59,7 +59,14 @@
 
             <ng-container matColumnDef="pid">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>PID</span></th>
-              <td mat-cell *matCellDef="let doc">{{doc['pid']}}</td>
+              <td mat-cell *matCellDef="let doc">
+                <div class="app-fxLayout app-row app-center-v app-gap-1">
+                  <button mat-icon-button class="app-icon-size-16" (click)="ui.copyTextToClipboard(doc['pid'])" [matTooltip]="'copy_text_to_clipboard' | translate">
+                    <mat-icon>content_copy</mat-icon>
+                  </button>
+                  <span> {{doc['pid']}}</span>
+                </div>
+              </td>
             </ng-container>
 
             <ng-container matColumnDef="title">
@@ -152,22 +159,7 @@
               </td>
             </ng-container>
 
-
-            <!-- <ng-container matColumnDef="expand">
-              <th mat-header-cell *matHeaderCellDef aria-label="row actions">&nbsp;</th>
-              <td mat-cell *matCellDef="let element">
-                <button
-                  matIconButton
-                  aria-label="expand row"
-                  (click)="toggle(element); $event.stopPropagation()"
-                  class="example-toggle-button"
-                  [class.example-toggle-button-expanded]="isExpanded(element)">
-                  <mat-icon>keyboard_arrow_down</mat-icon>
-                </button>
-              </td>
-            </ng-container> -->
-
-            <!-- Expanded Content Column - The detail row is made up of this one column that spans across all columns -->
+            <!-- Expanded Content Column -->
             <ng-container matColumnDef="expandedDetail">
               <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand().length">
                 <div class="app-element-detail-wrapper" [class.app-element-detail-wrapper-expanded]="isExpanded(element)">

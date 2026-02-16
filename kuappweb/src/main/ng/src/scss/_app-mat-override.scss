@@ -92,7 +92,7 @@ $home_cards: (
       }
       .mat-mdc-card {
         padding-bottom: 8px;
-        
+
         .mat-mdc-card-header {
           padding-top: 8px;
         }
@@ -192,8 +192,21 @@ $home_cards: (
     @include mat.icon-button-overrides((
       state-layer-size: 24px
     ));
-    .mat-icon {
-      @include setIcon(18);
+    .mdc-icon-button {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      .mat-icon {
+        @include setIcon(18);
+        vertical-align: baseline
+      }
+      
+      &.app-icon-size-16 {
+        .mat-icon {
+          @include setIcon(16);
+        }
+      }
     }
   }
 
@@ -293,56 +306,56 @@ $home_cards: (
       }
     }
     &.app-resize {
-    table-layout: fixed;
-    min-width: 1050px;
-    max-width: 100%;
-    width: fit-content;
+      table-layout: fixed;
+      min-width: 1050px;
+      max-width: 100%;
+      width: fit-content;
 
-    &.app-resizing {
-      -moz-user-select: none;
-      -ms-user-select: none;
-      user-select: none;
-    }
+      &.app-resizing {
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+      }
 
-    .mat-mdc-header-cell {
-      position: relative;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
+      .mat-mdc-header-cell {
+        position: relative;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
 
-      .mat-sort-header-content {
-        display: inline-block;
+        .mat-sort-header-content {
+          display: inline-block;
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
+
+        .app-resize-holder {
+          cursor: col-resize;
+          width: 10px;
+          height: 100%;
+          position: absolute;
+          right: 0;
+          top: 0;
+          z-index: 1;
+
+          &:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            right: 0;
+            border-right: 1px solid var(--app-color-gray-3);
+          }
+        }
+      }
+
+      .mat-mdc-cell {
         white-space: nowrap;
         overflow: hidden;
         text-overflow: ellipsis;
       }
-
-      .app-resize-holder {
-        cursor: col-resize;
-        width: 10px;
-        height: 100%;
-        position: absolute;
-        right: 0;
-        top: 0;
-        z-index: 1;
-
-        &:after {
-          content: '';
-          position: absolute;
-          top: 0;
-          bottom: 0;
-          right: 0;
-          border-right: 1px solid var(--app-color-gray-3);
-        }
-      }
     }
-
-    .mat-mdc-cell {
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-  }
 
     .mdc-data-table__cell, 
     .mdc-data-table__header-cell {

@@ -17,6 +17,7 @@
   "contract_analyze": "Analyzovat pomocí GEMINI",
   "uploading": "Nahrávám",
   "processing": "Zpracování",
+  "copy_text_to_clipboard": "Zkopírovat text do schránky",
   "home": {
     "titles": "Díla ",
     "authors": "Autoři",
@@ -123,5 +124,10 @@
     "batches": "Dávky",
     "titles": "Díla",
     "contracts": "Evidence smluv"
+  },
+  "snackbar": {
+    "copyTextToClipboard": {
+      "success": "Text byl úspěšně zkopírován do schránky"
+    }
   }
 }
