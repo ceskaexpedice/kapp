@@ -133,10 +133,12 @@ $home_cards: (
       ));
     }
   }
-  .app-view-rounded {
+  .app-view-search {
     @include mat.form-field-overrides((
       outlined-container-shape: 36px
     ));
+    --mat-form-field-outlined-container-shape: 18px;
+    min-width: 400px;
   }
 
 

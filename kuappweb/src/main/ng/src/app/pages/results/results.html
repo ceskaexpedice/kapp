@@ -17,7 +17,7 @@
     <div class="app-fxFlex app-right app-oh app-mt-n2">
       <div class="app-fxLayout app-row app-gap-4 app-toolbar app-pt-2">
         <div class="app-fxFlex">
-          <mat-form-field appearance="outline" class="app-view-rounded">
+          <mat-form-field appearance="outline" class="app-view-search">
             <mat-label>{{ 'action.search' | translate }}</mat-label>
             <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
               (keyup.enter)="doSearch()">
