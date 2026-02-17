@@ -5,7 +5,7 @@ import org.apache.solr.common.SolrInputDocument;
 import java.util.HashMap;
 import java.util.Map;
 
-public class SolrInputDocumentWrapper {
+public record SolrInputDocumentWrapper(String idKey, SolrInputDocument document, TypeOfChange typeOfChange) {
 
     public enum TypeOfChange {
         SIMPLE,
@@ -17,16 +17,6 @@ public class SolrInputDocumentWrapper {
         ATOMIC_REMOVE,
         ATOMIC_ADD_DISTINCT,
         ATOMIC_SET
-    }
-
-    private final String idKey;
-    private final SolrInputDocument document;
-    private final TypeOfChange typeOfChange;
-
-    public SolrInputDocumentWrapper(String idKey, SolrInputDocument document, TypeOfChange typeOfChange) {
-        this.idKey = idKey;
-        this.document = document;
-        this.typeOfChange = typeOfChange;
     }
 
     private static Map<String, Object> atomicOperation(String modifier, Object value) {
@@ -69,8 +59,7 @@ public class SolrInputDocumentWrapper {
 
     private void changeField(String name, Object value, TypeOfOperation ofOperation) {
         switch (typeOfChange) {
-            case SIMPLE ->
-                document.addField(name, value);
+            case SIMPLE -> document.addField(name, value);
             case ATOMIC_CHANGE -> {
                 switch (ofOperation) {
                     case ATOMIC_ADD -> {
