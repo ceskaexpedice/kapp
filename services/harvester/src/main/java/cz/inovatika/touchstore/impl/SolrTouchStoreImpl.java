@@ -89,12 +89,14 @@ public class SolrTouchStoreImpl implements TouchStore {
     public List<String> getPhysicalLocations(String pid) throws IOException {
         try {
             SolrDocument doc = getDocument(pid);
-            Collection<Object> fieldValues = doc.getFieldValues("physical_locations.facet");
-            if (fieldValues != null) {
-                return fieldValues.stream().map(Object::toString).collect(Collectors.toList());
-            } else {
-                return List.of();
-            }
+            if (doc != null) {
+                Collection<Object> fieldValues = doc.getFieldValues("physical_locations.facet");
+                if (fieldValues != null) {
+                    return fieldValues.stream().map(Object::toString).collect(Collectors.toList());
+                } else {
+                    return List.of();
+                }
+            } else return List.of();
         } catch (SolrServerException | IOException e) {
             LOGGER.log(Level.SEVERE, null, e);
         }
