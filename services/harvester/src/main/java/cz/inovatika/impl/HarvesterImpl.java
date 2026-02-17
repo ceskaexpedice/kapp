@@ -1,14 +1,13 @@
 package cz.inovatika.impl;
 
+import com.google.common.base.Stopwatch;
 import cz.inovatika.Constants;
 import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
 import cz.inovatika.Constants.TitlesCollectionFields.FromKramFields;
-import cz.inovatika.authors.AuthorData;
 import cz.inovatika.Harvester;
+import cz.inovatika.authors.AuthorData;
 import cz.inovatika.authors.AuthorDataUtils;
 import cz.inovatika.conf.ApplicationConfig;
-import cz.inovatika.conf.TouchStoreConfig;
-import cz.inovatika.conf.WorkflowConfig;
 import cz.inovatika.dates.DateNormalizer;
 import cz.inovatika.dates.DateRange;
 import cz.inovatika.dates.DateRangeParser;
@@ -16,19 +15,15 @@ import cz.inovatika.identifiers.IdentifierUtils;
 import cz.inovatika.model.*;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.touchstore.TouchStore;
-import cz.inovatika.touchstore.TouchStoreFactory;
-import cz.inovatika.touchstore.impl.FileSystemTouchStoreImpl;
+import cz.inovatika.utils.XMLUtils;
 import cz.inovatika.workflow.LicensesAssignation;
 import cz.inovatika.workflow.States;
-import cz.inovatika.utils.XMLUtils;
-
 import cz.inovatika.workflow.Workflow;
 import cz.inovatika.workflow.WorkflowDoc;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-//import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -41,11 +36,7 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.StringReader;
+import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
@@ -53,56 +44,52 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
-import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static cz.inovatika.utils.CursorUtils.*;
 
-import com.google.common.base.Stopwatch;
-
-import java.util.concurrent.TimeUnit;
-
 public class HarvesterImpl implements Harvester {
 
     public static final Logger LOGGER = Logger.getLogger(HarvesterImpl.class.getName());
     //private static final String SOLR_URL = "http://solr-kappScheduler:8983/solr";
-    private static final String SOLR_URL = "http://localhost:8983/solr";
+    //private static final String SOLR_URL = "http://localhost:8983/solr";
 
-    private static final int BATCH_SIZE = 100;
-    private static final int AUTHOR_BATCH_SIZE = 150;
-    public static final SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL)
+    private static final int BATCH_SIZE = 200;
+    private static final int AUTHOR_BATCH_SIZE = 250;
+    public static SolrClient solrClient;/* = new Http2SolrClient.Builder(SOLR_URL)
             .withConnectionTimeout(200, TimeUnit.SECONDS)
-            .withIdleTimeout(5,TimeUnit.MINUTES)
-            .withRequestTimeout(5,TimeUnit.MINUTES).useHttp1_1(true)
-            .build();
+            .withIdleTimeout(5, TimeUnit.MINUTES)
+            .withRequestTimeout(5, TimeUnit.MINUTES).useHttp1_1(true)
+            .build();*/
 
-    private static final boolean RUNINOVATIKA = false;
-    private static final boolean RUNNKP = true;
     private static final boolean IGNORE_CHECKTIME = true;
 
 
-    public String makeFQ(List<String> filters){
+    public String makeFQ(List<String> filters) {
         StringBuilder fq = new StringBuilder();
-        for(String filter : filters){
-            if (filter==null || filter.isEmpty())continue;
-            if(!fq.isEmpty()){
-                fq.append(" AND ");}
+        for (String filter : filters) {
+            if (filter == null || filter.isEmpty()) continue;
+            if (!fq.isEmpty()) {
+                fq.append(" AND ");
+            }
             fq.append(filter);
         }
         return fq.toString();
     }
-    public String physicalLocationToFQ(List<String>physicalLocations){
+
+    public String physicalLocationToFQ(List<String> physicalLocations) {
         String header = "physical_locations.facet:(";
         StringBuilder fq = new StringBuilder();
         fq.append(header);//TODO: this might break with k5 - add to APIVersion later
-        for(String physicalLocation : physicalLocations){
-            if(!fq.toString().equals(header)){
+        for (String physicalLocation : physicalLocations) {
+            if (!fq.toString().equals(header)) {
                 fq.append(" OR ");
             }
             fq.append(physicalLocation);
@@ -154,7 +141,7 @@ public class HarvesterImpl implements Harvester {
             } else {
                 LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
                 String subquery = apiVersion.prepareSubquery(harvestItems);
-                if (subquery!=null && !subquery.isEmpty()) {
+                if (subquery != null && !subquery.isEmpty()) {
                     //LOGGER.log(Level.INFO, "subquery: {0}", subquery);
                     Element subResult = executeQuery(client, config.getUrl(), subquery);
                     apiVersion.processSubqueryResult(harvestItems, subResult);
@@ -171,10 +158,6 @@ public class HarvesterImpl implements Harvester {
 
         config.saveLastUpdatedToPath();
     }
-
-//    private static FileSystemTouchStoreImpl createTouchStore(ApplicationConfig applicationConfig) {
-//        return new FileSystemTouchStoreImpl(applicationConfig.touchStoreConfig());
-//    }
 
     public static Element executeQuery(HttpClient httpClient, String url, String query) {
         try {
@@ -199,22 +182,22 @@ public class HarvesterImpl implements Harvester {
         //LOGGER.log(Level.INFO, "Response sent to Solr: {0}", URI.create(url + "/" + query));
         int attempt = 0;
         HttpResponse<InputStream> response = null;
-        while (attempt++<10){
+        while (attempt++ < 10) {
             response = client.send(HttpRequest.newBuilder()
-                        .uri(URI.create(url + "/" + query))
-                        .GET()
-                        .build(),
-                HttpResponse.BodyHandlers.ofInputStream());
-        if (response != null && response.statusCode() == 200) {
-            //String r =
-            //LOGGER.log(Level.INFO, "Solr response: {0}", r);
-            return IOUtils.toString(response.body(), StandardCharsets.UTF_8);
-        } else {
-            LOGGER.log(Level.WARNING, (response == null) ? "Response not received" : "Response received with status:" + response.statusCode());
+                            .uri(URI.create(url + "/" + query))
+                            .GET()
+                            .build(),
+                    HttpResponse.BodyHandlers.ofInputStream());
+            if (response != null && response.statusCode() == 200) {
+                //String r =
+                //LOGGER.log(Level.INFO, "Solr response: {0}", r);
+                return IOUtils.toString(response.body(), StandardCharsets.UTF_8);
+            } else {
+                LOGGER.log(Level.WARNING, (response == null) ? "Response not received" : "Response received with status:" + response.statusCode());
 
-            LOGGER.log(Level.INFO,"Going to try again. Attempt {0} ", attempt);
-            Thread.sleep(1000);
-        }
+                LOGGER.log(Level.INFO, "Going to try again. Attempt {0} ", attempt);
+                Thread.sleep(1000);
+            }
         }
         throw new RuntimeException("HTTP error: Could not connect to Solr server");
     }
@@ -227,6 +210,7 @@ public class HarvesterImpl implements Harvester {
     static long sleepSeconds = 3600;
     static boolean exitOnOutOfInterval = false;
 
+    /// Explicit main fnc. Testing only, should use scheduler for production
     public static void main(String[] args) {
 
         if (args.length > 0) {
@@ -244,11 +228,19 @@ public class HarvesterImpl implements Harvester {
             exitOnOutOfInterval = false;
         }
         try {
-            if(!IGNORE_CHECKTIME) checkTime();
+            if (!IGNORE_CHECKTIME) checkTime();
         } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
-        new HarvesterImpl().start();
+        try {
+            InputStream resourceAsStream = new FileInputStream(System.getProperty("user.home") + "/.kapp/app.conf");
+            ApplicationConfig applicationConfig = ApplicationConfig.loadFromStream(resourceAsStream);
+            new HarvesterImpl().start(applicationConfig);
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.SEVERE, "Failed to load configuration", e);
+            e.printStackTrace(System.err);
+            throw new RuntimeException(e);
+        }
     }
 
     private static void checkTime()
@@ -276,78 +268,18 @@ public class HarvesterImpl implements Harvester {
 
     }
 
-    private void nkp() // throws IOException
-    {
-        Instance config = new Instance();
-        config.setTimestampPath(
-                String.join(File.separator, System.getProperty("user.dir"), "timestamps", "nkp", "timestamp"));
-        config.setAcronym("nkp");
-        config.setPhysicalLocations(Arrays.asList("ABA000"));
-        config.setApiVersion(APIVersion.v5);
-        config.setSolrCloud(false);
-        config.updateLastUpdatedTimestampManually(Instant.parse("2025-01-01T00:00:21.221Z"));
-        config.setUrl("https://ndk.cz/search/api/v5.0/");
-
-        WorkflowConfig workflowConfig = new WorkflowConfig();
-        workflowConfig.setOnsiteYear(70);
-        workflowConfig.setPublicYear(110);
-
-        TouchStoreFactory factory = TouchStoreFactory.solr;
-
-        TouchStoreConfig touchConfig = new TouchStoreConfig(factory, "/touchstore");
-        ApplicationConfig applicationConfig = new ApplicationConfig(List.of(config), workflowConfig, null, touchConfig);
-
-        try {
-            LOGGER.log(Level.INFO, "Starting nkp");
-            harvestAndBatch(applicationConfig, config);
-        } catch (final IOException | SolrServerException e) {
-            throw new RuntimeException(e);
-        }
-
-    }
-
-    private void inovatika() {
-        final Instance config = new Instance();
-        config.setTimestampPath(
-                String.join(File.separator, System.getProperty("user.dir"), "timestamps", "inovatika", "timestamp"));
-
-        config.setAcronym("inovatika");
-        config.setApiVersion(APIVersion.v7);
-        config.setSolrCloud(false);
-        config.setUrl("https://k7.inovatika.dev/search/api/client/v7.0/");
-
-        WorkflowConfig workflowConfig = new WorkflowConfig();
-        workflowConfig.setOnsiteYear(70);
-        workflowConfig.setPublicYear(110);
-
-        TouchStoreConfig touchConfig = new TouchStoreConfig(TouchStoreFactory.file, "/touchstore");
-        ApplicationConfig applicationConfig = new ApplicationConfig(List.of(config), workflowConfig, null, touchConfig);
-        try {
-            LOGGER.info("inovatika harvesting started");
-            harvestAndBatch(applicationConfig, config);
-        } catch (final IOException | SolrServerException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    /// Testing version with hardwired configuration
-    @Override
-    public void start() {
-        if (RUNINOVATIKA) {
-            inovatika();
-        }
-        if (RUNNKP) {
-            nkp();
-        }
-    }
-
-    /// Production version that takes information from ApplicationConfig
     @Override
     public void start(ApplicationConfig applicationConfig) {
+        if (solrClient == null) solrClient = new Http2SolrClient.Builder(applicationConfig.solr().getUrl())
+                .withConnectionTimeout(200, TimeUnit.SECONDS)
+                .withIdleTimeout(5, TimeUnit.MINUTES)
+                .withRequestTimeout(5, TimeUnit.MINUTES).useHttp1_1(true)
+                .build();
+
         List<Instance> instances = applicationConfig.instances();
         for (Instance i : instances) {
             i.setTimestampPath(
-                    String.join(File.separator, System.getProperty("user.dir"), "timestamps", i.getAcronym(), "timestamp"));
+                    String.join(File.separator, System.getProperty("user.dir"), ".kapp","timestamps", i.getAcronym(), "timestamp"));
             try {
                 LOGGER.log(Level.INFO, "Starting: {0}", i.getAcronym());
                 harvestAndBatch(applicationConfig, i);
@@ -380,24 +312,29 @@ public class HarvesterImpl implements Harvester {
     private static void sendBatch(String collection, final List<SolrInputDocument> docs)
             throws SolrServerException, IOException {
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.setCommitWithin(120_000);
+        //updateRequest.setCommitWithin(120_000);
         updateRequest.add(docs);
         if (!docs.isEmpty()) {
 
-            for(int attempt = 0; attempt<10;attempt++) {
-            try{
-                UpdateResponse response =  updateRequest.process(HarvesterImpl.solrClient, collection);
-                if(response.getStatus()!=0)LOGGER.log(Level.WARNING,"Solr update returned non-zero status: {0}, QTime: {1}",
-                        new Object[]{response.getStatus(), response.getQTime()});
-                solrClient.commit(collection);
-                LOGGER.log(Level.INFO, "Indexed batch of {0} documents.", docs.size());
-                break;
-            }catch (IOException | SolrServerException e){
-                LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt);
-            }}
-            try{
-            Thread.sleep(1000);}catch(InterruptedException e){
-                LOGGER.log(Level.WARNING, "Interrupted");
+            LOGGER.log(Level.INFO, "Sending batch");
+            for (int attempt = 0; attempt < 10; attempt++) {
+                try {
+                    UpdateResponse response = updateRequest.process(solrClient, collection);
+                    if (response.getStatus() != 0)
+                        LOGGER.log(Level.WARNING, "Solr update returned non-zero status: {0}, QTime: {1}",
+                                new Object[]{response.getStatus(), response.getQTime()});
+                    solrClient.commit(collection);
+                    LOGGER.log(Level.INFO, "Indexed batch of {0} documents.", docs.size());
+                    break;
+                } catch (Exception e) {
+                    LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt);
+                    if (attempt == 9) throw e;
+                }
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    LOGGER.log(Level.WARNING, "Interrupted");
+                }
             }
         } else {
             LOGGER.log(Level.INFO, "No documents to be indexed.");
@@ -419,7 +356,6 @@ public class HarvesterImpl implements Harvester {
             boolean exists = ctx.touchStore().exists(pid);
             if (exists) {
                 try {
-
                     SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
                             FromKramFields.PID_FIELD,
                             new SolrInputDocument(),
@@ -498,9 +434,9 @@ public class HarvesterImpl implements Harvester {
                                     Workflow wf = new Workflow();
 
                                     // state differs
-                                    JSONObject oldDoc = getExistingDocument((String) wrapper.getDocument().getFieldValue(FromKramFields.PID_FIELD));
-                                    if (oldDoc != null &&oldDoc.has("state")) {
-                                        String oldState =  oldDoc.getString("state");
+                                    JSONObject oldDoc = getExistingDocument((String) wrapper.document().getFieldValue(FromKramFields.PID_FIELD));
+                                    if (oldDoc != null && oldDoc.has("state")) {
+                                        String oldState = oldDoc.getString("state");
                                         States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
                                         String message = String.format("Imported from '%s'", config.getUrl());
                                         if (oldState != null && !oldState.equals(newState.name())) {
@@ -618,7 +554,7 @@ public class HarvesterImpl implements Harvester {
     }
 
     private static void bufferSend(List<SolrInputDocument> buffer, List<SolrInputDocument> authorsBuffer, SolrInputDocumentWrapper doc) {
-        buffer.add(doc.getDocument());
+        buffer.add(doc.document());
         if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
             try {
                 sendBatch(Constants.Collection.TITLES_COLLECTION, buffer);
@@ -628,7 +564,7 @@ public class HarvesterImpl implements Harvester {
             }
             buffer.clear();
             try {
-                if(!IGNORE_CHECKTIME) checkTime();
+                if (!IGNORE_CHECKTIME) checkTime();
             } catch (InterruptedException | IOException e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
