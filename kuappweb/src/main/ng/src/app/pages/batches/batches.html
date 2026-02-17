@@ -39,7 +39,7 @@
 					<button matButton="outlined" (click)="setState()">{{ 'action.set_state' | translate }}</button>
         </div>
         <div class="app-table-wrapper">
-					<table mat-table [dataSource]="docs()" class="app-hover app-striped app-w-100">
+					<table mat-table [dataSource]="docs()" class="app-hover app-w-100">
 						<ng-container matColumnDef="pid">
 							<th mat-header-cell *matHeaderCellDef> PID </th>
 							<td mat-cell *matCellDef="let doc">

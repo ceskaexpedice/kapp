@@ -300,6 +300,10 @@ $home_cards: (
     row-item-label-text-size: 13px
   ));
   .mat-mdc-table {
+    .mat-mdc-header-row {
+      background-color: var(--app-color-gray-1);
+    }
+
     &.app-striped {
       .mat-mdc-row {
         &:nth-child(odd) {
@@ -313,7 +317,8 @@ $home_cards: (
       .mat-mdc-row {
         &:hover {
           &:not(.app-selected, .app-row-detail) {
-            background-color: var(--mat-sys-secondary-container);
+            //background-color: var(--mat-sys-secondary-container);
+            background-color: var(--app-color-gray-1);
           }
         }
       }

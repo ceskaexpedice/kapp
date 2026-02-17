@@ -53,7 +53,7 @@
       <div>
         @if (viewType() === 'table_view' && view() === 'titles') {
         <div class="app-table-wrapper app-oa-y">
-          <table mat-table [dataSource]="docs()" class="app-hover app-striped app-resize" matSort
+          <table mat-table [dataSource]="docs()" class="app-hover app-resize" matSort
             [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction"
             (matSortChange)="sortTable($event)" multiTemplateDataRows>
 
