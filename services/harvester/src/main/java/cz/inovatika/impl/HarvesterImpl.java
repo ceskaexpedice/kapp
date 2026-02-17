@@ -178,10 +178,8 @@ public class HarvesterImpl implements Harvester {
 
     public static Element executeQuery(HttpClient httpClient, String url, String query) {
         try {
-            //LOGGER.log(Level.INFO, "Executing query");
             StringReader t = new StringReader(executeSolrQuery(httpClient, url, query + "&wt=xml"));
             Document doc = XMLUtils.parseDocument(t);
-            //LOGGER.log(Level.INFO, "Solr doc name: {0}", doc.getDocumentElement().getNodeName());
             return doc.getDocumentElement();
         } catch (SAXException e) {
             LOGGER.log(Level.SEVERE, "Error parsing Solr response: ", e);
@@ -196,7 +194,6 @@ public class HarvesterImpl implements Harvester {
 
     private static String executeSolrQuery(HttpClient client, String url, String query)
             throws IOException, InterruptedException {
-        //LOGGER.log(Level.INFO, "Response sent to Solr: {0}", URI.create(url + "/" + query));
         int attempt = 0;
         HttpResponse<InputStream> response = null;
         while (attempt++<10){
@@ -360,13 +357,23 @@ public class HarvesterImpl implements Harvester {
 
     public void harvestAndBatch(ApplicationConfig applicationConfig, Instance config) throws SolrServerException, IOException {
         LOGGER.log(Level.INFO, "Harvesting started, BatchSize: {0}", BATCH_SIZE);
-        List<SolrInputDocument> buffer = new ArrayList<>(BATCH_SIZE);
+        List<SolrInputDocument> createBuffer = new ArrayList<>(BATCH_SIZE);
+        List<SolrInputDocument> updateBuffer = new ArrayList<>(BATCH_SIZE);
+
         ArrayList<SolrInputDocument> authorBuffer = new ArrayList<>(AUTHOR_BATCH_SIZE + 20);
-        harvest(applicationConfig, config, ctx -> processHarvest(config, ctx, buffer, authorBuffer));
-        if (!buffer.isEmpty()) { // BATCH_SIZE
+        harvest(applicationConfig, config, ctx -> processHarvest(config, ctx, createBuffer, updateBuffer, authorBuffer));
+
+        if (!createBuffer.isEmpty()) { // BATCH_SIZE
             LOGGER.log(Level.INFO, "Sending batch");
-            sendBatch(Constants.Collection.TITLES_COLLECTION, buffer);
-            buffer.clear();
+            sendBatch(Constants.Collection.TITLES_COLLECTION, createBuffer);
+            createBuffer.clear();
+
+        }
+
+        if (!updateBuffer.isEmpty()) { // BATCH_SIZE
+            LOGGER.log(Level.INFO, "Sending batch");
+            sendBatch(Constants.Collection.TITLES_COLLECTION, updateBuffer);
+            updateBuffer.clear();
 
         }
         if (!authorBuffer.isEmpty()) { // BATCH_SIZE
@@ -379,26 +386,23 @@ public class HarvesterImpl implements Harvester {
 
     private static void sendBatch(String collection, final List<SolrInputDocument> docs)
             throws SolrServerException, IOException {
+
+
         UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.setCommitWithin(120_000);
         updateRequest.add(docs);
         if (!docs.isEmpty()) {
-
             for(int attempt = 0; attempt<10;attempt++) {
             try{
                 UpdateResponse response =  updateRequest.process(HarvesterImpl.solrClient, collection);
                 if(response.getStatus()!=0)LOGGER.log(Level.WARNING,"Solr update returned non-zero status: {0}, QTime: {1}",
                         new Object[]{response.getStatus(), response.getQTime()});
-                solrClient.commit(collection);
                 LOGGER.log(Level.INFO, "Indexed batch of {0} documents.", docs.size());
+
+
                 break;
             }catch (IOException | SolrServerException e){
                 LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt);
             }}
-            try{
-            Thread.sleep(1000);}catch(InterruptedException e){
-                LOGGER.log(Level.WARNING, "Interrupted");
-            }
         } else {
             LOGGER.log(Level.INFO, "No documents to be indexed.");
         }
@@ -411,7 +415,7 @@ public class HarvesterImpl implements Harvester {
     }
 
     private static void processHarvest(final Instance config, final HarvesterContext ctx,
-                                       List<SolrInputDocument> buffer, List<SolrInputDocument> authorsBuffer) {
+                                       List<SolrInputDocument> createBuffer,List<SolrInputDocument> updateBuffer, List<SolrInputDocument> authorsBuffer) {
         {
 
             String pid = ctx.item().getPid();
@@ -426,8 +430,9 @@ public class HarvesterImpl implements Harvester {
                             SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
                     wrapper.setField(FromKramFields.PID_FIELD, ctx.item().getPid());
-                    wrapper.addField(FromKramFields.LICENSES_FIELD, ctx.item().getLicenses());
-                    wrapper.addField(String.format("%s%s", FromKramFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), ctx.item().getLicenses());
+                    wrapper.addField(FromKramFields.LICENSES_FIELD, Arrays.asList(ctx.item().getLicenses()));
+                    wrapper.addField(String.format("%s%s", FromKramFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), Arrays.asList(ctx.item().getLicenses()));
+                    wrapper.addField(ApplFields.DIGITAL_LIBRARY, ctx.config().getAcronym(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_ADD_DISTINCT);
 
                     List<String> cPhysicalLocations = config.getPhysicalLocations();
                     List<String> touchStorePhysicalLocations = ctx.touchStore().getPhysicalLocations(pid);
@@ -460,15 +465,14 @@ public class HarvesterImpl implements Harvester {
                             try {
                                 Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
 
-                                wrapper.addField(FromKramFields.MODEL_FIELD, ctx.item().getModel());
+                                wrapper.addField(FromKramFields.MODEL_FIELD, ctx.item().getModel(),SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_SET);
                                 wrapper.addField(FromKramFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
                                 wrapper.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
                                 wrapper.setField(FromKramFields.TITLE_FIELD, ctx.item().getTitles());
 
-                                wrapper.setField(FromKramFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
+                                //wrapper.setField(FromKramFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
                                 wrapper.setField(FromKramFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
 
-                                wrapper.addField(ApplFields.DIGITAL_LIBRARY, ctx.config().getAcronym(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_ADD_DISTINCT);
 
                                 parseDateRange(wrapper, parsed);
                                 List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("physicalLocation")).stream().map(Element::getTextContent).toList();
@@ -512,11 +516,9 @@ public class HarvesterImpl implements Harvester {
                                 LOGGER.severe(e.getMessage());
                                 throw new RuntimeException(e);
                             }
-                        }
-
-                        bufferSend(buffer, authorsBuffer, wrapper);
-
+                       }
                     }
+                    bufferSend(updateBuffer, authorsBuffer, wrapper);
                 } catch (IOException | InterruptedException | NoSuchAlgorithmException e) {
                     LOGGER.severe(e.getMessage());
                     throw new RuntimeException(e);
@@ -580,7 +582,7 @@ public class HarvesterImpl implements Harvester {
                                     LicensesAssignation.NONE);
                             new Workflow().executeTransition(ctx, workflowDoc, user, message, doc);
                         }
-                        bufferSend(buffer, authorsBuffer, doc);
+                        bufferSend(createBuffer, authorsBuffer, doc);
                     } else {
                         LOGGER.log(Level.SEVERE, "Failed to process MODS for PID: {0}", ctx.item().getPid());
                     }
@@ -617,8 +619,8 @@ public class HarvesterImpl implements Harvester {
         authorsBuffer.addAll(authorityDocuments);
     }
 
-    private static void bufferSend(List<SolrInputDocument> buffer, List<SolrInputDocument> authorsBuffer, SolrInputDocumentWrapper doc) {
-        buffer.add(doc.getDocument());
+    private static void bufferSend(List<SolrInputDocument> buffer, List<SolrInputDocument> authorsBuffer, SolrInputDocumentWrapper wrapperDoc) {
+        buffer.add(wrapperDoc.getDocument());
         if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
             try {
                 sendBatch(Constants.Collection.TITLES_COLLECTION, buffer);
