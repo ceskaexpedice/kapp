@@ -6,7 +6,7 @@
 			</mat-card-header>
 			<mat-card-content>
 				@for(l of state.labels(); track $index) {
-					<div class="app-fxLayout app-row app-gap-2">
+					<div class="app-fxLayout app-row app-baseline-v app-gap-2">
 						<mat-form-field appearance="outline">
 							<mat-label>Name</mat-label>
 							<input matInput [(ngModel)]="l.name" />
@@ -15,7 +15,9 @@
 							<mat-label>Color</mat-label>
 							<input matInput [(ngModel)]="l.color" />
 						</mat-form-field>
-						<button class="app-fxFlex" matButton="outlined" [style.background-color]="l.color" [style.color]="l.text_color">{{ l.name }}</button>
+						<div class="app-chip app-fxFlex" [style.background-color]="l.color" [style.color]="l.text_color">
+							<span>{{ l.name }}</span>
+						</div>
 					</div>
 				}	
 				<div class="app-fxLayout app-row app-gap-2">
@@ -27,7 +29,6 @@
 						<mat-label>{{ 'admin.new_label_color' | translate }}</mat-label>
 						<input matInput [(ngModel)]="nl.color" />
 					</mat-form-field>
-					<!-- <button matButton="outlined" [style.background-color]="nl.color" [style.color]="nl.text_color">{{ nl.name }}</button> -->
 					<button matButton="outlined" [style.background-color]="nl.color" [style.color]="nl.text_color" (click)="addLabel(nl)" class="app-btn-add">
 						<mat-icon>add_circle</mat-icon>Přidat
 					</button>
@@ -38,18 +39,22 @@
 			</mat-card-actions>
 		</mat-card>
 
-		<mat-card appearance="outlined" class="app-ml-4">
+		<mat-card appearance="outlined" class="app-fxFlex app-ml-4">
 			<mat-card-header class="app-mb-4">
 				<mat-card-title> {{ 'admin.licenses' | translate}} </mat-card-title>
 			</mat-card-header>
-			<mat-card-content>
+			<mat-card-content class="app-fxLayout app-column">
 				@for(l of licenses; track $index) {
-					<div class="app-fxLayout app-row app-gap-2">
+					<mat-form-field appearance="outline" disabled="true">
+						<mat-label>{{ 'field.license' | translate }}</mat-label>
+						<input matInput [value]="l" />
+					</mat-form-field>
+					<!-- <div class="app-fxLayout app-row app-gap-2">
 						{{ l }}
-					</div>
+					</div> -->
 				}	
 				<div class="app-fxLayout app-row app-gap-2">
-					<mat-form-field appearance="outline">
+					<mat-form-field appearance="outline" class="app-fxFlex">
 						<mat-label>{{ 'admin.new_license' | translate }}</mat-label>
 						<input matInput [(ngModel)]="new_license" />
 					</mat-form-field>
@@ -63,18 +68,22 @@
 			</mat-card-actions>
 		</mat-card>
 
-		<mat-card appearance="outlined" class="app-ml-4">
+		<mat-card appearance="outlined" class="app-fxFlex app-ml-4">
 			<mat-card-header class="app-mb-4">
-				<mat-card-title> {{ 'admin.dk' | translate}} </mat-card-title>
+				<mat-card-title> {{ 'admin.dk_administration' | translate}} </mat-card-title>
 			</mat-card-header>
-			<mat-card-content>
+			<mat-card-content class="app-fxLayout app-column">
 				@for(l of dk; track $index) {
-					<div class="app-fxLayout app-row app-gap-2">
+					<mat-form-field appearance="outline" disabled="true">
+						<mat-label>{{ 'admin.dk' | translate }}</mat-label>
+						<input matInput [value]="l" />
+					</mat-form-field>
+					<!-- <div class="app-fxLayout app-row app-gap-2">
 						{{ l }}
-					</div>
+					</div> -->
 				}	
 				<div class="app-fxLayout app-row app-gap-2">
-					<mat-form-field appearance="outline">
+					<mat-form-field appearance="outline" class="app-fxFlex">
 						<mat-label>{{ 'admin.new_dk' | translate }}</mat-label>
 						<input matInput [(ngModel)]="new_dk" />
 					</mat-form-field>

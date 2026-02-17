@@ -111,11 +111,12 @@
   "admin": {
     "labels": "Labels administration",
     "licenses": "Licenses administration",
-    "dk": "Digital libraries administration",
+    "dk_administration": "Digital libraries administration",
     "new_label_name": "New label",
     "new_label_color": "Color",
     "new_license": "New license",
-    "new_dk": "New digital library"
+    "new_dk": "New digital library",
+    "dk": "Digital library"
   },
   "navbar": {
     "admin": "Administration",

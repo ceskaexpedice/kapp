@@ -3,3 +3,17 @@
 		color: var(--app-color-darknes) !important;
 	}
 }
+
+.app-chip {
+	$app-height: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  display: inline-flex;
+  padding: 0 8px;
+  height: $app-height;
+  align-items: center;
+  border-radius: calc(#{$app-height} / 2);
+  min-width: 100px;
+  justify-content: center;
+}
