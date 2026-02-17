@@ -1,14 +1,13 @@
 package cz.inovatika.impl;
 
+import com.google.common.base.Stopwatch;
 import cz.inovatika.Constants;
 import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
 import cz.inovatika.Constants.TitlesCollectionFields.FromKramFields;
-import cz.inovatika.authors.AuthorData;
 import cz.inovatika.Harvester;
+import cz.inovatika.authors.AuthorData;
 import cz.inovatika.authors.AuthorDataUtils;
 import cz.inovatika.conf.ApplicationConfig;
-import cz.inovatika.conf.TouchStoreConfig;
-import cz.inovatika.conf.WorkflowConfig;
 import cz.inovatika.dates.DateNormalizer;
 import cz.inovatika.dates.DateRange;
 import cz.inovatika.dates.DateRangeParser;
@@ -16,19 +15,15 @@ import cz.inovatika.identifiers.IdentifierUtils;
 import cz.inovatika.model.*;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.touchstore.TouchStore;
-import cz.inovatika.touchstore.TouchStoreFactory;
-import cz.inovatika.touchstore.impl.FileSystemTouchStoreImpl;
+import cz.inovatika.utils.XMLUtils;
 import cz.inovatika.workflow.LicensesAssignation;
 import cz.inovatika.workflow.States;
-import cz.inovatika.utils.XMLUtils;
-
 import cz.inovatika.workflow.Workflow;
 import cz.inovatika.workflow.WorkflowDoc;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
-//import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
@@ -59,10 +54,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import static cz.inovatika.utils.CursorUtils.*;
-
-import com.google.common.base.Stopwatch;
-
-import java.util.concurrent.TimeUnit;
 
 public class HarvesterImpl implements Harvester {
 
@@ -117,12 +108,13 @@ public class HarvesterImpl implements Harvester {
     }
 
     public void harvest(ApplicationConfig applicationConfig, Instance config, Consumer<HarvesterContext> consumer, HttpClient client) {
-        TouchStore touchStore = applicationConfig.touchStoreConfig().factory().create(this.solrClient, applicationConfig.touchStoreConfig());
+        TouchStore touchStore = applicationConfig.touchStoreConfig().factory().create(solrClient, applicationConfig.touchStoreConfig());
 
         String cursorMark = null;
-        String queryCursorMark;
+        String queryCursorMark = null;
         // loading timestamp
         config.loadLastUpdatedFromPath();
+        int errorcount = 0;
         do {
             APIVersion apiVersion = config.getApiVersion();
 
@@ -140,7 +132,14 @@ public class HarvesterImpl implements Harvester {
                     apiVersion.fieldList()
             );
             LOGGER.log(Level.INFO, "query: {0}", query);
-            Element element = executeQuery(client, config.getUrl(), query);
+            Element element;
+            try {
+                element = executeQuery(client, config.getUrl(), query);
+            } catch (IOException e) {
+                LOGGER.log(Level.SEVERE, "IOException occurred when reading Solr response: ", e);
+                errorcount++;
+                continue;
+            }
             LOGGER.log(Level.INFO, "query executed");
             List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> elm.getNodeName().equals("doc")).stream().map(docElm
                     -> apiVersion.createHarvestItemFromResultElement(docElm, config)
@@ -150,10 +149,14 @@ public class HarvesterImpl implements Harvester {
             } else {
                 LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
                 String subquery = apiVersion.prepareSubquery(harvestItems);
-                if (subquery!=null && !subquery.isEmpty()) {
+                if (subquery != null && !subquery.isEmpty()) {
                     //LOGGER.log(Level.INFO, "subquery: {0}", subquery);
-                    Element subResult = executeQuery(client, config.getUrl(), subquery);
-                    apiVersion.processSubqueryResult(harvestItems, subResult);
+                    try{
+                        Element subResult = executeQuery(client, config.getUrl(), subquery);
+                        apiVersion.processSubqueryResult(harvestItems, subResult);}
+                    catch (IOException e) {
+                        LOGGER.log(Level.SEVERE, "IOException occurred when reading Solr subquery response: ", e);
+                    }
                 }
                 for (HarvestingItem harvestingItem : harvestItems) {
                     //LOGGER.log(Level.INFO, "harvestingItem: {0}", harvestingItem.getTitles());
@@ -162,13 +165,14 @@ public class HarvesterImpl implements Harvester {
             }
             cursorMark = findCursorMark(element);
             queryCursorMark = findQueryCursorMark(element);
+            errorcount = 0;
 
-        } while ((cursorMark != null && queryCursorMark != null) && !cursorMark.equals(queryCursorMark));
+        } while ((cursorMark != null && queryCursorMark != null) && !cursorMark.equals(queryCursorMark) && errorcount <5 );
 
         config.saveLastUpdatedToPath();
     }
 
-    public static Element executeQuery(HttpClient httpClient, String url, String query) {
+    public static Element executeQuery(HttpClient httpClient, String url, String query) throws IOException {
         try {
             //LOGGER.log(Level.INFO, "Executing query");
             StringReader t = new StringReader(executeSolrQuery(httpClient, url, query + "&wt=xml"));
@@ -179,9 +183,11 @@ public class HarvesterImpl implements Harvester {
             LOGGER.log(Level.SEVERE, "Error parsing Solr response: ", e);
             LOGGER.log(Level.INFO, "Query:{0}", url + "/" + query);
             throw new RuntimeException(e);
-        } catch (ParserConfigurationException | IOException | InterruptedException e) {
+        } catch (IOException e) {
+            throw new IOException(e);
+        } catch (ParserConfigurationException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, "Error executing Solr query", e);
-            //LOGGER.log(Level.INFO, "Error executing query: {0}", query);
+            LOGGER.log(Level.INFO, "Error executing query: {0}", url + "/" + query);
             throw new RuntimeException(e);
         }
     }
@@ -287,7 +293,7 @@ public class HarvesterImpl implements Harvester {
         List<Instance> instances = applicationConfig.instances();
         for (Instance i : instances) {
             i.setTimestampPath(
-                    String.join(File.separator, System.getProperty("user.dir"), ".kapp","timestamps", i.getAcronym(), "timestamp"));
+                    String.join(File.separator, System.getProperty("user.dir"), ".kapp", "timestamps", i.getAcronym(), "timestamp"));
             try {
                 LOGGER.log(Level.INFO, "Starting: {0}", i.getAcronym());
                 harvestAndBatch(applicationConfig, i);
@@ -332,18 +338,20 @@ public class HarvesterImpl implements Harvester {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.add(docs);
         if (!docs.isEmpty()) {
-            for(int attempt = 0; attempt<10;attempt++) {
-            try{
-                UpdateResponse response =  updateRequest.process(HarvesterImpl.solrClient, collection);
-                if(response.getStatus()!=0)LOGGER.log(Level.WARNING,"Solr update returned non-zero status: {0}, QTime: {1}",
-                        new Object[]{response.getStatus(), response.getQTime()});
-                LOGGER.log(Level.INFO, "Indexed batch of {0} documents.", docs.size());
+            for (int attempt = 0; attempt < 10; attempt++) {
+                try {
+                    UpdateResponse response = updateRequest.process(HarvesterImpl.solrClient, collection);
+                    if (response.getStatus() != 0)
+                        LOGGER.log(Level.WARNING, "Solr update returned non-zero status: {0}, QTime: {1}",
+                                new Object[]{response.getStatus(), response.getQTime()});
+                    LOGGER.log(Level.INFO, "Indexed batch of {0} documents.", docs.size());
 
 
-                break;
-            }catch (IOException | SolrServerException e){
-                LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt);
-            }}
+                    break;
+                } catch (IOException | SolrServerException e) {
+                    LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt);
+                }
+            }
         } else {
             LOGGER.log(Level.INFO, "No documents to be indexed.");
         }
@@ -356,7 +364,8 @@ public class HarvesterImpl implements Harvester {
     }
 
     private static void processHarvest(final Instance config, final HarvesterContext ctx,
-                                       List<SolrInputDocument> createBuffer,List<SolrInputDocument> updateBuffer, List<SolrInputDocument> authorsBuffer) {{
+                                       List<SolrInputDocument> createBuffer, List<SolrInputDocument> updateBuffer, List<SolrInputDocument> authorsBuffer) {
+        {
             String pid = ctx.item().getPid();
             boolean exists = ctx.touchStore().exists(pid);
             if (exists) {
@@ -402,7 +411,7 @@ public class HarvesterImpl implements Harvester {
                             try {
                                 Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
 
-                                wrapper.addField(FromKramFields.MODEL_FIELD, ctx.item().getModel(),SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_SET);
+                                wrapper.addField(FromKramFields.MODEL_FIELD, ctx.item().getModel(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_SET);
                                 wrapper.addField(FromKramFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
                                 wrapper.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
                                 wrapper.setField(FromKramFields.TITLE_FIELD, ctx.item().getTitles());
@@ -452,7 +461,7 @@ public class HarvesterImpl implements Harvester {
                                 LOGGER.severe(e.getMessage());
                                 throw new RuntimeException(e);
                             }
-                       }
+                        }
                     }
                     bufferSend(updateBuffer, authorsBuffer, wrapper);
                 } catch (IOException | InterruptedException | NoSuchAlgorithmException e) {
