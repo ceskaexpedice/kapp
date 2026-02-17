@@ -54,7 +54,6 @@ import { Batch } from '../../shared/batch';
   styleUrl: './results.scss'
 })
 export class Results {
-  doc = model<any>();
   loading: boolean;
   solrResponse: any;
   docs = signal<any[]>([]);
@@ -208,33 +207,33 @@ export class Results {
   }
 
 
-  // pedro
-  addAuthor() {
+  // -- pedro
+  addAuthor(doc: any) {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: {pid:this.doc().pid, author:null},
+      data: {pid:doc.pid, author:null},
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result) {
-        this.service.getDoc(this.doc().pid).subscribe((resp: any) => {
+        this.service.getDoc(doc.pid).subscribe((resp: any) => {
           if (resp.response?.docs?.length > 0) {
-            this.doc.set(resp.response.docs[0]);
+            //this.doc.set(resp.response.docs[0]);
           }
         });
       }
     });
   }
 
-  inBatch(s: string) {
-    return this.doc()['batch']?.includes(s)
+  inBatch(s: string, doc: any) {
+    return doc['batch']?.includes(s)
   }
   
-  addToBatch(b: Batch) {
-    this.saveDocBatch(b.name);
+  addToBatch(b: Batch, doc: any) {
+    this.saveDocBatch(b.name, doc);
   }
   
-  saveDocBatch(bs: string) {
-    this.service.saveDocBatch(this.doc()['pid'], bs).subscribe((res: any) => {
+  saveDocBatch(bs: string, doc: any) {
+    this.service.saveDocBatch(doc.pid, bs).subscribe((res: any) => {
       console.log(res)
     })
   }

@@ -183,7 +183,7 @@ $home_cards: (
     .mat-mdc-card {
       @include mat.button-overrides((
         outlined-outline-color: rgba(var(--app-color-lightnes-rgb), .7),
-        outlined-label-text-color: white,
+        outlined-label-text-color: var(--app-color-lightnes),
         outlined-hover-state-layer-opacity: 0.2
       ));
     }
@@ -351,9 +351,11 @@ $home_cards: (
       }
 
       .mat-mdc-cell {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
+        &:not(.app-col-detail) {
+          white-space: nowrap;
+          overflow: hidden;
+          text-overflow: ellipsis;
+        }
       }
     }
 
