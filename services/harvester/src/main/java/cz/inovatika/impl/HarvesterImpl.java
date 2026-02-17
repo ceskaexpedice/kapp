@@ -198,13 +198,20 @@ public class HarvesterImpl implements Harvester {
                             .build(),
                     HttpResponse.BodyHandlers.ofInputStream());
             if (response != null && response.statusCode() == 200) {
-                //String r =
-                //LOGGER.log(Level.INFO, "Solr response: {0}", r);
-                return IOUtils.toString(response.body(), StandardCharsets.UTF_8);
+                try (InputStream is = response.body()) {
+                    return IOUtils.toString(is, StandardCharsets.UTF_8);
+                }
             } else {
-                LOGGER.log(Level.WARNING, (response == null) ? "Response not received" : "Response received with status:" + response.statusCode());
+                if (response != null) {
+                    try (InputStream is = response.body()) {
+                        if (is != null) is.transferTo(OutputStream.nullOutputStream());
+                    }
+                    LOGGER.log(Level.WARNING, "Response received with status:" + response.statusCode());
+                } else {
+                    LOGGER.log(Level.WARNING, "Response not received");
+                }
 
-                LOGGER.log(Level.INFO, "Going to try again. Attempt {0} ", attempt);
+                LOGGER.log(Level.INFO, "Going to try again. Attempt {0}", attempt);
                 Thread.sleep(1000);
             }
         }

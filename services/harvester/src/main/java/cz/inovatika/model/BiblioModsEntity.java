@@ -30,15 +30,17 @@ public class BiblioModsEntity {
     }
 
     public static BiblioModsEntity create(InputStream inputStream) throws IOException, NoSuchAlgorithmException {
-        byte[] byteArray = IOUtils.toByteArray(inputStream);
-        MessageDigest md = MessageDigest.getInstance("MD5");
-        md.update(byteArray);
-        byte[] digest = md.digest();
-        StringBuilder sb = new StringBuilder();
-        for (byte b : digest) {
-            sb.append(String.format("%02x", b));
+        try(inputStream) {
+            byte[] byteArray = IOUtils.toByteArray(inputStream);
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            md.update(byteArray);
+            byte[] digest = md.digest();
+            StringBuilder sb = new StringBuilder();
+            for (byte b : digest) {
+                sb.append(String.format("%02x", b));
+            }
+            String md5String = sb.toString();
+            return  new BiblioModsEntity(new String(byteArray, StandardCharsets.UTF_8), md5String);
         }
-        String md5String = sb.toString();
-        return  new BiblioModsEntity(new String(byteArray, StandardCharsets.UTF_8), md5String);
     }
 }
