@@ -130,16 +130,16 @@ public class HarvesterImpl implements Harvester {
                     apiVersion.getIdentifier(config) + " asc",
                     apiVersion.fieldList()
             );
-            LOGGER.log(Level.INFO, "query: {0}", query);
+            //LOGGER.log(Level.INFO, "query: {0}", query);
             Element element = executeQuery(client, config.getUrl(), query);
-            LOGGER.log(Level.INFO, "query executed");
+            //LOGGER.log(Level.INFO, "query executed");
             List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> elm.getNodeName().equals("doc")).stream().map(docElm
                     -> apiVersion.createHarvestItemFromResultElement(docElm, config)
             ).toList();
             if (harvestItems.isEmpty()) {
                 LOGGER.log(Level.INFO, "Ran out of items to harvest");
             } else {
-                LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
+                //LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
                 String subquery = apiVersion.prepareSubquery(harvestItems);
                 if (subquery != null && !subquery.isEmpty()) {
                     //LOGGER.log(Level.INFO, "subquery: {0}", subquery);
