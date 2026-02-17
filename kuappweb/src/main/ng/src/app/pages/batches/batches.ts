@@ -1,6 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
+import { UIService } from '../../ui.service';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -12,7 +13,7 @@ import { MatInputModule } from '@angular/material/input';
 import { TranslateModule } from '@ngx-translate/core';
 import { Batch } from '../../shared/batch';
 import { AngularSplitModule } from "angular-split";
-import { DatePipe } from '@angular/common';
+import { DatePipe, LowerCasePipe, NgClass } from '@angular/common';
 import { ResultItem } from "../../components/result-item/result-item";
 
 import { FileUploadModule, FileUploader, FileUploaderOptions } from 'ng2-file-upload';
@@ -32,7 +33,7 @@ import { AddToBatchDialog } from '../../components/add-to-batch-dialog/add-to-ba
     MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
     AngularSplitModule, MatTableModule,
-    MatListItem, MatListModule, MatTooltipModule
+    MatListItem, MatListModule, MatTooltipModule, LowerCasePipe, NgClass
 ],
   templateUrl: './batches.html',
   styleUrl: './batches.scss'
@@ -56,6 +57,10 @@ export class Batches {
   progressMsg: string;
 
   displayedColumns = ['pid', 'title', 'state', 'action']
+
+  constructor(
+    public ui: UIService
+  ) {}
 
   onFileSelected(e: any) {
     const file: File = e.target.files[0];

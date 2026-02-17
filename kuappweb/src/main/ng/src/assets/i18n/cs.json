@@ -127,6 +127,10 @@
     "contracts": "Evidence smluv"
   },
   "snackbar": {
+    "record_saved": {
+      "success": "Záznam byl úspěšně uložen",
+      "error": "Došlo k chybě při ukládání záznamu"
+    },
     "copyTextToClipboard": {
       "success": "Text byl úspěšně zkopírován do schránky"
     }

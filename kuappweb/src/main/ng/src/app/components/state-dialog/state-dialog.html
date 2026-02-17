@@ -7,11 +7,11 @@
 	@if (loading()) {
 		<mat-progress-bar mode="indeterminate"></mat-progress-bar>
 	}
-	<div>
+	<div class="app-fxLayout app-row app-gap-1">
 		@if (data.isBatch) {
-			{{ 'current_states' | translate}}:
+			<span>{{ 'current_states' | translate}}:</span>
 			@for (s of data.states; track s) {
-				<div>{{ 'state.' + s | translate}}</div>
+				<div class="app-badge" [ngClass]="'app-' + s | lowercase">{{ 'state.' + s | translate}}</div>
 			}
 		} @else {
 			{{ 'current_state' | translate}}:

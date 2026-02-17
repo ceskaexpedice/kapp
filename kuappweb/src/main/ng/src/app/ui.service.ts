@@ -14,11 +14,11 @@ export class UIService {
 
 
   showInfoSnackBar(message: string, duration: number = 4000) {
-    this.snackBar.open(message, 'OK', { duration: duration, panelClass: 'app-snackbar-success', verticalPosition: 'top' });
+    this.snackBar.open(this.translator.instant(message), 'OK', { duration: duration, panelClass: 'app-snackbar-success', verticalPosition: 'top' });
   }
 
   copyTextToClipboard(val: string) {
     this.clipboard.copy(val);
-    this.showInfoSnackBar(this.translator.instant('snackbar.copyTextToClipboard.success'));
+    this.showInfoSnackBar('snackbar.copyTextToClipboard.success');
   } 
 }

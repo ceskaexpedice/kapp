@@ -127,6 +127,10 @@
     "contracts": "Contracts"
   },
   "snackbar": {
+    "record_saved": {
+      "success": "The record was saved successfully",
+      "error": "An error occurred while saving the record"
+    },
     "copyTextToClipboard": {
       "success": "Text successfully copied to clipboard"
     }

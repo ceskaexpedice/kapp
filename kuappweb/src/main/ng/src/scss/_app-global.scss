@@ -35,6 +35,10 @@ a {
 }
 
 // colors
+.app-color-primary {
+  color: var(--app-color-primary) !important;
+}
+
 .app-color-warn {
   color: var(--app-color-warn) !important;
 }

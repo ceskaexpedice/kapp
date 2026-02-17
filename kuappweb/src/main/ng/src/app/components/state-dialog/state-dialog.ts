@@ -11,14 +11,14 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBar } from '@angular/material/progress-bar';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatSelectModule } from '@angular/material/select';
-import { DatePipe } from '@angular/common';
+import { DatePipe, LowerCasePipe, NgClass } from '@angular/common';
 
 @Component({
   selector: 'app-state-dialog',
   imports: [
     TranslateModule, FormsModule, DatePipe,
     MatDialogModule, MatIconModule, MatButtonModule, MatSelectModule,
-    MatProgressBar, MatFormFieldModule, MatInputModule
+    MatProgressBar, MatFormFieldModule, MatInputModule, LowerCasePipe, NgClass
 
   ],
   templateUrl: './state-dialog.html',

@@ -2,6 +2,7 @@ import { Component, inject, signal } from '@angular/core';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
+import { UIService } from '../../ui.service';
 import { MatInputModule } from "@angular/material/input";
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
@@ -36,6 +37,10 @@ export class Admin {
   dk:string[] = [];
   new_dk: string;
 
+  constructor(
+    public ui: UIService
+  ) {}
+
   ngOnInit() {
     const p: any = {};
     this.labels = this.state.labels();
@@ -54,6 +59,7 @@ export class Admin {
   saveLabels() {
     this.state.labels.set(this.labels);
     this.service.saveLabels(this.state.labels()).subscribe(resp => {
+      this.ui.showInfoSnackBar('snackbar.record_saved.success');
       console.log(resp)
     });
   }
@@ -69,22 +75,24 @@ export class Admin {
   saveLicenses() {
     this.state.licenses.set(this.licenses);
     this.service.saveLicenses(this.state.licenses()).subscribe(resp => {
-        console.log(resp)
-      });
+      this.ui.showInfoSnackBar('snackbar.record_saved.success');
+      console.log(resp)
+    });
   }
 
   addDK() {
     if (!this.licenses.find(l => l === this.new_license)) {
       this.licenses.push(this.new_license);
       this.new_license = null;
-      //this.saveLicenses();
+      //this.saveDK();
     }
   }
 
   saveDK() {
     this.state.digitalni_knihovny.set(this.dk);
     this.service.saveDK(this.state.digitalni_knihovny()).subscribe(resp => {
-        console.log(resp)
-      });
+      this.ui.showInfoSnackBar('snackbar.record_saved.success');
+      console.log(resp)
+    });
   }
 }
