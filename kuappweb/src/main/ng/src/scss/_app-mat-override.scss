@@ -207,6 +207,7 @@ $home_cards: (
       display: flex;
       align-items: center;
       justify-content: center;
+      color: var(--app-color-primary);
 
       .mat-icon {
         @include setIcon(18);
@@ -391,10 +392,6 @@ $home_cards: (
       max-width: 90px;
       padding: 0;
       text-align: center;
-      
-      .mdc-icon-button{
-        color: var(--app-color-primary);
-      }
     }
   }
 

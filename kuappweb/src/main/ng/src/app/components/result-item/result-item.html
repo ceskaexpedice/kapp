@@ -26,18 +26,23 @@
 		</mat-card-title>
 	</mat-card-header>
 	<mat-card-content>
-		<div class="app-metadata-row">
+		<div class="app-metadata-row app-multiple">
 			<span class="app-label">{{ 'field.authors' | translate }}:</span>
-			@for(a of doc()['authors_kramerius']; track $index) {
-				<a (click)="infoAuthor(a)" class="app-value">
-					<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
-				</a>
-				@for(l of a.links; track $index) {
-					<a target="_blank" [href]="l.url" class="app-value">
-						<span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
-					</a>
+			<ul>
+				@for(a of doc()['authors_kramerius']; track $index) {
+					<li>
+						<a (click)="infoAuthor(a)" class="app-value">
+							<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
+						</a>
+						@for(l of a.links; track $index) {
+							<a target="_blank" [href]="l.url" class="app-value">
+								<span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
+							</a>
+						}
+					</li>
 				}
-			}
+			</ul>
+			
 		</div>
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.last_author' | translate }}:</span>
@@ -132,18 +137,26 @@
 
 
 		@if (hasCollapsed) {
-			<div class="app-collapsed">
-				@for (ch of related(); track ch) {
-					<div>
-						{{ ch['model']}} {{ ch['root.title']}}
-						@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
-							<a target="_blank" [href]="'https://ndk.cz/view/'+ch['pid']">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
-						} @else {
-							<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+ch['pid']">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
-						}
-						<a (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate }}</a>
-					</div>
-				}
+			<div class="app-metadata-row app-multiple">
+				<span class="app-label">{{ 'Modely' | translate }}:</span>
+				<ul>
+					@for (ch of related(); track ch) {
+						<li>
+							<div class="app-fxLayout app-row  app-gap-2 app-center-v">
+								<span>{{ ch['model']}} {{ ch['root.title']}}</span>
+								<div class="app-fxLayout app-row  app-gap-2 app-center-v">
+									@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
+										<a target="_blank" [href]="'https://ndk.cz/view/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+									} @else {
+										<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+									}
+									<span class="app-pipe app-ml-0"></span>
+									<a (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate }}</a>
+								</div>		
+							</div>
+						</li>
+					}
+				</ul>
 			</div>
 		}
 	</mat-card-content>

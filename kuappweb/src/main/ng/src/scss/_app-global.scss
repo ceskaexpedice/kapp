@@ -34,6 +34,10 @@ a {
   }
 }
 
+ul {
+  margin: 0;
+}
+
 // colors
 .app-color-primary {
   color: var(--app-color-primary) !important;
@@ -135,9 +139,11 @@ a {
 
 // elements
 .app-metadata-row {
-  display: flex;
-  flex-direction: row;
-  align-items: center;
+  &:not(.app-multiple) {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+  }
 
   .app-label {
     margin-right: 2px;

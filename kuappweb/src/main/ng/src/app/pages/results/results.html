@@ -54,10 +54,17 @@
             (matSortChange)="sortTable($event)" multiTemplateDataRows>
 
             <ng-container matColumnDef="pid">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>PID</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
+                <div class="app-fxLayout app-row app-center-v app-gap-1 app-ml-1">
+                  <button (click)="setColumns()" mat-icon-button [matTooltip]="'editor.children.select_columns' | translate" color="primary" class="app-ml-n1">
+                    <mat-icon class="material-icons-outlined">view_column</mat-icon>
+                  </button>
+                  <span mat-sort-header>PID</span>
+                </div>
+              </th>
               <td mat-cell *matCellDef="let doc">
                 <div class="app-fxLayout app-row app-center-v app-gap-1">
-                  <button mat-icon-button class="app-icon-size-16 app-color-primary" (click)="ui.copyTextToClipboard(doc['pid'])" [matTooltip]="'copy_text_to_clipboard' | translate">
+                  <button mat-icon-button class="app-icon-size-16" (click)="ui.copyTextToClipboard(doc['pid'])" [matTooltip]="'copy_text_to_clipboard' | translate">
                     <mat-icon>content_copy</mat-icon>
                   </button>
                   <span> {{doc['pid']}}</span>
@@ -129,9 +136,9 @@
 
             <ng-container matColumnDef="action">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
-                <div class="app-fxLayout app-row app-center-h">
+                <!-- <div class="app-fxLayout app-row app-center-h">
                   <button mat-icon-button (click)="setColumns()"><mat-icon>more_vert</mat-icon></button>
-                </div>
+                </div> -->
               </th>
               <td mat-cell *matCellDef="let doc">
                 <div class="app-fxLayout app-row app-gap-1 app-center-h">
