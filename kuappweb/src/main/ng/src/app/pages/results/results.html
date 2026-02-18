@@ -19,23 +19,19 @@
         <div class="app-fxFlex">
           <mat-form-field appearance="outline" class="app-view-search">
             <mat-label>{{ 'action.search' | translate }}</mat-label>
-            <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
-              (keyup.enter)="doSearch()">
+            <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}" (keyup.enter)="doSearch()">
             @if (state.q) {
-            <button matIconButton matSuffix (click)="clearQ()"
-              class="app-color-warn"><mat-icon>close</mat-icon></button>
+            <button matIconButton matSuffix (click)="clearQ()" class="app-color-warn"><mat-icon>close</mat-icon></button>
             }
             <button matIconButton matSuffix (click)="doSearch()"><mat-icon>search</mat-icon></button>
           </mat-form-field>
         </div>
         <div>
           @if (view() === 'titles') {
-          <button matButton matSuffix (click)="export()"><mat-icon>file_download</mat-icon>{{ 'action.export' | translate }}</button>
+          <button matButton matSuffix (click)="export()" class="app-mr-2"><mat-icon>file_download</mat-icon>{{ 'action.export' | translate }}</button>
           <mat-button-toggle-group name="viewType" aria-label="viewType" [(ngModel)]="viewType">
-            <mat-button-toggle value="table_view"><mat-icon>table_view</mat-icon> {{'action.table_view' |
-              translate}}</mat-button-toggle>
-            <mat-button-toggle value="card_view">{{'action.card_view' | translate}}
-              <mat-icon>credit_card</mat-icon></mat-button-toggle>
+            <mat-button-toggle value="table_view"><mat-icon>table_view</mat-icon> {{'action.table_view' | translate}}</mat-button-toggle>
+            <mat-button-toggle value="card_view">{{'action.card_view' | translate}} <mat-icon>credit_card</mat-icon></mat-button-toggle>
           </mat-button-toggle-group>
           }
         </div>

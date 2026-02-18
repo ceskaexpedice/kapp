@@ -10,10 +10,25 @@
   font-weight: 500;
   line-height: 18px;
   display: inline-flex;
-  padding: 0 8px;
+  padding: 0 15px 0 8px;
   height: $app-height;
   align-items: center;
   border-radius: calc(#{$app-height} / 2);
   min-width: 100px;
   justify-content: center;
+  position: relative;
+
+  .mdc-icon-button {
+    position: absolute;
+    right: -6px;
+    top: -11px;
+
+    .mat-icon {
+      $size: 18;
+      font-size: #{$size}px;
+      height: #{$size}px;
+      width: #{$size}px;
+      color: var(--app-color-lightnes);
+    }
+  }
 }

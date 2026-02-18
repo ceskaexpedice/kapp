@@ -169,7 +169,7 @@ $home_cards: (
   @include mat.button-overrides((
     outlined-outline-color: var(--app-color-gray-3),
     outlined-container-height: var(--app-button-height),
-    outlined-container-shape: 4px,
+    //outlined-container-shape: 4px,
     filled-container-height: var(--app-button-height),
     text-container-height: var(--app-button-height)
   ));
@@ -182,6 +182,11 @@ $home_cards: (
       ));
       .mat-icon {
         @include setIcon(22);
+      }
+      .app-btn-remove {
+        &:hover {
+          color: var(--app-color-warn);
+        } 
       }
     }
   }

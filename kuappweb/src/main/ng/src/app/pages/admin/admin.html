@@ -9,14 +9,19 @@
 					<div class="app-fxLayout app-row app-baseline-v app-gap-2">
 						<mat-form-field appearance="outline">
 							<mat-label>Name</mat-label>
-							<input matInput [(ngModel)]="l.name" />
+							<input matInput [(ngModel)]="l.name" [disabled]="l.name === 'test'" />
 						</mat-form-field>
 						<mat-form-field appearance="outline">
 							<mat-label>Color</mat-label>
-							<input matInput [(ngModel)]="l.color" />
+							<input matInput [(ngModel)]="l.color" [disabled]="l.name === 'test'" />
 						</mat-form-field>
 						<div class="app-chip app-fxFlex" [style.background-color]="l.color" [style.color]="l.text_color">
 							<span>{{ l.name }}</span>
+							@if(l.name !== 'test') {
+								<button matIconButton matSuffix (click)="removeLabel()" class="app-btn-remove" [matTooltip]="'remove_this_record' | translate">
+									<mat-icon>cancel</mat-icon>
+								</button>
+							}
 						</div>
 					</div>
 				}	
@@ -47,11 +52,13 @@
 				@for(l of licenses; track $index) {
 					<mat-form-field appearance="outline" disabled="true">
 						<mat-label>{{ 'field.license' | translate }}</mat-label>
-						<input matInput [value]="l" />
+						<input matInput [value]="l" [disabled]="l === 'onsite' || l === 'public'" />
+						@if(l !== 'onsite' && l !== 'public') {
+							<button matIconButton matSuffix (click)="removeLicense()" class="app-btn-remove" [matTooltip]="'remove_this_record' | translate">
+								<mat-icon>close</mat-icon>
+							</button>
+						}
 					</mat-form-field>
-					<!-- <div class="app-fxLayout app-row app-gap-2">
-						{{ l }}
-					</div> -->
 				}	
 				<div class="app-fxLayout app-row app-gap-2">
 					<mat-form-field appearance="outline" class="app-fxFlex">
@@ -76,11 +83,13 @@
 				@for(l of dk; track $index) {
 					<mat-form-field appearance="outline" disabled="true">
 						<mat-label>{{ 'admin.dk' | translate }}</mat-label>
-						<input matInput [value]="l" />
+						<input matInput [value]="l" [disabled]="l === 'MZK'" />
+						@if(l !== 'MZK') {
+							<button matIconButton matSuffix (click)="removeDK()" class="app-btn-remove" [matTooltip]="'remove_this_record' | translate">
+								<mat-icon>close</mat-icon>
+							</button>
+						}
 					</mat-form-field>
-					<!-- <div class="app-fxLayout app-row app-gap-2">
-						{{ l }}
-					</div> -->
 				}	
 				<div class="app-fxLayout app-row app-gap-2">
 					<mat-form-field appearance="outline" class="app-fxFlex">

@@ -14,13 +14,16 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MatCardModule } from '@angular/material/card';
 import { Label } from '../../shared/label';
 import { AppConfiguration } from '../../app-configuration';
+import { MatTooltip, MatTooltipModule } from "@angular/material/tooltip";
 
 @Component({
   selector: 'app-admin',
   imports: [
     TranslateModule, FormsModule,
     MatDialogModule, MatIconModule, MatButtonModule, MatCardModule,
-    MatChipsModule, MatFormFieldModule, MatInputModule],
+    MatChipsModule, MatFormFieldModule, MatInputModule,
+    MatTooltipModule
+],
   templateUrl: './admin.html',
   styleUrl: './admin.scss'
 })
@@ -60,8 +63,18 @@ export class Admin {
     this.state.labels.set(this.labels);
     this.service.saveLabels(this.state.labels()).subscribe(resp => {
       this.ui.showInfoSnackBar('snackbar.record_saved.success');
-      console.log(resp)
+      console.log(resp);
+      // error
+      //this.ui.showInfoSnackBar('snackbar.record_removed.error');
     });
+  }
+
+  removeLabel() {
+    // todo
+    // success
+    this.ui.showInfoSnackBar('snackbar.record_removed.success');
+    // error
+    //this.ui.showInfoSnackBar('snackbar.record_removed.error');
   }
 
   addLicense() {
@@ -70,6 +83,14 @@ export class Admin {
       this.new_license = null;
       //this.saveLicenses();
     }
+  }
+
+  removeLicense() {
+    // todo
+    // success
+    this.ui.showInfoSnackBar('snackbar.record_removed.success');
+    // error
+    //this.ui.showInfoSnackBar('snackbar.record_removed.error');
   }
 
   saveLicenses() {
@@ -94,5 +115,13 @@ export class Admin {
       this.ui.showInfoSnackBar('snackbar.record_saved.success');
       console.log(resp)
     });
+  }
+
+  removeDK() {
+    // todo
+    // success
+    this.ui.showInfoSnackBar('snackbar.record_removed.success');
+    // error
+    //this.ui.showInfoSnackBar('snackbar.record_removed.error');
   }
 }
