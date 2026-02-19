@@ -169,9 +169,9 @@ $home_cards: (
   @include mat.button-overrides((
     outlined-outline-color: var(--app-color-gray-3),
     outlined-container-height: var(--app-button-height),
-    outlined-container-shape: 4px,
+    outlined-container-shape: var(--app-radius-default),
     filled-container-height: var(--app-button-height),
-    filled-container-shape: 4px,
+    filled-container-shape: var(--app-radius-default),
     text-container-height: var(--app-button-height)
   ));
   .mat-mdc-form-field {
@@ -231,7 +231,7 @@ $home_cards: (
     selected-state-background-color: var(--app-color-gray-2),
     text-color: var(--app-color-gray-7),
     selected-state-text-color: var(--mat-sys-primary),
-    shape: 4px
+    shape: var(--app-radius-default)
   ));
 
 
@@ -421,7 +421,7 @@ $home_cards: (
 
   @include mat.dialog-overrides((
     container-elevation-shadow: 5px,
-    container-shape: 4px,
+    container-shape: var(--app-radius-default),
     container-color: var(--app-color-lightnes),
     container-min-width: 400px
   ));
