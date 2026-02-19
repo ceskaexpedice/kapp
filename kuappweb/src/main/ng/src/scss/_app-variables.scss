@@ -3,14 +3,15 @@
 @use '@angular/material' as mat;
 
 :root {
- // colors
- --app-color-primary: var(--mat-sys-primary);
- --app-color-secondary: var(--mat-sys-secondary);
- --app-color-warn: var(--mat-sys-error);
- --app-color-lightnes: #ffffff;
- --app-color-lightnes-rgb: 255, 255, 255;
- --app-color-darknes: #000000;
- --app-color-darknes-rgb: 0, 0, 0;
+  // colors
+  --app-color-primary: var(--mat-sys-primary);
+  --app-color-primary-rgb: 22, 121, 155;
+  --app-color-secondary: var(--mat-sys-secondary);
+  --app-color-warn: var(--mat-sys-error);
+  --app-color-lightnes: #ffffff;
+  --app-color-lightnes-rgb: 255, 255, 255;
+  --app-color-darknes: #000000;
+  --app-color-darknes-rgb: 0, 0, 0;
 
   // gray pallete
   --app-color-gray-0: #FAFAFA;

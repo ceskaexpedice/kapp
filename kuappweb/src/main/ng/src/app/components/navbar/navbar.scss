@@ -16,8 +16,8 @@
   a {
     &.mdc-button {
       &.app-active-link {
-        background-color: var(--app-color-primary);
-        color: var(--app-color-lightnes);
+        background-color: rgba(var(--app-color-primary-rgb), .1);
+        color: var(--app-color-primary);
       }
     }
   }
