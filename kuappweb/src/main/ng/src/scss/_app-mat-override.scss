@@ -230,7 +230,8 @@ $home_cards: (
     divider-color: var(--app-color-gray-3),
     selected-state-background-color: var(--app-color-gray-2),
     text-color: var(--app-color-gray-7),
-    selected-state-text-color: var(--mat-sys-primary)
+    selected-state-text-color: var(--mat-sys-primary),
+    shape: 4px
   ));
 
 
