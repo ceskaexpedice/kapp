@@ -28,7 +28,7 @@
         </div>
         <div>
           @if (view() === 'titles') {
-          <button matButton matSuffix (click)="export()" class="app-mr-2"><mat-icon>file_download</mat-icon>{{ 'action.export' | translate }}</button>
+          <button matButton="outlined" matSuffix (click)="export()" class="app-mr-2"><mat-icon>file_download</mat-icon>{{ 'action.export' | translate }}</button>
           <mat-button-toggle-group name="viewType" aria-label="viewType" [(ngModel)]="viewType">
             <mat-button-toggle value="table_view"><mat-icon>table_view</mat-icon> {{'action.table_view' | translate}}</mat-button-toggle>
             <mat-button-toggle value="card_view">{{'action.card_view' | translate}} <mat-icon>credit_card</mat-icon></mat-button-toggle>

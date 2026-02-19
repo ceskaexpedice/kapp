@@ -172,6 +172,7 @@ $home_cards: (
     outlined-container-shape: var(--app-radius-default),
     filled-container-height: var(--app-button-height),
     filled-container-shape: var(--app-radius-default),
+    //text-container-shape: var(--app-radius-default),
     text-container-height: var(--app-button-height)
   ));
   .mat-mdc-form-field {
@@ -222,13 +223,18 @@ $home_cards: (
       }
     }
   }
+  .app-content-wrapper {
+    @include mat.button-overrides((
+      text-container-shape: var(--app-radius-default)
+    ));
+  }
 
 
 
   @include mat.button-toggle-overrides((
     height: var(--app-button-height),
     divider-color: var(--app-color-gray-3),
-    selected-state-background-color: var(--app-color-gray-2),
+    selected-state-background-color: var(--app-color-gray-1),
     text-color: var(--app-color-gray-7),
     selected-state-text-color: var(--mat-sys-primary),
     shape: var(--app-radius-default)
