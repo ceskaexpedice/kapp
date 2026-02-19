@@ -19,7 +19,7 @@
 							<span>{{ l.name }}</span>
 							@if(l.name !== 'test') {
 								<button matIconButton matSuffix (click)="removeLabel()" class="app-btn-remove" [matTooltip]="'remove_this_record' | translate">
-									<mat-icon>cancel</mat-icon>
+									<mat-icon [style.color]="l.text_color">close</mat-icon>
 								</button>
 							}
 						</div>
@@ -30,17 +30,18 @@
 						<mat-label>{{ 'admin.new_label_name' | translate }}</mat-label>
 						<input matInput [(ngModel)]="nl.name" />
 					</mat-form-field>
-					<mat-form-field appearance="outline">
+					<mat-form-field appearance="outline" class="app-set-color">
 						<mat-label>{{ 'admin.new_label_color' | translate }}</mat-label>
 						<input matInput [(ngModel)]="nl.color" />
+						<div matSuffix class="app-color" [style.background-color]="nl.color"></div>
 					</mat-form-field>
-					<button matButton="outlined" [style.background-color]="nl.color" [style.color]="nl.text_color" (click)="addLabel(nl)" class="app-btn-add">
+					<button matButton="outlined" (click)="addLabel(nl)" class="app-btn-add"><!--[style.background-color]="nl.color" [style.color]="nl.text_color"-->
 						<mat-icon>add_circle</mat-icon>Přidat
 					</button>
 				</div>
 			</mat-card-content>
 			<mat-card-actions class="app-mat-card-actions">
-				<button matButton="outlined" (click)="saveLabels()">{{ 'action.save' | translate }}</button>
+				<button matButton="filled" (click)="saveLabels()">{{ 'action.save' | translate }}</button>
 			</mat-card-actions>
 		</mat-card>
 
@@ -71,7 +72,7 @@
 				</div>
 			</mat-card-content>
 			<mat-card-actions class="app-mat-card-actions">
-				<button matButton="outlined" (click)="saveLicenses()">{{ 'action.save' | translate }}</button>
+				<button matButton="filled" (click)="saveLicenses()">{{ 'action.save' | translate }}</button>
 			</mat-card-actions>
 		</mat-card>
 
@@ -102,7 +103,7 @@
 				</div>
 			</mat-card-content>
 			<mat-card-actions class="app-mat-card-actions">
-				<button matButton="outlined" (click)="saveDK()">{{ 'action.save' | translate }}</button>
+				<button matButton="filled" (click)="saveDK()">{{ 'action.save' | translate }}</button>
 			</mat-card-actions>
 		</mat-card>
 	</div>

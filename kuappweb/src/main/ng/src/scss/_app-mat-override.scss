@@ -169,8 +169,9 @@ $home_cards: (
   @include mat.button-overrides((
     outlined-outline-color: var(--app-color-gray-3),
     outlined-container-height: var(--app-button-height),
-    //outlined-container-shape: 4px,
+    outlined-container-shape: 4px,
     filled-container-height: var(--app-button-height),
+    filled-container-shape: 4px,
     text-container-height: var(--app-button-height)
   ));
   .mat-mdc-form-field {
