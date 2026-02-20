@@ -244,8 +244,7 @@ $home_cards: (
   @include mat.chips-overrides((
     container-height: 20px,
     container-shape-radius: 20px,
-    label-text-size: 12px,
-    with-icon-icon-size: 12px
+    label-text-size: 12px
   ));
   .mat-mdc-chip {
     margin-left: 4px !important;
@@ -256,6 +255,26 @@ $home_cards: (
         with-trailing-icon-trailing-icon-color: var(--app-color-lightnes),
         outline-color: transparent
       ));
+    }
+    .mat-mdc-chip-remove {
+      margin-right: -4px;
+
+      .mat-icon {
+        @include setIcon(14);
+
+        &.app-cancel {
+          display: none;
+        }
+      }
+
+      &:hover {
+        .app-close {
+          display: none;
+        }
+        .app-cancel {
+          display: block;
+        }
+      }
     }
   }
 

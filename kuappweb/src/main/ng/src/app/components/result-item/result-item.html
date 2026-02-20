@@ -9,7 +9,8 @@
 						(removed)="removeLabel(l)"><!--style="--mat-chip-label-text-color: {{l.text_color}};"-->
 						{{ l.name }}
 						<button matChipRemove [attr.aria-label]="'remove ' + l.name">
-							<mat-icon>cancel</mat-icon>
+							<mat-icon class="app-close">close</mat-icon>
+							<mat-icon class="app-cancel">cancel</mat-icon>
 						</button>
 					</mat-chip>
 					}
