@@ -15,15 +15,15 @@
 							<mat-label>Color</mat-label>
 							<input matInput [(ngModel)]="l.color" [disabled]="l.name === 'test'" />
 						</mat-form-field>
-						<div class="app-chip app-fxFlex" [style.background-color]="l.color" [style.color]="l.text_color">
-							<span>{{ l.name }}</span>
+						<mat-chip class="app-fxFlex" [style.background-color]="l.color" [style.color]="l.text_color" (removed)="removeLabel()" [matTooltip]="'remove_this_record' | translate">
+							{{ l.name }}
 							@if(l.name !== 'test') {
-								<button matIconButton matSuffix (click)="removeLabel()" class="app-btn-remove" [matTooltip]="'remove_this_record' | translate">
-									<mat-icon class="app-close" [style.color]="l.text_color">close</mat-icon>
-									<!-- <mat-icon class="app-cancel" [style.color]="l.text_color">cancel</mat-icon> -->
-								</button>
+								<button matChipRemove [attr.aria-label]="'remove ' + l.name">
+									<mat-icon class="app-close">close</mat-icon>
+									<mat-icon class="app-cancel">cancel</mat-icon>
+								</button>						
 							}
-						</div>
+						</mat-chip>
 					</div>
 				}	
 				<div class="app-fxLayout app-row app-gap-2">
