@@ -19,7 +19,8 @@
 							<span>{{ l.name }}</span>
 							@if(l.name !== 'test') {
 								<button matIconButton matSuffix (click)="removeLabel()" class="app-btn-remove" [matTooltip]="'remove_this_record' | translate">
-									<mat-icon [style.color]="l.text_color">close</mat-icon>
+									<mat-icon class="app-close" [style.color]="l.text_color">close</mat-icon>
+									<!-- <mat-icon class="app-cancel" [style.color]="l.text_color">cancel</mat-icon> -->
 								</button>
 							}
 						</div>
