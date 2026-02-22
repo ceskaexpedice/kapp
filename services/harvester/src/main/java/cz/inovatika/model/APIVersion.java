@@ -170,7 +170,7 @@ public enum APIVersion {
 
         @Override
         public String iterationQuery() {
-            return "model:(monograph+OR+monographunit)";//+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
+            return "model:(monograph+OR+monographunit+OR+periodical+OR+periodicalvolume)";//&fl=pid+own_pid_path+root.pid+model";
         }
 
         @Override
@@ -303,7 +303,6 @@ public enum APIVersion {
             } catch (InterruptedException | ConnectException exception) {
                 LOGGER.warning("Unable to send request, sleeping and trying again for: "+attempts+" time(s)"+ exception.getMessage());
                 Thread.sleep(5000);
-
             }
         }
         throw new RuntimeException("Unable to send request"+attempts+" times");

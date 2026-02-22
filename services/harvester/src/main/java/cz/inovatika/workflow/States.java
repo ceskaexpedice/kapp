@@ -187,7 +187,8 @@ public enum States {
         public States transitionByCurator(HarvesterContext ctx, WorkflowDoc currentDoc, States desiredState) {
             return null;
         }
-    }/*,
+    }
+    /*,
 
     PARENT_CONTROLLED("parent_controlled",LicensesAssignation.NONE, true) {
         @Override
@@ -206,10 +207,9 @@ public enum States {
             SolrQuery q = new SolrQuery()
                     .setQuery("root.pid:\"" + ctx.item().getRootPid() + "\"")
                     .setRows(300).addFilterQuery("model:\"monographunit\" OR model:\"periodicalvolume\"");
-            for (SolrDocument doc : HarvesterImpl.solrClient.query("titles", q).getResults()) {
+            for (SolrDocument doc : ctx.solrClient().query("titles", q).getResults()) {
                 Object state = doc.get("state");
                 if (TO_CONTROL.name().equals(state)) {
-                    //LOGGER.log(Level.INFO, "Children found for {0}", ctx.item().getRootPid());
                     return PARENT_OPEN;
                 }
             }
@@ -229,24 +229,24 @@ public enum States {
         this.automaticSwitch = automaticSwitch;
         this.licensesAssignation = licensesAssignation;
     }
-    public static void updateParent(HarvesterContext child){
-        try {
-            SolrQuery q = new SolrQuery()
-                    .setQuery("root.pid:\"" + child.item().getRootPid() + "\"").addFilterQuery("model:\"monograph\" OR model:\"periodical\"")
-                    .setRows(1);
-            SolrDocumentList results = HarvesterImpl.solrClient.query("titles", q).getResults();
-            if(results.getNumFound()==0){
-                //LOGGER.log(Level.WARNING, "Parent not found for item " + child.item().getRootPid());
-                return;
-            }
-            SolrDocument parent = results.getFirst();
-            //TODO Update the parent state based on children states
-
-
-        } catch (SolrServerException | IOException e) {
-            LOGGER.log(Level.SEVERE, "Error checking children states for item " + child.item().getRootPid(), e);
-        }
-    }
+//    public static void updateParent(HarvesterContext child){
+//        try {
+//            SolrQuery q = new SolrQuery()
+//                    .setQuery("root.pid:\"" + child.item().getRootPid() + "\"").addFilterQuery("model:\"monograph\" OR model:\"periodical\"")
+//                    .setRows(1);
+//            SolrDocumentList results = HarvesterImpl.solrClient.query("titles", q).getResults();
+//            if(results.getNumFound()==0){
+//                //LOGGER.log(Level.WARNING, "Parent not found for item " + child.item().getRootPid());
+//                return;
+//            }
+//            SolrDocument parent = results.getFirst();
+//            //TODO Update the parent state based on children states
+//
+//
+//        } catch (SolrServerException | IOException e) {
+//            LOGGER.log(Level.SEVERE, "Error checking children states for item " + child.item().getRootPid(), e);
+//        }
+//    }
 
     public abstract States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc);
 

@@ -2,6 +2,7 @@ package cz.inovatika.model;
 
 import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.touchstore.TouchStore;
+import org.apache.solr.client.solrj.SolrClient;
 
 import java.net.http.HttpClient;
 
@@ -25,5 +26,6 @@ public record HarvesterContext(
         HarvestingItem item,
         TouchStore touchStore,
         HttpClient client,
+        SolrClient solrClient,
         Instance config
 ){}

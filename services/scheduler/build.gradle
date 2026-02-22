@@ -24,13 +24,14 @@ jib {
     }
 
     to {
-        image = 'jiriminov/kappscheduler:latest'
-        tags = [project.version]
+        //image = 'jiriminov/kappscheduler:latest'
+        image = "registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kappscheduler"
+        tags = ['latest',project.version]
     }
 
     container {
         mainClass = 'cz.inovatika.SchedulerMain'
-        ports = ['8080'] // remove if not needed
+        //ports = ['8080'] // remove if not needed
         jvmFlags = ['-Xms256m', '-Xmx512m']
     }
 }
@@ -43,6 +44,5 @@ dependencies {
 
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
-
 }
 

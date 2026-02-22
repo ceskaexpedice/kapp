@@ -39,4 +39,7 @@ public interface Harvester {
     public void harvest(ApplicationConfig applicationConfig, Instance harvestingInstanceConfig, Consumer<HarvesterContext> consumer);
 
     public void start(ApplicationConfig applicationConfig);
+
+
+    public void closeClients();
 }
