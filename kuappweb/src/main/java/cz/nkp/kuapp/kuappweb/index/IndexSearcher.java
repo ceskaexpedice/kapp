@@ -89,6 +89,9 @@ public class IndexSearcher {
                     .returnFields("*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
                     .setLimit(rows);
 
+
+            jrequest = jrequest.withFilter("model:(monograph OR periodical)");
+
             if (request.getParameter("author") != null) {
                 jrequest = jrequest.withFilter("{!tag=ffauthors}authors:(\"" + String.join("\" OR \"", request.getParameterValues("author")) + "\")");
             }
