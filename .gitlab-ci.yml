@@ -3,7 +3,7 @@ stages:
   - publish
 
 variables:
-  GIT_SUBMODULE_STRATEGY: recursive
+  #GIT_SUBMODULE_STRATEGY: recursive
   GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle
 
 image: eclipse-temurin:21-jdk-jammy
