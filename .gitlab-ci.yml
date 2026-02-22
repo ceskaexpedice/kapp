@@ -33,8 +33,6 @@ docker_image_publish:
   script:
     - chmod +x gradlew
     - echo "JIB - docker publish"
-    - ./gradlew jib \
-      -Djib.to.auth.username=$CI_REGISTRY_USER \
-      -Djib.to.auth.password=$CI_JOB_TOKEN
+    - ./gradlew jib -Djib.to.auth.username=$CI_REGISTRY_USER -Djib.to.auth.password=$CI_JOB_TOKEN
   when: manual
   allow_failure: false
