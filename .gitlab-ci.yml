@@ -32,11 +32,9 @@ publish_all_manual:
   script:
     - echo "Prepinam se do adresare $APP_DIR"
     - cd $APP_DIR
-
     - echo "Registry: $CI_REGISTRY"
     - echo "User: $CI_REGISTRY_USER"
     - echo "Target: registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kuappweb"
-
     - mvn clean install -s ../settings.xml -DskipTests
     - mvn jib:build "-Djib.to.auth.username=gitlab-ci-token" "-Djib.to.auth.password=$CI_JOB_TOKEN" -DskipTests
   when: manual
