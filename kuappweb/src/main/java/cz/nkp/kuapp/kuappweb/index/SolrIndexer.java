@@ -362,6 +362,9 @@ public class SolrIndexer {
             doc.setField("hlavni_smlouva", js.optString("hlavni_smlouva"));
             doc.setField("hlavni", js.optBoolean("hlavni"));
             doc.setField("dodatky", js.optJSONArray("dodatky"));
+            doc.setField("ccnb", js.optJSONArray("ccnb"));
+            doc.setField("issn", js.optJSONArray("issn"));
+            doc.setField("issn", js.optJSONArray("isbn"));
             doc.setField("license", js.optJSONArray("license"));
   
             solr.add("contracts", doc);

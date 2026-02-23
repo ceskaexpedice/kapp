@@ -187,7 +187,7 @@ export class Contracts {
       formData.append('file', this.selectedFile);
 
       formData.append('name', this.name ? this.name : this.selectedFile.name),
-        formData.append('overwrite', this.overwrite.toString());
+      formData.append('overwrite', this.overwrite.toString());
       formData.append('analyze', this.analyze.toString());
 
       this.http.post("/api/index/upload_contract", formData, {

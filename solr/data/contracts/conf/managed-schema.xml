@@ -23,6 +23,9 @@
   <field name="hlavni_smlouva" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="license" type="string" multiValued="true" indexed="true" stored="true"/>
 
+  <field name="ccnb" type="string" multiValued="true" indexed="true" stored="true"/>
+  <field name="issn" type="string" multiValued="true" indexed="true" stored="true"/>
+
 
 
   <field name="souhrn" type="text_general_lemmatized" multiValued="false" indexed="true" stored="true"/>

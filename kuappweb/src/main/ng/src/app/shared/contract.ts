@@ -18,6 +18,8 @@ export class Contract {
   cislo_dodatku: string;
   souhrn: string;
   license: string;
+  ccnb: string[] = [];
+  issn: string[] = [];
 
 }
 

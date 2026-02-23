@@ -177,6 +177,10 @@ export class AppService {
     return this.get('index/titles_contract', params);
   }
 
+  findTitlesByContract(params: HttpParams): Observable<any> {
+    return this.get('index/titles_contract_find', params);
+  }
+
   getContract(id: string): Observable<any> {
     return this.get('index/get_contract', {id});
   }
@@ -187,6 +191,10 @@ export class AppService {
 
   saveContract(c: Contract): Observable<any> {
     return this.post('index/save_contract', c);
+  }
+
+  analyzeContract(c: string): Observable<any> {
+    return this.get('index/analyze_contract', {filename:c});
   }
 
   checkContractExists(filename: string, ) {

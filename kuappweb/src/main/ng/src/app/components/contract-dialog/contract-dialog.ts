@@ -19,7 +19,7 @@ import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Contract } from '../../shared/contract';
 import { MatCheckbox } from "@angular/material/checkbox";
 import { MatAutocompleteModule } from '@angular/material/autocomplete';
-import {MatTabsModule} from '@angular/material/tabs';
+import { MatTabsModule } from '@angular/material/tabs';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 import { MatSelectModule } from '@angular/material/select';
 
@@ -34,7 +34,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatListModule, MatTooltipModule, MatTabsModule,
     MatCheckbox, NgxExtendedPdfViewerModule,
     MatSelectModule
-],
+  ],
   templateUrl: './contract-dialog.html',
   styleUrl: './contract-dialog.scss'
 })
@@ -64,6 +64,8 @@ export class ContractDialog {
   hlavni_smlouvy = signal<string[]>([]);
 
   titles = signal<any[]>([]);
+  ccnb: string = '';
+  issn: string = '';
 
 
   constructor(
@@ -74,19 +76,40 @@ export class ContractDialog {
     if (this.contract().kontaktni_osoby) {
       this.kontaktni_osoby = this.contract().kontaktni_osoby.join("\n");
     }
+    if (this.contract().ccnb) {
+      this.ccnb = this.contract().ccnb.join("\n");
+    }
+    if (this.contract().issn) {
+      this.issn = this.contract().issn.join("\n");
+    }
     this.getTitles();
   }
 
   getTitles() {
-    
+
     this.titles.set([]);
     const p: any = {};
     p.contract = this.data.doc.filename;
     p.rows = 1000;
-    
+
     this.service.searchTitlesByContract(p as HttpParams).subscribe((resp: any) => {
       this.titles.set(resp.response.docs);
     });
+  }
+
+  findTitles() {
+
+    this.titles.set([]);
+    const p: any = {};
+    p.contract = this.data.doc.filename;
+    p.ccnb = this.data.doc.ccnb;
+    p.issn = this.data.doc.issn;
+    p.contract = this.data.doc.filename;
+    p.rows = 1000;
+    this.service.findTitlesByContract(p as HttpParams).subscribe((resp: any) => {
+      this.titles.set(resp.response.docs);
+    });
+
   }
 
   onFileSelected(event: any) {
@@ -133,8 +156,21 @@ export class ContractDialog {
 
   save() {
     this.contract().kontaktni_osoby = this.kontaktni_osoby.split('\n');
+    this.contract().issn = this.issn.split('\n');
+    this.contract().ccnb = this.ccnb.split('\n');
     this.service.saveContract(this.contract()).subscribe((resp: any) => {
       // console.log(resp)
+    })
+  }
+
+  analyze() {
+    this.loading.set(true);
+    this.service.analyzeContract(this.contract().filename).subscribe((resp: any) => {
+      const gemini = resp;
+      gemini.filename = this.contract().filename;
+      this.contract.set(gemini);
+      this.loading.set(false);
+
     })
   }
 
@@ -144,7 +180,7 @@ export class ContractDialog {
     const p: any = {};
     p.dodatek = val;
     p.rows = 10;
-    
+
     this.service.searchContracts(p as HttpParams).subscribe((resp: any) => {
       this.dodatky.set(resp.response.docs.map((d: Contract) => d.filename));
     });
@@ -157,7 +193,7 @@ export class ContractDialog {
     const p: any = {};
     p.hlavni_smlouva = val;
     p.rows = 10;
-    
+
     this.service.searchContracts(p as HttpParams).subscribe((resp: any) => {
       this.hlavni_smlouvy.set(resp.response.docs.map((d: Contract) => d.filename));
     });
@@ -179,10 +215,10 @@ export class ContractDialog {
   }
 
   removeDodatek(d: string) {
-      const index = this.contract().dodatky.indexOf(d);
-      if (index > -1) {
-        this.contract().dodatky.splice(index, 1);
-      }
+    const index = this.contract().dodatky.indexOf(d);
+    if (index > -1) {
+      this.contract().dodatky.splice(index, 1);
     }
-  
+  }
+
 }

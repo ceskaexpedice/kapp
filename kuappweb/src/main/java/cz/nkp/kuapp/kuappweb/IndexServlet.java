@@ -20,6 +20,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.Part;
+import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -142,6 +143,18 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     json = IndexSearcher.searchTitlesByContract(req);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        TITLES_CONTRACT_FIND {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.findTitlesByContract(req);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -438,6 +451,33 @@ public class IndexServlet extends HttpServlet {
                     } else {
                         ret.put("filename", filename);
                     }
+                } catch (Exception ex) {
+                    ret.put("error", ex);
+                }
+                return ret;
+            }
+        },
+        ANALYZE_CONTRACT {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject ret = new JSONObject();
+                try {
+                    String filename = req.getParameter("filename");
+                    System.out.println(filename);
+                    File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
+                    byte[] pdfBytes = FileUtils.readFileToByteArray(targetFile);
+
+                        String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
+                        JSONObject gemini = GeminiAnalyzer.analyze(base64Pdf);
+                        
+                        // candidates[0].content.parts[0].text
+                        ret = new JSONObject(gemini.getJSONArray("candidates")
+                                .getJSONObject(0)
+                                .getJSONObject("content")
+                                .getJSONArray("parts")
+                                .getJSONObject(0)
+                                .getString("text"));
+                        
                 } catch (Exception ex) {
                     ret.put("error", ex);
                 }

@@ -4,7 +4,7 @@
         "api_key": "",
         "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=",
         "text2": "Analyze this PDF and extract metadata. Return JSON with: title, author, creationDate, keywords (array), summary (3-sentence), pageCount, language.",
-        "text": "Analyzuj PDF a extrahuj metadata. Return JSON with: title, cislo_smlouvy, nazev_poskytovatele, IČO poskytovatele (as ico), datum_uzavreni, datum_platnosti, kontaktni_osoby, keywords (array), souhrn (10-vet cesky), pageCount.",
+        "text": "Analyzuj PDF a extrahuj metadata. Return JSON with: title, cislo_smlouvy, nazev_poskytovatele, IČO poskytovatele (as ico), datum_uzavreni, datum_platnosti, kontaktni_osoby, keywords (array), souhrn (10-vet cesky), pageCount, Čísla České národní bibliografie, ISBN, ISSN.",
         "config": {
             "responseMimeType": "application/json",
             "responseSchema": {
@@ -41,6 +41,25 @@
                         "type": "string"
                     },
                     "keywords": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "ccnb": {
+                        "type": "array",
+                        "description": "Číslo České národní bibliografie (Identifikace dle ČNB)",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "issn": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "isbn": {
                         "type": "array",
                         "items": {
                             "type": "string"
