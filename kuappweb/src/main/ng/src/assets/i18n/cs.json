@@ -133,6 +133,14 @@
       "success": "Záznam byl úspěšně uložen",
       "error": "Došlo k chybě při ukládání záznamu"
     },
+    "record_changed": {
+      "success": "Záznam byl úspěšně změněn",
+      "error": "Došlo k chybě při změně záznamu"
+    },
+    "record_added": {
+      "success": "Záznam byl úspěšně přidán",
+      "error": "Došlo k chybě při přidání záznamu"
+    },
     "record_removed": {
       "success": "Záznam byl úspěšně odstraněn",
       "error": "Došlo k chybě při odstranění záznamu"

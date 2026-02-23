@@ -52,11 +52,11 @@
 </mat-dialog-content>
 <mat-dialog-actions>
 	@if(isNew()) {
-		<button matButton (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
+		<button matButton="outlined" (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
 	}
 	@if(!isNew()) {
-		<button matButton (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
+		<button matButton="outlined" (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
 	}
-	<button matButton (click)="save()">{{ 'action.save' | translate }}</button>
-	<button matButton [mat-dialog-close]="hasChanges" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+	<button matButton="filled" (click)="save()">{{ 'action.save' | translate }}</button>
+	<button matButton="outlined" [mat-dialog-close]="hasChanges" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>

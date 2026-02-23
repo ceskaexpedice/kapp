@@ -133,6 +133,14 @@
       "success": "The record was saved successfully",
       "error": "An error occurred while saving the record"
     },
+    "record_changed": {
+      "success": "The record was successfully changed",
+      "error": "An error occurred while changing the record"
+    },
+    "record_added": {
+      "success": "Record added successfully",
+      "error": "An error occurred while adding the record."
+    },
      "record_removed": {
       "success": "The record was successfully deleted.",
       "error": "An error occurred while deleting the record"

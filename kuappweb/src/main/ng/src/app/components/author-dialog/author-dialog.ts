@@ -3,6 +3,7 @@ import { MAT_DIALOG_DATA, MatDialogContent, MatDialogModule, MatDialogRef } from
 import { Author } from '../../shared/author';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppService } from '../../app.service';
+import { UIService } from '../../ui.service';
 import { HttpParams } from '@angular/common/http';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -25,6 +26,7 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 export class AuthorDialog {
 
   readonly service = inject(AppService);
+  readonly ui = inject(UIService);
   readonly dialogRef = inject(MatDialogRef<AuthorDialog>);
   readonly data = inject<{pid: string, author: Author}>(MAT_DIALOG_DATA);
 
@@ -101,6 +103,7 @@ export class AuthorDialog {
           isLast: false
         });
         this.getLinks();
+        this.ui.showInfoSnackBar('snackbar.record_changed.success');
       });
     }
   }
@@ -109,6 +112,7 @@ export class AuthorDialog {
         console.log(this.author());
       this.service.saveAuthor(this.author()).subscribe((res: any) => {
         console.log(this.author());
+        this.ui.showInfoSnackBar('snackbar.record_saved.success');
         this.hasChanges = true;
       })
   }
@@ -117,6 +121,7 @@ export class AuthorDialog {
     if (this.author()['date_death']) {
       this.service.saveDecisionDate(this.data.pid, this.author()['date_death']).subscribe((res: any) => {
         console.log(res);
+        this.ui.showInfoSnackBar('snackbar.record_changed.success');
         this.hasChanges = true;
       })
     }

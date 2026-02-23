@@ -29,6 +29,7 @@ import { MatTooltip, MatTooltipModule } from "@angular/material/tooltip";
 })
 export class Admin {
   readonly service = inject(AppService);
+  readonly ui = inject(UIService);
   readonly state = inject(AppState);
   loading = signal<boolean>(false);
   labels: Label[];
@@ -39,10 +40,6 @@ export class Admin {
 
   dk:string[] = [];
   new_dk: string;
-
-  constructor(
-    public ui: UIService
-  ) {}
 
   ngOnInit() {
     const p: any = {};

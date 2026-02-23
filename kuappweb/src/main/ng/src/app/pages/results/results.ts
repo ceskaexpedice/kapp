@@ -258,7 +258,8 @@ export class Results {
   
   saveDocBatch(bs: string, doc: any) {
     this.service.saveDocBatch(doc.pid, bs).subscribe((res: any) => {
-      console.log(res)
+      console.log(res);
+      this.ui.showInfoSnackBar('snackbar.record_added.success');
     })
   }
 
