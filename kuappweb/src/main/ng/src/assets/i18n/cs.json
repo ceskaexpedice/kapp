@@ -19,6 +19,7 @@
   "processing": "Zpracování",
   "copy_text_to_clipboard": "Zkopírovat text do schránky",
   "remove_this_record": "Odstranit tento záznam",
+  "titles_found_ccnb_issn": "Tituly nalezené přes ccnb a issn",
   "home": {
     "titles": "Díla ",
     "authors": "Autoři",
@@ -70,7 +71,9 @@
     "souhrn": "Souhrn",
     "assigned_license": "Přiřazená licence",
     "model": "Model",
-    "contracts": "Smlouvy"
+    "contracts": "Smlouvy",
+    "ccnb": "Ccnb",
+    "issn": "Issn"
   },
   "action": {
     "view": "Zobrazit",
@@ -94,7 +97,9 @@
     "import_batch": "Importovat soubor do dávky",
     "card_view": "Karty",
     "table_view": "Tabulka",
-    "contract_upload": "Nahrát smluovu"
+    "contract_upload": "Nahrát smluovu",
+    "find_titles": "Najít tituly",
+    "analyze": "Analyzovat"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "nekontrolované",

@@ -50,6 +50,7 @@ $home_cards: (
 
 
 :root {
+  // --- toolbar ---
   @include mat.toolbar-overrides((
     container-background-color: var(--app-color-lightnes),
     container-text-color: var(--app-color-gray-8),
@@ -60,6 +61,7 @@ $home_cards: (
   }
 
 
+  // --- card ---
   @include mat.card-overrides((
     outlined-container-shape: 0px,
     outlined-container-color: var(--app-color-lightnes),
@@ -121,8 +123,14 @@ $home_cards: (
       }
     }
   }
+  .mat-mdc-dialog-panel {
+    @include mat.card-overrides((
+      title-text-size: 18px
+    ));
+  }
 
 
+  // --- form field ---
   @include mat.form-field-overrides((
     container-height: 36px,
     container-vertical-padding: 6px,
@@ -323,6 +331,13 @@ $home_cards: (
     state-layer-size: 26px,
     selected-focus-state-layer-color: transparent
   ));
+  .mat-mdc-checkbox {
+    &.app-align-start {
+      .mdc-form-field {
+        align-items: start;
+      }
+    }
+  }
 
 
   @include mat.paginator-overrides((
@@ -424,9 +439,9 @@ $home_cards: (
     }
 
     .mat-column-action {
-      max-width: 110px;
-      padding: 0;
-      text-align: center;
+      // max-width: 110px;
+      // padding: 0;
+      // text-align: center;
     }
   }
 
@@ -472,6 +487,16 @@ $home_cards: (
     @include mat.dialog-overrides((
       container-min-width: 1000px
     ));
+  }
+
+
+  // --- tebs ---
+  @include mat.tabs-overrides((
+    container-height: 36px
+  ));
+  .mat-mdc-tab-body-wrapper {
+    height: 100%;
+    //background-color: orange;
   }
 
 

@@ -36,7 +36,7 @@
 			</div>
 
 			<div class="app-table-wrapper">
-				<table mat-table [dataSource]="docs()" class="app-hover app-striped app-resize" matSort [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction" (matSortChange)="sortTable($event)">
+				<table mat-table [dataSource]="docs()" class="app-hover app-resize" matSort [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction" (matSortChange)="sortTable($event)">
 					<ng-container matColumnDef="filename">
 						<th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
 							<span mat-sort-header>{{ 'field.filename' | translate}}</span>

@@ -1,188 +1,169 @@
-<h2 mat-dialog-title>{{ 'contract' | translate}}
-
-	<div >
-	@if (loading()) {
+@if (loading()) {
 	<mat-progress-bar mode="indeterminate" [value]="uploadProgress"></mat-progress-bar>
-	}</div>
-</h2>
+}
+<h2 mat-dialog-title>{{ 'contract' | translate}}</h2>
 <mat-dialog-content>
-	<div class="app-fxLayout app-mt-4">
-		<div class="app-fxLayout app-column " style="width: 450px;">
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.title' | translate }}</mat-label>
-					<input matInput [(ngModel)]="contract().title" />
-				</mat-form-field>
+	<div class="app-fxLayout app-row app-gap-4 app-pt-1">
+		<div class="app-left app-fxLayout app-column">
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.title' | translate }}</mat-label>
+				<input matInput [(ngModel)]="contract().title" />
+			</mat-form-field>
+			
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.cislo_smlouvy' | translate }}</mat-label>
+				<input matInput [(ngModel)]="contract().cislo_smlouvy" />
+			</mat-form-field>
+			
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.datum_uzavreni' | translate }}</mat-label>
+				<input matInput [(ngModel)]="contract().datum_uzavreni" />
+			</mat-form-field>
+			
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.datum_platnosti' | translate }}</mat-label>
+				<input matInput [(ngModel)]="contract().datum_platnosti" />
+			</mat-form-field>
+		
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.nazev_poskytovatele' | translate }}</mat-label>
+				<input matInput [(ngModel)]="contract().nazev_poskytovatele" />
+			</mat-form-field>
+	
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.ico' | translate }}</mat-label>
+				<input matInput [(ngModel)]="contract().ico" />
+			</mat-form-field>
+	
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.kontaktni_osoby' | translate }}</mat-label>
+				<textarea matInput rows="3" [(ngModel)]="kontaktni_osoby"></textarea>
+			</mat-form-field>
+		
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.license' | translate }}</mat-label>
+				<mat-select [(ngModel)]="contract().license" multiple="true">
+					@for (l of state.licenses(); track l) {
+					<mat-option [value]="l">{{ l }}</mat-option>
+					}
+				</mat-select>
+			</mat-form-field>
+		
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.digitalni_knihovny' | translate }}</mat-label>
+				<mat-select [(ngModel)]="contract().digitalni_knihovny" multiple="true">
+					@for (l of state.digitalni_knihovny(); track l) {
+					<mat-option [value]="l">{{ l }}</mat-option>
+					}
+				</mat-select>
+			</mat-form-field>
+		
+			<div class="app-mb-3">
+				<mat-checkbox appearance="outline" [(ngModel)]="contract().hlavni">{{ 'field.isHlavni' | translate }}</mat-checkbox>
 			</div>
-			<div class="app-fxLayout app-row">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.cislo_smlouvy' | translate }}</mat-label>
-					<input matInput [(ngModel)]="contract().cislo_smlouvy" />
-				</mat-form-field>
-			</div>
-			<div class="app-fxLayout app-row">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.datum_uzavreni' | translate }}</mat-label>
-					<input matInput [(ngModel)]="contract().datum_uzavreni" />
-				</mat-form-field>
-			</div>
-			<div class="app-fxLayout app-row">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.datum_platnosti' | translate }}</mat-label>
-					<input matInput [(ngModel)]="contract().datum_platnosti" />
-				</mat-form-field>
-			</div>
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.nazev_poskytovatele' | translate }}</mat-label>
-					<input matInput [(ngModel)]="contract().nazev_poskytovatele" />
-				</mat-form-field>
-			</div>
-			<div class="app-fxLayout app-row">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.ico' | translate }}</mat-label>
-					<input matInput [(ngModel)]="contract().ico" />
-				</mat-form-field>
-			</div>
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.kontaktni_osoby' | translate }}</mat-label>
-					<textarea matInput rows="3" [(ngModel)]="kontaktni_osoby"></textarea>
-				</mat-form-field>
-			</div>
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.license' | translate }}</mat-label>
-					<mat-select [(ngModel)]="contract().license" multiple="true">
-						@for (l of state.licenses(); track l) {
-						<mat-option [value]="l">{{ l }}</mat-option>
-						}
-					</mat-select>
-				</mat-form-field>
-			</div>
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.digitalni_knihovny' | translate }}</mat-label>
-					<mat-select [(ngModel)]="contract().digitalni_knihovny" multiple="true">
-						@for (l of state.digitalni_knihovny(); track l) {
-						<mat-option [value]="l">{{ l }}</mat-option>
-						}
-					</mat-select>
-				</mat-form-field>
-			</div>
-			<div class="app-fxLayout app-row ">
-				<mat-checkbox appearance="outline" [(ngModel)]="contract().hlavni">{{ 'field.isHlavni' | translate
-					}}</mat-checkbox>
-			</div>
+
 			@if (contract().hlavni) {
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100">
+				<mat-form-field appearance="outline">
 					<mat-label>{{'field.dodatky' | translate}}</mat-label>
-					<input [matAutocomplete]="autoDodatky" matInput [(ngModel)]="dodatek"
-						(keyup)="checkDodatky($event)" />
+					<input [matAutocomplete]="autoDodatky" matInput [(ngModel)]="dodatek" (keyup)="checkDodatky($event)" />
 					<mat-autocomplete #autoDodatky="matAutocomplete" (optionSelected)="setDodatek()">
 						@for(a of dodatky(); track idx; let idx = $index){
-						<mat-option [value]="a">
-							{{a}}
-						</mat-option>
+							<mat-option [value]="a">
+								{{a}}
+							</mat-option>
 						}
 					</mat-autocomplete>
 				</mat-form-field>
 
-			</div>
-			<div class="app-fxLayout app-row ">
 				<mat-chip-set class="mat-mdc-chip-set-stacked" aria-label="Dodatky">
 					@for (d of contract().dodatky; track d) {
-					<mat-chip (removed)="removeDodatek(d)" [style.background-color]="'var(--mat-sys-primary)'">{{d}}
-						<button matChipRemove [attr.aria-label]="'remove ' + d">
-							<mat-icon>cancel</mat-icon>
-						</button>
-					</mat-chip>
+						<mat-chip (removed)="removeDodatek(d)" [style.background-color]="'var(--mat-sys-primary)'">{{d}}
+							<button matChipRemove [attr.aria-label]="'remove ' + d">
+								<mat-icon>cancel</mat-icon>
+							</button>
+						</mat-chip>
 					}
 				</mat-chip-set>
-			</div>
 			} @else {
-
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<input [matAutocomplete]="autoHs" matInput [(ngModel)]="contract().hlavni_smlouva"
-						(keyup)="checkHlavni($event)" />
+				<mat-form-field appearance="outline">
+					<input [matAutocomplete]="autoHs" matInput [(ngModel)]="contract().hlavni_smlouva" (keyup)="checkHlavni($event)" />
 					<mat-autocomplete #autoHs="matAutocomplete" (optionSelected)="setHlavniSmlouva()">
 						@for(a of hlavni_smlouvy(); track idx; let idx = $index){
-						<mat-option [value]="a">
-							{{a}}
-						</mat-option>
+							<mat-option [value]="a">
+								{{a}}
+							</mat-option>
 						}
 					</mat-autocomplete>
 				</mat-form-field>
-
-			</div>
 			}
 				
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.ccnb' | translate }}</mat-label>
-					<textarea matInput rows="3" [(ngModel)]="ccnb"></textarea>
-				</mat-form-field>
-			</div>
-				
-			<div class="app-fxLayout app-row ">
-				<mat-form-field appearance="outline" class="app-w-100">
-					<mat-label>{{ 'field.issn' | translate }}</mat-label>
-					<textarea matInput rows="3" [(ngModel)]="issn"></textarea>
-				</mat-form-field>
-			</div>
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.ccnb' | translate }}</mat-label>
+				<textarea matInput rows="3" [(ngModel)]="ccnb"></textarea>
+			</mat-form-field>
 
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.issn' | translate }}</mat-label>
+				<textarea matInput rows="3" [(ngModel)]="issn"></textarea>
+			</mat-form-field>
 		</div>
-		<div class="app-fxLayout app-column app-w-100">
-			<mat-tab-group>
+
+		<div class="app-fxFlex app-right app-fxLayout app-column">
+			<mat-tab-group class="app-fxLayout aoo-column app-fill">
 				<mat-tab [label]="'field.souhrn' | translate">
-					<div class="app-fxLayout app-row   app-mt-4">
-						<mat-form-field appearance="outline" class="app-w-100 app-fill">
-							<mat-label>{{ 'field.souhrn' | translate }}</mat-label>
-							<textarea matInput rows="10" [(ngModel)]="contract().souhrn"></textarea>
-						</mat-form-field>
-					</div>
+					<mat-form-field appearance="outline" class="app-textarea app-w-100 app-pt-4">
+						<mat-label>{{ 'field.souhrn' | translate }}</mat-label>
+						<textarea matInput rows="15" [(ngModel)]="contract().souhrn"></textarea>
+					</mat-form-field>
 				</mat-tab>
 				<mat-tab [label]="'PDF'">
-					<div class="app-w-100 app-fill">
-
-						<ngx-extended-pdf-viewer [src]="'/api/pdf?filename=' + contract().filename" [textLayer]="true"
-							[showHandToolButton]="true" [showPresentationModeButton]="true">
-						</ngx-extended-pdf-viewer>
-					</div>
-
+					<ngx-extended-pdf-viewer [src]="'/api/pdf?filename=' + contract().filename" [textLayer]="true" [showHandToolButton]="true" [showPresentationModeButton]="true"></ngx-extended-pdf-viewer>
 				</mat-tab>
 				<mat-tab [label]="'navbar.titles' | translate">
-					<div class="app-w-100 app-fill">
-						@for(title of titles(); track $index) {
-						<div>
-							{{ title['pid'] }} {{ title['title'] }} <mat-icon (click)="addTitleToContract(title, {checked:false})">delete</mat-icon>
-						</div>
-						}
-
+					<div class="app-table-wrapper app-mt-4 app-mb-4">
+						<table mat-table [dataSource]="titles()" class="app-hover">
+							<ng-container matColumnDef="pid">
+								<th mat-header-cell *matHeaderCellDef>{{ 'field.pid' | translate}}</th>
+								<td mat-cell *matCellDef="let element">{{ element.pid }}</td>
+							</ng-container>
+							<ng-container matColumnDef="title">
+								<th mat-header-cell *matHeaderCellDef>{{ 'field.title' | translate}}</th>
+								<td mat-cell *matCellDef="let element">{{ element.title }}</td>
+							</ng-container>
+							<ng-container matColumnDef="action">
+								<th mat-header-cell *matHeaderCellDef></th>
+								<td mat-cell *matCellDef="let element">
+									<button matIconButton class="app-color-warn" (click)="addTitleToContract(element.title, {checked:false})" [matTooltip]="'remove_this_record' | translate">
+										<mat-icon>close</mat-icon>
+									</button>
+								</td>
+							</ng-container>
+							<tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
+							<tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+						</table>
 					</div>
-					<button matButton (click)="findTitles()">{{ 'action.find_titles' | translate }}</button>
-					<div class="app-w-100 app-fill">
-						@if(titles_found().length > 0) {
-							<h3>Titles found by ccnb and issn</h3>
-							@for(title of titles_found(); track $index) {
-							<div>
-								<mat-checkbox (change)="addTitleToContract(title, $event)">{{ title['pid'] }} {{ title['title'] }} {{ title['id_ccnb'] }} {{ title['id_issn'] }}</mat-checkbox>
-							</div>
-							}
-						}
-
-					</div>
-
+					<button matButton="outlined" (click)="findTitles()">{{ 'action.find_titles' | translate }}</button>
+					@if(titles_found().length > 0) {
+						<mat-card appearance="outlined" class="app-mt-4">
+							<mat-card-header class="app-mb-2">
+								<mat-card-title>{{ 'titles_found_ccnb_issn' | translate }}</mat-card-title>
+							</mat-card-header>
+							<mat-card-content class="app-fxLayout app-column app-gap-2">
+								@for(title of titles_found(); track $index) {
+									<mat-checkbox class="app-align-start" (change)="addTitleToContract(title, $event)">
+										{{ title['pid'] }} {{ title['title'] }} {{ title['id_ccnb'] }} {{ title['id_issn'] }}
+									</mat-checkbox>
+								}
+							</mat-card-content>
+						</mat-card>
+					}
 				</mat-tab>
 			</mat-tab-group>
 		</div>
 	</div>
 </mat-dialog-content>
 <mat-dialog-actions>
-	<!-- <button matButton (click)="uploadFile()">{{ 'action.upload' | translate }}</button> -->
-	<button matButton (click)="analyze()">{{ 'action.analyze' | translate }}</button>
-	<button matButton (click)="save()">{{ 'action.save' | translate }}</button>
-	<button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+	<button matButton="outlined" (click)="analyze()">{{ 'action.analyze' | translate }}</button>
+	<button matButton="filled" (click)="save()">{{ 'action.save' | translate }}</button>
+	<button matButton="outlined" [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>
