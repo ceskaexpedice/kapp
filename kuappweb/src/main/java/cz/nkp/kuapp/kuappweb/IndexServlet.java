@@ -136,6 +136,18 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
+        TITLES_CONTRACT {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.searchTitlesByContract(req);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         GET_DOC {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -282,6 +294,19 @@ public class IndexServlet extends HttpServlet {
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
                     json = SolrIndexer.indexDocBatches(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        SAVE_DOC_CONTRACT {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexDocContracts(js);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

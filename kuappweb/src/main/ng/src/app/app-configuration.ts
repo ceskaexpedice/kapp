@@ -64,7 +64,7 @@ import { Label } from './shared/label';
                 this.config = cfg as Configuration;
                 return this.http.get('api/index/config').pipe(tap((resp: any) => {
                     const b = resp.config.find((a: any) => a.id === 'batches');
-                    if (b?.value.length > 0) {
+                    if (b && b.value.length > 0) {
                         this.state.batches.set(b.value);
                     }
                     

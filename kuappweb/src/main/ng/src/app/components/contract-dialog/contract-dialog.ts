@@ -63,14 +63,30 @@ export class ContractDialog {
   hlavni_smlouva: string;
   hlavni_smlouvy = signal<string[]>([]);
 
+  titles = signal<any[]>([]);
 
-  constructor(private http: HttpClient) { }
+
+  constructor(
+    private http: HttpClient) { }
 
   ngOnInit() {
     this.contract.set(this.data.doc);
     if (this.contract().kontaktni_osoby) {
-    this.kontaktni_osoby = this.contract().kontaktni_osoby.join("\n");
+      this.kontaktni_osoby = this.contract().kontaktni_osoby.join("\n");
     }
+    this.getTitles();
+  }
+
+  getTitles() {
+    
+    this.titles.set([]);
+    const p: any = {};
+    p.contract = this.data.doc.filename;
+    p.rows = 1000;
+    
+    this.service.searchTitlesByContract(p as HttpParams).subscribe((resp: any) => {
+      this.titles.set(resp.response.docs);
+    });
   }
 
   onFileSelected(event: any) {
@@ -153,7 +169,7 @@ export class ContractDialog {
       this.contract().dodatky = [];
     }
     this.contract().dodatky.push(this.dodatek);
-    console.log(this.contract().dodatky)
+    // console.log(this.contract().dodatky)
     this.dodatek = null;
   }
 

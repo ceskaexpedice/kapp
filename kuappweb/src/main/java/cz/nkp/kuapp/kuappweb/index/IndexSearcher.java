@@ -72,6 +72,9 @@ public class IndexSearcher {
                     .withFacet("authors", new TermsFacetMap("authors")
                             .setLimit(100)
                             .setMinCount(1))
+                    .withFacet("nameIdentifier", new TermsFacetMap("nameIdentifier")
+                            .setLimit(100)
+                            .setMinCount(1))
                     .withFacet("assigned_license", new TermsFacetMap("assigned_license")
                             .setLimit(100)
                             .setMinCount(1))
@@ -142,6 +145,52 @@ public class IndexSearcher {
             } else {
                 ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
             }
+            
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
+    public static JSONObject searchTitlesByContract(HttpServletRequest request) {
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            String rowsP = request.getParameter("rows");
+            int rows = 0;
+            if (rowsP != null && !rowsP.isBlank()) {
+                rows = Integer.parseInt(rowsP);
+            }
+            
+            int offset = 0;
+            if (request.getParameter("offset") != null) {
+                offset = Integer.parseInt(request.getParameter("offset")); 
+            }
+            
+            String sort = "indextime desc";
+            if (request.getParameter("sort") != null) {
+                sort = request.getParameter("sort");
+            }
+            String q = "*";
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery(q)
+                    .withParam("fq", "{!collapse field=root.pid}") 
+                    .setOffset(offset)
+                    .setSort(sort)
+                    .returnFields("*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
+                    .setLimit(rows);
+
+
+            if (request.getParameter("contract") != null) {
+                jrequest = jrequest.withFilter("contracts:(\"" + request.getParameter("contract") + "\")");
+            }
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+                
+            NamedList<Object> resp = solr.request(jrequest, "titles");
+            InputStream is = (InputStream) resp.get("stream");
+            
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
             
 
         } catch (Exception ex) {

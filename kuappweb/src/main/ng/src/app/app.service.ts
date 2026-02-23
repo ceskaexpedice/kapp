@@ -133,6 +133,10 @@ export class AppService {
     return this.post('index/save_doc_batch', {pid,batch});
   }
 
+  saveDocContract(pid: string, contract: string): Observable<any> {
+    return this.post('index/save_doc_contract', {pid,contract});
+  }
+
   saveTitleColumns(columns: {field: string, selected: boolean}[]): Observable<any> {
     return this.post('index/save_title_columns', columns);
   }
@@ -167,6 +171,10 @@ export class AppService {
 
   searchContracts(params: HttpParams): Observable<any> {
     return this.get('index/contracts', params);
+  }
+
+  searchTitlesByContract(params: HttpParams): Observable<any> {
+    return this.get('index/titles_contract', params);
   }
 
   getContract(id: string): Observable<any> {

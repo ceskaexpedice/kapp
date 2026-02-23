@@ -88,6 +88,7 @@
     "remove_from_batch": "Odstranit z dávky",
     "add_new_batch": "Vytvořit dávku",
     "add_doc_to_bacth": "Přidat do dávky",
+    "add_doc_to_contract": "Přidat do smlouvy",
     "add_batch_from_label": "Vytvořit dávku z štítku",
     "import_batch": "Importovat soubor do dávky",
     "card_view": "Karty",

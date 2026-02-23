@@ -12,6 +12,7 @@
           'digital_library',
           'model',
           'authors',
+          'nameIdentifier',
           'date'
           ]" [facets]="solrResponse.facets"></app-facets>
     </div>
@@ -106,7 +107,7 @@
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="date.str">
+            <ng-container matColumnDef="date_range_start.year">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.dateIssued' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc['date.str']  }}</td>
             </ng-container>
@@ -150,10 +151,6 @@
                   <button mat-icon-button [matMenuTriggerFor]="batchesMenu" [matTooltip]="'action.add_doc_to_bacth' | translate">
                     <mat-icon>playlist_add</mat-icon>
                   </button>
-                  <button matIconButton aria-label="expand row" (click)="toggle(doc); $event.stopPropagation()" class="app-btn-toggle" [class.app-btn-toggle-expanded]="isExpanded(doc)" [matTooltip]="'test' | translate">
-                    <mat-icon>keyboard_arrow_down</mat-icon>
-                  </button>
-                </div>
                 <mat-menu #batchesMenu="matMenu">
                   @for(a of state.batches(); track $index) {
                     <button mat-menu-item (click)="addToBatch(a, doc)">
@@ -161,6 +158,20 @@
                     </button>
                   }
                 </mat-menu>
+                  <button mat-icon-button [matMenuTriggerFor]="contractsMenu" [matTooltip]="'action.add_doc_to_contract' | translate">
+                    <mat-icon>history_edu</mat-icon>
+                  </button>
+                <mat-menu #contractsMenu="matMenu">
+                  @for(a of contracts(); track $index) {
+                    <button mat-menu-item (click)="addToContract(a.filename, doc)">
+                      <mat-icon>{{ inContract(a.filename, doc) ? 'check' : 'none'}}</mat-icon>{{ a.filename }}
+                    </button>
+                  }
+                </mat-menu>
+                  <button matIconButton aria-label="expand row" (click)="toggle(doc); $event.stopPropagation()" class="app-btn-toggle" [class.app-btn-toggle-expanded]="isExpanded(doc)" [matTooltip]="'test' | translate">
+                    <mat-icon>keyboard_arrow_down</mat-icon>
+                  </button>
+                </div>
               </td>
             </ng-container>
 

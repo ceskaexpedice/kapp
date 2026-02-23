@@ -87,6 +87,7 @@
     "remove_from_batch": "Remove from batch",
     "add_new_batch": "Create new batch",
     "add_doc_to_bacth": "Add document to batch",
+    "add_doc_to_contract": "Add document to contract",
     "add_batch_from_label": "Create batch from label",
     "import_batch": "Import batch",
     "card_view": "Cards",

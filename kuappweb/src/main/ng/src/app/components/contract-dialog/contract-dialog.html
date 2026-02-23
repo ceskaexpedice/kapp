@@ -138,6 +138,17 @@
 					</div>
 
 				</mat-tab>
+				<mat-tab [label]="'navbar.titles' | translate">
+					<div class="app-w-100 app-fill">
+						@for(title of titles(); track $index) {
+							<div>
+								{{ title['pid'] }} {{ title['title'] }} 
+							</div>
+						}
+						
+					</div>
+
+				</mat-tab>
 			</mat-tab-group>
 		</div>
 	</div>

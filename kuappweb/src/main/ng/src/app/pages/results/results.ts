@@ -57,6 +57,7 @@ export class Results {
   loading = signal(false);
   solrResponse: any;
   docs = signal<any[]>([]);
+  contracts = signal<any[]>([]);
   hasFacets = signal<boolean>(false);
   view = signal<string>('titles');
 
@@ -88,13 +89,12 @@ export class Results {
     effect(() => {
       const usedFacets = this.state.usedFacets();
       this.getData();
-
     })
   }
 
   ngOnInit(): void {
     this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
-    // this.getData();
+    this.getContracts();
   }
 
   handlePageEvent(e: PageEvent) {
@@ -130,6 +130,22 @@ export class Results {
 
   export() {
     this.getData(true);
+  }
+
+  getContracts() {
+    this.contracts.set([]);
+    const p: any = {};
+    p.rows = this.rows;
+    p.offset = this.pageIndex * p.rows;
+    if (this.state.q) {
+      p.q = this.state.q;
+    }
+    p.sort = 'filename asc';
+
+    this.service.searchContracts(p as HttpParams).subscribe((resp: any) => {
+      this.solrResponse = resp;
+      this.contracts.set(this.solrResponse.response.docs);
+    });
   }
 
   getData(csv: boolean = false) {
@@ -231,6 +247,10 @@ export class Results {
   inBatch(s: string, doc: any) {
     return doc['batch']?.includes(s)
   }
+
+  inContract(s: string, doc: any) {
+    return doc['contracts']?.includes(s)
+  }
   
   addToBatch(b: Batch, doc: any) {
     this.saveDocBatch(b.name, doc);
@@ -240,6 +260,13 @@ export class Results {
     this.service.saveDocBatch(doc.pid, bs).subscribe((res: any) => {
       console.log(res)
     })
+  }
+
+  addToContract(contract: string, doc: any) {
+    this.service.saveDocContract(doc.pid, contract).subscribe((res: any) => {
+      console.log(res)
+    })
+    
   }
 
   // -- expanded table row
