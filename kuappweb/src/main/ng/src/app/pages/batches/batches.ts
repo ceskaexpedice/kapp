@@ -62,6 +62,10 @@ export class Batches {
     public ui: UIService
   ) {}
 
+  ngOnInit() {
+    this.selectBatch(this.state.batches()[0]);
+  }
+
   onFileSelected(e: any) {
     const file: File = e.target.files[0];
     if (file) {

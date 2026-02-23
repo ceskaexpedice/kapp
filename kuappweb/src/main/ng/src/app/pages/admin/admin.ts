@@ -93,8 +93,11 @@ export class Admin {
   saveLicenses() {
     this.state.licenses.set(this.licenses);
     this.service.saveLicenses(this.state.licenses()).subscribe(resp => {
-      this.ui.showInfoSnackBar('snackbar.record_saved.success');
-      console.log(resp)
+      if (resp.error) {
+
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_saved.success');
+      }
     });
   }
 
