@@ -123,7 +123,8 @@ public class SolrIndexer {
             doc.setField("pid", js.getString("pid"));
 
             Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", js.getString("contract"));
+            String modifier = js.optBoolean("selected") ? "set" : "remove";
+            partialUpdate.put(modifier, js.getString("contract"));
             doc.setField("contracts", partialUpdate);
 
             // doc.setField("labels", js.getJSONArray("labels").toString());
@@ -364,7 +365,6 @@ public class SolrIndexer {
             doc.setField("dodatky", js.optJSONArray("dodatky"));
             doc.setField("ccnb", js.optJSONArray("ccnb"));
             doc.setField("issn", js.optJSONArray("issn"));
-            doc.setField("issn", js.optJSONArray("isbn"));
             doc.setField("license", js.optJSONArray("license"));
   
             solr.add("contracts", doc);

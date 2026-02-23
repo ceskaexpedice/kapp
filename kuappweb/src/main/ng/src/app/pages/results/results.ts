@@ -107,6 +107,7 @@ export class Results {
     p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
     p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
     p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
+    p.contracts = usedFacets.filter(k => k.field === 'contracts').map(k => k.value);
     p.physical_locations = usedFacets.filter(k => k.field === 'physical_locations').map(k => k.value);
     p.assigned_license = usedFacets.filter(k => k.field === 'assigned_license').map(k => k.value);
     p.licenses = usedFacets.filter(k => k.field === 'licenses').map(k => k.value);
@@ -248,8 +249,8 @@ export class Results {
     return doc['batch']?.includes(s)
   }
 
-  inContract(s: string, doc: any) {
-    return doc['contracts']?.includes(s)
+  inContract(filename: string, doc: any) {
+    return doc['contracts']?.includes(filename)
   }
   
   addToBatch(b: Batch, doc: any) {
@@ -264,7 +265,7 @@ export class Results {
   }
 
   addToContract(contract: string, doc: any) {
-    this.service.saveDocContract(doc.pid, contract).subscribe((res: any) => {
+    this.service.saveDocContract(doc.pid, contract, !this.inContract(contract, doc)).subscribe((res: any) => {
       console.log(res)
     })
     

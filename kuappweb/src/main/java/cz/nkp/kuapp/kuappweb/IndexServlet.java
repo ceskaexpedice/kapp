@@ -463,7 +463,6 @@ public class IndexServlet extends HttpServlet {
                 JSONObject ret = new JSONObject();
                 try {
                     String filename = req.getParameter("filename");
-                    System.out.println(filename);
                     File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
                     byte[] pdfBytes = FileUtils.readFileToByteArray(targetFile);
 

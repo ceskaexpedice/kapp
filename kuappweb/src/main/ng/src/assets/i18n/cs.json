@@ -69,7 +69,8 @@
     "dodatky": "Dodatky ke smlouvě",
     "souhrn": "Souhrn",
     "assigned_license": "Přiřazená licence",
-    "model": "Model"
+    "model": "Model",
+    "contracts": "Smlouvy"
   },
   "action": {
     "view": "Zobrazit",

@@ -55,12 +55,14 @@
                     },
                     "issn": {
                         "type": "array",
+                        "description": "Identifikace dle ISSN",
                         "items": {
                             "type": "string"
                         }
                     },
                     "isbn": {
                         "type": "array",
+                        "description": "Identifikace dle ISBN",
                         "items": {
                             "type": "string"
                         }

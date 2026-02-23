@@ -90,6 +90,9 @@ public class IndexSearcher {
                     .withFacet("physical_locations", new TermsFacetMap("physical_locations.facet")
                             .setLimit(100)
                             .setMinCount(1))
+                    .withFacet("contracts", new TermsFacetMap("contracts")
+                            .setLimit(100)
+                            .setMinCount(1))
                     .withFacet("date", new TermsFacetMap("date_range_start.year")
                             .setLimit(20)
                             .setMinCount(1))
@@ -111,6 +114,10 @@ public class IndexSearcher {
 
             if (request.getParameter("labels") != null) {
                 jrequest = jrequest.withFilter("labels:" + request.getParameter("labels"));
+            }
+
+            if (request.getParameter("contracts") != null) {
+                jrequest = jrequest.withFilter("contracts:" + request.getParameter("contracts"));
             }
 
             if (request.getParameter("licenses") != null) {
@@ -219,24 +226,35 @@ public class IndexSearcher {
                 sort = request.getParameter("sort");
             }
             String q = "*";
+            String fl = "*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
-                    .withParam("fq", "{!collapse field=root.pid}") 
+                    .withParam("fq", "{!join from=ccnb fromIndex=contracts to=id_ccnb}filename:\""+request.getParameter("contract")+"\"") 
                     .setOffset(offset)
                     .setSort(sort)
-                    .returnFields("*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
+                    .returnFields(fl)
                     .setLimit(rows);
 
-
-            if (request.getParameter("ccnb") != null) {
-                jrequest = jrequest.withFilter("id_ccnb:(\"" + String.join("\" \"", request.getParameterValues("ccnb")) + "\")");
-            }
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
                 
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
             
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+            ret.put("ccnb", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs"))); 
+            
+            jrequest = new JsonQueryRequest()
+                    .setQuery(q)
+                    .withParam("fq", "{!join from=issn fromIndex=contracts to=id_issn}filename:\""+request.getParameter("contract")+"\"") 
+                    .setOffset(offset)
+                    .setSort(sort)
+                    .returnFields(fl)
+                    .setLimit(rows);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+                
+            resp = solr.request(jrequest, "titles");
+            is = (InputStream) resp.get("stream");
+            ret.put("issn", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs"))); 
             
 
         } catch (Exception ex) {

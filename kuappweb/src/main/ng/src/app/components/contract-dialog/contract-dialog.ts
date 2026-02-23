@@ -64,6 +64,7 @@ export class ContractDialog {
   hlavni_smlouvy = signal<string[]>([]);
 
   titles = signal<any[]>([]);
+  titles_found = signal<any[]>([]);
   ccnb: string = '';
   issn: string = '';
 
@@ -99,15 +100,14 @@ export class ContractDialog {
 
   findTitles() {
 
-    this.titles.set([]);
+    this.titles_found.set([]);
     const p: any = {};
     p.contract = this.data.doc.filename;
-    p.ccnb = this.data.doc.ccnb;
-    p.issn = this.data.doc.issn;
-    p.contract = this.data.doc.filename;
+    // p.ccnb = this.data.doc.ccnb;
+    // p.issn = this.data.doc.issn;
     p.rows = 1000;
     this.service.findTitlesByContract(p as HttpParams).subscribe((resp: any) => {
-      this.titles.set(resp.response.docs);
+      this.titles_found.set([...resp.ccnb, ...resp.issn]);
     });
 
   }
@@ -161,6 +161,14 @@ export class ContractDialog {
     this.service.saveContract(this.contract()).subscribe((resp: any) => {
       // console.log(resp)
     })
+  }
+
+  addTitleToContract(doc: any, e: any) {
+    this.service.saveDocContract(doc.pid, this.contract().filename, e.checked).subscribe((res: any) => {
+      console.log(res);
+      this.getTitles();
+    })
+    
   }
 
   analyze() {

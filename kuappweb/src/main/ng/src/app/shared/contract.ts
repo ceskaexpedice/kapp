@@ -20,6 +20,7 @@ export class Contract {
   license: string;
   ccnb: string[] = [];
   issn: string[] = [];
+  isbn: string[] = [];
 
 }
 

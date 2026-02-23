@@ -68,7 +68,8 @@
     "dodatky": "Attachments to contracts",
     "souhrn": "Summary",
     "assigned_license": "Assigned license",
-    "model": "Model"
+    "model": "Model",
+    "contracts": "Contracts"
   },
   "action": {
     "view": "View",

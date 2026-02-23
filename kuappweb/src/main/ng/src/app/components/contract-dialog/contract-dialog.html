@@ -1,11 +1,11 @@
 <h2 mat-dialog-title>{{ 'contract' | translate}}
 
-</h2>
-<mat-dialog-content>
+	<div >
 	@if (loading()) {
 	<mat-progress-bar mode="indeterminate" [value]="uploadProgress"></mat-progress-bar>
-	<div>{{ progressMsg }}</div>
-	}
+	}</div>
+</h2>
+<mat-dialog-content>
 	<div class="app-fxLayout app-mt-4">
 		<div class="app-fxLayout app-column " style="width: 450px;">
 			<div class="app-fxLayout app-row ">
@@ -157,12 +157,23 @@
 					<div class="app-w-100 app-fill">
 						@for(title of titles(); track $index) {
 						<div>
-							{{ title['pid'] }} {{ title['title'] }}
+							{{ title['pid'] }} {{ title['title'] }} <mat-icon (click)="addTitleToContract(title, {checked:false})">delete</mat-icon>
 						</div>
 						}
 
 					</div>
 					<button matButton (click)="findTitles()">{{ 'action.find_titles' | translate }}</button>
+					<div class="app-w-100 app-fill">
+						@if(titles_found().length > 0) {
+							<h3>Titles found by ccnb and issn</h3>
+							@for(title of titles_found(); track $index) {
+							<div>
+								<mat-checkbox (change)="addTitleToContract(title, $event)">{{ title['pid'] }} {{ title['title'] }} {{ title['id_ccnb'] }} {{ title['id_issn'] }}</mat-checkbox>
+							</div>
+							}
+						}
+
+					</div>
 
 				</mat-tab>
 			</mat-tab-group>
