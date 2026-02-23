@@ -71,6 +71,8 @@ export class Results {
 
   viewType = signal<string>('table_view');
   displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']);
+  columnSizes: {[field: string]: number} = {};
+
   columnsToDisplayWithExpand = computed<string[]>(() => [...this.displayedColumns()]);
   expandedElement: any | null = null;
 
@@ -88,6 +90,9 @@ export class Results {
   ) {
     effect(() => {
       const usedFacets = this.state.usedFacets();
+      this.state.titleColumns().forEach(c => {
+        this.columnSizes[c.field] = c.width ? c.width : 100;
+      })
       this.getData();
     })
   }
@@ -277,6 +282,19 @@ export class Results {
   }
   toggle(element: any) {
     this.expandedElement = this.isExpanded(element) ? null : element;
+  }
+
+  saveColumnsSizes(e: any, field?: string) {
+
+      const el = this.state.titleColumns().find((c: any) => c.field === field);
+      if (el) {
+        el.width = e;
+      } else {
+        console.log("nemelo by")
+      }
+      console.log(el, this.state.titleColumns())
+      localStorage.setItem('titleColumns', JSON.stringify(this.state.titleColumns()));
+
   }
   
 }

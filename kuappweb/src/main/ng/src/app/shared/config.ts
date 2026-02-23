@@ -14,7 +14,7 @@ export class Configuration {
   keycloak: {clientId: string, loginType: string, logoutUrl: string};
   
   states: {value: string, licenses: string[]}[];
-  titleColumns: {field: string, selected: boolean}[];
+  titleColumns: {field: string, selected: boolean, width: number}[];
   licenses: string[];
   digitalni_knihovny: string[];
 }

@@ -20,7 +20,7 @@ import { AppService } from '../../app.service';
 })
 export class ColumnsSettingsDialog {
 
-  public allColumns: { field: string, selected: boolean }[];
+  public allColumns: { field: string, selected: boolean, width: number }[];
 
   constructor(
     public dialogRef: MatDialogRef<ColumnsSettingsDialog>,

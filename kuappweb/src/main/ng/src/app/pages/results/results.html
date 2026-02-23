@@ -58,7 +58,7 @@
             (matSortChange)="sortTable($event)" multiTemplateDataRows>
 
             <ng-container matColumnDef="pid">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'pid')" [style.width]="columnSizes['pid'] + 'px'">
                 <div class="app-fxLayout app-row app-center-v app-gap-1 app-ml-1">
                   <button (click)="setColumns()" mat-icon-button [matTooltip]="'editor.children.select_columns' | translate" color="primary" class="app-ml-n1">
                     <mat-icon class="material-icons-outlined">view_column</mat-icon>
@@ -77,14 +77,14 @@
             </ng-container>
 
             <ng-container matColumnDef="title">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.title' | translate }}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'title')" [style.width]="columnSizes['title'] + 'px'"><span mat-sort-header>{{ 'field.title' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">
                 {{ doc.title }}
               </td>
             </ng-container>
 
             <ng-container matColumnDef="state">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.state' | translate }}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'state')" [style.width]="columnSizes['state'] + 'px'"><span mat-sort-header>{{ 'field.state' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">
                 <div class="app-badge app-text-cutter-wrapper" [ngClass]="'app-' + doc.state | lowercase" [matTooltip]="'state.' + doc.state | translate">
                   <div class="app-text-cutter">
@@ -95,7 +95,7 @@
             </ng-container>
 
             <ng-container matColumnDef="authors">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.authors' | translate }}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'authors')" [style.width]="columnSizes['authors'] + 'px'"><span mat-sort-header>{{ 'field.authors' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">
                 @for(a of doc.authors_kramerius; track $index) {
                   <span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><!-- <mat-icon>info</mat-icon> -->
@@ -109,32 +109,32 @@
             </ng-container>
 
             <ng-container matColumnDef="date_range_start.year">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.dateIssued' | translate }}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'date_range_start.year')" [style.width]="columnSizes['date_range_start.year'] + 'px'"><span mat-sort-header>{{ 'field.dateIssued' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc['date.str']  }}</td>
             </ng-container>
 
             <ng-container matColumnDef="sigla">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.sigla' | translate }}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'sigla')" [style.width]="columnSizes['sigla'] + 'px'"><span mat-sort-header>{{ 'field.sigla' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc['physical_locations.facet'] }}</td>
             </ng-container>
 
             <ng-container matColumnDef="license">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.license' | translate }}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'license')" [style.width]="columnSizes['license'] + 'px'"><span mat-sort-header>{{ 'field.license' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc['assigned_license'] }}</td>
             </ng-container>
 
             <ng-container matColumnDef="indextime">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.indextime' | translate }}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'indextime')" [style.width]="columnSizes['indextime'] + 'px'"><span mat-sort-header>{{ 'field.indextime' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc.indextime | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="decision_date">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.decision_date' | translate }}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'decision_date')" [style.width]="columnSizes['decision_date'] + 'px'"><span mat-sort-header>{{ 'field.decision_date' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc.decision_date | date : 'yyyy' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="release_date">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.release_date' | translate}}</span></th>
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'release_date')" [style.width]="columnSizes['release_date'] + 'px'"><span mat-sort-header>{{ 'field.release_date' | translate}}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc.release_date | date : 'yyyy' }}</td>
             </ng-container>
 

@@ -72,12 +72,13 @@ import { Label } from './shared/label';
                     // const c = resp.config.find((a: any) => a.id === 'titleColumns')?.value;
                     const c = localStorage.getItem('titleColumns');
                     if (c) {
-                        const cols: {field: string, selected: boolean}[] = JSON.parse(c);
+                        const cols: {field: string, selected: boolean, width: number}[] = JSON.parse(c);
                         // Check if new columns are in config. Then add to state
                         confC.forEach(col => {
-                            const localCol = cols.find((lc: {field: string, selected: boolean}) => lc.field === col.field)
+                            const localCol = cols.find((lc: {field: string, selected: boolean, width: number}) => lc.field === col.field)
                             if (localCol) {
                                 col.selected = localCol.selected;
+                                col.width = localCol.width;
                             }
                         });
                         this.state.titleColumns.update(a => [...cols]);
