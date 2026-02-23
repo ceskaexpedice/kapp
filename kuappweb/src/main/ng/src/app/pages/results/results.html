@@ -1,4 +1,4 @@
-@if(loading){<mat-progress-bar mode="indeterminate"></mat-progress-bar>}
+@if(loading()){<mat-progress-bar mode="indeterminate"></mat-progress-bar>}
 <div class="app-container-fluid app-h-100">
   <div class="app-fxLayout app-row app-fill app-gap-8">
     @if(solrResponse?.facets) {
@@ -10,7 +10,9 @@
           'licenses', 
           'physical_locations',
           'digital_library',
-          'model'
+          'model',
+          'authors',
+          'date'
           ]" [facets]="solrResponse.facets"></app-facets>
     </div>
     }
@@ -104,9 +106,9 @@
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="dateIssued">
+            <ng-container matColumnDef="date.str">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.dateIssued' | translate }}</span></th>
-              <td mat-cell *matCellDef="let doc">{{ doc.dateIssued | date : 'dd.MM.yyyy' }}</td>
+              <td mat-cell *matCellDef="let doc">{{ doc['date.str']  }}</td>
             </ng-container>
 
             <ng-container matColumnDef="sigla">

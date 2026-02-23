@@ -42,7 +42,7 @@
         {"field": "title", "selected": true},
         {"field": "authors", "selected": true},
         {"field": "state", "selected": true},
-        {"field": "dateIssued", "selected": true},
+        {"field": "date.str", "selected": true},
         {"field": "indextime", "selected": true},
         {"field": "decision_date", "selected": false},
         {"field": "release_date", "selected": false},

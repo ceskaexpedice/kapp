@@ -1,6 +1,7 @@
 package cz.nkp.kuapp.kuappweb.index;
 
 import cz.nkp.kuapp.kuappweb.FormatUtils;
+import cz.nkp.kuapp.kuappweb.Options;
 import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
@@ -14,8 +15,10 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.xml.stream.XMLInputFactory;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -46,6 +49,42 @@ public class AUTIndexer {
         JSONObject ret = new JSONObject();
         Date start = new Date();
         ret = fromURL(OAI_Base + "?verb=ListRecords&metadataPrefix=marc21&set=AUT");
+        Date end = new Date();
+        String ellapsed = FormatUtils.formatInterval(end.getTime() - start.getTime());
+        ret.put("ellapsed time", ellapsed);
+        LOGGER.log(Level.INFO, "Indexing {0} FINISHED. indexed {1}. Time: {2}", new Object[]{"AUT", ret.getInt("aut"), ellapsed});
+        return ret;
+    }
+    
+    private String getLastDateStamp() {
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrQuery query = new SolrQuery()
+                    .setQuery("*")
+                    .setSort(SolrQuery.SortClause.desc("datestamp"))
+                    .setFields("datestamp")
+                    .setRows(1);
+
+            SolrDocumentList docs = solr.query("aut", query).getResults();
+            if (docs.getNumFound() > 0) {
+                return docs.get(0).getFirstValue("datestamp").toString();
+            } else {
+                return null;
+            }
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            return null;
+        }
+    }
+    
+    public JSONObject update() {
+        Date start = new Date();
+        String from = getLastDateStamp();
+        String url = OAI_Base + "?verb=ListRecords&metadataPrefix=marc21&set=AUT";
+        if (from != null) {
+            url += "&from=" + from;
+        }
+        JSONObject ret = fromURL(url);
         Date end = new Date();
         String ellapsed = FormatUtils.formatInterval(end.getTime() - start.getTime());
         ret.put("ellapsed time", ellapsed);

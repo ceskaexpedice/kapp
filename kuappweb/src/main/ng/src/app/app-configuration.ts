@@ -68,22 +68,25 @@ import { Label } from './shared/label';
                         this.state.batches.set(b.value);
                     }
                     
+                    const confC = [...this.config.titleColumns];
                     // const c = resp.config.find((a: any) => a.id === 'titleColumns')?.value;
                     const c = localStorage.getItem('titleColumns');
                     if (c) {
                         const cols: {field: string, selected: boolean}[] = JSON.parse(c);
                         // Check if new columns are in config. Then add to state
-                        this.config.titleColumns.forEach(col => {
-                            if (!cols.find((lc: {field: string, selected: boolean}) => lc.field === col.field)) {
-                                cols.push(col);
+                        confC.forEach(col => {
+                            const localCol = cols.find((lc: {field: string, selected: boolean}) => lc.field === col.field)
+                            if (localCol) {
+                                col.selected = localCol.selected;
                             }
                         });
                         this.state.titleColumns.update(a => [...cols]);
-                        //this.state.titleColumns.update(a => [...c]);
                     } else {
-                        this.state.titleColumns.update(a => [...this.config.titleColumns]);
+                        //this.state.titleColumns.update(a => [...this.config.titleColumns]);
                     }
-                    
+
+                    this.state.titleColumns.update(a => [...confC]);
+
                     const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels')?.value;
                     if (labelsC) {
                         labelsC.forEach(l => {

@@ -69,6 +69,9 @@ public class IndexSearcher {
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(100)
                             .setMinCount(1))
+                    .withFacet("authors", new TermsFacetMap("authors")
+                            .setLimit(100)
+                            .setMinCount(1))
                     .withFacet("assigned_license", new TermsFacetMap("assigned_license")
                             .setLimit(100)
                             .setMinCount(1))
@@ -83,6 +86,9 @@ public class IndexSearcher {
                             .setMinCount(1))
                     .withFacet("physical_locations", new TermsFacetMap("physical_locations.facet")
                             .setLimit(100)
+                            .setMinCount(1))
+                    .withFacet("date", new TermsFacetMap("date_range_start.year")
+                            .setLimit(20)
                             .setMinCount(1))
                     .setOffset(offset)
                     .setSort(sort)
@@ -117,6 +123,10 @@ public class IndexSearcher {
 
             if (request.getParameter("physical_locations") != null) {
                 jrequest = jrequest.withFilter("{!tag=fffl}physical_locations.facet:(\"" + String.join("\" OR \"", request.getParameterValues("physical_locations")) + "\")");
+            }
+
+            if (request.getParameter("date") != null) {
+                jrequest = jrequest.withFilter("date_range_start.year:" + request.getParameter("date"));
             }
 
             if (request.getParameter("export") != null) {

@@ -54,7 +54,7 @@ import { Batch } from '../../shared/batch';
   styleUrl: './results.scss'
 })
 export class Results {
-  loading: boolean;
+  loading = signal(false);
   solrResponse: any;
   docs = signal<any[]>([]);
   hasFacets = signal<boolean>(false);
@@ -112,6 +112,7 @@ export class Results {
     p.licenses = usedFacets.filter(k => k.field === 'licenses').map(k => k.value);
     p.digital_library = usedFacets.filter(k => k.field === 'digital_library').map(k => k.value);
     p.model = usedFacets.filter(k => k.field === 'model').map(k => k.value);
+    p.date = usedFacets.filter(k => k.field === 'date').map(k => k.value);
   }
 
   clearQ() {
@@ -132,6 +133,7 @@ export class Results {
   }
 
   getData(csv: boolean = false) {
+    this.loading.set(true);
     const p: any = {};
     p.rows = this.rows;
     p.offset = this.pageIndex * p.rows;
@@ -152,6 +154,8 @@ export class Results {
       s = this.service.searchAuthors(p as HttpParams);
     }
     s.subscribe((resp: any) => {
+      
+    this.loading.set(false);
       if (csv) {
         this.downLoadFile(resp)
         return;

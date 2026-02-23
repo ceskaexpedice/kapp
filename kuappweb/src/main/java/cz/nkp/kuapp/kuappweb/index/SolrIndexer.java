@@ -138,6 +138,7 @@ public class SolrIndexer {
     }
 
     // Save changes to author
+    // Add / modify kapp_authors field
     public static JSONObject saveAuthor(JSONObject js) {
 
         JSONObject ret = new JSONObject(); 
