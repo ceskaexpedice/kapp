@@ -130,12 +130,12 @@
 
             <ng-container matColumnDef="decision_date">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.decision_date' | translate }}</span></th>
-              <td mat-cell *matCellDef="let doc">{{ doc.decision_date | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
+              <td mat-cell *matCellDef="let doc">{{ doc.decision_date | date : 'yyyy' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="release_date">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true"><span mat-sort-header>{{ 'field.release_date' | translate}}</span></th>
-              <td mat-cell *matCellDef="let doc">{{ doc.release_date | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
+              <td mat-cell *matCellDef="let doc">{{ doc.release_date | date : 'yyyy' }}</td>
             </ng-container>
 
             <ng-container matColumnDef="action">

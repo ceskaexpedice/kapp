@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { Router, RouterModule } from '@angular/router';
@@ -8,6 +8,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
 import { AppState } from '../../app-state';
+import { AppService } from '../../app.service';
 
 @Component({
   selector: 'app-home',
@@ -19,11 +20,26 @@ import { AppState } from '../../app-state';
 })
 export class Home {
 
+  readonly service = inject(AppService);
+
   q: string;
+  titles = signal<number>(0);
+  authors = signal<number>(0);
   constructor(
     private router: Router,
     public state: AppState
   ) { }
+
+  ngOnInit() {
+    this.getHome();
+  }
+
+  getHome() {
+    this.service.getHome().subscribe((res: any) => {
+      this.titles.set(res.titles)
+      this.authors.set(res.authors)
+    })
+  }
 
   doSearch(target: string) {
 
@@ -36,7 +52,7 @@ export class Home {
   newImported() {
 
     this.state.usedFacets.set([
-      {field: 'labels', value: 'new_imported'}
+      { field: 'labels', value: 'new_imported' }
     ]);
     this.doSearch('titles');
 
@@ -45,7 +61,7 @@ export class Home {
   toControll() {
 
     this.state.usedFacets.set([
-      {field: 'state', value: 'to_control'}
+      { field: 'state', value: 'to_control' }
     ]);
     this.doSearch('titles');
   }

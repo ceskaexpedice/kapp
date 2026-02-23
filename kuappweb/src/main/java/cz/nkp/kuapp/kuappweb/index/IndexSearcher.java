@@ -28,6 +28,32 @@ public class IndexSearcher {
     public static final Logger LOGGER = Logger.getLogger(IndexSearcher.class.getName());
     final static SimpleDateFormat dtformatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
+    public static JSONObject home(HttpServletRequest request) {
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            String q = "*";
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery(q)
+                    .setLimit(0);
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+                
+            NamedList<Object> resp = solr.request(jrequest, "titles");
+            InputStream is = (InputStream) resp.get("stream");
+            
+            ret.put("titles", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
+            
+            resp = solr.request(jrequest, "authors");
+            is = (InputStream) resp.get("stream");
+            ret.put("authors", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
+            
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
     public static JSONObject searchTitles(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {

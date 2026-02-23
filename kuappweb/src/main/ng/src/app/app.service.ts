@@ -78,6 +78,10 @@ export class AppService {
     return of({ response: { 'status': error.status, 'message': error.message, 'errors': [error.error] } });
   }
 
+  getHome(): Observable<any> {
+    return this.get('index/home');
+  }
+
   searchTitles(params: HttpParams, csv: boolean = false): Observable<any> {
     
     const headers = csv ? 'plain/text' : null;
