@@ -1,8 +1,7 @@
-<div class="app-container-fluid app-h-100">
-	@if (loading()) {
+@if (loading()) {
 	<mat-progress-bar mode="indeterminate" [value]="uploadProgress"></mat-progress-bar>
-	<div>{{ progressMsg | translate }}</div>
-	}
+}
+<div class="app-container-fluid app-h-100">
 	<div class="app-fxLayout app-row app-fill">
 		<div class="app-left"></div>
 		<div class="app-fxFlex app-right">
@@ -24,15 +23,14 @@
 
 			<div class="app-fxLayout app-row app-center-v app-gap-2 app-mb-4 app-drop-zone" (drop)="onFileDrop($event)">
 				<input type="file" #fileUpload style="display: none" (change)="onFileSelected($event)" />
-				<button matPrefix mat-stroked-button color="primary" (click)="fileUpload.click()">
+				<button matButton="filled" (click)="fileUpload.click()">
 					{{ 'action.contract_upload' | translate }}
 				</button>
 				@if (selctedFileExists()) {
-				<span class="app-color-warn">&#160;{{ 'contract_exists' | translate : {filename:selectedFile?.name} }}
-					&#160;</span>
-				<button mat-stroked-button matSuffix (click)="uploadFile()">
-					{{ 'action.overwrite' | translate}}
-				</button>
+					<span class="app-color-warn" [innerHTML]="'contract_exists' | translate : {filename:selectedFile?.name}"></span>
+					<button matButton="filled" class="app-warn" matSuffix (click)="uploadFile()">
+						{{ 'action.overwrite' | translate}}
+					</button>
 				}
 				<mat-checkbox [(ngModel)]="analyze">{{'contract_analyze' | translate}}</mat-checkbox>
 			</div>

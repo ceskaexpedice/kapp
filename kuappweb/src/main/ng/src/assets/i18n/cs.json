@@ -12,7 +12,7 @@
   "history": "Historie",
   "batch_alert": "pro celou dávku",
   "titleColumns_dialog": "Výběr sloupců",
-  "contract_exists": "Soubor {{filename}} jiz existuje.",
+  "contract_exists": "Soubor <strong>{{ filename }}</strong> jiz existuje.",
   "contract": "Smlouva",
   "contract_analyze": "Analyzovat pomocí GEMINI",
   "uploading": "Nahrávám",

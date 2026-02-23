@@ -166,6 +166,7 @@ $home_cards: (
   }
 
 
+  // --- button ---
   @include mat.button-overrides((
     outlined-outline-color: var(--app-color-gray-3),
     outlined-container-height: var(--app-button-height),
@@ -175,6 +176,13 @@ $home_cards: (
     //text-container-shape: var(--app-radius-default),
     text-container-height: var(--app-button-height)
   ));
+  .mdc-button {
+    &.app-warn {
+      @include mat.button-overrides((
+        filled-container-color: var(--app-color-warn)
+      ));
+    }
+  }
   .mat-mdc-form-field {
     .mat-mdc-form-field-icon-suffix {
       margin-right: 4px;
@@ -230,7 +238,7 @@ $home_cards: (
   }
 
 
-
+  // --- toggle button ---
   @include mat.button-toggle-overrides((
     height: var(--app-button-height),
     divider-color: var(--app-color-gray-3),
@@ -464,6 +472,12 @@ $home_cards: (
     @include mat.dialog-overrides((
       container-min-width: 1000px
     ));
+  }
+
+
+  // --- progress bar ---
+  .mat-mdc-progress-bar {
+    position: absolute;
   }
 
 

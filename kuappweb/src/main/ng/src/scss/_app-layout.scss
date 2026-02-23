@@ -22,6 +22,10 @@ body {
   font-size: 14px;
 }
 
+.app-content-wrapper {
+  position: relative;
+}
+
 .app-container {
   margin: 0 auto;
   max-width: var(--app-container);
@@ -35,4 +39,3 @@ body {
   width: 100%;
   padding: 16px;
 }
-

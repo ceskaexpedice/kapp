@@ -12,7 +12,7 @@
   "history": "History",
   "batch_alert": "for the entire dose",
   "titleColumns_dialog": "Columns settings",
-  "contract_exists": "File {{filename}} already exists",
+  "contract_exists": "File <strong>{{filename}}</strong> already exists",
   "contract": "Contract",
   "contract_analyze": "Analyze with GEMINI",
   "uploading": "Processing",
