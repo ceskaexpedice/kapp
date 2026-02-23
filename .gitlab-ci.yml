@@ -33,7 +33,7 @@ publish_all_manual:
     - echo "Registry - $CI_REGISTRY"
     - echo "User - $CI_REGISTRY_USER"
     - echo "JobToken - $CI_JOB_TOKEN"
-    - echo "Target- registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kuappweb"
+    - echo "Target- registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb"
     - echo "Prepinam se do adresare $APP_DIR"
     - cd $APP_DIR
     - mvn clean install -s ../settings.xml -DskipTests
