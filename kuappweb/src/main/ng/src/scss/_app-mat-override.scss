@@ -213,7 +213,8 @@ $home_cards: (
       @include mat.button-overrides((
         outlined-outline-color: rgba(var(--app-color-lightnes-rgb), .7),
         outlined-label-text-color: var(--app-color-lightnes),
-        outlined-hover-state-layer-opacity: 0.2
+        outlined-hover-state-layer-opacity: 0.2,
+        outlined-container-shape: calc(var(--app-button-height) / 2)
       ));
     }
   }
