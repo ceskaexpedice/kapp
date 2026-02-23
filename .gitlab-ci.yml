@@ -32,7 +32,7 @@ publish_all_manual:
   script:
     - echo "Prepinam se do adresare $APP_DIR"
     - cd $APP_DIR
-    - mvn deploy -s ../settings.xml -DskipTests
+    - mvn clean install -s ../settings.xml -DskipTests
     - mvn jib:build -Djib.to.auth.username=$CI_REGISTRY_USER -Djib.to.auth.password=$CI_JOB_TOKEN -DskipTests
   when: manual
   allow_failure: false
