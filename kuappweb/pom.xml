@@ -14,7 +14,6 @@
         <context.name>/kuappweb/</context.name>
         <skipNg>false</skipNg>
         <skipNpmInstall>false</skipNpmInstall>
-        
     </properties>
 
     <dependencies>
@@ -93,7 +92,11 @@
                     </from>
 
                     <to>
-                        <image>jiriminov/kuappweb:latest</image>
+                        <image>registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kuappweb</image>
+                        <tags>
+                            <tag>latest</tag>
+                            <tag>${project.version}</tag>
+                        </tags>
                     </to>
 
                     <container>
