@@ -19,6 +19,7 @@
   "processing": "Processing",
   "copy_text_to_clipboard": "Copy text to clipboard",
   "remove_this_record": "Remove this record",
+  "titles_found_ccnb_issn": "Titles found via ccnb and issn",
   "home": {
     "titles": "Titles",
     "authors": "Authors",
@@ -69,7 +70,9 @@
     "souhrn": "Summary",
     "assigned_license": "Assigned license",
     "model": "Model",
-    "contracts": "Contracts"
+    "contracts": "Contracts",
+    "ccnb": "Ccnb",
+    "issn": "Issn"
   },
   "action": {
     "view": "View",
@@ -93,7 +96,9 @@
     "import_batch": "Import batch",
     "card_view": "Cards",
     "table_view": "Table",
-    "contract_upload": "Upload contract"
+    "contract_upload": "Upload contract",
+    "find_titles": "Find titles",
+    "analyze": "Analyze"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "nekontrolované",

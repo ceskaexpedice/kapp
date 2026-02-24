@@ -22,6 +22,7 @@ import { MatAutocompleteModule } from '@angular/material/autocomplete';
 import { MatTabsModule } from '@angular/material/tabs';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 import { MatSelectModule } from '@angular/material/select';
+import { MatTableModule } from '@angular/material/table';
 
 @Component({
   selector: 'app-contract-dialog',
@@ -33,7 +34,7 @@ import { MatSelectModule } from '@angular/material/select';
     MatProgressBarModule, MatAutocompleteModule,
     MatListModule, MatTooltipModule, MatTabsModule,
     MatCheckbox, NgxExtendedPdfViewerModule,
-    MatSelectModule
+    MatSelectModule, MatTableModule
   ],
   templateUrl: './contract-dialog.html',
   styleUrl: './contract-dialog.scss'
@@ -67,6 +68,8 @@ export class ContractDialog {
   titles_found = signal<any[]>([]);
   ccnb: string = '';
   issn: string = '';
+
+  displayedColumns = ['pid', 'title', 'action'];
 
 
   constructor(
