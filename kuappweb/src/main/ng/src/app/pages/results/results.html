@@ -154,8 +154,9 @@
                   </button>
                 <mat-menu #batchesMenu="matMenu">
                   @for(a of state.batches(); track $index) {
-                    <button mat-menu-item (click)="addToBatch(a, doc)">
-                      <mat-icon>{{ inBatch(a.name, doc) ? 'check' : 'none'}}</mat-icon>{{ a.name }}
+                    <button mat-menu-item (click)="addToBatch(a, doc)" class="app-text-cutter-wrapper" [matTooltip]="a.name">
+                      @if (inBatch(a.name, doc)) { <mat-icon>check_box</mat-icon> }
+                      {{ a.name }}
                     </button>
                   }
                 </mat-menu>
@@ -164,8 +165,9 @@
                   </button>
                 <mat-menu #contractsMenu="matMenu">
                   @for(a of contracts(); track $index) {
-                    <button mat-menu-item (click)="addToContract(a.filename, doc)">
-                      <mat-icon>{{ inContract(a.filename, doc) ? 'check' : 'none'}}</mat-icon>{{ a.filename }}
+                    <button mat-menu-item (click)="addToContract(a.filename, doc)" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
+                      @if (inContract(a.filename, doc)) { <mat-icon>check_box</mat-icon> }
+                      {{ a.filename }}
                     </button>
                   }
                 </mat-menu>
