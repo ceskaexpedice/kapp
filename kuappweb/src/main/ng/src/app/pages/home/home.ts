@@ -23,8 +23,9 @@ export class Home {
   readonly service = inject(AppService);
 
   q: string;
-  titles = signal<number>(0);
-  authors = signal<number>(0);
+  // titles = signal<number>(0);
+  // authors = signal<number>(0);
+  totals = signal<{titles:number, authors: number, contracts: number}>(null);
   constructor(
     private router: Router,
     public state: AppState
@@ -36,8 +37,7 @@ export class Home {
 
   getHome() {
     this.service.getHome().subscribe((res: any) => {
-      this.titles.set(res.titles)
-      this.authors.set(res.authors)
+      this.totals.set(res)
     })
   }
 

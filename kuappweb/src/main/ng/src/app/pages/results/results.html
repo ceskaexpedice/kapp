@@ -172,7 +172,7 @@
                   </button>
                 <mat-menu #contractsMenu="matMenu">
                   @for(a of contracts(); track $index) {
-                    <button mat-menu-item (click)="addToContract(a.filename, doc)" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
+                    <button mat-menu-item (click)="addToContract(a, doc)" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
                       @if (inContract(a.filename, doc)) { <mat-icon>check_box</mat-icon> }
                       {{ a.filename }}
                     </button>

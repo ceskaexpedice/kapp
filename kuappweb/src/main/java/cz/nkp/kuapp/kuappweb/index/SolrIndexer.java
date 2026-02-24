@@ -121,11 +121,23 @@ public class SolrIndexer {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
-
+            
             Map<String, Object> partialUpdate = new HashMap<>();
             String modifier = js.optBoolean("selected") ? "set" : "remove";
             partialUpdate.put(modifier, js.getString("contract"));
             doc.setField("contracts", partialUpdate);
+            
+            if (js.optBoolean("withState")) {
+            
+                Map<String, Object> partialUpdateS = new HashMap<>();
+                partialUpdateS.put("set", "KONTROLOVANE_NEVEREJNE_LICENCE");
+                doc.setField("state", partialUpdateS);
+            
+                Map<String, Object> partialUpdateL = new HashMap<>();
+                partialUpdateL.put("set", js.getString("licence"));
+                doc.setField("licences", partialUpdateL);
+                
+            }
 
             solr.add("titles", doc);
             solr.commit("titles");

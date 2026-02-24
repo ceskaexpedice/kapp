@@ -40,13 +40,15 @@ public class IndexSearcher {
                 
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            
             ret.put("titles", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
             
             resp = solr.request(jrequest, "authors");
             is = (InputStream) resp.get("stream");
             ret.put("authors", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
             
+            resp = solr.request(jrequest, "contracts");
+            is = (InputStream) resp.get("stream");
+            ret.put("contracts", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);

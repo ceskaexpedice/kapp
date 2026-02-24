@@ -71,6 +71,8 @@ export class ContractDialog {
   ccnb: string = '';
   issn: string = '';
 
+  withState: boolean = true;
+
   displayedColumns = ['pid', 'title', 'action'];
 
 
@@ -169,7 +171,7 @@ export class ContractDialog {
   }
 
   addTitleToContract(doc: any, e: any) {
-    this.service.saveDocContract(doc.pid, this.contract().filename, e.checked).subscribe((res: any) => {
+    this.service.saveDocContract(doc.pid, this.contract().filename, this.withState, e.checked, this.contract().license).subscribe((res: any) => {
       console.log(res);
       this.getTitles();
     })

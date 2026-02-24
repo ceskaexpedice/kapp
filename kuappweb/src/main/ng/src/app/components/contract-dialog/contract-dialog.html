@@ -119,6 +119,7 @@
 				<mat-tab [label]="'PDF'">
 					<ngx-extended-pdf-viewer [src]="'/api/pdf?filename=' + contract().filename" [textLayer]="true" [showHandToolButton]="true" [showPresentationModeButton]="true"></ngx-extended-pdf-viewer>
 				</mat-tab>
+
 				<mat-tab [label]="'navbar.titles' | translate">
 					<div class="app-table-wrapper app-mt-4 app-mb-4">
 						<table mat-table [dataSource]="titles()" class="app-hover">
@@ -142,8 +143,9 @@
 							<tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
 						</table>
 					</div>
-					<button matButton="outlined" (click)="findTitles()">{{ 'action.find_titles' | translate }}</button>
+					<button matButton="outlined" (click)="findTitles()">{{ 'action.find_titles' | translate }}</button> 
 					@if(titles_found().length > 0) {
+					<mat-checkbox appearance="outline" [(ngModel)]="withState">{{ 'field.withState' | translate }}</mat-checkbox>
 						<mat-card appearance="outlined" class="app-mt-4">
 							<mat-card-header class="app-mb-2">
 								<mat-card-title>{{ 'titles_found_ccnb_issn' | translate }}</mat-card-title>

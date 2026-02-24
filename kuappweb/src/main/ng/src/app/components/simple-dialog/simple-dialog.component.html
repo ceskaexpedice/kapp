@@ -1,0 +1,50 @@
+<div cdkDrag cdkDragRootElement=".cdk-overlay-pane" cdkDragHandle>
+  <h1 mat-dialog-title>{{ data.title }}</h1>
+  <div mat-dialog-content class="app-scrollbar-fix">
+    @if(data.message){
+    <mat-card appearance="outlined" class="app-alert" [ngClass]="data.alertClass ? data.alertClass : null">
+      <mat-card-content>
+        @if(data.alertClass === 'app-warn' || data.alertClass === 'app-info'){
+        <mat-icon>{{ data.alertClass ===
+          'app-warn' ? 'warning' : 'info' }}</mat-icon>
+        }
+        {{ data.message }}
+      </mat-card-content>
+    </mat-card>}
+    @if(data.numberInput || data.textInput || data.textAreaInput){
+    <div class="app-fxLayout app-row app-gap-2 app-mt-4">
+
+      <mat-form-field *ngIf="data.numberInput" class="app-fxFlex">
+        <mat-label>{{ data.numberInput.label }}</mat-label>
+        <input type="number" step="1" [min]="data.numberInput.min" [max]="data.numberInput.max" autocomplete="off"
+          matInput [placeholder]="data.numberInput.label" [(ngModel)]="data.numberInput.value">
+      </mat-form-field>
+
+      <mat-form-field *ngIf="data.textInput" class="app-fxFlex">
+        <mat-label>{{ data.textInput.label }}</mat-label>
+        <input type="text" step="1" matInput [placeholder]="data.textInput.label" [(ngModel)]="data.textInput.value">
+      </mat-form-field>
+
+      <mat-form-field *ngIf="data.textAreaInput" class="app-fxFlex">
+        <mat-label>{{ data.textAreaInput.label }}</mat-label>
+        <textarea [rows]="data.rows ? data.rows : 5" matInput [placeholder]="data.textAreaInput.label"
+          [(ngModel)]="data.textAreaInput.value"></textarea>
+      </mat-form-field>
+
+    </div>
+    }
+
+    @for (ch of data.checkboxes; track $index) {
+    <mat-checkbox color="primary" [(ngModel)]="ch.checked" class="app-mt-4">{{ ch.label }}</mat-checkbox>
+    }
+
+  </div>
+  <div mat-dialog-actions cdkFocusRegionstart>
+    <button mat-button [class]="data.btn1.color" [mat-dialog-close]="data.btn1.value" [disabled]="!btnEnabled()"
+      cdkFocusInitial>{{ data.btn1.label }}</button>
+    @if(data.btn2){
+    <button mat-button [class]="data.btn2.color" [mat-dialog-close]="data.btn2.value">{{ data.btn2.label }}</button>
+    }
+
+  </div>
+</div>

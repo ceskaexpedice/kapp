@@ -38,6 +38,9 @@ import { MatMenuModule } from "@angular/material/menu";
 import { AuthorDialog } from '../../components/author-dialog/author-dialog';
 import { Batch } from '../../shared/batch';
 import { StateDialog } from '../../components/state-dialog/state-dialog';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
+import { SimpleDialogData } from '../../components/simple-dialog/simple-dialog';
+import { Contract } from '../../shared/contract';
 
 @Component({
   selector: 'app-results',
@@ -50,7 +53,7 @@ import { StateDialog } from '../../components/state-dialog/state-dialog';
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem, AuthorItem, MatMenuModule, LowerCasePipe,
     NgClass
-],
+  ],
   templateUrl: './results.html',
   styleUrl: './results.scss'
 })
@@ -72,7 +75,7 @@ export class Results {
 
   viewType = signal<string>('table_view');
   displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']);
-  columnSizes: {[field: string]: number} = {};
+  columnSizes: { [field: string]: number } = {};
 
   columnsToDisplayWithExpand = computed<string[]>(() => [...this.displayedColumns()]);
   expandedElement: any | null = null;
@@ -177,8 +180,8 @@ export class Results {
       s = this.service.searchAuthors(p as HttpParams);
     }
     s.subscribe((resp: any) => {
-      
-    this.loading.set(false);
+
+      this.loading.set(false);
       if (csv) {
         this.downLoadFile(resp)
         return;
@@ -236,7 +239,7 @@ export class Results {
   // -- pedro
   addAuthor(doc: any) {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: {pid:doc.pid, author:null},
+      data: { pid: doc.pid, author: null },
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -255,23 +258,23 @@ export class Results {
     if (doc.is_hierarchical) {
       return;
     }
-  
-      const dialogRef = this.dialog.open(StateDialog, {
-        data: {isBatch: false, doc: doc},
-        panelClass: "app-dialog-state"
-      });
-  
-      dialogRef.afterClosed().subscribe(result => {
-        console.log(result)
-        if (result) {
-          this.service.getDoc(doc.pid).subscribe((resp: any) => {
-            if (resp.response?.docs?.length > 0) {
-              doc = resp.response.docs[0];
-            }
-          });
-        }
-      });
-    }
+
+    const dialogRef = this.dialog.open(StateDialog, {
+      data: { isBatch: false, doc: doc },
+      panelClass: "app-dialog-state"
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(result)
+      if (result) {
+        this.service.getDoc(doc.pid).subscribe((resp: any) => {
+          if (resp.response?.docs?.length > 0) {
+            doc = resp.response.docs[0];
+          }
+        });
+      }
+    });
+  }
 
   inBatch(s: string, doc: any) {
     return doc['batch']?.includes(s)
@@ -280,11 +283,11 @@ export class Results {
   inContract(filename: string, doc: any) {
     return doc['contracts']?.includes(filename)
   }
-  
+
   addToBatch(b: Batch, doc: any) {
     this.saveDocBatch(b.name, doc);
   }
-  
+
   saveDocBatch(bs: string, doc: any) {
     this.service.saveDocBatch(doc.pid, bs).subscribe((res: any) => {
       console.log(res);
@@ -292,11 +295,39 @@ export class Results {
     })
   }
 
-  addToContract(contract: string, doc: any) {
-    this.service.saveDocContract(doc.pid, contract, !this.inContract(contract, doc)).subscribe((res: any) => {
-      console.log(res)
-    })
-    
+  addToContract(contract: Contract, doc: any) {
+    const checkboxes = [{
+      label: String('Zaroven menit licence'),
+      checked: true
+    }];
+
+    const data: SimpleDialogData = {
+      title: 'Prizeni dilo k smlouve',
+      message: 'Opravdu chcete priradit dilo k smlouve?',
+      alertClass: 'app-message',
+      btn1: {
+        label: 'Ano',
+        value: 'yes',
+        color: 'warn'
+      },
+      btn2: {
+        label: 'Ne',
+        value: 'no',
+        color: 'default'
+      }
+    };
+    data.checkboxes = checkboxes;
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
+      data: data
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'yes') {
+        this.service.saveDocContract(doc.pid, contract.filename, checkboxes[0].checked, !this.inContract(contract.filename, doc), contract.license).subscribe((res: any) => {
+          console.log(res)
+        })
+      }
+    });
+
   }
 
   // -- expanded table row
@@ -309,15 +340,15 @@ export class Results {
 
   saveColumnsSizes(e: any, field?: string) {
 
-      const el = this.state.titleColumns().find((c: any) => c.field === field);
-      if (el) {
-        el.width = e;
-      } else {
-        console.log("nemelo by")
-      }
-      console.log(el, this.state.titleColumns())
-      localStorage.setItem('titleColumns', JSON.stringify(this.state.titleColumns()));
+    const el = this.state.titleColumns().find((c: any) => c.field === field);
+    if (el) {
+      el.width = e;
+    } else {
+      console.log("nemelo by")
+    }
+    console.log(el, this.state.titleColumns())
+    localStorage.setItem('titleColumns', JSON.stringify(this.state.titleColumns()));
 
   }
-  
+
 }
