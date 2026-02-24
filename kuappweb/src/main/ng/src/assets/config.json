@@ -42,6 +42,7 @@
         {"field": "title", "selected": true},
         {"field": "authors", "selected": true},
         {"field": "state", "selected": true},
+        {"field": "model", "selected": true},
         {"field": "date_range_start.year", "selected": true},
         {"field": "indextime", "selected": true},
         {"field": "decision_date", "selected": false},

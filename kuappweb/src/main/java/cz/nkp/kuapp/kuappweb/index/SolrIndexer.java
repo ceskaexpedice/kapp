@@ -127,7 +127,6 @@ public class SolrIndexer {
             partialUpdate.put(modifier, js.getString("contract"));
             doc.setField("contracts", partialUpdate);
 
-            // doc.setField("labels", js.getJSONArray("labels").toString());
             solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
