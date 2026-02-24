@@ -138,29 +138,58 @@
 
 
 		@if (hasCollapsed) {
+			<table class="app-table app-mt-1">
+				<thead>
+					<tr>
+						<th colspan="4">{{ 'Části' | translate }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					@for (ch of related(); track ch) {
+						<tr>
+							<td>{{ ch['model']}}</td>
+							<td style="min-width: 200px">
+								<div class="app-text-cutter-wrapper">
+									<div class="app-text-cutter">{{ ch['root.title']}}</div>
+								</div>
+							</td>
+							<td class="app-col-icon">
+								@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
+									<a target="_blank" [href]="'https://ndk.cz/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon class="app-ml-1">open_in_new</mat-icon></a>
+								} @else {
+									<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon class="app-ml-1">open_in_new</mat-icon></a>
+								}
+							</td>
+							<td>
+								<a (click)="setState()"><strong>{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate }}</strong></a>
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+			<!-- to delete old code
 			<div class="app-metadata-row app-multiple">
 				<span class="app-label">{{ 'Části' | translate }}:</span>
+				
 				<ul class="app-clean-list">
 					@for (ch of related(); track ch) {
 						<li>
-							<!--<div class="app-fxLayout app-row  app-gap-2 app-center-v">-->
+						
 							<div class="app-fxLayout app-row app-gap-2 app-center-v app-nowrap">								
 								<span>(<i>{{ ch['model']}}</i>)</span>
 								<span class="app-pipe app-ml-0"></span> 
 								<span>{{ ch['root.title']}}</span> 
 								<span class="app-pipe app-ml-0"></span> 
 
-									<!-- TODO: Digital library-->	
+								
 								<div class="app-fxLayout app-row  app-gap-2 app-center-v">
 									@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
-										<!-- TODO: To configuration -->	
+									
 										<a target="_blank" [href]="'https://ndk.cz/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
 									} @else {
 										<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
 									}
-									<!--	
-									<a (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate }}</a>
-									-->
+								
 								</div>		
 								<span class="app-pipe app-ml-0"></span>
 									
@@ -172,7 +201,7 @@
 						</li>
 					}
 				</ul>
-			</div>
+			</div> -->
 		}
 	</mat-card-content>
 	<mat-card-actions align="end">
