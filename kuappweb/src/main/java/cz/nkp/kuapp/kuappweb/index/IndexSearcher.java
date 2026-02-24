@@ -16,6 +16,7 @@ import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
 import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
 import org.apache.solr.client.solrj.request.json.TermsFacetMap;
+import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.util.NamedList;
 import org.json.JSONObject;
 
@@ -77,7 +78,11 @@ public class IndexSearcher {
             }
             String q = "*";
             if (request.getParameter("q") != null) {
-                q = "{!boost b=query($modelboost)}" + request.getParameter("q");
+                String reqQ = request.getParameter("q");
+                if (!reqQ.startsWith("\"")) {
+                    reqQ = ClientUtils.escapeQueryChars(reqQ);
+                }
+                q = "{!boost b=query($modelboost)}" + reqQ;
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
