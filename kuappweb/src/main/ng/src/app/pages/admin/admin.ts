@@ -59,10 +59,12 @@ export class Admin {
   saveLabels() {
     this.state.labels.set(this.labels);
     this.service.saveLabels(this.state.labels()).subscribe(resp => {
-      this.ui.showInfoSnackBar('snackbar.record_saved.success');
-      console.log(resp);
-      // error
-      //this.ui.showInfoSnackBar('snackbar.record_removed.error');
+      if (resp.error) {
+        this.ui.showInfoSnackBar('snackbar.record_saved.error');
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_saved.success');
+        console.log(resp);
+      }
     });
   }
 
@@ -94,7 +96,7 @@ export class Admin {
     this.state.licenses.set(this.licenses);
     this.service.saveLicenses(this.state.licenses()).subscribe(resp => {
       if (resp.error) {
-
+        this.ui.showInfoSnackBar('snackbar.record_saved.error');
       } else {
         this.ui.showInfoSnackBar('snackbar.record_saved.success');
       }
@@ -112,8 +114,13 @@ export class Admin {
   saveDK() {
     this.state.digitalni_knihovny.set(this.dk);
     this.service.saveDK(this.state.digitalni_knihovny()).subscribe(resp => {
-      this.ui.showInfoSnackBar('snackbar.record_saved.success');
-      console.log(resp)
+      if (resp.error) {
+        this.ui.showInfoSnackBar('snackbar.record_saved.error');
+        console.log(resp);
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_saved.success');
+        console.log(resp);
+      }
     });
   }
 
