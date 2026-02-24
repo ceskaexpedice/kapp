@@ -486,7 +486,8 @@ $home_cards: (
   }
   .app-dialog-contract {
     @include mat.dialog-overrides((
-      container-min-width: 1000px
+      container-min-width: 1000px,
+      container-max-width: 2000px
     ));
   }
 

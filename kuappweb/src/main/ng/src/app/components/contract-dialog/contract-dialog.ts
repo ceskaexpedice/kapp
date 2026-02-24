@@ -23,11 +23,13 @@ import { MatTabsModule } from '@angular/material/tabs';
 import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
+import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 
 @Component({
   selector: 'app-contract-dialog',
   imports: [
     TranslateModule, FormsModule,
+    CdkDrag, CdkDragHandle, 
     MatDialogModule, MatMenuModule,
     MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
