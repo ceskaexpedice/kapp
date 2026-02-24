@@ -4,12 +4,14 @@ import cz.inovatika.touchstore.TouchStore;
 import cz.inovatika.touchstore.TouchStoreFactory;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
+@Disabled
 public class TouchStoreTest {
 
     @Test

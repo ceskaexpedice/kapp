@@ -14,8 +14,11 @@ import java.util.Objects;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
 
-public record ApplicationConfig(List<Instance> instances, WorkflowConfig workflow, SolrConfig solr,
-                                TouchStoreConfig touchStoreConfig) {
+public record ApplicationConfig(List<Instance> instances,
+                                WorkflowConfig workflow,
+                                SolrConfig solr,
+                                TouchStoreConfig touchStoreConfig,
+                                List<JobConfig> jobConfigs) {
 
 
     public static ApplicationConfig loadFromStream(InputStream is) throws ConfigException {

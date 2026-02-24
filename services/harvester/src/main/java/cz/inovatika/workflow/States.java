@@ -1,16 +1,24 @@
 package cz.inovatika.workflow;
 
+import cz.inovatika.Constants;
 import cz.inovatika.conf.WorkflowConfig;
 import cz.inovatika.impl.HarvesterImpl;
 import cz.inovatika.model.HarvesterContext;
 
+import cz.inovatika.solr.SolrInputDocumentWrapper;
+import org.apache.commons.lang3.tuple.Pair;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
+import org.apache.solr.common.SolrInputDocument;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
+import java.util.stream.Collectors;
 
 import static cz.inovatika.model.Instance.LOGGER;
 
@@ -35,13 +43,16 @@ public enum States {
                         return NONCONTROLLED_PRIVATE;
                     }
                 }
-                if (/*currentDoc.model().equals("monograph") ||//Should be already caught by isHierarchical()*/currentDoc.model().equals("monographunit")) {
+                if (currentDoc.model().equals("monograph") || currentDoc.model().equals("monographunit")) {
                     return TO_CONTROL;
+                } else if (currentDoc.model().equals("periodicalvolume")){
+                    return NONCONTROLLED_PRIVATE;
                 } else {
                     return NONCONTROLLED_PRIVATE;
                 }
             } else {
-                return checkChildren(ctx);
+                return IMPORTED;
+                //return checkChildren(ctx);
             }
         }
 
@@ -229,24 +240,49 @@ public enum States {
         this.automaticSwitch = automaticSwitch;
         this.licensesAssignation = licensesAssignation;
     }
-//    public static void updateParent(HarvesterContext child){
-//        try {
-//            SolrQuery q = new SolrQuery()
-//                    .setQuery("root.pid:\"" + child.item().getRootPid() + "\"").addFilterQuery("model:\"monograph\" OR model:\"periodical\"")
-//                    .setRows(1);
-//            SolrDocumentList results = HarvesterImpl.solrClient.query("titles", q).getResults();
-//            if(results.getNumFound()==0){
-//                //LOGGER.log(Level.WARNING, "Parent not found for item " + child.item().getRootPid());
-//                return;
-//            }
-//            SolrDocument parent = results.getFirst();
-//            //TODO Update the parent state based on children states
-//
-//
-//        } catch (SolrServerException | IOException e) {
-//            LOGGER.log(Level.SEVERE, "Error checking children states for item " + child.item().getRootPid(), e);
-//        }
-//    }
+
+    // update parent state
+    public static void updateParent(HarvesterContext child){
+        try {
+            String rootPid = child.item().getRootPid();
+            SolrQuery q = new SolrQuery()
+                    .setQuery("root.pid:\"" + child.item().getRootPid() + "\"")
+                    .setRows(1000);
+            SolrDocumentList results = child.solrClient().query("titles", q).getResults();
+            SolrDocument parent = null;
+            List<SolrDocument> children = new ArrayList<>();
+            for (SolrDocument doc : results) {
+                if (doc.getFieldValue(Constants.TitlesCollectionFields.FromKramFields.PID_FIELD).equals(rootPid)) {
+                    parent = doc;
+                } else {
+                    children.add(doc);
+                }
+            }
+            List<String> states = children.stream().map(sdoc -> sdoc.getFieldValue(Constants.TitlesCollectionFields.ApplFields.STATE_FIELD).toString()).collect(Collectors.toList());
+            if (states.contains(TO_CONTROL.name())) {
+                SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
+                        Constants.TitlesCollectionFields.FromKramFields.PID_FIELD,
+                        new SolrInputDocument(),
+                        SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
+
+                wrapper.setField(Constants.TitlesCollectionFields.FromKramFields.PID_FIELD, rootPid);
+                wrapper.addField(Constants.TitlesCollectionFields.ApplFields.STATE_FIELD, PARENT_OPEN.name());
+                child.solrClient().add( "titles", wrapper.getDocument());
+            } else {
+
+                SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
+                        Constants.TitlesCollectionFields.FromKramFields.PID_FIELD,
+                        new SolrInputDocument(),
+                        SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
+
+                wrapper.setField(Constants.TitlesCollectionFields.FromKramFields.PID_FIELD, rootPid);
+                wrapper.addField(Constants.TitlesCollectionFields.ApplFields.STATE_FIELD, PARENT_CLOSED.name());
+                child.solrClient().add( "titles", wrapper.getDocument());
+            }
+        } catch (SolrServerException | IOException e) {
+            LOGGER.log(Level.SEVERE, "Error checking children states for item " + child.item().getRootPid(), e);
+        }
+    }
 
     public abstract States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc);
 

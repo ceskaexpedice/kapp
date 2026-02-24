@@ -181,7 +181,8 @@ public class AuthorData {
         if (this.getNameIdentifier() != null) {
             json.put("nameIdentifier", this.getNameIdentifier());
         } else {
-            json.put("nameIdentifier", XmlProcessor.normalize(this.getFull() + this.getDate()));
+            String name = this.getFull() + (this.getDate() != null ? this.getDate() : "") ;
+            json.put("nameIdentifier", XmlProcessor.normalize(name));
         }
 
         json.put("isLast", isLast);

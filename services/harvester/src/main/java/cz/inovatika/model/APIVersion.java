@@ -266,7 +266,7 @@ public enum APIVersion {
 
         @Override
         public void processSubqueryResult(List<HarvestingItem> items, Element resultElm) {
-            processSubqueryResult(items, resultElm, "PID", "root_pid");
+            processSubqueryResult(items, resultElm, "pid", "root.pid");
         }
 
         @Override

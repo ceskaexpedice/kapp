@@ -4,6 +4,8 @@ import cz.inovatika.Constants;
 import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
 import cz.inovatika.Constants.TitlesCollectionFields.FromKramFields;
 import cz.inovatika.Harvester;
+import cz.inovatika.UpdateParentState;
+import cz.inovatika.XmlProcessor;
 import cz.inovatika.authors.AuthorData;
 import cz.inovatika.authors.AuthorDataUtils;
 import cz.inovatika.conf.ApplicationConfig;
@@ -26,6 +28,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
 import org.json.JSONObject;
@@ -47,6 +50,8 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.logging.Level;
@@ -63,6 +68,7 @@ public class HarvesterImpl implements Harvester {
 
 
     private static final boolean IGNORE_CHECKTIME = true;
+    public static final int NUMBER_OF_THREAD = 4;
 
 
     public SolrClient solrClient = null;
@@ -96,18 +102,11 @@ public class HarvesterImpl implements Harvester {
     }
 
     @Override
-    public void harvest(ApplicationConfig applicationConfig, Instance harvestingInstanceConfig, Consumer<HarvesterContext> consumer) {
-        harvest(applicationConfig, harvestingInstanceConfig, consumer,
-                buildHTTPClient());
-    }
-
-
-    public void harvest(ApplicationConfig applicationConfig, Instance config, Consumer<HarvesterContext> consumer, HttpClient client) {
+    public void harvest(ApplicationConfig applicationConfig, Instance config, Consumer<HarvesterContext> consumer) {
         long start = System.currentTimeMillis();
         TouchStore touchStore = applicationConfig.touchStoreConfig().factory().create(solrClient, applicationConfig.touchStoreConfig());
         String cursorMark = null;
         String queryCursorMark = null;
-        // loading timestamp
         config.loadLastUpdatedFromPath();
         int errorcount = 0;
         do {
@@ -129,7 +128,7 @@ public class HarvesterImpl implements Harvester {
             LOGGER.log(Level.INFO, "query: {0}", query);
             Element element;
             try {
-                element = executeQuery(client, config.getUrl(), query);
+                element = executeQuery(this.httpClient, config.getUrl(), query);
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "IOException occurred when reading Solr response: ", e);
                 errorcount++;
@@ -145,17 +144,15 @@ public class HarvesterImpl implements Harvester {
                 LOGGER.log(Level.INFO, "Items to harvest: {0}", harvestItems.size());
                 String subquery = apiVersion.prepareSubquery(harvestItems);
                 if (subquery != null && !subquery.isEmpty()) {
-                    //LOGGER.log(Level.INFO, "subquery: {0}", subquery);
                     try{
-                        Element subResult = executeQuery(client, config.getUrl(), subquery);
+                        Element subResult = executeQuery(this.httpClient, config.getUrl(), subquery);
                         apiVersion.processSubqueryResult(harvestItems, subResult);}
                     catch (IOException e) {
                         LOGGER.log(Level.SEVERE, "IOException occurred when reading Solr subquery response: ", e);
                     }
                 }
                 for (HarvestingItem harvestingItem : harvestItems) {
-                    //LOGGER.log(Level.INFO, "harvestingItem: {0}", harvestingItem.getTitles());
-                    consumer.accept(new HarvesterContext(applicationConfig, harvestingItem, touchStore, client, this.solrClient, config));
+                    consumer.accept(new HarvesterContext(applicationConfig, harvestingItem, touchStore, this.httpClient, this.solrClient, config));
                 }
             }
             cursorMark = findCursorMark(element);
@@ -164,16 +161,31 @@ public class HarvesterImpl implements Harvester {
 
         } while ((cursorMark != null && queryCursorMark != null) && !cursorMark.equals(queryCursorMark) && errorcount <5 );
 
+        //updateHierarchical();
+
         config.saveLastUpdatedToPath();
         LOGGER.log(Level.INFO, String.format("Harvesting completed. It took %d", (System.currentTimeMillis() - start)));
     }
 
+    private void updateHierarchical() throws SolrServerException, IOException {
+        List<String> hierarchicalPids = new ArrayList<>();
+        SolrQuery q = new SolrQuery()
+                .setQuery("is_hierarchical:true")
+                .setFields("pid")
+                .setRows(10000);
+        for (SolrDocument doc : this.solrClient.query("titles", q).getResults()) {
+            Object pid = doc.getFieldValue("pid");
+            hierarchicalPids.add(pid.toString());
+        }
+    }
+
+
+
+
     public static Element executeQuery(HttpClient httpClient, String url, String query) throws IOException {
         try {
-            //LOGGER.log(Level.INFO, "Executing query");
             StringReader t = new StringReader(executeSolrQuery(httpClient, url, query + "&wt=xml"));
             Document doc = XMLUtils.parseDocument(t);
-            //LOGGER.log(Level.INFO, "Solr doc name: {0}", doc.getDocumentElement().getNodeName());
             return doc.getDocumentElement();
         } catch (SAXException e) {
             LOGGER.log(Level.SEVERE, "Error parsing Solr response: ", e);
@@ -250,14 +262,18 @@ public class HarvesterImpl implements Harvester {
         } catch (IOException | InterruptedException e) {
             LOGGER.log(Level.SEVERE, e.getMessage(), e);
         }
+        HarvesterImpl harvester = new HarvesterImpl();
         try {
             InputStream resourceAsStream = new FileInputStream(System.getProperty("user.home") + "/.kapp/app.conf");
             ApplicationConfig applicationConfig = ApplicationConfig.loadFromStream(resourceAsStream);
-            new HarvesterImpl().start(applicationConfig);
+            harvester.start(applicationConfig);
         } catch (FileNotFoundException e) {
             LOGGER.log(Level.SEVERE, "Failed to load configuration", e);
             e.printStackTrace(System.err);
             throw new RuntimeException(e);
+        } finally {
+
+            harvester.closeClients();
         }
     }
 
@@ -290,10 +306,10 @@ public class HarvesterImpl implements Harvester {
     public void start(ApplicationConfig applicationConfig) {
         if (solrClient == null) { solrClient = buildSolrClient(applicationConfig); }
         if (httpClient == null) { httpClient  = buildHTTPClient(); }
+
         List<Instance> instances = applicationConfig.instances();
         for (Instance i : instances) {
-            i.setTimestampPath(
-                    String.join(File.separator, System.getProperty("user.dir"), ".kapp", "timestamps", i.getAcronym(), "timestamp"));
+            i.setTimestampPath(String.join(File.separator, System.getProperty("user.dir"), ".kapp", "timestamps", i.getAcronym(), "timestamp"));
             try {
                 LOGGER.log(Level.INFO, "Starting: {0}", i.getAcronym());
                 harvestAndBatch(applicationConfig, i);
@@ -302,6 +318,7 @@ public class HarvesterImpl implements Harvester {
             }
         }
 
+        // update ca
     }
 
 
@@ -330,8 +347,13 @@ public class HarvesterImpl implements Harvester {
             LOGGER.log(Level.INFO, "Sending author_batch");
             sendBatch(Constants.Collection.AUTHORS_COLLECTION, authorBuffer);
             authorBuffer.clear();
-
         }
+
+        LOGGER.log(Level.INFO, "Updating state");
+        UpdateParentState updateParentState = new UpdateParentStateImpl(this.solrClient);
+        updateParentState.updateParentState();
+
+
     }
 
     private void sendBatch(String collection, final List<SolrInputDocument> docs)
@@ -417,7 +439,7 @@ public class HarvesterImpl implements Harvester {
                                 wrapper.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
                                 wrapper.setField(FromKramFields.TITLE_FIELD, ctx.item().getTitles());
 
-                                //wrapper.setField(FromKramFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
+                                wrapper.setField(FromKramFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
                                 wrapper.setField(FromKramFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
 
                                 parseDateRange(wrapper, parsed);
@@ -558,8 +580,8 @@ public class HarvesterImpl implements Harvester {
                 doc.addField(FromKramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
                 doc.addField(FromKramFields.AUTHORS_IDS, author.getNameIdentifier());
             } else {
-                String id = author.getFull() + author.getDate();
-                doc.addField(FromKramFields.AUTHORS_IDS, id);
+                String name = author.getFull() + (author.getDate() != null ? author.getDate() : "") ;
+                doc.addField(FromKramFields.AUTHORS_IDS, XmlProcessor.normalize(name));
             }
         });
 
@@ -655,7 +677,9 @@ public class HarvesterImpl implements Harvester {
 
 
     private static HttpClient buildHTTPClient() {
+        ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREAD);
         return HttpClient.newBuilder()
+                .executor(executor)
                 .version(HttpClient.Version.HTTP_1_1)
                 .connectTimeout(Duration.ofMinutes(1))
                 .followRedirects(HttpClient.Redirect.NORMAL)
@@ -691,7 +715,13 @@ public class HarvesterImpl implements Harvester {
             } catch (IOException e) {
                 LOGGER.log(Level.SEVERE, "Failed to close solr client", e);
             }
-
+        }
+        if (httpClient != null){
+            try {
+                httpClient.close();
+            } catch (Exception e) {
+                LOGGER.log(Level.SEVERE, "Failed to close http client", e);
+            }
         }
     }
 }
