@@ -107,8 +107,10 @@ public class IndexSearcher {
                     .withFacet("licenses", new TermsFacetMap("licenses")
                             .setLimit(100)
                             .setMinCount(1))
-                    .withFacet("state", new TermsFacetMap("state")
+                    .withFacet("state",
+                            new TermsFacetMap("state")
                             .setLimit(20)
+                            .setSort("index asc")
                             .setMinCount(1))
                     .withFacet("model", new TermsFacetMap("model")
                             .setLimit(20)
