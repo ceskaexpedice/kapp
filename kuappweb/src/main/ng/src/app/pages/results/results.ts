@@ -290,8 +290,12 @@ export class Results {
 
   saveDocBatch(bs: string, doc: any) {
     this.service.saveDocBatch(doc.pid, bs).subscribe((res: any) => {
-      console.log(res);
-      this.ui.showInfoSnackBar('snackbar.record_added.success');
+      if (res.error) {
+        this.ui.showInfoSnackBar('snackbar.record_added.error');
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_added.success');
+        console.log(res);
+      }
     })
   }
 
@@ -304,7 +308,7 @@ export class Results {
     const data: SimpleDialogData = {
       title: 'Prizeni dilo k smlouve',
       message: 'Opravdu chcete priradit dilo k smlouve?',
-      alertClass: 'app-message',
+      alertClass: 'app-warn',
       btn1: {
         label: 'Ano',
         value: 'yes',
@@ -323,7 +327,12 @@ export class Results {
     dialogRef.afterClosed().subscribe(result => {
       if (result === 'yes') {
         this.service.saveDocContract(doc.pid, contract.filename, checkboxes[0].checked, !this.inContract(contract.filename, doc), contract.license).subscribe((res: any) => {
-          console.log(res)
+          if (res.error) {
+            this.ui.showInfoSnackBar('snackbar.record_added.error');
+          } else {
+            this.ui.showInfoSnackBar('snackbar.record_added.success');
+            console.log(res);
+          }
         })
       }
     });
@@ -339,7 +348,6 @@ export class Results {
   }
 
   saveColumnsSizes(e: any, field?: string) {
-
     const el = this.state.titleColumns().find((c: any) => c.field === field);
     if (el) {
       el.width = e;
@@ -348,7 +356,6 @@ export class Results {
     }
     console.log(el, this.state.titleColumns())
     localStorage.setItem('titleColumns', JSON.stringify(this.state.titleColumns()));
-
   }
 
 }

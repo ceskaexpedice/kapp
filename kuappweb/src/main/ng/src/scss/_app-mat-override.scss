@@ -11,6 +11,30 @@ $home_cards: (
   repo: #523305
 );
 
+$alerts: (
+  warn: (
+    color: var(--app-color-warn),
+    bg: rgba(var(--app-color-warn-rgb), .05),
+    border: rgba(var(--app-color-warn-rgb), .15)
+  ),
+  info: (
+    color: #856404,
+    bg: #fff3cd,
+    border: rgba(var(--app-color-info-no-rgb), .15)
+  )
+  ,
+  success: (
+    color: var(--app-color-success),
+    bg: rgba(var(--app-color-success-no-rgb), .1),
+    border: rgba(var(--app-color-success-no-rgb), .2)
+  ),
+  message: (
+    color: var(--app-color-gray-7),
+    bg: rgba(#616161, .1),
+    border: rgba(#616161, .2)
+  )
+);
+
 @mixin setHomeCard() {
   @each $card, $item in $home_cards {
     .app-card-#{$card} {
@@ -48,6 +72,16 @@ $home_cards: (
   }  
 }
 
+@mixin setAlertCard() {
+  @each $alert, $item in $alerts {
+    &.app-#{$alert} {
+      color: map.get( $item , color );
+      background-color: map.get( $item , bg );
+      border-color: map.get( $item , border );
+    }
+  }
+}
+
 
 :root {
   // --- toolbar ---
@@ -67,8 +101,33 @@ $home_cards: (
     outlined-container-color: var(--app-color-lightnes),
     outlined-outline-color: var(--app-color-gray-3)
   ));
-  .mat-mdc-card-actions {
-    padding: 8px 16px 16px 16px;
+  .mat-mdc-card {
+    &.app-alert {
+      @include setAlertCard();
+
+      .mat-mdc-card-content {
+        display: flex;
+        flex-direction: row;
+        align-items: start;
+        justify-content: center;
+
+        .mat-icon {
+          @include setIcon(18);
+          flex: 1 1 26px;
+          box-sizing: border-box;
+          max-width: 26px;
+          min-width: 26px;
+        }
+
+        .app-text {
+          word-break: break-all;
+        }
+      }
+    }
+
+    .mat-mdc-card-actions {
+      padding: 8px 16px 16px 16px;
+    }
   }
   app-home {
     @include mat.card-overrides((

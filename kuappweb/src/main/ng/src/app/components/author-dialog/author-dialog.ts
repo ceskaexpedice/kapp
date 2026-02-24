@@ -111,9 +111,14 @@ export class AuthorDialog {
   save(): void {
         console.log(this.author());
       this.service.saveAuthor(this.author()).subscribe((res: any) => {
-        console.log(this.author());
-        this.ui.showInfoSnackBar('snackbar.record_saved.success');
-        this.hasChanges = true;
+        if (res.error) {
+          this.ui.showInfoSnackBar('snackbar.record_saved.error');
+          //console.log(res.error);
+        } else {
+          console.log(this.author());
+          this.ui.showInfoSnackBar('snackbar.record_saved.success');
+          this.hasChanges = true;
+        } 
       })
   }
 
