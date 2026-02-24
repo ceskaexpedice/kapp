@@ -135,7 +135,12 @@ public class IndexSearcher {
                     .setLimit(rows);
 
 
-            jrequest = jrequest.withFilter("model:(monograph OR periodical)");
+            if (request.getParameter("model") != null) {
+                jrequest = jrequest.withFilter("model:" + request.getParameter("model"));
+            } else {
+                jrequest = jrequest.withFilter("model:(monograph OR periodical)");
+            }
+
 
             if (request.getParameter("author") != null) {
                 jrequest = jrequest.withFilter("{!tag=ffauthors}authors:(\"" + String.join("\" OR \"", request.getParameterValues("author")) + "\")");
