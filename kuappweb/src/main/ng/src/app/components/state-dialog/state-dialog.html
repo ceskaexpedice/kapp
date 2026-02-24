@@ -36,7 +36,7 @@
 
 			<mat-form-field appearance="outline" class="app-fxFlex">
 				<mat-label>{{ 'licenses' | translate }}</mat-label>
-				<mat-select [(ngModel)]="newLicenses" multiple >
+				<mat-select [(ngModel)]="newLicenses" multiple  [disabled]="!selectLicenseEnabled()">
 					@for (l of allowedLicenses(); track l) {
 						<mat-option [value]="l">{{ l}}</mat-option>
 					}

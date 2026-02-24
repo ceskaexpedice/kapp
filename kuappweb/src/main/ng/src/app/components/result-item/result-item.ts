@@ -86,7 +86,17 @@ export class ResultItem {
         //   }
         // });  
         resp.response.docs.filter((d: any) => d['pid'] != d['root.pid']);
-        this.related.set(resp.response.docs.filter((d: any) => d['pid'] != d['root.pid']));
+        let relatedDocs = resp.response.docs.filter((d: any) => d['pid'] != d['root.pid']);
+        const sortedDocs = relatedDocs
+        .filter((d: any) => d['pid'] !== d['root.pid'])
+        .sort((a: any, b: any) => {
+          const titleA = (a['root.title'] || '').toLowerCase();
+          const titleB = (b['root.title'] || '').toLowerCase();
+          return titleA.localeCompare(titleB, 'cs'); // 'cs' zajisti spravne ceske razeni (c vs c)
+        });
+
+        this.related.set(sortedDocs);
+
       }
     });
   }

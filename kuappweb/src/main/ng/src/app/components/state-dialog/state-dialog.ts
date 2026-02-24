@@ -63,6 +63,11 @@ export class StateDialog {
     }
   }
 
+  selectLicenseEnabled():boolean {
+    let retval = this.config.states.find(s => s.value === this.newState)?.licenseEditable;
+    return retval;
+  }
+
   save() {
     if (this.data.isBatch) {
       this.changeStateInBatch();

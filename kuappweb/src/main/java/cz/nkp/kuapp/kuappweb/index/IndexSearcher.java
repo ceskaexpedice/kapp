@@ -127,7 +127,7 @@ public class IndexSearcher {
                             .setLimit(100)
                             .setMinCount(1))
                     .withFacet("date", new TermsFacetMap("date_range_start.year")
-                            .setSort("index desc")
+                            //.setSort("index desc")
                             .setLimit(20)
                             .setMinCount(1))
                     .setOffset(offset)

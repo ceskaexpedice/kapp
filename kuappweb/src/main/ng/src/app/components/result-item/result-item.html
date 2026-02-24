@@ -139,21 +139,35 @@
 
 		@if (hasCollapsed) {
 			<div class="app-metadata-row app-multiple">
-				<span class="app-label">{{ 'Modely' | translate }}:</span>
-				<ul>
+				<span class="app-label">{{ 'Části' | translate }}:</span>
+				<ul class="app-clean-list">
 					@for (ch of related(); track ch) {
 						<li>
-							<div class="app-fxLayout app-row  app-gap-2 app-center-v">
-								<span>{{ ch['model']}} {{ ch['root.title']}}</span>
+							<!--<div class="app-fxLayout app-row  app-gap-2 app-center-v">-->
+							<div class="app-fxLayout app-row app-gap-2 app-center-v app-nowrap">								
+								<span>(<i>{{ ch['model']}}</i>)</span>
+								<span class="app-pipe app-ml-0"></span> 
+								<span>{{ ch['root.title']}}</span> 
+								<span class="app-pipe app-ml-0"></span> 
+
+									<!-- TODO: Digital library-->	
 								<div class="app-fxLayout app-row  app-gap-2 app-center-v">
 									@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
-										<a target="_blank" [href]="'https://ndk.cz/view/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+										<!-- TODO: To configuration -->	
+										<a target="_blank" [href]="'https://ndk.cz/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
 									} @else {
-										<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
+										<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
 									}
-									<span class="app-pipe app-ml-0"></span>
+									<!--	
 									<a (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate }}</a>
+									-->
 								</div>		
+								<span class="app-pipe app-ml-0"></span>
+									
+								<button matButton="outlined"  (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate}}
+								</button>
+								
+
 							</div>
 						</li>
 					}
@@ -164,7 +178,7 @@
 	<mat-card-actions align="end">
 		<div class="app-fxLayout app-row app-gap-2">
 			<button matButton="outlined" (click)="addAuthor()">{{ 'action.add_author' | translate }}</button>
-			<button matButton="outlined" (click)="setState()">{{ (doc()['state'] ? ('state.' + doc()['state']) : 'action.set_state') | translate }}</button>
+			<button matButton="outlined" [disabled]="doc()['is_hierarchical']" (click)="setState()">{{ (doc()['state'] ? ('state.' + doc()['state']) : 'action.set_state') | translate }}</button>
 			<button matButton="outlined" [matMenuTriggerFor]="batchesMenu">{{'action.add_doc_to_bacth' | translate}}</button>
 		</div>
 		<mat-menu #batchesMenu="matMenu">
