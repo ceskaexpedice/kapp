@@ -447,6 +447,7 @@ $home_cards: (
   }
 
 
+  // --- menu ---
   @include mat.menu-overrides((
     container-color: var(--app-color-lightnes),
     item-label-text-size: 14px,
@@ -455,6 +456,19 @@ $home_cards: (
   ));
   .mat-mdc-menu-item {
     min-height: var(--app-menu-item-height) !important;
+
+    &.app-text-cutter-wrapper {
+      .mat-mdc-menu-item-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+    }
+
+    .mat-icon {
+      @include setIcon(20, var(--app-color-primary));
+      margin-right: 6px;
+    }
   }
   
   
