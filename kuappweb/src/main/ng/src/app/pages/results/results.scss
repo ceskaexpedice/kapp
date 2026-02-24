@@ -43,11 +43,12 @@
       }
     }  
   }
-}
 
-.app-actions {
-  border-left: 1px solid var(--app-color-gray-4);
-  padding-left: 5px;
+  .mat-mdc-cell {
+    &.mat-column-action {
+      border-left: 1px solid var(--app-color-gray-3);
+    }
+  }
 }
 
 
