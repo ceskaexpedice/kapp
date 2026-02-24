@@ -37,6 +37,7 @@ import { MatMenuModule } from "@angular/material/menu";
 
 import { AuthorDialog } from '../../components/author-dialog/author-dialog';
 import { Batch } from '../../shared/batch';
+import { StateDialog } from '../../components/state-dialog/state-dialog';
 
 @Component({
   selector: 'app-results',
@@ -248,6 +249,29 @@ export class Results {
       }
     });
   }
+
+  setState(doc: any) {
+
+    if (doc.is_hierarchical) {
+      return;
+    }
+  
+      const dialogRef = this.dialog.open(StateDialog, {
+        data: {isBatch: false, doc: doc},
+        panelClass: "app-dialog-state"
+      });
+  
+      dialogRef.afterClosed().subscribe(result => {
+        console.log(result)
+        if (result) {
+          this.service.getDoc(doc.pid).subscribe((resp: any) => {
+            if (resp.response?.docs?.length > 0) {
+              doc = resp.response.docs[0];
+            }
+          });
+        }
+      });
+    }
 
   inBatch(s: string, doc: any) {
     return doc['batch']?.includes(s)

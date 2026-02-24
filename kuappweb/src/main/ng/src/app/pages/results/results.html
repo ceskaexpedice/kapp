@@ -87,10 +87,11 @@
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'state')" [style.width]="columnSizes['state'] + 'px'"><span mat-sort-header>{{ 'field.state' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">
                 <div class="app-badge app-text-cutter-wrapper" [ngClass]="'app-' + doc.state | lowercase" [matTooltip]="'state.' + doc.state | translate">
-                  <div class="app-text-cutter">
+                  <div class="app-text-cutter" (click)="setState(doc)" [matTooltip]="'action.set_state' | translate">
                     {{ 'state.' + doc.state | translate }}
                   </div>  
                 </div>
+                
               </td>
             </ng-container>
 
