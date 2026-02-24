@@ -133,7 +133,7 @@
 							<ng-container matColumnDef="action">
 								<th mat-header-cell *matHeaderCellDef></th>
 								<td mat-cell *matCellDef="let element">
-									<button matIconButton class="app-color-warn" (click)="addTitleToContract(element.title, {checked:false})" [matTooltip]="'remove_this_record' | translate">
+									<button matIconButton class="app-color-warn" (click)="addTitleToContract(element, {checked:false})" [matTooltip]="'remove_this_record' | translate">
 										<mat-icon>close</mat-icon>
 									</button>
 								</td>
