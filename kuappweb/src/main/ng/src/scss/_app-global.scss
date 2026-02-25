@@ -175,7 +175,7 @@ ul {
 }
 
 .app-badge {
-  color: var(--app-color-lightnes);
+  color: rgb(var(--app-color-lightnes));
   background-color: #607D8B;
   font-size: 12px;
   font-weight: 500;
@@ -223,7 +223,7 @@ table {
     border-width: 1px 0 0 1px;
     border-style: solid;
     border-color: var(--app-table-color-border);
-    background-color: var(--app-color-lightnes);
+    background-color: rgb(var(--app-color-lightnes));
 
     tr {
       td, th {
