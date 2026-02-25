@@ -186,9 +186,11 @@ export class Batches {
   removeFromBatch(pid: string) {
     this.service.saveDocBatch(pid, '').subscribe((res: any) => {
       this.loadBatch();
-      this.ui.showInfoSnackBar('snackbar.record_removed.success');
-      // error
-      //this.ui.showInfoSnackBar('snackbar.record_removed.error');
+      if (res.error) {
+        this.ui.showErrorSnackBar('snackbar.record_removed.error');
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_removed.success');
+      }
     })
   }
 

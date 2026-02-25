@@ -17,6 +17,10 @@ export class UIService {
     this.snackBar.open(this.translator.instant(message), 'OK', { duration: duration, panelClass: 'app-snackbar-success', verticalPosition: 'top' });
   }
 
+  showErrorSnackBar(message: string, duration: number = 4000) {
+    this.snackBar.open(this.translator.instant(message), 'Error', { duration: duration, panelClass: 'app-snackbar-error', verticalPosition: 'top' });
+  }
+
   copyTextToClipboard(val: string) {
     this.clipboard.copy(val);
     this.showInfoSnackBar('snackbar.copyTextToClipboard.success');

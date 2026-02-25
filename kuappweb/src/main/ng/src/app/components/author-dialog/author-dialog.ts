@@ -103,7 +103,11 @@ export class AuthorDialog {
           isLast: false
         });
         this.getLinks();
-        this.ui.showInfoSnackBar('snackbar.record_changed.success');
+        if (resp.error) {
+           this.ui.showErrorSnackBar('snackbar.record_changed.error');
+        } else {
+           this.ui.showInfoSnackBar('snackbar.record_changed.success');
+        }
       });
     }
   }
@@ -112,8 +116,7 @@ export class AuthorDialog {
         console.log(this.author());
       this.service.saveAuthor(this.author()).subscribe((res: any) => {
         if (res.error) {
-          this.ui.showInfoSnackBar('snackbar.record_saved.error');
-          //console.log(res.error);
+          this.ui.showErrorSnackBar('snackbar.record_saved.error');
         } else {
           console.log(this.author());
           this.ui.showInfoSnackBar('snackbar.record_saved.success');
@@ -125,9 +128,13 @@ export class AuthorDialog {
   setAsLast() {
     if (this.author()['date_death']) {
       this.service.saveDecisionDate(this.data.pid, this.author()['date_death']).subscribe((res: any) => {
-        console.log(res);
-        this.ui.showInfoSnackBar('snackbar.record_changed.success');
         this.hasChanges = true;
+        if (res.error) {
+          this.ui.showErrorSnackBar('snackbar.record_changed.error');
+        } else {
+          console.log(res);
+          this.ui.showInfoSnackBar('snackbar.record_changed.success');
+        }
       })
     }
   }

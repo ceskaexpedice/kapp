@@ -579,13 +579,12 @@ $alerts: (
   }
 
 
-  // --- tebs ---
+  // --- tabs ---
   @include mat.tabs-overrides((
     container-height: 36px
   ));
   .mat-mdc-tab-body-wrapper {
     height: 100%;
-    //background-color: orange;
   }
 
 
@@ -593,6 +592,17 @@ $alerts: (
   .mat-mdc-progress-bar {
     position: absolute;
   }
+
+
+  // --- snack bar ---
+  .app-snackbar-error {
+    @include mat.snack-bar-overrides((
+      button-color: var(--app-color-error),
+      container-color: #fdeded,
+      supporting-text-color: var(--app-color-error)
+    ));
+  }
+
 
 
   @for $i from 0 through 5 {
