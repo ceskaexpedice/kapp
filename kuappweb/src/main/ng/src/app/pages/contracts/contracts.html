@@ -8,12 +8,11 @@
 			<div>
 				<mat-form-field appearance="outline" class="app-view-search">
 					<mat-label>{{ 'action.search' | translate }}</mat-label>
-					<input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
-						(keyup.enter)="doSearch()" />
+					<input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}" (keyup.enter)="doSearch()" />
 					@if (state.q) {
-					<button matIconButton matSuffix (click)="clearQ()" class="app-color-error">
-						<mat-icon>close</mat-icon>
-					</button>
+						<button matIconButton matSuffix (click)="clearQ()" class="app-color-error">
+							<mat-icon>close</mat-icon>
+						</button>
 					}
 					<button matIconButton matSuffix (click)="doSearch()">
 						<mat-icon>search</mat-icon>

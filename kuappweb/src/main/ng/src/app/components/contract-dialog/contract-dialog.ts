@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
+import { UIService } from '../../ui.service';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Contract } from '../../shared/contract';
 import { MatCheckbox } from "@angular/material/checkbox";
@@ -46,6 +47,7 @@ import { TitleDialog } from '../title-dialog/title-dialog';
 export class ContractDialog {
 
   readonly service = inject(AppService);
+  readonly ui = inject(UIService);
   readonly state = inject(AppState);
   readonly dialog = inject(MatDialog);
   readonly data = inject<{ doc: Contract }>(MAT_DIALOG_DATA);
@@ -179,7 +181,12 @@ export class ContractDialog {
     this.contract().issn = this.issn.split('\n');
     this.contract().ccnb = this.ccnb.split('\n');
     this.service.saveContract(this.contract()).subscribe((resp: any) => {
-      // console.log(resp)
+      if (resp.error  ) {
+        this.ui.showErrorSnackBar('snackbar.record_saved.error');
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_saved.success');
+        // console.log(resp)
+      }
     })
   }
 
