@@ -11,7 +11,7 @@
 					<input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
 						(keyup.enter)="doSearch()" />
 					@if (state.q) {
-					<button matIconButton matSuffix (click)="clearQ()" class="app-color-warn">
+					<button matIconButton matSuffix (click)="clearQ()" class="app-color-error">
 						<mat-icon>close</mat-icon>
 					</button>
 					}
@@ -27,7 +27,7 @@
 					{{ 'action.contract_upload' | translate }}
 				</button>
 				@if (selctedFileExists()) {
-					<span class="app-color-warn" [innerHTML]="'contract_exists' | translate : {filename:selectedFile?.name}"></span>
+					<span class="app-color-error" [innerHTML]="'contract_exists' | translate : {filename:selectedFile?.name}"></span>
 					<button matButton="filled" class="app-warn" matSuffix (click)="uploadFile()">
 						{{ 'action.overwrite' | translate}}
 					</button>

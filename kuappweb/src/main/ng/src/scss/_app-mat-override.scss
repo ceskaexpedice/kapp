@@ -265,7 +265,7 @@ $alerts: (
   .mdc-button {
     &.app-warn {
       @include mat.button-overrides((
-        filled-container-color: var(--app-color-warn)
+        filled-container-color: rgb(var(--app-color-error-light))
       ));
     }
   }
@@ -281,7 +281,7 @@ $alerts: (
       }
       .app-btn-remove {
         &:hover {
-          color: var(--app-color-warn);
+          color: rgb(var(--app-color-error-light));
         } 
       }
     }

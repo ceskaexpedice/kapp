@@ -43,8 +43,20 @@ ul {
   color: var(--app-color-primary) !important;
 }
 
+.app-color-success {
+  color: rgb(var(--app-color-success-light)) !important;
+}
+
+.app-color-info {
+  color: rgb(var(--app-color-info-light)) !important;
+}
+
 .app-color-warn {
-  color: var(--app-color-warn) !important;
+  color: rgb(var(--app-color-warn-light)) !important;
+}
+
+.app-color-error {
+  color: rgb(var(--app-color-error-light)) !important;
 }
 
 // cleaners
