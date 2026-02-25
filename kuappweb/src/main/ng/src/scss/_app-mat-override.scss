@@ -12,26 +12,29 @@ $home_cards: (
 );
 
 $alerts: (
-  warn: (
-    color: var(--app-color-warn),
-    bg: rgba(var(--app-color-warn-rgb), .05),
-    border: rgba(var(--app-color-warn-rgb), .15)
-  ),
-  info: (
-    color: #856404,
-    bg: #fff3cd,
-    border: rgba(var(--app-color-info-no-rgb), .15)
-  )
-  ,
   success: (
     color: var(--app-color-success),
-    bg: rgba(var(--app-color-success-no-rgb), .1),
-    border: rgba(var(--app-color-success-no-rgb), .2)
+    bg: #edf7ed,
+    border: rgba(var(--app-color-success-rgb), .1),
+    icon: 'task_alt'
   ),
-  message: (
-    color: var(--app-color-gray-7),
-    bg: rgba(#616161, .1),
-    border: rgba(#616161, .2)
+  info: (
+    color: var(--app-color-info),
+    bg: #e5f6fd,
+    border: rgba(var(--app-color-info-rgb), .1),
+    icon: 'info'
+  ),
+  warn: (
+    color: var(--app-color-warn),
+    bg: #fff4e5,
+    border: rgba(var(--app-color-warn-rgb), .1),
+    icon: 'warning'
+  ),
+  error: (
+    color: var(--app-color-error),
+    bg: #fdeded,
+    border: rgba(var(--app-color-error-rgb), .1),
+    icon: 'error'
   )
 );
 
@@ -78,6 +81,12 @@ $alerts: (
       color: map.get( $item , color );
       background-color: map.get( $item , bg );
       border-color: map.get( $item , border );
+
+      .mat-icon {
+        &:before {
+          content: map.get( $item , icon );
+        }
+      }
     }
   }
 }
@@ -108,15 +117,20 @@ $alerts: (
       .mat-mdc-card-content {
         display: flex;
         flex-direction: row;
-        align-items: start;
+        align-items: center;
         justify-content: center;
 
         .mat-icon {
-          @include setIcon(18);
-          flex: 1 1 26px;
+          $size: 26px;
+          @include setIcon(20);
+          flex: 1 1 $size;
           box-sizing: border-box;
-          max-width: 26px;
-          min-width: 26px;
+          max-width: $size;
+          min-width: $size;
+
+          &::before {
+            font-family: "Material Symbols Outlined";
+          }
         }
 
         .app-text {

@@ -20,6 +20,8 @@
   "copy_text_to_clipboard": "Zkopírovat text do schránky",
   "remove_this_record": "Odstranit tento záznam",
   "titles_found_ccnb_issn": "Tituly nalezené přes ccnb a issn",
+  "assigning_work_to_contract": "Přiřazení díla ke smlouvě",
+  "change_licenses_at_same_time": "Zároveň měnit licence",
   "home": {
     "titles": "Díla ",
     "authors": "Autoři",
@@ -129,9 +131,10 @@
   },
   "navbar": {
     "admin": "Administrace",
+    "titles": "Díla",
     "authors": "Autoři",
     "batches": "Dávky",
-    "titles": "Díla",
+    "login": "Login",
     "contracts": "Evidence smluv"
   },
   "snackbar": {
@@ -154,5 +157,8 @@
     "copyTextToClipboard": {
       "success": "Text byl úspěšně zkopírován do schránky"
     }
-  }
+  },
+  "alert": {
+    "warn_contract": "Opravdu chcete přiřadit dílo ke smlouvě?"
+   }
 }

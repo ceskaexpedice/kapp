@@ -7,12 +7,19 @@
   --app-color-primary: var(--mat-sys-primary);
   --app-color-primary-rgb: 22, 121, 155;
   --app-color-secondary: var(--mat-sys-secondary);
-  --app-color-warn: var(--mat-sys-error);
-  --app-color-warn-rgb: 186, 26, 26;
   --app-color-lightnes: #ffffff;
   --app-color-lightnes-rgb: 255, 255, 255;
   --app-color-darknes: #000000;
   --app-color-darknes-rgb: 0, 0, 0;
+
+  --app-color-success: #1e4620;
+  --app-color-success-rgb: 30, 70, 32;
+  --app-color-info: #014361;
+  --app-color-info-rgb: 1, 67, 97;
+  --app-color-warn: #663c00;
+  --app-color-warn-rgb: 102, 60, 0;
+  --app-color-error: #5f2120;
+  --app-color-error-rgb: 95, 33, 32;
 
   // gray pallete
   --app-color-gray-0: #FAFAFA;

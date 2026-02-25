@@ -41,6 +41,7 @@ import { StateDialog } from '../../components/state-dialog/state-dialog';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
 import { SimpleDialogData } from '../../components/simple-dialog/simple-dialog';
 import { Contract } from '../../shared/contract';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-results',
@@ -89,6 +90,7 @@ export class Results {
 
     public state: AppState,
     public ui: UIService,
+    private translator: TranslateService,
     private service: AppService,
     private config: AppConfiguration
   ) {
@@ -301,13 +303,13 @@ export class Results {
 
   addToContract(contract: Contract, doc: any) {
     const checkboxes = [{
-      label: String('Zaroven menit licence'),
+      label: String(this.translator.instant('change_licenses_at_same_time')),
       checked: true
     }];
 
     const data: SimpleDialogData = {
-      title: 'Prizeni dilo k smlouve',
-      message: 'Opravdu chcete priradit dilo k smlouve?',
+      title: this.translator.instant('assigning_work_to_contract'),
+      message: this.translator.instant('alert.warn_contract'),
       alertClass: 'app-warn',
       btn1: {
         label: 'Ano',

@@ -20,6 +20,8 @@
   "copy_text_to_clipboard": "Copy text to clipboard",
   "remove_this_record": "Remove this record",
   "titles_found_ccnb_issn": "Titles found via ccnb and issn",
+  "assigning_work_to_contract": "Assigning a work to a contract",
+  "change_licenses_at_same_time": "Change licenses at the same time",
   "home": {
     "titles": "Titles",
     "authors": "Authors",
@@ -155,5 +157,8 @@
     "copyTextToClipboard": {
       "success": "Text successfully copied to clipboard"
     }
-  }
+  },
+  "alert": {
+    "warn_contract": "Are you sure you want to assign the work to the contract?"
+   }
 }
