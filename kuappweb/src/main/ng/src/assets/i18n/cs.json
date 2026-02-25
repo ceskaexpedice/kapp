@@ -22,6 +22,7 @@
   "titles_found_ccnb_issn": "Tituly nalezené přes ccnb a issn",
   "assigning_work_to_contract": "Přiřazení díla ke smlouvě",
   "change_licenses_at_same_time": "Zároveň měnit licence",
+  "add_to_batch": "Přidat do dávky",
   "home": {
     "titles": "Díla ",
     "authors": "Autoři",
@@ -101,7 +102,8 @@
     "table_view": "Tabulka",
     "contract_upload": "Nahrát smluovu",
     "find_titles": "Najít tituly",
-    "analyze": "Analyzovat"
+    "analyze": "Analyzovat",
+    "add": "Přidat"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "Automaticky ONSITE",

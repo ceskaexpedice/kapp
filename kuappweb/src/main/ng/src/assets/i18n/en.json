@@ -22,6 +22,7 @@
   "titles_found_ccnb_issn": "Titles found via ccnb and issn",
   "assigning_work_to_contract": "Assigning a work to a contract",
   "change_licenses_at_same_time": "Change licenses at the same time",
+  "add_to_batch": "Add to batch",
   "home": {
     "titles": "Titles",
     "authors": "Authors",
@@ -101,7 +102,8 @@
     "table_view": "Table",
     "contract_upload": "Upload contract",
     "find_titles": "Find titles",
-    "analyze": "Analyze"
+    "analyze": "Analyze",
+    "add": "Add"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "nekontrolované",
