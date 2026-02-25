@@ -53,7 +53,7 @@ import { TranslateService } from '@ngx-translate/core';
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem, AuthorItem, MatMenuModule, LowerCasePipe,
     NgClass
-  ],
+],
   templateUrl: './results.html',
   styleUrl: './results.scss'
 })

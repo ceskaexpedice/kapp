@@ -13,28 +13,32 @@ $home_cards: (
 
 $alerts: (
   success: (
-    color: var(--app-color-success),
-    bg: #edf7ed,
-    border: rgba(var(--app-color-success-rgb), .1),
-    icon: 'task_alt'
+    color: rgb(var(--app-color-success-dark)),
+    bg: rgb(var(--app-color-success-lightnes)),
+    border: rgba(var(--app-color-success-light), .15),
+    icon: 'task_alt',
+    icon-color: rgb(var(--app-color-success-light)) 
   ),
   info: (
-    color: var(--app-color-info),
-    bg: #e5f6fd,
-    border: rgba(var(--app-color-info-rgb), .1),
-    icon: 'info'
+    color: rgb(var(--app-color-info-dark)),
+    bg: rgb(var(--app-color-info-lightnes)),
+    border: rgba(var(--app-color-info-light), .15),
+    icon: 'info',
+    icon-color: rgb(var(--app-color-info-light)) 
   ),
   warn: (
-    color: var(--app-color-warn),
-    bg: #fff4e5,
-    border: rgba(var(--app-color-warn-rgb), .1),
-    icon: 'warning'
+    color: rgb(var(--app-color-warn-dark)),
+    bg: rgb(var(--app-color-warn-lightnes)),
+    border: rgba(var(--app-color-warn-light), .15),
+    icon: 'warning',
+    icon-color: rgb(var(--app-color-warn-light)) 
   ),
   error: (
-    color: var(--app-color-error),
-    bg: #fdeded,
-    border: rgba(var(--app-color-error-rgb), .1),
-    icon: 'error'
+    color: rgb(var(--app-color-error-dark)),
+    bg: rgb(var(--app-color-error-lightnes)),
+    border: rgba(var(--app-color-error-light), .15),
+    icon: 'error',
+    icon-color: rgb(var(--app-color-error-light))
   )
 );
 
@@ -85,6 +89,7 @@ $alerts: (
       .mat-icon {
         &:before {
           content: map.get( $item , icon );
+          color: map.get( $item , icon-color );
         }
       }
     }
@@ -595,11 +600,18 @@ $alerts: (
 
 
   // --- snack bar ---
+  .app-snackbar-success {
+    @include mat.snack-bar-overrides((
+      button-color: rgba(var(--app-color-lightnes-rgb), 0.6),
+      container-color: rgb(var(--app-color-success-light)),
+      supporting-text-color: rgb(var(--app-color-lightnes-rgb))
+    ));
+  }
   .app-snackbar-error {
     @include mat.snack-bar-overrides((
-      button-color: var(--app-color-error),
-      container-color: #fdeded,
-      supporting-text-color: var(--app-color-error)
+      button-color: rgba(var(--app-color-lightnes-rgb), 0.6),
+      container-color: rgb(var(--app-color-error-light)),
+      supporting-text-color: rgb(var(--app-color-lightnes-rgb))
     ));
   }
 
