@@ -137,8 +137,8 @@ export class AppService {
     return this.post('index/save_doc_batch', {pid,batch});
   }
 
-  saveDocContract(pid: string, contract: string, withState: boolean, selected: boolean, licence: string[]): Observable<any> {
-    return this.post('index/save_doc_contract', {pid,contract,withState,selected, licence});
+  saveDocContract(pid: string, contract: string, withState: boolean, selected: boolean, licenses: string[]): Observable<any> {
+    return this.post('index/save_doc_contract', {pid,contract,withState,selected, licenses});
   }
 
   saveTitleColumns(columns: {field: string, selected: boolean}[]): Observable<any> {

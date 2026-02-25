@@ -69,7 +69,6 @@ import { Label } from './shared/label';
                     }
                     
                     const confC = [...this.config.titleColumns];
-                    // const c = resp.config.find((a: any) => a.id === 'titleColumns')?.value;
                     const c = localStorage.getItem('titleColumns');
                     if (c) {
                         const cols: {field: string, selected: boolean, width: number}[] = JSON.parse(c);
@@ -81,12 +80,28 @@ import { Label } from './shared/label';
                                 col.width = localCol.width;
                             }
                         });
-                        this.state.titleColumns.update(a => [...cols]);
-                    } else {
-                        //this.state.titleColumns.update(a => [...this.config.titleColumns]);
-                    }
+                        // this.state.titleColumns.update(a => [...cols]);
+                    } 
 
                     this.state.titleColumns.update(a => [...confC]);
+
+                    
+                    
+                    const cc1 = [...this.config.contractColumns];
+                    const cc2 = localStorage.getItem('contractColumns');
+                    if (cc2) {
+                        const cols: {field: string, selected: boolean, width: number}[] = JSON.parse(c);
+                        // Check if new columns are in config. Then add to state
+                        cc1.forEach(col => {
+                            const localCol = cols.find((lc: {field: string, selected: boolean, width: number}) => lc.field === col.field)
+                            if (localCol) {
+                                col.selected = localCol.selected;
+                                col.width = localCol.width;
+                            }
+                        });
+                        //this.state.contractColumns.update(a => [...cols]);
+                    } 
+                    this.state.contractColumns.update(a => [...cc1]);
 
                     const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels')?.value;
                     if (labelsC) {

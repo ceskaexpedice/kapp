@@ -130,7 +130,8 @@ export class Contracts {
   showContract(doc: Contract) {
     const dialogRef = this.dialog.open(ContractDialog, {
       data: { doc },
-      panelClass: "app-dialog-contract"
+      panelClass: "app-dialog-contract",
+      width: '1000px'
     });
 
     dialogRef.afterClosed().subscribe(result => {

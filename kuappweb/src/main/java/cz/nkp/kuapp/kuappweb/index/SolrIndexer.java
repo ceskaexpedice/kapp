@@ -114,29 +114,29 @@ public class SolrIndexer {
         }
         return ret;
     }
+    
+    
 
-    public static JSONObject indexDocContracts(JSONObject js) {
+    public static JSONObject indexDocContracts(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
-            
+
             Map<String, Object> partialUpdate = new HashMap<>();
             String modifier = js.optBoolean("selected") ? "set" : "remove";
             partialUpdate.put(modifier, js.getString("contract"));
             doc.setField("contracts", partialUpdate);
-            
+
             if (js.optBoolean("withState")) {
-            
+                String state = "KONTROLOVANE_NEVEREJNE_LICENCE";
                 Map<String, Object> partialUpdateS = new HashMap<>();
-                partialUpdateS.put("set", "KONTROLOVANE_NEVEREJNE_LICENCE");
-                doc.setField("state", partialUpdateS);
-            
-                Map<String, Object> partialUpdateL = new HashMap<>();
-                partialUpdateL.put("set", js.getString("licence"));
-                doc.setField("licences", partialUpdateL);
+                partialUpdateS.put("set", state);
+                doc.setField("state", partialUpdateS); 
                 
+                fillState(doc, state, js.getJSONArray("licenses"), "Smlouva " + js.getString("contract"), user);
+
             }
 
             solr.add("titles", doc);
@@ -160,7 +160,7 @@ public class SolrIndexer {
             Map<String, Object> partialUpdate = new HashMap<>();
             partialUpdate.put("set", js.getString("decisionDate"));
             doc.setField("decision_date", partialUpdate);
-            
+
             solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
@@ -176,7 +176,7 @@ public class SolrIndexer {
     // Add / modify kapp_authors field
     public static JSONObject saveAuthor(JSONObject js) {
 
-        JSONObject ret = new JSONObject(); 
+        JSONObject ret = new JSONObject();
 //        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
 //            SolrInputDocument doc = new SolrInputDocument();
 //            doc.setField("pid", js.getString("pid"));
@@ -195,7 +195,7 @@ public class SolrIndexer {
 //        }
         return ret;
     }
-    
+
     public static JSONObject addDocToBatch(String pid, String batch) {
 
         JSONObject ret = new JSONObject();
@@ -248,14 +248,14 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static JSONObject changeStateInBatch(JSONObject js) {
+    public static JSONObject changeStateInBatch(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
 
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JSONArray docs = IndexSearcher.getBatchDocs(js.getString("batch"), true).getJSONObject("response").getJSONArray("docs");
             for (int i = 0; i < docs.length(); i++) {
-                changeDocStateBatch(solr, js, docs.getJSONObject(i).getString("pid"));
+                changeDocStateBatch(solr, js, docs.getJSONObject(i).getString("pid"), user);
             }
 
         } catch (Exception ex) {
@@ -265,44 +265,13 @@ public class SolrIndexer {
         return ret;
     }
 
-    private static void changeDocStateBatch(SolrClient solr, JSONObject js, String pid) {
+    private static void changeDocStateBatch(SolrClient solr, JSONObject js, String pid, String user) {
 
         try {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", pid);
 
-            Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", js.getString("state"));
-            doc.setField("state", partialUpdate);
-
-            Map<String, Object> licenses = new HashMap<>();
-            licenses.put("set", js.getJSONArray("licenses"));
-            doc.setField("licenses", licenses);
-
-            Map<String, Object> reason = new HashMap<>();
-            reason.put("set", js.getString("reason"));
-            doc.setField("state_reason", reason);
-
-            Map<String, Object> user = new HashMap<>();
-            reason.put("set", "test");
-            doc.setField("state_user", user);
-
-            String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
-
-            Map<String, Object> date = new HashMap<>();
-            reason.put("set", d);
-            doc.setField("state_date", date);
-
-            JSONObject h = new JSONObject()
-                    .put("date", d)
-                    .put("reason", js.getString("reason"))
-                    .put("licenses", js.getJSONArray("licenses"))
-                    .put("user", "test")
-                    .put("state", js.getString("state"));
-
-            Map<String, Object> state_history = new HashMap<>();
-            state_history.put("add", h.toString());
-            doc.addField("state_history", state_history);
+            fillState(doc, js.getString("state"), js.getJSONArray("licenses"), js.getString("reason"), user);
 
             solr.add("titles", doc);
             solr.commit("titles");
@@ -313,48 +282,62 @@ public class SolrIndexer {
         }
     }
 
-    public static JSONObject changeState(JSONObject js) {
-
+    public static JSONObject changeState(JSONObject js, String user) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
-
-            Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", js.getString("state"));
-            doc.setField("state", partialUpdate);
-
-            Map<String, Object> licenses = new HashMap<>();
-            licenses.put("set", js.getJSONArray("licenses"));
-            doc.setField("licenses", licenses);
-
-            Map<String, Object> reason = new HashMap<>();
-            reason.put("set", js.getString("reason"));
-            doc.setField("reason", reason);
-
-            JSONObject h = new JSONObject()
-                    .put("date", LocalDateTime.now().toString())
-                    .put("reason", js.getString("reason"))
-                    .put("licenses", js.getJSONArray("licenses"))
-                    .put("user", "test")
-                    .put("state", js.getString("state"));
-
-            Map<String, Object> state_history = new HashMap<>();
-            state_history.put("add", h.toString());
-            doc.addField("state_history", state_history);
+            fillState(doc, js.getString("state"), js.getJSONArray("licenses"), js.getString("reason"), user);
 
             solr.add("titles", doc);
             solr.commit("titles");
             LOGGER.log(Level.INFO, "state for {0} changed", js.getString("pid"));
             ret.put("msg", "saved");
-
+            
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             ret.put("error", ex);
         }
         return ret;
     }
-    
+
+    private static void fillState(SolrInputDocument doc, String state, JSONArray licenses, String reason, String user) {
+
+            Map<String, Object> partialUpdate = new HashMap<>();
+            partialUpdate.put("set", state);
+            doc.setField("state", partialUpdate);
+
+            Map<String, Object> licensesM = new HashMap<>();
+            licensesM.put("set", licenses);
+            doc.setField("licenses", licensesM);
+
+            Map<String, Object> userM = new HashMap<>();
+            userM.put("set", user);
+            doc.setField("state_user", userM);
+
+            Map<String, Object> reasonM = new HashMap<>();
+            reasonM.put("set", reason);
+            doc.setField("state_reason", reasonM);
+            
+            String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+            
+            Map<String, Object> date = new HashMap<>();
+            date.put("set", d);
+            doc.setField("state_date", date);
+
+            JSONObject h = new JSONObject()
+                    .put("date", d)
+                    .put("reason", reason)
+                    .put("licenses", licenses)
+                    .put("user", user)
+                    .put("state", state);
+
+            Map<String, Object> state_history = new HashMap<>();
+            state_history.put("add", h.toString());
+            doc.addField("state_history", state_history);
+    }
+
     public static JSONObject saveContract(JSONObject js) {
 
         JSONObject ret = new JSONObject();
@@ -377,7 +360,7 @@ public class SolrIndexer {
             doc.setField("ccnb", js.optJSONArray("ccnb"));
             doc.setField("issn", js.optJSONArray("issn"));
             doc.setField("license", js.optJSONArray("license"));
-  
+
             solr.add("contracts", doc);
             solr.commit("contracts");
             ret.put("msg", "saved");

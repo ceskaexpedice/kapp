@@ -49,6 +49,12 @@
         {"field": "release_date", "selected": false},
         {"field": "license", "selected": false},
         {"field": "sigla", "selected": true}
+    ],
+
+    "contractColumns": [
+        {"field": "pid", "selected": true},
+        {"field": "title", "selected": true},
+        {"field": "state", "selected": true}
     ]
 }
 
