@@ -3,7 +3,7 @@
   "views": "Views",
   "clearSelection": "Clear selection",
   "usedFilters": "Used filters",
-  "numFound": "num. found",
+  "num_found": "Num. found",
   "current_state": "Current state",
   "current_states": "Current states",
   "new_state": "New state",
@@ -23,6 +23,8 @@
   "assigning_work_to_contract": "Assigning a work to a contract",
   "change_licenses_at_same_time": "Change licenses at the same time",
   "add_to_batch": "Add to batch",
+  "new_batch_name": "New batch name",
+  "no_records_found": "No records found",
   "home": {
     "titles": "Titles",
     "authors": "Authors",
@@ -161,6 +163,8 @@
     }
   },
   "alert": {
-    "warn_contract": "Are you sure you want to assign the work to the contract?"
+    "warn_contract": "Are you sure you want to assign the work to the contract?",
+    "name_exist": "Name already exists!",
+    "name_empy": "The name is empty!"
    }
 }

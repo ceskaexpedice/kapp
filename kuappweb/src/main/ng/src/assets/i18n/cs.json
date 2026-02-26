@@ -3,7 +3,7 @@
   "views": "Typy zobrazení",
   "clearSelection": "Zrušit výběr",
   "usedFilters": "Vybrané filtry",
-  "numFound": "Nalezeno",
+  "num_found": "Nalezeno",
   "current_state": "Aktuální stav",
   "current_states": "Aktuální stavy",
   "new_state": "Nový stav",
@@ -23,6 +23,8 @@
   "assigning_work_to_contract": "Přiřazení díla ke smlouvě",
   "change_licenses_at_same_time": "Zároveň měnit licence",
   "add_to_batch": "Přidat do dávky",
+  "new_batch_name": "Název nové dávky",
+  "no_records_found": "Žádné nalezené záznamy",
   "home": {
     "titles": "Díla ",
     "authors": "Autoři",
@@ -96,7 +98,7 @@
     "add_new_batch": "Vytvořit dávku",
     "add_doc_to_bacth": "Přidat do dávky",
     "add_doc_to_contract": "Přidat do smlouvy",
-    "add_batch_from_label": "Vytvořit dávku z štítku",
+    "add_batch_from_label": "Vytvořit dávku ze štítku",
     "import_batch": "Importovat soubor do dávky",
     "card_view": "Karty",
     "table_view": "Tabulka",
@@ -161,6 +163,8 @@
     }
   },
   "alert": {
-    "warn_contract": "Opravdu chcete přiřadit dílo ke smlouvě?"
+    "warn_contract": "Opravdu chcete přiřadit dílo ke smlouvě?",
+    "name_exist": "Název již existuje!",
+    "name_empty": "Název je prázdný!"
    }
 }

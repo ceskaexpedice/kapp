@@ -391,6 +391,7 @@ $alerts: (
   }
 
 
+  // --- list ---
   @include mat.list-overrides((
     list-item-one-line-container-height: 24px
   ));
@@ -402,6 +403,25 @@ $alerts: (
       list-item-leading-icon-start-space: 20px,
       list-item-leading-icon-end-space: 8px
     ));
+  }
+  .app-batche-nav {
+    @include mat.list-overrides((
+      list-item-one-line-container-height: 30px,
+      list-item-container-shape: 0,
+      active-indicator-shape: 0,
+      active-indicator-color: red
+    ));
+
+    .mat-mdc-list-item {
+      &.app-active {
+        background-color: rgba(var(--app-color-primary-rgb), .1);
+
+        .mdc-list-item__primary-text {
+          color: var(--app-color-primary);
+          font-weight: 700 !important;
+        }
+      }
+    }
   }
 
 
@@ -426,13 +446,15 @@ $alerts: (
   ));
 
 
+  // --- table ---
   @include mat.table-overrides((
     background-color: rgb(var(--app-color-lightnes)),
     header-container-height: 32px, 
     header-headline-color: var(--app-color-gray-6),
     row-item-container-height: 28px,
     row-item-outline-color: var(--app-color-gray-3),
-    row-item-label-text-size: 13px
+    row-item-label-text-size: 13px,
+    footer-container-height: 28px
   ));
   .mat-mdc-table {
     .mat-mdc-header-row {
