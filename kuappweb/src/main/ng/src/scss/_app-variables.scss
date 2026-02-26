@@ -7,19 +7,21 @@
   --app-color-primary: var(--mat-sys-primary);
   --app-color-primary-rgb: 22, 121, 155;
   --app-color-secondary: var(--mat-sys-secondary);
-  --app-color-lightnes: #ffffff;
-  --app-color-lightnes-rgb: 255, 255, 255;
-  --app-color-darknes: #000000;
-  --app-color-darknes-rgb: 0, 0, 0;
+  --app-color-lightnes: 255, 255, 255;
+  --app-color-darknes: 0, 0, 0;
 
-  --app-color-success: #1e4620;
-  --app-color-success-rgb: 30, 70, 32;
-  --app-color-info: #014361;
-  --app-color-info-rgb: 1, 67, 97;
-  --app-color-warn: #663c00;
-  --app-color-warn-rgb: 102, 60, 0;
-  --app-color-error: #5f2120;
-  --app-color-error-rgb: 95, 33, 32;
+  --app-color-success-dark: 30, 70, 32;
+  --app-color-success-light: 46, 125, 50;
+  --app-color-success-lightnes: 237, 247, 237;
+  --app-color-info-dark: 1, 67, 97;
+  --app-color-info-light: 2, 136, 209;
+  --app-color-info-lightnes: 229, 246, 253;
+  --app-color-warn-dark: 102, 60, 0;
+  --app-color-warn-light: 237, 108, 2;
+  --app-color-warn-lightnes: 255, 244, 229;
+  --app-color-error-dark: 95, 33, 32;
+  --app-color-error-light: 211, 47, 47;
+  --app-color-error-lightnes: 253, 237, 237;
 
   // gray pallete
   --app-color-gray-0: #FAFAFA;

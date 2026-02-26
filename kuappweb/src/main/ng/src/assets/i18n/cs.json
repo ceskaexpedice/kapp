@@ -3,7 +3,7 @@
   "views": "Typy zobrazení",
   "clearSelection": "Zrušit výběr",
   "usedFilters": "Vybrané filtry",
-  "numFound": "Nalezeno",
+  "num_found": "Nalezeno",
   "current_state": "Aktuální stav",
   "current_states": "Aktuální stavy",
   "new_state": "Nový stav",
@@ -22,6 +22,9 @@
   "titles_found_ccnb_issn": "Tituly nalezené přes ccnb a issn",
   "assigning_work_to_contract": "Přiřazení díla ke smlouvě",
   "change_licenses_at_same_time": "Zároveň měnit licence",
+  "add_to_batch": "Přidat do dávky",
+  "new_batch_name": "Název nové dávky",
+  "no_records_found": "Žádné nalezené záznamy",
   "home": {
     "titles": "Díla ",
     "authors": "Autoři",
@@ -95,29 +98,30 @@
     "add_new_batch": "Vytvořit dávku",
     "add_doc_to_bacth": "Přidat do dávky",
     "add_doc_to_contract": "Přidat do smlouvy",
-    "add_batch_from_label": "Vytvořit dávku z štítku",
+    "add_batch_from_label": "Vytvořit dávku ze štítku",
     "import_batch": "Importovat soubor do dávky",
     "card_view": "Karty",
     "table_view": "Tabulka",
     "contract_upload": "Nahrát smluovu",
     "find_titles": "Najít tituly",
-    "analyze": "Analyzovat"
+    "analyze": "Analyzovat",
+    "add": "Přidat"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "Automaticky ONSITE",
     "NONCONTROLLED_PUBLIC": "Automaticky PUBLIC",
-    "TO_CONTROL": "Monografie - Ke kontrole",
-    "PARENT_TO_CONTROLL": "ke kontrole nadřazeného",
-    "PARENT_OPEN": "Vícesvazky - Ke konntrole",
-    "PARENT_CLOSED": "Vícesvazky  - Uzavřeno",
-    "CONTROLLED_PUBLIC": "kontrolované - volné",
-    "CONTROLLED_PRIVATE": "kontrolované- neveřejné",
-    "CONTROLLED_UNKNOWN": "kontrolované - neznámé",
-    "CONTROLLED_UNKNOWN_PUBLIC": "kontrolované - neznámé - volné",
-    "CONTROLLED_NO_AP": "kontrolované - bez autorskych prav",
-    "CONTROLLED_PROHIBITED": "kontrolované - znepristupnene",
-    "CONTROLLED_PRIVATE_LICENSE": "kontrolované - neveřejné licence",
-    "undefined": "neznamé"
+    "TO_CONTROL": "Monografie - ke kontrole",
+    "PARENT_TO_CONTROLL": "Ke kontrole nadřazeného",
+    "PARENT_OPEN": "Vícesvazky - ke konntrole",
+    "PARENT_CLOSED": "Vícesvazky - uzavřeno",
+    "CONTROLLED_PUBLIC": "Kontrolované - volné",
+    "CONTROLLED_PRIVATE": "Kontrolované - neveřejné",
+    "CONTROLLED_UNKNOWN": "Kontrolované - neznámé",
+    "CONTROLLED_UNKNOWN_PUBLIC": "Kontrolované - neznámé - volné",
+    "CONTROLLED_NO_AP": "Kontrolované - bez autorskych prav",
+    "CONTROLLED_PROHIBITED": "Kontrolované - znepřístupněné",
+    "CONTROLLED_PRIVATE_LICENSE": "Kontrolované - neveřejné licence",
+    "undefined": "Neznamé"
   },
   "admin": {
     "labels": "Administrace štítků",
@@ -159,6 +163,8 @@
     }
   },
   "alert": {
-    "warn_contract": "Opravdu chcete přiřadit dílo ke smlouvě?"
+    "warn_contract": "Opravdu chcete přiřadit dílo ke smlouvě?",
+    "name_exist": "Název již existuje!",
+    "name_empty": "Název je prázdný!"
    }
 }

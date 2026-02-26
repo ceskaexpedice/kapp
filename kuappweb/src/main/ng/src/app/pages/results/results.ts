@@ -53,7 +53,7 @@ import { TranslateService } from '@ngx-translate/core';
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem, AuthorItem, MatMenuModule, LowerCasePipe,
     NgClass
-  ],
+],
   templateUrl: './results.html',
   styleUrl: './results.scss'
 })
@@ -293,7 +293,7 @@ export class Results {
   saveDocBatch(bs: string, doc: any) {
     this.service.saveDocBatch(doc.pid, bs).subscribe((res: any) => {
       if (res.error) {
-        this.ui.showInfoSnackBar('snackbar.record_added.error');
+        this.ui.showErrorSnackBar('snackbar.record_added.error');
       } else {
         this.ui.showInfoSnackBar('snackbar.record_added.success');
         console.log(res);
@@ -330,7 +330,7 @@ export class Results {
       if (result === 'yes') {
         this.service.saveDocContract(doc.pid, contract.filename, checkboxes[0].checked, !this.inContract(contract.filename, doc), contract.license).subscribe((res: any) => {
           if (res.error) {
-            this.ui.showInfoSnackBar('snackbar.record_added.error');
+            this.ui.showErrorSnackBar('snackbar.record_added.error');
           } else {
             this.ui.showInfoSnackBar('snackbar.record_added.success');
             console.log(res);

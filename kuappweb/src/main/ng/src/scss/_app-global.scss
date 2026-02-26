@@ -43,8 +43,20 @@ ul {
   color: var(--app-color-primary) !important;
 }
 
+.app-color-success {
+  color: rgb(var(--app-color-success-light)) !important;
+}
+
+.app-color-info {
+  color: rgb(var(--app-color-info-light)) !important;
+}
+
 .app-color-warn {
-  color: var(--app-color-warn) !important;
+  color: rgb(var(--app-color-warn-light)) !important;
+}
+
+.app-color-error {
+  color: rgb(var(--app-color-error-light)) !important;
 }
 
 // cleaners
@@ -103,6 +115,19 @@ ul {
   font-size: 13px;
 }
 
+.app-label-badge {
+  font-weight: 600;
+  color: var(--app-color-gray-8);
+  background-color: var(--app-color-gray-3);
+  font-size: 13px;
+  display: inline-flex;
+  padding: 0 8px;
+  height: 20px;
+  align-items: center;
+  border-radius: calc(20px / 2);
+  justify-content: center;
+}
+
 .app-date {
   color: var(--app-color-gray-6);
 }
@@ -119,6 +144,10 @@ ul {
 
 .app-cursor-pointer {
   cursor: pointer;
+}
+
+.app-text-center {
+  text-align: center;
 }
 
 .app-text-cutter {
@@ -163,7 +192,7 @@ ul {
 }
 
 .app-badge {
-  color: var(--app-color-lightnes);
+  color: rgb(var(--app-color-lightnes));
   background-color: #607D8B;
   font-size: 12px;
   font-weight: 500;
@@ -211,7 +240,7 @@ table {
     border-width: 1px 0 0 1px;
     border-style: solid;
     border-color: var(--app-table-color-border);
-    background-color: var(--app-color-lightnes);
+    background-color: rgb(var(--app-color-lightnes));
 
     tr {
       td, th {

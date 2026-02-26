@@ -25,7 +25,7 @@
             <mat-label>{{ 'action.search' | translate }}</mat-label>
             <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}" (keyup.enter)="doSearch()">
             @if (state.q) {
-            <button matIconButton matSuffix (click)="clearQ()" class="app-color-warn"><mat-icon>close</mat-icon></button>
+            <button matIconButton matSuffix (click)="clearQ()" class="app-color-error"><mat-icon>close</mat-icon></button>
             }
             <button matIconButton matSuffix (click)="doSearch()"><mat-icon>search</mat-icon></button>
           </mat-form-field>
@@ -42,7 +42,7 @@
       </div>
       <div class="app-fxLayout app-row app-center-v app-gap-4">
         <div class="app-fxFlex">
-          <h4>{{ 'numFound' | translate}}: {{ numFound }}</h4>
+          <h4>{{ 'num_found' | translate}}: {{ numFound }}</h4>
         </div>
         <div>
           <mat-paginator #paginator class="demo-paginator" (page)="handlePageEvent($event)" [length]="numFound"

@@ -3,6 +3,7 @@ import { AppConfiguration } from '../../app-configuration';
 import { MAT_DIALOG_DATA, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
+import { UIService } from '../../ui.service';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -27,6 +28,7 @@ import { DatePipe, LowerCasePipe, NgClass } from '@angular/common';
 export class StateDialog {
 
   readonly service = inject(AppService);
+  readonly ui = inject(UIService);
   readonly dialogRef = inject(MatDialogRef<StateDialog>);
   readonly state = inject(AppState);
   readonly config = inject(AppConfiguration);
@@ -84,6 +86,13 @@ export class StateDialog {
       reason: this.reason
     };
     this.service.changeState(p).subscribe(resp => {
+      if (resp.error) {
+        this.ui.showErrorSnackBar('snackbar.record_saved.error');
+        console.log(resp);
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_saved.success');
+        console.log(resp);
+      }
       this.dialogRef.close(true);
     });
   }
@@ -98,6 +107,13 @@ export class StateDialog {
     };
     this.service.changeStateInBatch(p).subscribe(resp => {
       this.dialogRef.close(true);
+      if (resp.error) {
+        this.ui.showErrorSnackBar('snackbar.record_saved.error');
+        console.log(resp);
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_saved.success');
+        console.log(resp);
+      }
     });
   }
 }

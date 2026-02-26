@@ -11,6 +11,7 @@ import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { TranslateModule } from '@ngx-translate/core';
+import { TranslateService } from '@ngx-translate/core';
 import { Batch } from '../../shared/batch';
 import { AngularSplitModule } from "angular-split";
 import { DatePipe, LowerCasePipe, NgClass } from '@angular/common';
@@ -43,6 +44,7 @@ export class Batches {
   readonly service = inject(AppService);
   readonly state = inject(AppState);
   readonly dialog = inject(MatDialog);
+  readonly translator = inject (TranslateService);
 
   loading = signal<boolean>(false);
 
@@ -57,6 +59,8 @@ export class Batches {
   progressMsg: string;
 
   displayedColumns = ['pid', 'title', 'state', 'action']
+
+  batcheResult: string = null;
 
   constructor(
     public ui: UIService
@@ -119,12 +123,18 @@ export class Batches {
   }
 
   addBatch() {
-
     if (!this.state.batches().find(b => b.name === this.newBatch)) {
+      this.batcheResult = null;
       // this.batches.push({date_created: new Date(), name: this.newBatch, state: 'new'});
       this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
-      this.newBatch = null;
-      this.saveBatches(this.newBatch);
+      if (this.newBatch) {
+        this.newBatch = null;
+        this.saveBatches(this.newBatch);
+      } else {
+        this.batcheResult = this.translator.instant('alert.name_empty');
+      }
+    } else {
+      this.batcheResult = this.translator.instant('alert.name_exist');
     }
   }
 
@@ -139,6 +149,11 @@ export class Batches {
     dialogRef.afterClosed().subscribe((pid: any) => {
       if (pid) {
       this.service.saveDocBatch(pid, this.selectedBatch().name).subscribe((res: any) => {
+        if (res.error) {
+          this.ui.showErrorSnackBar('snackbar.record_added.error');
+        } else {
+          this.ui.showInfoSnackBar('snackbar.record_added.success');
+        }
         this.loadBatch();
       });
       }
@@ -167,6 +182,11 @@ export class Batches {
       if (batch) {
         this.selectBatch(this.state.batches().find(b => b.name === batch));
       }
+      if (resp.error) {
+        this.ui.showErrorSnackBar('snackbar.record_added.error');
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_added.success');
+      }
     });
   }
 
@@ -186,9 +206,11 @@ export class Batches {
   removeFromBatch(pid: string) {
     this.service.saveDocBatch(pid, '').subscribe((res: any) => {
       this.loadBatch();
-      this.ui.showInfoSnackBar('snackbar.record_removed.success');
-      // error
-      //this.ui.showInfoSnackBar('snackbar.record_removed.error');
+      if (res.error) {
+        this.ui.showErrorSnackBar('snackbar.record_removed.error');
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_removed.success');
+      }
     })
   }
 

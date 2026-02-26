@@ -13,28 +13,32 @@ $home_cards: (
 
 $alerts: (
   success: (
-    color: var(--app-color-success),
-    bg: #edf7ed,
-    border: rgba(var(--app-color-success-rgb), .1),
-    icon: 'task_alt'
+    color: rgb(var(--app-color-success-dark)),
+    bg: rgb(var(--app-color-success-lightnes)),
+    border: rgba(var(--app-color-success-light), .15),
+    icon: 'task_alt',
+    icon-color: rgb(var(--app-color-success-light)) 
   ),
   info: (
-    color: var(--app-color-info),
-    bg: #e5f6fd,
-    border: rgba(var(--app-color-info-rgb), .1),
-    icon: 'info'
+    color: rgb(var(--app-color-info-dark)),
+    bg: rgb(var(--app-color-info-lightnes)),
+    border: rgba(var(--app-color-info-light), .15),
+    icon: 'info',
+    icon-color: rgb(var(--app-color-info-light)) 
   ),
   warn: (
-    color: var(--app-color-warn),
-    bg: #fff4e5,
-    border: rgba(var(--app-color-warn-rgb), .1),
-    icon: 'warning'
+    color: rgb(var(--app-color-warn-dark)),
+    bg: rgb(var(--app-color-warn-lightnes)),
+    border: rgba(var(--app-color-warn-light), .15),
+    icon: 'warning',
+    icon-color: rgb(var(--app-color-warn-light)) 
   ),
   error: (
-    color: var(--app-color-error),
-    bg: #fdeded,
-    border: rgba(var(--app-color-error-rgb), .1),
-    icon: 'error'
+    color: rgb(var(--app-color-error-dark)),
+    bg: rgb(var(--app-color-error-lightnes)),
+    border: rgba(var(--app-color-error-light), .15),
+    icon: 'error',
+    icon-color: rgb(var(--app-color-error-light))
   )
 );
 
@@ -85,6 +89,7 @@ $alerts: (
       .mat-icon {
         &:before {
           content: map.get( $item , icon );
+          color: map.get( $item , icon-color );
         }
       }
     }
@@ -95,7 +100,7 @@ $alerts: (
 :root {
   // --- toolbar ---
   @include mat.toolbar-overrides((
-    container-background-color: var(--app-color-lightnes),
+    container-background-color: rgb(var(--app-color-lightnes)),
     container-text-color: var(--app-color-gray-8),
     title-text-size: 18px,
   ));
@@ -107,7 +112,7 @@ $alerts: (
   // --- card ---
   @include mat.card-overrides((
     outlined-container-shape: 0px,
-    outlined-container-color: var(--app-color-lightnes),
+    outlined-container-color: rgb(var(--app-color-lightnes)),
     outlined-outline-color: var(--app-color-gray-3)
   ));
   .mat-mdc-card {
@@ -151,10 +156,10 @@ $alerts: (
     @include setHomeCard();
     .mat-mdc-card {
       .mat-mdc-card-header {
-        color: var(--app-color-lightnes)
+        color: rgb(var(--app-color-lightnes))
       }
       .mat-mdc-card-content {
-        color: rgba(var(--app-color-lightnes-rgb), .7);
+        color: rgba(var(--app-color-lightnes), .7);
       }
     }
   }
@@ -226,15 +231,15 @@ $alerts: (
     .mat-mdc-card {
         @include mat.form-field-overrides((
         outlined-container-shape: 36px,
-        outlined-outline-color: rgba(var(--app-color-lightnes-rgb), .5),
-        outlined-hover-outline-color: rgba(var(--app-color-lightnes-rgb), .8),
-        outlined-hover-label-text-color: rgba(var(--app-color-lightnes-rgb), .8),
-        outlined-input-text-color: var(--app-color-lightnes),
-        outlined-input-text-placeholder-color: var(--app-color-lightnes),
-        outlined-label-text-color: rgba(var(--app-color-lightnes-rgb), .8),
-        outlined-focus-outline-color: rgba(var(--app-color-lightnes-rgb), .8),
-        outlined-focus-label-text-color: var(--app-color-lightnes),
-        trailing-icon-color: rgba(var(--app-color-lightnes-rgb), .8)
+        outlined-outline-color: rgba(var(--app-color-lightnes), .5),
+        outlined-hover-outline-color: rgba(var(--app-color-lightnes), .8),
+        outlined-hover-label-text-color: rgba(var(--app-color-lightnes), .8),
+        outlined-input-text-color: rgb(var(--app-color-lightnes)),
+        outlined-input-text-placeholder-color: rgb(var(--app-color-lightnes)),
+        outlined-label-text-color: rgba(var(--app-color-lightnes), .8),
+        outlined-focus-outline-color: rgba(var(--app-color-lightnes), .8),
+        outlined-focus-label-text-color: rgb(var(--app-color-lightnes)),
+        trailing-icon-color: rgba(var(--app-color-lightnes), .8)
       ));
     }
   }
@@ -260,7 +265,7 @@ $alerts: (
   .mdc-button {
     &.app-warn {
       @include mat.button-overrides((
-        filled-container-color: var(--app-color-warn)
+        filled-container-color: rgb(var(--app-color-error-light))
       ));
     }
   }
@@ -276,7 +281,7 @@ $alerts: (
       }
       .app-btn-remove {
         &:hover {
-          color: var(--app-color-warn);
+          color: rgb(var(--app-color-error-light));
         } 
       }
     }
@@ -284,8 +289,8 @@ $alerts: (
   app-home {
     .mat-mdc-card {
       @include mat.button-overrides((
-        outlined-outline-color: rgba(var(--app-color-lightnes-rgb), .7),
-        outlined-label-text-color: var(--app-color-lightnes),
+        outlined-outline-color: rgba(var(--app-color-lightnes), .7),
+        outlined-label-text-color: rgb(var(--app-color-lightnes)),
         outlined-hover-state-layer-opacity: 0.2,
         outlined-container-shape: calc(var(--app-button-height) / 2)
       ));
@@ -341,8 +346,8 @@ $alerts: (
 
     &:not(.app-chip-add) {
       @include mat.chips-overrides((
-        label-text-color: var(--app-color-lightnes),
-        with-trailing-icon-trailing-icon-color: var(--app-color-lightnes),
+        label-text-color: rgb(var(--app-color-lightnes)),
+        with-trailing-icon-trailing-icon-color: rgb(var(--app-color-lightnes)),
         outline-color: transparent
       ));
     }
@@ -386,6 +391,7 @@ $alerts: (
   }
 
 
+  // --- list ---
   @include mat.list-overrides((
     list-item-one-line-container-height: 24px
   ));
@@ -397,6 +403,25 @@ $alerts: (
       list-item-leading-icon-start-space: 20px,
       list-item-leading-icon-end-space: 8px
     ));
+  }
+  .app-batche-nav {
+    @include mat.list-overrides((
+      list-item-one-line-container-height: 30px,
+      list-item-container-shape: 0,
+      active-indicator-shape: 0,
+      active-indicator-color: red
+    ));
+
+    .mat-mdc-list-item {
+      &.app-active {
+        background-color: rgba(var(--app-color-primary-rgb), .1);
+
+        .mdc-list-item__primary-text {
+          color: var(--app-color-primary);
+          font-weight: 700 !important;
+        }
+      }
+    }
   }
 
 
@@ -421,13 +446,15 @@ $alerts: (
   ));
 
 
+  // --- table ---
   @include mat.table-overrides((
-    background-color: var(--app-color-lightnes),
+    background-color: rgb(var(--app-color-lightnes)),
     header-container-height: 32px, 
     header-headline-color: var(--app-color-gray-6),
     row-item-container-height: 28px,
     row-item-outline-color: var(--app-color-gray-3),
-    row-item-label-text-size: 13px
+    row-item-label-text-size: 13px,
+    footer-container-height: 28px
   ));
   .mat-mdc-table {
     .mat-mdc-header-row {
@@ -522,7 +549,7 @@ $alerts: (
 
   // --- menu ---
   @include mat.menu-overrides((
-    container-color: var(--app-color-lightnes),
+    container-color: rgb(var(--app-color-lightnes)),
     item-label-text-size: 14px,
     item-label-text-tracking: 0px,
     item-label-text-weight: 400
@@ -546,7 +573,7 @@ $alerts: (
   
   
   @include mat.select-overrides((
-    panel-background-color: var(--app-color-lightnes)
+    panel-background-color: rgb(var(--app-color-lightnes))
   ));
   --mat-option-label-text-size: 14px;
   .mat-mdc-option {
@@ -558,7 +585,7 @@ $alerts: (
   @include mat.dialog-overrides((
     container-elevation-shadow: 5px,
     container-shape: var(--app-radius-default),
-    container-color: var(--app-color-lightnes),
+    container-color: rgb(var(--app-color-lightnes)),
     container-min-width: 400px
   ));
   .app-dialog-title {
@@ -579,13 +606,12 @@ $alerts: (
   }
 
 
-  // --- tebs ---
+  // --- tabs ---
   @include mat.tabs-overrides((
     container-height: 36px
   ));
   .mat-mdc-tab-body-wrapper {
     height: 100%;
-    //background-color: orange;
   }
 
 
@@ -593,6 +619,24 @@ $alerts: (
   .mat-mdc-progress-bar {
     position: absolute;
   }
+
+
+  // --- snack bar ---
+  .app-snackbar-success {
+    @include mat.snack-bar-overrides((
+      button-color: rgba(var(--app-color-lightnes), 0.6),
+      container-color: rgb(var(--app-color-success-light)),
+      supporting-text-color: rgb(var(--app-color-lightnes))
+    ));
+  }
+  .app-snackbar-error {
+    @include mat.snack-bar-overrides((
+      button-color: rgba(var(--app-color-lightnes), 0.6),
+      container-color: rgb(var(--app-color-error-light)),
+      supporting-text-color: rgb(var(--app-color-lightnes))
+    ));
+  }
+
 
 
   @for $i from 0 through 5 {
