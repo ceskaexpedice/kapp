@@ -372,6 +372,18 @@ public class IndexServlet extends HttpServlet {
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
+                return json; 
+            }
+        },
+        GET_USED_BATCHES {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getUsedBatches();
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString()); 
+                }
                 return json;
             }
         },

@@ -61,6 +61,7 @@ export class Batches {
   displayedColumns = ['pid', 'title', 'state', 'action']
 
   batcheResult: string = null;
+  counts = signal<{[batch: string]: number}>({});
 
   constructor(
     public ui: UIService
@@ -68,6 +69,18 @@ export class Batches {
 
   ngOnInit() {
     this.selectBatch(this.state.batches()[0]);
+    this.getUsedBatches();
+  }
+
+  getUsedBatches() {
+    
+    this.service.getUsedBatches().subscribe(res => {
+      const c: {[batch: string]: number} = {};
+      res.buckets.forEach((b: { val: string; count: number; }) => {
+        c[b.val] = b.count;
+      });
+      this.counts.set(c);
+    });
   }
 
   onFileSelected(e: any) {
@@ -96,7 +109,6 @@ export class Batches {
   }
 
   fileUploaded(response: any) {
-    console.log(response, response['error'])
     if (response.error) {
       alert(response.error);
       this.progressMsg = 'Error uploading ';
@@ -129,12 +141,24 @@ export class Batches {
       this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
       if (this.newBatch) {
         this.newBatch = null;
-        this.saveBatches(this.newBatch);
+        this.saveBatches(this.newBatch, true);
       } else {
         this.batcheResult = this.translator.instant('alert.name_empty');
       }
     } else {
       this.batcheResult = this.translator.instant('alert.name_exist');
+    }
+  }
+
+  
+
+  removeBatch(b: Batch) {
+    const idx = this.state.batches().findIndex(b => b.name === this.newBatch);
+    if (idx > -1) {
+      const b = this.state.batches()
+      b.splice(idx, 1);
+      this.state.batches.set([...b]);
+      this.saveBatches(null, false);
     }
   }
 
@@ -172,20 +196,20 @@ export class Batches {
     if (!this.state.batches().find(b => b.name === this.newBatch)) {
       // this.batches.push({date_created: new Date(), name: this.newBatch, state: 'new'});
       this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
-      this.saveBatches(this.newBatch);
+      this.saveBatches(this.newBatch, true);
     }
   }
 
 
-  saveBatches(batch: string) {
+  saveBatches(batch: string, adding: boolean) {
     this.service.saveBatches(this.state.batches()).subscribe(resp => {
       if (batch) {
         this.selectBatch(this.state.batches().find(b => b.name === batch));
       }
       if (resp.error) {
-        this.ui.showErrorSnackBar('snackbar.record_added.error');
+        this.ui.showErrorSnackBar(adding ? 'snackbar.record_added.error' : 'snackbar.record_remove.error');
       } else {
-        this.ui.showInfoSnackBar('snackbar.record_added.success');
+        this.ui.showInfoSnackBar(adding ? 'snackbar.record_added.success' : 'snackbar.record_remove.success');
       }
     });
   }
@@ -210,6 +234,7 @@ export class Batches {
         this.ui.showErrorSnackBar('snackbar.record_removed.error');
       } else {
         this.ui.showInfoSnackBar('snackbar.record_removed.success');
+        this.getUsedBatches();
       }
     })
   }
@@ -229,7 +254,7 @@ export class Batches {
   createBatchFromLabel(label: string) {
       this.service.createBatchFromLabel(label).subscribe((res: any) => {
         this.state.batches.update(b => [...b, { date_created: new Date(), name: res.batch, state: 'new' }]);
-        this.saveBatches(res.batch);
+        this.saveBatches(res.batch, true);
       })
   }
 

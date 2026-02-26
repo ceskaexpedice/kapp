@@ -9,7 +9,10 @@
 						} @else {
 							{{ l.name }}
 						}
+					{{ counts()[l.name] }}
 					</a>
+					<button mat-icon-button [disabled]="counts()[l.name] > 0" matSuffix class="app-color-error" (click)="removeBatch(l)" [matTooltip]="'action.remove_batch' | translate"><mat-icon>close</mat-icon></button>
+					
 				}
 			</mat-nav-list>
 			<mat-divider class="app-mt-1 app-mb-4"></mat-divider>
@@ -106,7 +109,7 @@
 </div>
 
 <mat-card-actions align="end" class="app-mat-card-actions">
-	<button matButton (click)="saveBatches(null)">{{ 'action.save' | translate }}</button>
+	<button matButton (click)="saveBatches(null, true)">{{ 'action.save' | translate }}</button>
 </mat-card-actions>
 
 <!-- <as-split direction="horizontal" [unit]="'pixel'">

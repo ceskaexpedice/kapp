@@ -157,6 +157,10 @@ export class AppService {
     return this.post('index/create_batch_from_label', {label});
   }
 
+  getUsedBatches(): Observable<any> {
+    return this.get('index/get_used_batches');
+  }
+
   getDocsInBatch(batch: string): Observable<any> {
     return this.get('index/get_batch_docs', {batch});
   }
