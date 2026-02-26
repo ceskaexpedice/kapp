@@ -102,4 +102,16 @@ export class AuthorItem {
       this.aut.set(resp.response.docs);
     });
   }
+
+  searchTitles() {
+    
+    // const uf = this.usedFacets.find(f => f.field === field && f.value === value);
+    // if (uf) {
+    //   this.usedFacets = this.usedFacets.filter(f => !(f.field === field && f.value === value));
+    // } else {
+    //   this.usedFacets.push({field, value});
+    // }
+    // this.hasUsedFacets = this.usedFacets.length > 0;
+    // this.state.usedFacets.update(f => [...this.usedFacets]);
+  }
 }
