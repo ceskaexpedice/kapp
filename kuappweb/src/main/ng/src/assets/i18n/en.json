@@ -164,7 +164,7 @@
   },
   "alert": {
     "warn_contract": "Are you sure you want to assign the work to the contract?",
-    "name_exist": "Name already exists!",
+    "batche_exist": "This batche already exists!",
     "name_empy": "The name is empty!"
    }
 }

@@ -60,7 +60,7 @@ export class Batches {
 
   displayedColumns = ['pid', 'title', 'state', 'action']
 
-  batcheResult: string = null;
+  batcheExist: boolean;
   counts = signal<{[batch: string]: number}>({});
 
   constructor(
@@ -136,17 +136,13 @@ export class Batches {
 
   addBatch() {
     if (!this.state.batches().find(b => b.name === this.newBatch)) {
-      this.batcheResult = null;
       // this.batches.push({date_created: new Date(), name: this.newBatch, state: 'new'});
       this.state.batches.update(b => [...b, { date_created: new Date(), name: this.newBatch, state: 'new' }]);
-      if (this.newBatch) {
-        this.newBatch = null;
-        this.saveBatches(this.newBatch, true);
-      } else {
-        this.batcheResult = this.translator.instant('alert.name_empty');
-      }
+      this.newBatch = null;
+      this.saveBatches(this.newBatch, true);
+      this.batcheExist = false; 
     } else {
-      this.batcheResult = this.translator.instant('alert.name_exist');
+      this.batcheExist = true;
     }
   }
 
