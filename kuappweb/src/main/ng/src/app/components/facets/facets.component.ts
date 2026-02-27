@@ -1,4 +1,4 @@
-import { Component, effect, input, output } from '@angular/core';
+import { Component, effect, inject, input, output } from '@angular/core';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
 import { TranslateModule } from '@ngx-translate/core';
@@ -7,6 +7,7 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { AppState } from '../../app-state';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-facets',
@@ -17,6 +18,8 @@ import { AppState } from '../../app-state';
   styleUrl: './facets.component.scss'
 })
 export class FacetsComponent {
+
+  private router = inject(Router);
 
   facets = input<FacetFields>();
   fields = input<string[]>([]);
@@ -31,7 +34,7 @@ export class FacetsComponent {
   constructor(public state: AppState) {
     effect(() => {
       this.usedFacets = this.state.usedFacets();
-    this.hasUsedFacets = this.usedFacets.length > 0;
+      this.hasUsedFacets = this.usedFacets.length > 0;
     })
   }
 
@@ -48,12 +51,14 @@ export class FacetsComponent {
     }
     this.hasUsedFacets = this.usedFacets.length > 0;
     this.state.usedFacets.update(f => [...this.usedFacets]);
+    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
   }
 
   unfilter(field: string, value: string) {
     this.usedFacets = this.usedFacets.filter(f => !(f.field === field && f.value === value));
     this.hasUsedFacets = this.usedFacets.length > 0;
     this.state.usedFacets.set(this.usedFacets);
+    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
   }
 
   fireMouserOver(field: string, value: string) {

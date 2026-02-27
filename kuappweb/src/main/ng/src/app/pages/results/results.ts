@@ -15,7 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { AngularSplitModule } from 'angular-split';
 import { FacetsComponent } from '../../components/facets/facets.component';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
@@ -25,7 +25,7 @@ import { ResultItem } from "../../components/result-item/result-item";
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { AuthorItem } from "../../components/author-item/author-item";
-import { Observable } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
 import { TitleDialog } from '../../components/title-dialog/title-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { ResizecolDirective } from '../../shared/resizecol.directive';
@@ -53,7 +53,7 @@ import { TranslateService } from '@ngx-translate/core';
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem, AuthorItem, MatMenuModule, LowerCasePipe,
     NgClass
-],
+  ],
   templateUrl: './results.html',
   styleUrl: './results.scss'
 })
@@ -70,6 +70,7 @@ export class Results {
   pageIndex = 0;
   pageSizeOptions = [10, 25, 100];
 
+  readonly route = inject(ActivatedRoute);
   private router = inject(Router);
   readonly dialog = inject(MatDialog);
 
@@ -94,15 +95,17 @@ export class Results {
     private config: AppConfiguration
   ) {
     effect(() => {
-      const usedFacets = this.state.usedFacets();
       this.state.titleColumns().forEach(c => {
         this.columnSizes[c.field] = c.width ? c.width : 100;
       })
-      this.getData();
+      //this.getData();
     })
   }
 
   ngOnInit(): void {
+    const s = this.route.queryParams.subscribe((p: any) => {
+      this.getData();
+    });
     this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
     this.getContracts();
   }
@@ -137,7 +140,7 @@ export class Results {
     //   q: this.state.q
     // }
     // this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
-    this.router.navigate([], { queryParams: {s: this.state.encodeState()} });
+    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
     this.getData(false);
   }
 
@@ -162,6 +165,7 @@ export class Results {
   }
 
   getData(csv: boolean = false) {
+    
     this.loading.set(true);
     const p: any = {};
     p.rows = this.rows;
