@@ -30,7 +30,7 @@
             <button matIconButton matSuffix (click)="doSearch()"><mat-icon>search</mat-icon></button>
           </mat-form-field>
         </div>
-        <div>
+        <div class="app-fxLayout app-row app-start-v">
           @if (view() === 'titles') {
           <button matButton="outlined" matSuffix (click)="export()" class="app-mr-2"><mat-icon>file_download</mat-icon>{{ 'action.export' | translate }}</button>
           <mat-button-toggle-group name="viewType" aria-label="viewType" [(ngModel)]="viewType">

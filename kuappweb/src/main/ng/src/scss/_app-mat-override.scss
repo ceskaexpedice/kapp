@@ -327,7 +327,7 @@ $alerts: (
 
   // --- toggle button ---
   @include mat.button-toggle-overrides((
-    height: var(--app-button-height),
+    height: 34px,
     divider-color: var(--app-color-gray-3),
     selected-state-background-color: var(--app-color-gray-1),
     text-color: var(--app-color-gray-7),
