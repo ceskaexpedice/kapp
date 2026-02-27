@@ -408,8 +408,7 @@ $alerts: (
     @include mat.list-overrides((
       list-item-one-line-container-height: 30px,
       list-item-container-shape: 0,
-      active-indicator-shape: 0,
-      active-indicator-color: red
+      active-indicator-shape: 0
     ));
 
     .mat-mdc-list-item {
@@ -419,6 +418,28 @@ $alerts: (
         .mdc-list-item__primary-text {
           color: var(--app-color-primary);
           font-weight: 700 !important;
+        }
+      }
+      &:hover {
+        .mdc-icon-button {
+          display: block !important;
+        }
+      }
+      .mdc-list-item__primary-text {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+
+        .mdc-icon-button {
+          display: none;
+
+          @include mat.icon-button-overrides((
+            state-layer-size: 24px
+          ));
+
+          .mat-icon {
+            @include setIcon(18);
+          }
         }
       }
     }
