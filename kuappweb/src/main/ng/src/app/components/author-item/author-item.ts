@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
@@ -33,14 +33,15 @@ export class AuthorItem {
 
   
   aut = signal<any[]>([]);
+  numTitles = signal<number>(0);
 
   constructor(
+    public router: Router,
     public state: AppState,
     private service: AppService,
     private config: AppConfiguration
   ) {
     effect(() => {
-
       if (this.doc().nameIdentifier) {
         const p: any = {};
         p.id= this.doc().nameIdentifier;
@@ -63,6 +64,7 @@ export class AuthorItem {
           
         });
       }
+      this.searchTitles();
     })
   }
 
@@ -104,14 +106,18 @@ export class AuthorItem {
   }
 
   searchTitles() {
-    
-    // const uf = this.usedFacets.find(f => f.field === field && f.value === value);
-    // if (uf) {
-    //   this.usedFacets = this.usedFacets.filter(f => !(f.field === field && f.value === value));
-    // } else {
-    //   this.usedFacets.push({field, value});
-    // }
-    // this.hasUsedFacets = this.usedFacets.length > 0;
-    // this.state.usedFacets.update(f => [...this.usedFacets]);
+    const p: any = {};
+    p.rows = 0;
+    p.author_id = this.doc()['id'];
+    p.only_pid = true;
+    this.service.searchTitlesByAuthor(p as HttpParams).subscribe((resp: any) => {
+       this.numTitles.set(resp.response.numFound);
+    });
+
+  }
+
+  gotoTitles() {
+    this.state.usedFacets.set([{field: "authors_ids", value: this.doc()['id']}]);
+    this.router.navigate(['/titles']);
   }
 }

@@ -101,6 +101,10 @@ export class AppService {
     return this.get('index/authors', params)
   }
 
+  searchTitlesByAuthor(params: HttpParams): Observable<any> {
+    return this.get('index/titles_author', params)
+  }
+
   checkAuthor(params: HttpParams): Observable<any> {
     return this.get('index/check_author', params)
   }

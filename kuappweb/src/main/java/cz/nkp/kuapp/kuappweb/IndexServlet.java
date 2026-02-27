@@ -148,6 +148,18 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
+        TITLES_AUTHOR {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.searchTitlesByAuthor(req);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         TITLES_CONTRACT {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {

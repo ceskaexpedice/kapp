@@ -179,6 +179,9 @@ public class IndexSearcher {
             if (request.getParameter("date") != null) {
                 jrequest = jrequest.withFilter("date_range_start.year:" + request.getParameter("date"));
             }
+            if (request.getParameter("authors_ids") != null) {
+                jrequest = jrequest.withFilter("authors_ids:" + request.getParameter("authors_ids"));
+            }
 
             if (request.getParameter("export") != null) {
                 jrequest.setResponseParser(new InputStreamResponseParser("csv"));
@@ -193,6 +196,52 @@ public class IndexSearcher {
             } else {
                 ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
             }
+            
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
+    public static JSONObject searchTitlesByAuthor(HttpServletRequest request) {
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            String rowsP = request.getParameter("rows");
+            int rows = 0;
+            if (rowsP != null && !rowsP.isBlank()) {
+                rows = Integer.parseInt(rowsP);
+            }
+            
+            int offset = 0;
+            if (request.getParameter("offset") != null) {
+                offset = Integer.parseInt(request.getParameter("offset")); 
+            }
+            
+            String sort = "indextime desc";
+            if (request.getParameter("sort") != null) {
+                sort = request.getParameter("sort");
+            }
+            String q = "*";
+            String fl = Boolean.parseBoolean(request.getParameter("only_pid")) ? 
+                    "pid" : 
+                    "*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))";
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery(q)
+                    .withFilter("authors_ids:(\"" + request.getParameter("author_id") + "\")")
+                    .withParam("fq", "{!collapse field=root.pid}") 
+                    .setOffset(offset)
+                    .setSort(sort)
+                    .returnFields(fl)
+                    .setLimit(rows);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+                
+            NamedList<Object> resp = solr.request(jrequest, "titles");
+            InputStream is = (InputStream) resp.get("stream");
+            
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
             
 
         } catch (Exception ex) {

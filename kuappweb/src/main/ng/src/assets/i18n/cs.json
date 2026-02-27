@@ -40,6 +40,7 @@
     "title": "Název",
     "author": "Autor",
     "authors": "Autoři",
+    "authors_ids": "Identifikator autora",
     "labels": "Označení",
     "state": "Stav",
     "date": "Datum",
@@ -164,7 +165,7 @@
   },
   "alert": {
     "warn_contract": "Opravdu chcete přiřadit dílo ke smlouvě?",
-    "batche_exist": "Tato dávka již existuje!",
+    "batch_exist": "Tato dávka již existuje!",
     "name_empty": "Název je prázdný!"
    }
 }

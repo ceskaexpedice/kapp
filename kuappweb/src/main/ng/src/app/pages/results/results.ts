@@ -115,7 +115,7 @@ export class Results {
 
   addFilters(p: any, usedFacets: { field: string, value: string }[]) {
     p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
-    p.author_id = usedFacets.filter(k => k.field === 'authors_id').map(k => k.value);
+    p.authors_ids = usedFacets.filter(k => k.field === 'authors_ids').map(k => k.value);
     p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
     p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
     p.contracts = usedFacets.filter(k => k.field === 'contracts').map(k => k.value);

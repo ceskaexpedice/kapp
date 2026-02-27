@@ -40,6 +40,7 @@
     "title": "Title",
     "author": "Author",
     "authors": "Authors",
+    "authors_ids": "Author Identifier",
     "labels": "Label",
     "state": "State",
     "date": "Date",
@@ -164,7 +165,7 @@
   },
   "alert": {
     "warn_contract": "Are you sure you want to assign the work to the contract?",
-    "batche_exist": "This batche already exists!",
+    "batch_exist": "This batche already exists!",
     "name_empy": "The name is empty!"
    }
 }

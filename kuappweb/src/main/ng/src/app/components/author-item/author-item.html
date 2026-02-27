@@ -2,21 +2,27 @@
 	<mat-card-header>
 		<mat-card-title>
 			<div class="app-fxLayout app-row app-gap-1">
-				<div class="app-fxFlex">{{ doc()['full']}}</div>
+				<div class="app-fxFlex" [title]="doc()['id']">{{ doc()['full']}}</div>
+				@if(numTitles()) {
+				<div>
+					<button matButton (click)="gotoTitles()" class="app-mr-1">{{ 'action.found_in_titles' | translate }}: {{ numTitles() }}</button>
+				</div>
+				}
 				<mat-chip-set>
 					@for(l of labels; track $index) {
-						<mat-chip [style.background-color]="l.color" (removed)="removeLabel(l)"><!--style="--mat-chip-label-text-color: {{l.text_color}};"-->
-							{{ l.name }}
-							<button matChipRemove [attr.aria-label]="'remove ' + l.name">
-								<mat-icon>cancel</mat-icon>
-							</button>
-						</mat-chip>
+					<mat-chip [style.background-color]="l.color"
+						(removed)="removeLabel(l)"><!--style="--mat-chip-label-text-color: {{l.text_color}};"-->
+						{{ l.name }}
+						<button matChipRemove [attr.aria-label]="'remove ' + l.name">
+							<mat-icon>cancel</mat-icon>
+						</button>
+					</mat-chip>
 					}
 					<mat-chip [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
 						{{ 'Přidat štítek' | translate }}
 						<mat-menu #labelsMenu="matMenu">
 							@for(a of state.labels(); track $index) {
-								<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
+							<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
 							}
 						</mat-menu>
 					</mat-chip>
@@ -30,39 +36,39 @@
 			<span class="app-value">{{ doc()['date']}}</span>
 		</div>
 		@if (doc().nameIdentifier) {
-			<div class="app-metadata-row">
-				<span class="app-label">{{ 'field.id' | translate }}:</span>
-				<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+doc().nameIdentifier" class="app-value">
-					<span>{{ doc().nameIdentifier}}</span>
-					<mat-icon>open_in_new</mat-icon>
-				</a>
-			</div>
-			<div class="app-metadata-row">
-				<span class="app-label">{{ 'field.links' | translate }}:</span>
-				<!-- @if (loadingLinks()) {
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.id' | translate }}:</span>
+			<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+doc().nameIdentifier" class="app-value">
+				<span>{{ doc().nameIdentifier}}</span>
+				<mat-icon>open_in_new</mat-icon>
+			</a>
+		</div>
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.links' | translate }}:</span>
+			<!-- @if (loadingLinks()) {
 					<mat-progress-bar mode="indeterminate"></mat-progress-bar>
 				} -->
-				@for(w of linkTypes(); track $index) {
-					@for(l of links()[w]; track $index) {
-						<a target="_blank" [href]="l.url" class="app-value">
-							<span>{{ w }}</span>
-							<mat-icon>open_in_new</mat-icon>
-						</a>
-					}
-				}
-			</div>
-		} @else {
-			<button matButton="" (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
-			<strong>{{ aut().length }}</strong>
-			@for(a of aut(); track $index) {
-				<div class="app-metadata-row">
-					<span class="app-label">{{ a['datafield_100a'] }}</span>
-					(<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+a['controlfield_001']" class="app-value">
-						<span>{{ a['controlfield_001'] }}</span>
-						<mat-icon>open_in_new</mat-icon>
-					</a>)
-				</div>
+			@for(w of linkTypes(); track $index) {
+			@for(l of links()[w]; track $index) {
+			<a target="_blank" [href]="l.url" class="app-value">
+				<span>{{ w }}</span>
+				<mat-icon>open_in_new</mat-icon>
+			</a>
 			}
+			}
+		</div>
+		} @else {
+		<button matButton (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
+		<strong>{{ aut().length }}</strong>
+		@for(a of aut(); track $index) {
+		<div class="app-metadata-row">
+			<span class="app-label">{{ a['datafield_100a'] }}</span>
+			(<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+a['controlfield_001']" class="app-value">
+				<span>{{ a['controlfield_001'] }}</span>
+				<mat-icon>open_in_new</mat-icon>
+			</a>)
+		</div>
+		}
 		}
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.note' | translate }}:</span>
@@ -73,4 +79,3 @@
 		</div>
 	</mat-card-content>
 </mat-card>
-  
