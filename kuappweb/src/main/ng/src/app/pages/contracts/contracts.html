@@ -96,8 +96,16 @@
 							<mat-icon>delete</mat-icon>
 						</td>
 					</ng-container>
+
+					<ng-container matColumnDef="no_records_found">
+						<td mat-footer-cell *matFooterCellDef colspan="7" class="app-color-warn app-text-center">
+							{{ 'no_records_found' | translate }}
+						</td>
+					</ng-container>
+
 					<tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
 					<tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr>
+					<tr mat-footer-row *matFooterRowDef="['no_records_found']" [hidden]="docs().length > 0"></tr>
 				</table>
 			</div>
 		</div>
