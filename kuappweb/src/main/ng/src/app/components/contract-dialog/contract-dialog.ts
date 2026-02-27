@@ -77,7 +77,7 @@ export class ContractDialog {
 
   withState: boolean = true;
 
-  displayedColumns = computed<string[]>(() => [...this.state.contractColumns().filter(c => c.selected).map(f => f.field), 'action']);
+  displayedColumns = computed<string[]>(() => [...this.state.contractTitleColumns().filter(c => c.selected).map(f => f.field), 'action']);
   columnSizes: { [field: string]: number } = {};
 
 
@@ -95,10 +95,9 @@ export class ContractDialog {
     if (this.contract().issn) {
       this.issn = this.contract().issn.join("\n");
     }
-    this.state.contractColumns().forEach(c => {
+    this.state.contractTitleColumns().forEach(c => {
       this.columnSizes[c.field] = c.width ? c.width : 100;
     });
-    console.log(this.columnSizes)
     this.getTitles();
   }
 
@@ -269,15 +268,14 @@ export class ContractDialog {
     });
   }
 
-
   saveColumnsSizes(e: any, field?: string) {
-    const el = this.state.contractColumns().find((c: any) => c.field === field);
+    const el = this.state.contractTitleColumns().find((c: any) => c.field === field);
     if (el) {
       el.width = e;
     } else {
       console.log("nemelo by")
     }
-    localStorage.setItem('contractColumns', JSON.stringify(this.state.contractColumns()));
+    localStorage.setItem('contractTitleColumns', JSON.stringify(this.state.contractTitleColumns()));
   }
 
 }

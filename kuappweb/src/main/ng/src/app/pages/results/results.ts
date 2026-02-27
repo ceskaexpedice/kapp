@@ -133,10 +133,11 @@ export class Results {
   }
 
   doSearch() {
-    const params = {
-      q: this.state.q
-    }
-    this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
+    // const params = {
+    //   q: this.state.q
+    // }
+    // this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
+    this.router.navigate([], { queryParams: {s: this.state.encodeState()} });
     this.getData(false);
   }
 

@@ -59,7 +59,6 @@
 		</div>
 		} @else {
 		<button matButton (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
-		<strong>{{ aut().length }}</strong>
 		@for(a of aut(); track $index) {
 		<div class="app-metadata-row">
 			<span class="app-label">{{ a['datafield_100a'] }}</span>

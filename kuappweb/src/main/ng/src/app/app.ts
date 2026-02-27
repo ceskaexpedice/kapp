@@ -26,6 +26,7 @@ export class App {
   }
 
   processParams(p: any) {
-    this.state.q = p['q'] ? p['q'] : '';
+    this.state.decodeState(p['s'])
+    // this.state.q = p['q'] ? p['q'] : '';
   }
 }

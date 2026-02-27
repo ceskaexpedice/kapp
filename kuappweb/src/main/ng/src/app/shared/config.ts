@@ -16,6 +16,7 @@ export class Configuration {
   states: {value: string, licenses: string[],licenseEditable:boolean }[];
   titleColumns: {field: string, selected: boolean, width: number}[];
   contractColumns: {field: string, selected: boolean, width: number}[];
+  contractTitleColumns: {field: string, selected: boolean, width: number}[];
   licenses: string[];
   digitalni_knihovny: string[];
 }

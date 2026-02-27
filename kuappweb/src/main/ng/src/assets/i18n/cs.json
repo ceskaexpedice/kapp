@@ -106,7 +106,8 @@
     "contract_upload": "Nahrát smluovu",
     "find_titles": "Najít tituly",
     "analyze": "Analyzovat",
-    "add": "Přidat"
+    "add": "Přidat",
+    "found_in_titles": "Díla"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "Automaticky ONSITE",

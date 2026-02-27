@@ -84,13 +84,11 @@ import { Label } from './shared/label';
                     } 
 
                     this.state.titleColumns.update(a => [...confC]);
-
-                    
                     
                     const cc1 = [...this.config.contractColumns];
                     const cc2 = localStorage.getItem('contractColumns');
                     if (cc2) {
-                        const cols: {field: string, selected: boolean, width: number}[] = JSON.parse(c);
+                        const cols: {field: string, selected: boolean, width: number}[] = JSON.parse(cc2);
                         // Check if new columns are in config. Then add to state
                         cc1.forEach(col => {
                             const localCol = cols.find((lc: {field: string, selected: boolean, width: number}) => lc.field === col.field)
@@ -102,6 +100,20 @@ import { Label } from './shared/label';
                         //this.state.contractColumns.update(a => [...cols]);
                     } 
                     this.state.contractColumns.update(a => [...cc1]);
+                    
+                    const ctc1 = [...this.config.contractTitleColumns];
+                    const ctc2 = localStorage.getItem('contractTitleColumns');
+                    if (ctc2) {
+                        const cols: {field: string, selected: boolean, width: number}[] = JSON.parse(ctc2);
+                        ctc1.forEach(col => {
+                            const localCol = cols.find((lc: {field: string, selected: boolean, width: number}) => lc.field === col.field)
+                            if (localCol) {
+                                col.selected = localCol.selected;
+                                col.width = localCol.width;
+                            }
+                        });
+                    } 
+                    this.state.contractTitleColumns.update(a => [...ctc1]);
 
                     const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels')?.value;
                     if (labelsC) {

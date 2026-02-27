@@ -106,7 +106,8 @@
     "contract_upload": "Upload contract",
     "find_titles": "Find titles",
     "analyze": "Analyze",
-    "add": "Add"
+    "add": "Add",
+    "found_in_titles": "Titles"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "Automatically ONSITE",

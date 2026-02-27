@@ -52,6 +52,15 @@
     ],
 
     "contractColumns": [
+        {"field": "filename", "selected": true},
+        {"field": "title", "selected": true},
+        {"field": "cislo_smlouvy", "selected": true},
+        {"field": "nazev_poskytovatele", "selected": true},
+        {"field": "ico", "selected": true},
+        {"field": "datum_uzavreni", "selected": true}
+    ],
+
+    "contractTitleColumns": [
         {"field": "pid", "selected": true},
         {"field": "title", "selected": true},
         {"field": "state", "selected": true}

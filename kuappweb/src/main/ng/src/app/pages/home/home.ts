@@ -42,11 +42,8 @@ export class Home {
   }
 
   doSearch(target: string) {
-
-    const params = {
-      q: this.q
-    }
-    this.router.navigate(['/' + target], { queryParams: params, queryParamsHandling: 'merge' });
+    this.state.q = this.q;
+    this.router.navigate(['/' + target], { queryParams: {s: this.state.encodeState()} });
   }
 
   newImported() {
@@ -67,11 +64,7 @@ export class Home {
   }
 
   contracts() {
-
-    const params = {
-      q: this.q
-    }
-    this.router.navigate(['/contracts'], { queryParams: params, queryParamsHandling: 'merge' });
+    this.router.navigate(['/contracts']);
   }
 
 }
