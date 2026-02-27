@@ -155,8 +155,8 @@ export class Batches {
 
   
 
-  removeBatch(b: Batch) {
-    const idx = this.state.batches().findIndex(b => b.name === this.newBatch);
+  removeBatch(ba: Batch) {
+    const idx = this.state.batches().findIndex(b => b.name === ba.name);
     if (idx > -1) {
       const b = this.state.batches()
       b.splice(idx, 1);
