@@ -1,4 +1,8 @@
+
 <mat-card appearance="outlined">
+	@if(loadingLinks()){
+<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+}
 	<mat-card-header>
 		<mat-card-title>
 			<div class="app-fxLayout app-row app-gap-1">

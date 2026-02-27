@@ -27,6 +27,7 @@ export class AuthorItem {
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
   loadingLinks = signal<boolean>(false);
+  loading = signal(false);
 
   states = ['controlled_public', 'controlled', 'new_imported']
   labels: Label[] = [];
@@ -97,11 +98,13 @@ export class AuthorItem {
   }
 
   checkAutor() {
+    this.loadingLinks.set(true);
     const p: any = {};
     p.rows = 10;
     p.author = this.doc()['full'];
     this.service.checkAuthor(p as HttpParams).subscribe((resp: any) => {
       this.aut.set(resp.response.docs);
+      this.loadingLinks.set(false);
     });
   }
 
