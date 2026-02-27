@@ -210,9 +210,9 @@ export class Batches {
         this.selectBatch(this.state.batches().find(b => b.name === batch));
       }
       if (resp.error) {
-        this.ui.showErrorSnackBar(adding ? 'snackbar.record_added.error' : 'snackbar.record_remove.error');
+        this.ui.showErrorSnackBar(adding ? 'snackbar.record_added.error' : 'snackbar.record_removed.error');
       } else {
-        this.ui.showInfoSnackBar(adding ? 'snackbar.record_added.success' : 'snackbar.record_remove.success');
+        this.ui.showInfoSnackBar(adding ? 'snackbar.record_added.success' : 'snackbar.record_removed.success');
       }
     });
   }

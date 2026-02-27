@@ -107,7 +107,8 @@
     "find_titles": "Najít tituly",
     "analyze": "Analyzovat",
     "add": "Přidat",
-    "found_in_titles": "Díla"
+    "found_in_titles": "Díla",
+    "remove_record": "Odstranit záznam"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "Automaticky ONSITE",

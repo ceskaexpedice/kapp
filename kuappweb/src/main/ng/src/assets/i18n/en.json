@@ -107,7 +107,8 @@
     "find_titles": "Find titles",
     "analyze": "Analyze",
     "add": "Add",
-    "found_in_titles": "Titles"
+    "found_in_titles": "Titles",
+    "remove_record": "Remove record"
   },
   "state": {
     "NONCONTROLLED_PRIVATE": "Automatically ONSITE",
