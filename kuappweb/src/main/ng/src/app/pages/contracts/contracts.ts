@@ -60,7 +60,7 @@ export class Contracts {
   sort: Sort = { active: 'filename', direction: 'asc' };
 
   //displayedColumns = ['id', 'filename', 'cislo_smlouvy', 'nazev_poskytovatele', 'ico', 'datum_uzavreni', 'datum_platnosti', 'kontaktni_osoby'];
-  displayedColumns = computed<string[]>(() => [...this.state.contractColumns().filter(c => c.selected).map(f => f.field), 'action']);
+  displayedColumns = computed<string[]>(() => [...this.state.contractColumns().filter(c => c.selected).map(f => f.field)]);
   columnSizes: { [field: string]: number } = {};
 
 

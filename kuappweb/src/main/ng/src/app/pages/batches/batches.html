@@ -4,14 +4,12 @@
 			<mat-nav-list class="app-batche-nav">
 				@for(l of state.batches(); track $index) {
 					<a mat-list-item (click)="selectBatch(l)" [class.app-active]="selectedBatch()?.name === l.name">
-						@if (!l.name) {
-							-- no name --
-						} @else {
 							{{ l.name }}
-						}
 					</a>
-					<!-- {{ counts()[l.name] }} -->
-					<!-- <button mat-icon-button [disabled]="counts()[l.name] > 0" matSuffix class="app-color-error" (click)="removeBatch(l)" [matTooltip]="'action.remove_batch' | translate"><mat-icon>close</mat-icon></button> -->
+					@if(!counts()?.[l.name]) {
+						<button mat-icon-button matSuffix class="app-color-error" (click)="removeBatch(l)" [matTooltip]="'action.remove_batch' | translate"><mat-icon>close</mat-icon></button>
+					}
+					
 				}
 			</mat-nav-list>
 			<mat-divider class="app-mt-1 app-mb-4"></mat-divider>
@@ -20,7 +18,7 @@
 				<input matInput [(ngModel)]="newBatch" />
 				<button matIconButton matSuffix (click)="addBatch()" [matTooltip]="'action.add_new_batch' | translate" [disabled]="!newBatch"><mat-icon>playlist_add</mat-icon></button>
 			</mat-form-field>
-			@if (batchExist) {
+			@if (batchExist()) {
 				<div class="app-mb-2 app-text-center app-color-warn app-mt-n1">{{ 'alert.batch_exist' | translate}}</div>
 			}
 			<mat-divider class="app-mb-4"></mat-divider>
