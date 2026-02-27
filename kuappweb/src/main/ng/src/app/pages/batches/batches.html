@@ -4,12 +4,11 @@
 			<mat-nav-list class="app-batche-nav">
 				@for(l of state.batches(); track $index) {
 					<a mat-list-item (click)="selectBatch(l)" [class.app-active]="selectedBatch()?.name === l.name">
-							{{ l.name }}
+						<span>{{ l.name }}</span>
+						@if(!counts()?.[l.name]) {
+							<button mat-icon-button matSuffix class="app-color-error" (click)="removeBatch(l)" [matTooltip]="'action.remove_batch' | translate"><mat-icon>close</mat-icon></button>
+						}
 					</a>
-					@if(!counts()?.[l.name]) {
-						<button mat-icon-button matSuffix class="app-color-error" (click)="removeBatch(l)" [matTooltip]="'action.remove_batch' | translate"><mat-icon>close</mat-icon></button>
-					}
-					
 				}
 			</mat-nav-list>
 			<mat-divider class="app-mt-1 app-mb-4"></mat-divider>
