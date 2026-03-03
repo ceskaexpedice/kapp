@@ -4,7 +4,7 @@ import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatIconModule } from '@angular/material/icon';
 import { MatMenuModule } from '@angular/material/menu';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
@@ -27,20 +27,22 @@ export class AuthorItem {
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
   loadingLinks = signal<boolean>(false);
+  loading = signal(false);
 
   states = ['controlled_public', 'controlled', 'new_imported']
   labels: Label[] = [];
 
   
   aut = signal<any[]>([]);
+  numTitles = signal<number>(0);
 
   constructor(
+    public router: Router,
     public state: AppState,
     private service: AppService,
     private config: AppConfiguration
   ) {
     effect(() => {
-
       if (this.doc().nameIdentifier) {
         const p: any = {};
         p.id= this.doc().nameIdentifier;
@@ -63,6 +65,7 @@ export class AuthorItem {
           
         });
       }
+      this.searchTitles();
     })
   }
 
@@ -95,11 +98,29 @@ export class AuthorItem {
   }
 
   checkAutor() {
+    this.loadingLinks.set(true);
     const p: any = {};
     p.rows = 10;
     p.author = this.doc()['full'];
     this.service.checkAuthor(p as HttpParams).subscribe((resp: any) => {
       this.aut.set(resp.response.docs);
+      this.loadingLinks.set(false);
     });
+  }
+
+  searchTitles() {
+    const p: any = {};
+    p.rows = 0;
+    p.author_id = this.doc()['id'];
+    p.only_pid = true;
+    this.service.searchTitlesByAuthor(p as HttpParams).subscribe((resp: any) => {
+       this.numTitles.set(resp.response.numFound);
+    });
+
+  }
+
+  gotoTitles() {
+    this.state.usedFacets.set([{field: "authors_ids", value: this.doc()['id']}]);
+    this.router.navigate(['/titles'], {queryParams: {s: this.state.encodeState()}});
   }
 }

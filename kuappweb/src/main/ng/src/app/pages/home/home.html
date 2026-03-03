@@ -3,7 +3,7 @@
 		<div class="app-fxLayout app-row app-wrap app-center-v app-center-h app-cards-wrapper">
 			<mat-card appearance="outlined" class="app-card-titles">
 				<mat-card-header>
-					<mat-card-title>{{ 'home.titles' | translate }} <span class="app-count">({{ titles() }})</span></mat-card-title>
+					<mat-card-title>{{ 'home.titles' | translate }} <span class="app-count">({{ totals()?.titles }})</span></mat-card-title>
 				</mat-card-header>
 				<mat-card-content>
 					<mat-form-field appearance="outline">
@@ -19,7 +19,7 @@
 
 			<mat-card appearance="outlined" class="app-card-authors">
 				<mat-card-header>
-					<mat-card-title>{{ 'home.authors' | translate }}  <span class="app-count">({{ authors() }})</span></mat-card-title>
+					<mat-card-title>{{ 'home.authors' | translate }}  <span class="app-count">({{ totals()?.authors }})</span></mat-card-title>
 				</mat-card-header>
 				<mat-card-content>
 					<mat-form-field appearance="outline">
@@ -74,7 +74,7 @@
 					<mat-card-title (click)="contracts()">{{ 'home.contracts' | translate }} </mat-card-title>
 				</mat-card-header>
 				<mat-card-content>
-					{{ 'home.contracts_desc' | translate }}
+					{{ 'home.contracts_desc' | translate }} <span class="app-count">({{ totals()?.contracts }})</span>
 
 				</mat-card-content>
 				<mat-card-actions align="end" class="app-mat-card-actions">

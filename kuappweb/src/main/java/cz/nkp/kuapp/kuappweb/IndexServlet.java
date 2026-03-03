@@ -86,15 +86,14 @@ public class IndexServlet extends HttpServlet {
         }
     }
 
-    private JSONObject doUpload(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
-        JSONObject ret = new JSONObject();
-        //for (Part part : request.getParts()) {
-        Part part = request.getPart("file");
-        LOGGER.log(Level.INFO, "Part name -> {0}", part.getName());
-        String subbmittedFilename = request.getParameter("name");
-        String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
-
-        return ret;
+    private static String getUser(HttpServletRequest req) {
+        return "test";
+//        Object user = req.getSession().getAttribute("user");
+//        if (user != null) {
+//            return ((JSONObject) req.getSession().getAttribute("user")).getString("name");
+//        } else {
+//            return null;
+//        }
     }
 
     enum Actions {
@@ -143,6 +142,18 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     json = IndexSearcher.searchTitles(req);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        TITLES_AUTHOR {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.searchTitlesByAuthor(req);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -331,7 +342,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.indexDocContracts(js);
+                    json = SolrIndexer.indexDocContracts(js, getUser(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -372,6 +383,18 @@ public class IndexServlet extends HttpServlet {
                     json = IndexSearcher.getBatchDocs(req.getParameter("batch"), false);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
+                }
+                return json; 
+            }
+        },
+        GET_USED_BATCHES {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getUsedBatches();
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString()); 
                 }
                 return json;
             }
@@ -514,7 +537,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.changeState(js);
+                    json = SolrIndexer.changeState(js, getUser(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -527,7 +550,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.changeStateInBatch(js);
+                    json = SolrIndexer.changeStateInBatch(js, getUser(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

@@ -8,12 +8,11 @@
 			<div>
 				<mat-form-field appearance="outline" class="app-view-search">
 					<mat-label>{{ 'action.search' | translate }}</mat-label>
-					<input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}"
-						(keyup.enter)="doSearch()" />
+					<input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}" (keyup.enter)="doSearch()" />
 					@if (state.q) {
-					<button matIconButton matSuffix (click)="clearQ()" class="app-color-warn">
-						<mat-icon>close</mat-icon>
-					</button>
+						<button matIconButton matSuffix (click)="clearQ()" class="app-color-error">
+							<mat-icon>close</mat-icon>
+						</button>
 					}
 					<button matIconButton matSuffix (click)="doSearch()">
 						<mat-icon>search</mat-icon>
@@ -27,7 +26,7 @@
 					{{ 'action.contract_upload' | translate }}
 				</button>
 				@if (selctedFileExists()) {
-					<span class="app-color-warn" [innerHTML]="'contract_exists' | translate : {filename:selectedFile?.name}"></span>
+					<span class="app-color-error" [innerHTML]="'contract_exists' | translate : {filename:selectedFile?.name}"></span>
 					<button matButton="filled" class="app-warn" matSuffix (click)="uploadFile()">
 						{{ 'action.overwrite' | translate}}
 					</button>
@@ -38,7 +37,8 @@
 			<div class="app-table-wrapper">
 				<table mat-table [dataSource]="docs()" class="app-hover app-resize" matSort [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction" (matSortChange)="sortTable($event)">
 					<ng-container matColumnDef="filename">
-						<th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
+						<th mat-header-cell *matHeaderCellDef 
+								[resizeColumn]="true" [style.width]="columnSizes['filename'] + 'px'" (columnResized)="saveColumnsSizes($event,'filename')">
 							<span mat-sort-header>{{ 'field.filename' | translate}}</span>
 						</th>
 						<td mat-cell *matCellDef="let doc">
@@ -46,7 +46,8 @@
 						</td>
 					</ng-container>
 					<ng-container matColumnDef="title">
-						<th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
+						<th mat-header-cell *matHeaderCellDef 
+								[resizeColumn]="true" [style.width]="columnSizes['title'] + 'px'" (columnResized)="saveColumnsSizes($event,'title')">
 							<span mat-sort-header> {{ 'field.title' | translate}}</span>
 						</th>
 						<td mat-cell *matCellDef="let doc">
@@ -56,7 +57,8 @@
 						</td>
 					</ng-container>
 					<ng-container matColumnDef="cislo_smlouvy">
-						<th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
+						<th mat-header-cell *matHeaderCellDef 
+								[resizeColumn]="true" [style.width]="columnSizes['cislo_smlouvy'] + 'px'" (columnResized)="saveColumnsSizes($event,'cislo_smlouvy')">
 							{{ 'field.cislo_smlouvy' | translate}}
 						</th>
 						<td mat-cell *matCellDef="let doc">
@@ -64,7 +66,8 @@
 						</td>
 					</ng-container>
 					<ng-container matColumnDef="nazev_poskytovatele">
-						<th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
+						<th mat-header-cell *matHeaderCellDef 
+								[resizeColumn]="true" [style.width]="columnSizes['nazev_poskytovatele'] + 'px'" (columnResized)="saveColumnsSizes($event,'nazev_poskytovatele')">
 							{{ 'field.nazev_poskytovatele' | translate}}
 						</th>
 						<td mat-cell *matCellDef="let doc">
@@ -72,13 +75,15 @@
 						</td>
 					</ng-container>
 					<ng-container matColumnDef="ico">
-						<th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
+						<th mat-header-cell *matHeaderCellDef 
+								[resizeColumn]="true" [style.width]="columnSizes['ico'] + 'px'" (columnResized)="saveColumnsSizes($event,'ico')">
 							{{ 'field.ico' | translate}}
 						</th>
 						<td mat-cell *matCellDef="let doc">{{ doc.ico | translate }}</td>
 					</ng-container>
 					<ng-container matColumnDef="datum_uzavreni">
-						<th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
+						<th mat-header-cell *matHeaderCellDef 
+								[resizeColumn]="true" [style.width]="columnSizes['datum_uzavreni'] + 'px'" (columnResized)="saveColumnsSizes($event,'datum_uzavreni')">
 							{{ 'field.datum_uzavreni' | translate}}
 						</th>
 						<td mat-cell *matCellDef="let doc">
@@ -86,13 +91,21 @@
 						</td>
 					</ng-container>
 					<ng-container matColumnDef="action">
-						<th mat-header-cell *matHeaderCellDef [resizeColumn]="true"></th>
+						<th mat-header-cell *matHeaderCellDef [style.width]="'60px'"></th>
 						<td mat-cell *matCellDef="let doc">
 							<mat-icon>delete</mat-icon>
 						</td>
 					</ng-container>
-					<tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
-					<tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+
+					<ng-container matColumnDef="no_records_found">
+						<td mat-footer-cell *matFooterCellDef colspan="7" class="app-color-warn app-text-center">
+							{{ 'no_records_found' | translate }}
+						</td>
+					</ng-container>
+
+					<tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true"></tr>
+					<tr mat-row *matRowDef="let row; columns: displayedColumns();"></tr>
+					<tr mat-footer-row *matFooterRowDef="['no_records_found']" [hidden]="docs().length > 0"></tr>
 				</table>
 			</div>
 		</div>

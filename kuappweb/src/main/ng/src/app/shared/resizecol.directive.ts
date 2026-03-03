@@ -56,7 +56,7 @@ export class ResizecolDirective {
   onMouseMove = (event: MouseEvent) => {
     const offset = 0;
     if (this.pressed && event.buttons) {
-      this.renderer.addClass(this.table, "app-resizing");
+      //this.renderer.addClass(this.table, "app-resizing");
       let width =this.startWidth + (event.pageX - this.startX - offset);
       this.renderer.setStyle(this.column, "width", `${width}px`);
       if (!this.column.nextSibling || this.column.nextSibling.nodeType === Node.COMMENT_NODE ) {
@@ -69,7 +69,7 @@ export class ResizecolDirective {
   onMouseUp = (event: MouseEvent) => {
     if (this.pressed) {
       this.pressed = false;
-      this.renderer.removeClass(this.table, "resizing");
+      //this.renderer.removeClass(this.table, "resizing");
       this.columnResized.emit(this.column.offsetWidth);
       event.stopImmediatePropagation();
     }

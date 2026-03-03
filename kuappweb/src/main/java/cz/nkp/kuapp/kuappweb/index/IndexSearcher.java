@@ -40,13 +40,15 @@ public class IndexSearcher {
                 
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            
             ret.put("titles", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
             
             resp = solr.request(jrequest, "authors");
             is = (InputStream) resp.get("stream");
             ret.put("authors", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
             
+            resp = solr.request(jrequest, "contracts");
+            is = (InputStream) resp.get("stream");
+            ret.put("contracts", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -179,6 +181,9 @@ public class IndexSearcher {
             if (request.getParameter("date") != null) {
                 jrequest = jrequest.withFilter("date_range_start.year:" + request.getParameter("date"));
             }
+            if (request.getParameter("authors_ids") != null) {
+                jrequest = jrequest.withFilter("authors_ids:" + request.getParameter("authors_ids"));
+            }
 
             if (request.getParameter("export") != null) {
                 jrequest.setResponseParser(new InputStreamResponseParser("csv"));
@@ -193,6 +198,52 @@ public class IndexSearcher {
             } else {
                 ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
             }
+            
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
+    public static JSONObject searchTitlesByAuthor(HttpServletRequest request) {
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            String rowsP = request.getParameter("rows");
+            int rows = 0;
+            if (rowsP != null && !rowsP.isBlank()) {
+                rows = Integer.parseInt(rowsP);
+            }
+            
+            int offset = 0;
+            if (request.getParameter("offset") != null) {
+                offset = Integer.parseInt(request.getParameter("offset")); 
+            }
+            
+            String sort = "indextime desc";
+            if (request.getParameter("sort") != null) {
+                sort = request.getParameter("sort");
+            }
+            String q = "*";
+            String fl = Boolean.parseBoolean(request.getParameter("only_pid")) ? 
+                    "pid" : 
+                    "*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))";
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery(q)
+                    .withFilter("authors_ids:(\"" + request.getParameter("author_id") + "\")")
+                    .withParam("fq", "{!collapse field=root.pid}") 
+                    .setOffset(offset)
+                    .setSort(sort)
+                    .returnFields(fl)
+                    .setLimit(rows);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+                
+            NamedList<Object> resp = solr.request(jrequest, "titles");
+            InputStream is = (InputStream) resp.get("stream");
+            
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
             
 
         } catch (Exception ex) {
@@ -329,9 +380,6 @@ public class IndexSearcher {
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(1000)
                             .setMinCount(1))
-                    .withFacet("state", new TermsFacetMap("state")
-                            .setLimit(1000)
-                            .setMinCount(1)) 
                     .setOffset(offset)
                     .setSort("indextime desc")
                     .returnFields("*")
@@ -440,6 +488,31 @@ public class IndexSearcher {
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
             ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
+    public static JSONObject getUsedBatches() {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery("*")
+                    .withFacet("batches", new TermsFacetMap("batch") 
+                            .setLimit(1000)
+                            .setMinCount(1)) 
+                    .setLimit(0);    
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> resp = solr.request(jrequest, "titles");
+            InputStream is = (InputStream) resp.get("stream");
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8"))
+                    .getJSONObject("facets").getJSONObject("batches");
+            
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);

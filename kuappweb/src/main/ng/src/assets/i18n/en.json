@@ -3,7 +3,7 @@
   "views": "Views",
   "clearSelection": "Clear selection",
   "usedFilters": "Used filters",
-  "numFound": "num. found",
+  "num_found": "Num. found",
   "current_state": "Current state",
   "current_states": "Current states",
   "new_state": "New state",
@@ -20,6 +20,11 @@
   "copy_text_to_clipboard": "Copy text to clipboard",
   "remove_this_record": "Remove this record",
   "titles_found_ccnb_issn": "Titles found via ccnb and issn",
+  "assigning_work_to_contract": "Assigning a work to a contract",
+  "change_licenses_at_same_time": "Change licenses at the same time",
+  "add_to_batch": "Add to batch",
+  "new_batch_name": "New batch name",
+  "no_records_found": "No records found",
   "home": {
     "titles": "Titles",
     "authors": "Authors",
@@ -35,6 +40,7 @@
     "title": "Title",
     "author": "Author",
     "authors": "Authors",
+    "authors_ids": "Author Identifier",
     "labels": "Label",
     "state": "State",
     "date": "Date",
@@ -99,23 +105,26 @@
     "table_view": "Table",
     "contract_upload": "Upload contract",
     "find_titles": "Find titles",
-    "analyze": "Analyze"
+    "analyze": "Analyze",
+    "add": "Add",
+    "found_in_titles": "Titles",
+    "remove_record": "Remove record"
   },
   "state": {
-    "NONCONTROLLED_PRIVATE": "nekontrolované",
-    "NONCONTROLLED_PUBLIC": "nekontrolované - zpřístupněné",
-    "TO_CONTROL": "ke kontrole",
-    "PARENT_TO_CONTROLL": "ke kontrole nadřazeného",
-    "PARENT_OPEN": "ke kontrole nadřazeného",
-    "PARENT_CLOSED": "nadřazené zkontrolované",
-    "CONTROLLED_PUBLIC": "kontrolované - volné",
-    "CONTROLLED_PRIVATE": "kontrolované- neveřejné",
-    "CONTROLLED_UNKNOWN": "kontrolované - neznámé",
-    "CONTROLLED_UNKNOWN_PUBLIC": "kontrolované - neznámé - volné",
-    "CONTROLLED_NO_AP": "kontrolované - bez autorskych prav",
-    "CONTROLLED_PROHIBITED": "kontrolované - znepristupnene",
-    "CONTROLLED_PRIVATE_LICENSE": "kontrolované - neveřejné licence",
-    "undefined": "undefined"
+    "NONCONTROLLED_PRIVATE": "Automatically ONSITE",
+    "NONCONTROLLED_PUBLIC": "Automatically PUBLIC",
+    "TO_CONTROL": "Monograph - for review",
+    "PARENT_TO_CONTROLL": "To check the superior",
+    "PARENT_OPEN": "Multi-volumes - for control",
+    "PARENT_CLOSED": "Multi-volume - closed",
+    "CONTROLLED_PUBLIC": "Controlled - free",
+    "CONTROLLED_PRIVATE": "Controlled - non-public",
+    "CONTROLLED_UNKNOWN": "Controlled - unknown",
+    "CONTROLLED_UNKNOWN_PUBLIC": "Controlled - unknown - free",
+    "CONTROLLED_NO_AP": "Controlled - no copyright",
+    "CONTROLLED_PROHIBITED": "Controlled - inaccessible",
+    "CONTROLLED_PRIVATE_LICENSE": "Controlled - non-public licenses",
+    "undefined": "Unknown"
   },
   "admin": {
     "labels": "Labels administration",
@@ -155,5 +164,10 @@
     "copyTextToClipboard": {
       "success": "Text successfully copied to clipboard"
     }
-  }
+  },
+  "alert": {
+    "warn_contract": "Are you sure you want to assign the work to the contract?",
+    "batch_exist": "This batche already exists!",
+    "name_empy": "The name is empty!"
+   }
 }

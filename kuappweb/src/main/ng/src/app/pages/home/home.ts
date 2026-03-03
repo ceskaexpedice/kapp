@@ -23,8 +23,9 @@ export class Home {
   readonly service = inject(AppService);
 
   q: string;
-  titles = signal<number>(0);
-  authors = signal<number>(0);
+  // titles = signal<number>(0);
+  // authors = signal<number>(0);
+  totals = signal<{titles:number, authors: number, contracts: number}>(null);
   constructor(
     private router: Router,
     public state: AppState
@@ -36,17 +37,13 @@ export class Home {
 
   getHome() {
     this.service.getHome().subscribe((res: any) => {
-      this.titles.set(res.titles)
-      this.authors.set(res.authors)
+      this.totals.set(res)
     })
   }
 
   doSearch(target: string) {
-
-    const params = {
-      q: this.q
-    }
-    this.router.navigate(['/' + target], { queryParams: params, queryParamsHandling: 'merge' });
+    this.state.q = this.q;
+    this.router.navigate(['/' + target], { queryParams: {s: this.state.encodeState()} });
   }
 
   newImported() {
@@ -67,11 +64,7 @@ export class Home {
   }
 
   contracts() {
-
-    const params = {
-      q: this.q
-    }
-    this.router.navigate(['/contracts'], { queryParams: params, queryParamsHandling: 'merge' });
+    this.router.navigate(['/contracts']);
   }
 
 }

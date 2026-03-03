@@ -101,6 +101,10 @@ export class AppService {
     return this.get('index/authors', params)
   }
 
+  searchTitlesByAuthor(params: HttpParams): Observable<any> {
+    return this.get('index/titles_author', params)
+  }
+
   checkAuthor(params: HttpParams): Observable<any> {
     return this.get('index/check_author', params)
   }
@@ -137,8 +141,8 @@ export class AppService {
     return this.post('index/save_doc_batch', {pid,batch});
   }
 
-  saveDocContract(pid: string, contract: string, selected: boolean): Observable<any> {
-    return this.post('index/save_doc_contract', {pid,contract,selected});
+  saveDocContract(pid: string, contract: string, withState: boolean, selected: boolean, licenses: string[]): Observable<any> {
+    return this.post('index/save_doc_contract', {pid,contract,withState,selected, licenses});
   }
 
   saveTitleColumns(columns: {field: string, selected: boolean}[]): Observable<any> {
@@ -155,6 +159,10 @@ export class AppService {
 
   createBatchFromLabel(label: string): Observable<any> {
     return this.post('index/create_batch_from_label', {label});
+  }
+
+  getUsedBatches(): Observable<any> {
+    return this.get('index/get_used_batches');
   }
 
   getDocsInBatch(batch: string): Observable<any> {

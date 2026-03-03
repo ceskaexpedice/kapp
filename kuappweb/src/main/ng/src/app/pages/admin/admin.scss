@@ -1,6 +1,6 @@
 .app-btn-add {
 	&:not(:disabled) {
-		color: var(--app-color-darknes) !important;
+		color: rgb(var(--app-color-darknes)) !important;
 	}
 }
 
@@ -45,7 +45,7 @@
       font-size: #{$size}px;
       height: #{$size}px;
       width: #{$size}px;
-      color: var(--app-color-lightnes);
+      color: rgb(var(--app-color-lightnes));
     }
   }
 }

@@ -25,12 +25,12 @@
             <mat-label>{{ 'action.search' | translate }}</mat-label>
             <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}" (keyup.enter)="doSearch()">
             @if (state.q) {
-            <button matIconButton matSuffix (click)="clearQ()" class="app-color-warn"><mat-icon>close</mat-icon></button>
+            <button matIconButton matSuffix (click)="clearQ()" class="app-color-error"><mat-icon>close</mat-icon></button>
             }
             <button matIconButton matSuffix (click)="doSearch()"><mat-icon>search</mat-icon></button>
           </mat-form-field>
         </div>
-        <div>
+        <div class="app-fxLayout app-row app-start-v">
           @if (view() === 'titles') {
           <button matButton="outlined" matSuffix (click)="export()" class="app-mr-2"><mat-icon>file_download</mat-icon>{{ 'action.export' | translate }}</button>
           <mat-button-toggle-group name="viewType" aria-label="viewType" [(ngModel)]="viewType">
@@ -42,7 +42,7 @@
       </div>
       <div class="app-fxLayout app-row app-center-v app-gap-4">
         <div class="app-fxFlex">
-          <h4>{{ 'numFound' | translate}}: {{ numFound }}</h4>
+          <h4>{{ 'num_found' | translate}}: {{ numFound }}</h4>
         </div>
         <div>
           <mat-paginator #paginator class="demo-paginator" (page)="handlePageEvent($event)" [length]="numFound"
@@ -83,14 +83,21 @@
               </td>
             </ng-container>
 
+            <ng-container matColumnDef="model">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'model')" [style.width]="columnSizes['model'] + 'px'"><span mat-sort-header>{{ 'field.model' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.model }}
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="state">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'state')" [style.width]="columnSizes['state'] + 'px'"><span mat-sort-header>{{ 'field.state' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">
-                <div class="app-badge app-text-cutter-wrapper" [ngClass]="'app-' + doc.state | lowercase" [matTooltip]="'state.' + doc.state | translate">
-                  <div class="app-text-cutter">
+                <div class="app-badge app-text-cutter-wrapper" [class.app-cursor-pointer]="!doc.is_hierarchical"  [ngClass]="'app-' + doc.state | lowercase" [matTooltip]="doc.is_hierarchical ? '' : 'action.set_state' | translate">
+                  <div class="app-text-cutter" (click)="setState(doc)"><!-- [matTooltip]="'action.set_state' | translate" -->
                     {{ 'state.' + doc.state | translate }}
                   </div>  
-                </div>
+                </div> 
               </td>
             </ng-container>
 
@@ -138,14 +145,11 @@
               <td mat-cell *matCellDef="let doc">{{ doc.release_date | date : 'yyyy' }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="action">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true">
-                <!-- <div class="app-fxLayout app-row app-center-h">
-                  <button mat-icon-button (click)="setColumns()"><mat-icon>more_vert</mat-icon></button>
-                </div> -->
+            <ng-container matColumnDef="action" [stickyEnd]="true" >
+              <th mat-header-cell *matHeaderCellDef [style.width]="'120px'">
               </th>
               <td mat-cell *matCellDef="let doc">
-                <div class="app-fxLayout app-row app-gap-1 app-center-h">
+                <div class="app-fxLayout app-row app-gap-1 app-center-h app-actions">
                   <button mat-icon-button (click)="addAuthor(doc)" [matTooltip]="'action.add_author' | translate">
                     <mat-icon>person_add</mat-icon>
                   </button>
@@ -165,7 +169,7 @@
                   </button>
                 <mat-menu #contractsMenu="matMenu">
                   @for(a of contracts(); track $index) {
-                    <button mat-menu-item (click)="addToContract(a.filename, doc)" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
+                    <button mat-menu-item (click)="addToContract(a, doc)" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
                       @if (inContract(a.filename, doc)) { <mat-icon>check_box</mat-icon> }
                       {{ a.filename }}
                     </button>

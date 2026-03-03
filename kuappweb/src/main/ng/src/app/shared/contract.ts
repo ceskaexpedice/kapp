@@ -17,7 +17,7 @@ export class Contract {
   dodatky: string[] = [];
   cislo_dodatku: string;
   souhrn: string;
-  license: string;
+  license: string[];
   ccnb: string[] = [];
   issn: string[] = [];
   isbn: string[] = [];

@@ -76,6 +76,6 @@
 	</div>
 </mat-dialog-content>
 <mat-dialog-actions>
-    <button matButton [disabled]="!newState" (click)="save()">{{ 'action.save' | translate }}</button>
-    <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+	<button matButton="filled" [disabled]="!newState" (click)="save()">{{ 'action.save' | translate }}</button>
+	<button matButton="outlined" [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>

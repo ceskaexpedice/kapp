@@ -43,6 +43,12 @@
       }
     }  
   }
+
+  .mat-mdc-cell {
+    &.mat-column-action {
+      border-left: 1px solid var(--app-color-gray-3);
+    }
+  }
 }
 
 

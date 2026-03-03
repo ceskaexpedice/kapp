@@ -1,6 +1,6 @@
 import { DatePipe } from '@angular/common';
 import { HttpClient, HttpEvent, HttpEventType, HttpParams } from '@angular/common/http';
-import { Component, effect, inject, signal } from '@angular/core';
+import { Component, computed, effect, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -60,7 +60,8 @@ export class Contracts {
   sort: Sort = { active: 'filename', direction: 'asc' };
 
   //displayedColumns = ['id', 'filename', 'cislo_smlouvy', 'nazev_poskytovatele', 'ico', 'datum_uzavreni', 'datum_platnosti', 'kontaktni_osoby'];
-  displayedColumns = ['filename', 'title', 'cislo_smlouvy', 'nazev_poskytovatele', 'ico', 'datum_uzavreni'];
+  displayedColumns = computed<string[]>(() => [...this.state.contractColumns().filter(c => c.selected).map(f => f.field)]);
+  columnSizes: { [field: string]: number } = {};
 
 
   name: string;
@@ -85,6 +86,9 @@ export class Contracts {
         e.preventDefault();
       }
     });
+    this.state.contractColumns().forEach(c => {
+      this.columnSizes[c.field] = c.width ? c.width : 100;
+    });
   }
 
   addFilters(p: any, usedFacets: { field: string, value: string }[]) {
@@ -97,10 +101,11 @@ export class Contracts {
   }
 
   doSearch() {
-    const params = {
-      q: this.state.q
-    }
-    this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
+    // const params = {
+    //   q: this.state.q
+    // }
+    // this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
+    this.router.navigate([], { queryParams: {s: this.state.encodeState()} });
     this.getData();
   }
 
@@ -130,7 +135,8 @@ export class Contracts {
   showContract(doc: Contract) {
     const dialogRef = this.dialog.open(ContractDialog, {
       data: { doc },
-      panelClass: "app-dialog-contract"
+      panelClass: "app-dialog-contract",
+      width: '1000px'
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -221,5 +227,16 @@ export class Contracts {
       });
     }
   }
+
+  saveColumnsSizes(e: any, field?: string) {
+    const el = this.state.contractColumns().find((c: any) => c.field === field);
+    if (el) {
+      el.width = e;
+    } else {
+      console.log("nemelo by")
+    }
+    localStorage.setItem('contractColumns', JSON.stringify(this.state.contractColumns()));
+  }
+
 
 }

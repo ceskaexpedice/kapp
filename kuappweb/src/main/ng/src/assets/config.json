@@ -38,12 +38,28 @@
         {"field": "title", "selected": true},
         {"field": "authors", "selected": true},
         {"field": "state", "selected": true},
+        {"field": "model", "selected": true},
         {"field": "date_range_start.year", "selected": true},
         {"field": "indextime", "selected": true},
         {"field": "decision_date", "selected": false},
         {"field": "release_date", "selected": false},
         {"field": "license", "selected": false},
         {"field": "sigla", "selected": true}
+    ],
+
+    "contractColumns": [
+        {"field": "filename", "selected": true},
+        {"field": "title", "selected": true},
+        {"field": "cislo_smlouvy", "selected": true},
+        {"field": "nazev_poskytovatele", "selected": true},
+        {"field": "ico", "selected": true},
+        {"field": "datum_uzavreni", "selected": true}
+    ],
+
+    "contractTitleColumns": [
+        {"field": "pid", "selected": true},
+        {"field": "title", "selected": true},
+        {"field": "state", "selected": true}
     ]
 }
 

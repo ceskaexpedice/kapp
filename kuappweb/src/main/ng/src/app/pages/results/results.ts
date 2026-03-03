@@ -1,5 +1,5 @@
 import { DatePipe, LowerCasePipe, NgClass } from '@angular/common';
-import { Component, computed, DOCUMENT, effect, inject, Inject, signal, model } from '@angular/core';
+import { Component, computed, DOCUMENT, effect, inject, Inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -15,18 +15,17 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { AngularSplitModule } from 'angular-split';
 import { FacetsComponent } from '../../components/facets/facets.component';
-import { ActivatedRoute, ActivatedRouteSnapshot, Router, RouterModule } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
 import { UIService } from '../../ui.service';
-import { JSONFacet } from '../../shared/facet';
 import { HttpParams } from '@angular/common/http';
 import { ResultItem } from "../../components/result-item/result-item";
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { AuthorItem } from "../../components/author-item/author-item";
-import { Observable } from 'rxjs';
+import { Observable, switchMap } from 'rxjs';
 import { TitleDialog } from '../../components/title-dialog/title-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { ResizecolDirective } from '../../shared/resizecol.directive';
@@ -37,6 +36,11 @@ import { MatMenuModule } from "@angular/material/menu";
 
 import { AuthorDialog } from '../../components/author-dialog/author-dialog';
 import { Batch } from '../../shared/batch';
+import { StateDialog } from '../../components/state-dialog/state-dialog';
+import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
+import { SimpleDialogData } from '../../components/simple-dialog/simple-dialog';
+import { Contract } from '../../shared/contract';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'app-results',
@@ -49,7 +53,7 @@ import { Batch } from '../../shared/batch';
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem, AuthorItem, MatMenuModule, LowerCasePipe,
     NgClass
-],
+  ],
   templateUrl: './results.html',
   styleUrl: './results.scss'
 })
@@ -66,12 +70,13 @@ export class Results {
   pageIndex = 0;
   pageSizeOptions = [10, 25, 100];
 
+  readonly route = inject(ActivatedRoute);
   private router = inject(Router);
   readonly dialog = inject(MatDialog);
 
   viewType = signal<string>('table_view');
   displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']);
-  columnSizes: {[field: string]: number} = {};
+  columnSizes: { [field: string]: number } = {};
 
   columnsToDisplayWithExpand = computed<string[]>(() => [...this.displayedColumns()]);
   expandedElement: any | null = null;
@@ -85,20 +90,24 @@ export class Results {
 
     public state: AppState,
     public ui: UIService,
+    private translator: TranslateService,
     private service: AppService,
     private config: AppConfiguration
   ) {
     effect(() => {
-      const usedFacets = this.state.usedFacets();
       this.state.titleColumns().forEach(c => {
         this.columnSizes[c.field] = c.width ? c.width : 100;
       })
-      this.getData();
+      //this.getData();
     })
   }
 
   ngOnInit(): void {
     this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
+    const s = this.route.queryParams.subscribe((p: any) => {
+      this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
+      this.getData();
+    });
     this.getContracts();
   }
 
@@ -110,6 +119,7 @@ export class Results {
 
   addFilters(p: any, usedFacets: { field: string, value: string }[]) {
     p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
+    p.authors_ids = usedFacets.filter(k => k.field === 'authors_ids').map(k => k.value);
     p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
     p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
     p.contracts = usedFacets.filter(k => k.field === 'contracts').map(k => k.value);
@@ -127,10 +137,11 @@ export class Results {
   }
 
   doSearch() {
-    const params = {
-      q: this.state.q
-    }
-    this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
+    // const params = {
+    //   q: this.state.q
+    // }
+    // this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
+    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
     this.getData(false);
   }
 
@@ -155,6 +166,7 @@ export class Results {
   }
 
   getData(csv: boolean = false) {
+    
     this.loading.set(true);
     const p: any = {};
     p.rows = this.rows;
@@ -176,8 +188,8 @@ export class Results {
       s = this.service.searchAuthors(p as HttpParams);
     }
     s.subscribe((resp: any) => {
-      
-    this.loading.set(false);
+
+      this.loading.set(false);
       if (csv) {
         this.downLoadFile(resp)
         return;
@@ -235,7 +247,7 @@ export class Results {
   // -- pedro
   addAuthor(doc: any) {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: {pid:doc.pid, author:null},
+      data: { pid: doc.pid, author: null },
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -249,6 +261,29 @@ export class Results {
     });
   }
 
+  setState(doc: any) {
+
+    if (doc.is_hierarchical) {
+      return;
+    }
+
+    const dialogRef = this.dialog.open(StateDialog, {
+      data: { isBatch: false, doc: doc },
+      panelClass: "app-dialog-state"
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      console.log(result)
+      if (result) {
+        this.service.getDoc(doc.pid).subscribe((resp: any) => {
+          if (resp.response?.docs?.length > 0) {
+            doc = resp.response.docs[0];
+          }
+        });
+      }
+    });
+  }
+
   inBatch(s: string, doc: any) {
     return doc['batch']?.includes(s)
   }
@@ -256,23 +291,60 @@ export class Results {
   inContract(filename: string, doc: any) {
     return doc['contracts']?.includes(filename)
   }
-  
+
   addToBatch(b: Batch, doc: any) {
     this.saveDocBatch(b.name, doc);
   }
-  
+
   saveDocBatch(bs: string, doc: any) {
     this.service.saveDocBatch(doc.pid, bs).subscribe((res: any) => {
-      console.log(res);
-      this.ui.showInfoSnackBar('snackbar.record_added.success');
+      if (res.error) {
+        this.ui.showErrorSnackBar('snackbar.record_added.error');
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_added.success');
+        console.log(res);
+      }
     })
   }
 
-  addToContract(contract: string, doc: any) {
-    this.service.saveDocContract(doc.pid, contract, !this.inContract(contract, doc)).subscribe((res: any) => {
-      console.log(res)
-    })
-    
+  addToContract(contract: Contract, doc: any) {
+    const checkboxes = [{
+      label: String(this.translator.instant('change_licenses_at_same_time')),
+      checked: true
+    }];
+
+    const data: SimpleDialogData = {
+      title: this.translator.instant('assigning_work_to_contract'),
+      message: this.translator.instant('alert.warn_contract'),
+      alertClass: 'app-warn',
+      btn1: {
+        label: 'Ano',
+        value: 'yes',
+        color: 'warn'
+      },
+      btn2: {
+        label: 'Ne',
+        value: 'no',
+        color: 'default'
+      }
+    };
+    data.checkboxes = checkboxes;
+    const dialogRef = this.dialog.open(SimpleDialogComponent, {
+      data: data
+    });
+    dialogRef.afterClosed().subscribe(result => {
+      if (result === 'yes') {
+        this.service.saveDocContract(doc.pid, contract.filename, checkboxes[0].checked, !this.inContract(contract.filename, doc), contract.license).subscribe((res: any) => {
+          if (res.error) {
+            this.ui.showErrorSnackBar('snackbar.record_added.error');
+          } else {
+            this.ui.showInfoSnackBar('snackbar.record_added.success');
+            console.log(res);
+          }
+        })
+      }
+    });
+
   }
 
   // -- expanded table row
@@ -284,16 +356,14 @@ export class Results {
   }
 
   saveColumnsSizes(e: any, field?: string) {
-
-      const el = this.state.titleColumns().find((c: any) => c.field === field);
-      if (el) {
-        el.width = e;
-      } else {
-        console.log("nemelo by")
-      }
-      console.log(el, this.state.titleColumns())
-      localStorage.setItem('titleColumns', JSON.stringify(this.state.titleColumns()));
-
+    const el = this.state.titleColumns().find((c: any) => c.field === field);
+    if (el) {
+      el.width = e;
+    } else {
+      console.log("nemelo by")
+    }
+    console.log(el, this.state.titleColumns())
+    localStorage.setItem('titleColumns', JSON.stringify(this.state.titleColumns()));
   }
-  
+
 }

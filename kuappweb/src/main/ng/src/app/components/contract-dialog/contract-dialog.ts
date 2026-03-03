@@ -1,6 +1,6 @@
-import { DatePipe } from '@angular/common';
+import { DatePipe, LowerCasePipe, NgClass } from '@angular/common';
 import { HttpClient, HttpEvent, HttpEventType, HttpParams } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
@@ -15,6 +15,7 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
+import { UIService } from '../../ui.service';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { Contract } from '../../shared/contract';
 import { MatCheckbox } from "@angular/material/checkbox";
@@ -24,12 +25,14 @@ import { NgxExtendedPdfViewerModule } from 'ngx-extended-pdf-viewer';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
+import { ResizecolDirective } from '../../shared/resizecol.directive';
+import { TitleDialog } from '../title-dialog/title-dialog';
 
 @Component({
   selector: 'app-contract-dialog',
   imports: [
-    TranslateModule, FormsModule,
-    CdkDrag, CdkDragHandle, 
+    TranslateModule, FormsModule, LowerCasePipe,
+    CdkDrag, CdkDragHandle, ResizecolDirective, NgClass,
     MatDialogModule, MatMenuModule,
     MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
@@ -44,6 +47,7 @@ import { CdkDrag, CdkDragHandle } from '@angular/cdk/drag-drop';
 export class ContractDialog {
 
   readonly service = inject(AppService);
+  readonly ui = inject(UIService);
   readonly state = inject(AppState);
   readonly dialog = inject(MatDialog);
   readonly data = inject<{ doc: Contract }>(MAT_DIALOG_DATA);
@@ -71,7 +75,10 @@ export class ContractDialog {
   ccnb: string = '';
   issn: string = '';
 
-  displayedColumns = ['pid', 'title', 'action'];
+  withState: boolean = true;
+
+  displayedColumns = computed<string[]>(() => [...this.state.contractTitleColumns().filter(c => c.selected).map(f => f.field), 'action']);
+  columnSizes: { [field: string]: number } = {};
 
 
   constructor(
@@ -88,6 +95,9 @@ export class ContractDialog {
     if (this.contract().issn) {
       this.issn = this.contract().issn.join("\n");
     }
+    this.state.contractTitleColumns().forEach(c => {
+      this.columnSizes[c.field] = c.width ? c.width : 100;
+    });
     this.getTitles();
   }
 
@@ -112,7 +122,13 @@ export class ContractDialog {
     // p.issn = this.data.doc.issn;
     p.rows = 1000;
     this.service.findTitlesByContract(p as HttpParams).subscribe((resp: any) => {
-      this.titles_found.set([...resp.ccnb, ...resp.issn]);
+      const tf: any = [...resp.ccnb, ...resp.issn];
+      tf.forEach((t: any) => {
+        if (this.titles().find(ot => ot.pid === t.pid)) {
+          t.selected = true;
+        }
+      })
+      this.titles_found.set([...tf]);
     });
 
   }
@@ -164,16 +180,21 @@ export class ContractDialog {
     this.contract().issn = this.issn.split('\n');
     this.contract().ccnb = this.ccnb.split('\n');
     this.service.saveContract(this.contract()).subscribe((resp: any) => {
-      // console.log(resp)
+      if (resp.error  ) {
+        this.ui.showErrorSnackBar('snackbar.record_saved.error');
+      } else {
+        this.ui.showInfoSnackBar('snackbar.record_saved.success');
+        // console.log(resp)
+      }
     })
   }
 
-  addTitleToContract(doc: any, e: any) {
-    this.service.saveDocContract(doc.pid, this.contract().filename, e.checked).subscribe((res: any) => {
+  addTitleToContract(doc: any, add: boolean) {
+    this.service.saveDocContract(doc.pid, this.contract().filename, this.withState, add, this.contract().license).subscribe((res: any) => {
       console.log(res);
       this.getTitles();
     })
-    
+
   }
 
   analyze() {
@@ -232,6 +253,29 @@ export class ContractDialog {
     if (index > -1) {
       this.contract().dodatky.splice(index, 1);
     }
+  }
+
+  viewDoc(doc: any) {
+
+    const dialogRef = this.dialog.open(TitleDialog, {
+      data: doc,
+      width: '980px'
+    });
+
+    dialogRef.afterClosed().subscribe(result => {
+      if (result) {
+      }
+    });
+  }
+
+  saveColumnsSizes(e: any, field?: string) {
+    const el = this.state.contractTitleColumns().find((c: any) => c.field === field);
+    if (el) {
+      el.width = e;
+    } else {
+      console.log("nemelo by")
+    }
+    localStorage.setItem('contractTitleColumns', JSON.stringify(this.state.contractTitleColumns()));
   }
 
 }

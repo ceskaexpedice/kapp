@@ -1,19 +1,27 @@
 <div class="app-container-fluid app-h-100">
 	<div class="app-fxLayout app-row app-fill app-gap-8">
 		<div class="app-left">
-			<mat-nav-list>
+			<mat-nav-list class="app-batche-nav">
 				@for(l of state.batches(); track $index) {
-					<a mat-list-item (click)="selectBatch(l)" [class.app-active]="selectedBatch()?.name === l.name">{{ l.name }}</a>
+					<a mat-list-item (click)="selectBatch(l)" [class.app-active]="selectedBatch()?.name === l.name">
+						<span class="app-fxFlex">{{ l.name }}</span>
+						@if(!counts()?.[l.name]) {
+							<button mat-icon-button matSuffix class="app-color-error" (click)="removeBatch(l);$event.preventDefault();$event.stopPropagation()" [matTooltip]="'action.remove_record' | translate"><mat-icon>close</mat-icon></button>
+						}
+					</a>
 				}
 			</mat-nav-list>
 			<mat-divider class="app-mt-1 app-mb-4"></mat-divider>
 			<mat-form-field appearance="outline" class="app-fxFlex">
-				<mat-label>New batch name</mat-label>
+				<mat-label>{{ 'new_batch_name' | translate }}</mat-label>
 				<input matInput [(ngModel)]="newBatch" />
-				<button matIconButton matSuffix (click)="addBatch()" [title]="'action.add_new_batch' | translate"><mat-icon>playlist_add</mat-icon></button>
+				<button matIconButton matSuffix (click)="addBatch()" [matTooltip]="'action.add_new_batch' | translate" [disabled]="!newBatch"><mat-icon>playlist_add</mat-icon></button>
 			</mat-form-field>
+			@if (batchExist()) {
+				<div class="app-mb-2 app-text-center app-color-warn app-mt-n1">{{ 'alert.batch_exist' | translate}}</div>
+			}
 			<mat-divider class="app-mb-4"></mat-divider>
-			<button matButton="outlined" [matMenuTriggerFor]="labelsMenu" class="app-w-100">{{ 'action.add_batch_from_label' | translate }}</button>
+			<button matButton="filled" [matMenuTriggerFor]="labelsMenu" class="app-w-100">{{ 'action.add_batch_from_label' | translate }}</button>
 			<mat-menu #labelsMenu="matMenu">
 				@for(a of state.labels(); track $index) {
 					<button mat-menu-item (click)="createBatchFromLabel(a.name)">{{ a.name }}</button>
@@ -23,9 +31,15 @@
 		<div class="app-fxFlex app-right">
 			@if(selectedBatch()) {
         <div class="app-fxLayout app-row app-baseline-v app-mb-4 app-gap-4">
-					<h2 class="app-mt-0 app-mb-0">{{ selectedBatch().name}}</h2>
+					<h2 class="app-mt-0 app-mb-0">
+						@if (!selectedBatch().name) {
+							-- no name --
+						} @else {
+							{{ selectedBatch().name }}
+						}
+					</h2>
 					<span class="app-date">{{ selectedBatch().date_created | date : 'dd.MM.yyyy hh:mm:ss'}}</span>
-					<span class="app-label">{{ selectedBatch().state}}</span>
+					<span class="app-label-badge">{{ selectedBatch().state}}</span>
 				</div>
         <div class="app-fxLayout app-row app-gap-1 app-mb-4">
 					@for (s of states(); track s) {
@@ -41,7 +55,7 @@
         <div class="app-table-wrapper">
 					<table mat-table [dataSource]="docs()" class="app-hover app-w-100">
 						<ng-container matColumnDef="pid">
-							<th mat-header-cell *matHeaderCellDef> PID </th>
+							<th mat-header-cell *matHeaderCellDef>PID</th>
 							<td mat-cell *matCellDef="let doc">
 								<div class="app-fxLayout app-row app-center-v app-gap-1">
                   <button mat-icon-button class="app-icon-size-16 app-color-primary" (click)="ui.copyTextToClipboard(doc['pid'])" [matTooltip]="'copy_text_to_clipboard' | translate">
@@ -70,11 +84,19 @@
 						<ng-container matColumnDef="action">
 							<th mat-header-cell *matHeaderCellDef>  </th>
 							<td mat-cell *matCellDef="let doc"> 
-								<button mat-icon-button class="app-color-warn" (click)="removeFromBatch(doc.pid)" [matTooltip]="'action.remove_from_batch' | translate"><mat-icon>close</mat-icon></button>
+								<button mat-icon-button class="app-color-error" (click)="removeFromBatch(doc.pid)" [matTooltip]="'action.remove_from_batch' | translate"><mat-icon>close</mat-icon></button>
 							</td>
 						</ng-container>
+
+						<ng-container matColumnDef="no_records_found">
+							<td mat-footer-cell *matFooterCellDef colspan="4" class="app-color-warn app-text-center" style="text-align: center;">
+								{{ 'no_records_found' | translate }}
+							</td>
+						</ng-container>
+
 						<tr mat-header-row *matHeaderRowDef="displayedColumns; sticky: true"></tr>
 						<tr mat-row *matRowDef="let row; columns: displayedColumns;"></tr>
+						<tr mat-footer-row *matFooterRowDef="['no_records_found']" [hidden]="docs().length > 0"></tr>
 					</table>
         </div>
 			}
@@ -83,7 +105,7 @@
 </div>
 
 <mat-card-actions align="end" class="app-mat-card-actions">
-	<button matButton (click)="saveBatches(null)">{{ 'action.save' | translate }}</button>
+	<button matButton (click)="saveBatches(null, true)">{{ 'action.save' | translate }}</button>
 </mat-card-actions>
 
 <!-- <as-split direction="horizontal" [unit]="'pixel'">
