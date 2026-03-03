@@ -96,10 +96,10 @@ export class AuthorDialog {
           date: a['datafield_100d'],
           family: a['family'],
           given: a['given'],
-          date_death: a['date_death'],
+          'date_range_end.year': a['date_range_end.year'],
           role: null,
           nameIdentifier: id,
-          authorsId: id,
+          id: id,
           isLast: false
         });
         this.getLinks();
@@ -126,8 +126,8 @@ export class AuthorDialog {
   }
 
   setAsLast() {
-    if (this.author()['date_death']) {
-      this.service.saveDecisionDate(this.data.pid, this.author()['date_death']).subscribe((res: any) => {
+    if (this.author()['date_range_end.year']) {
+      this.service.saveDecisionDate(this.data.pid, this.author()['date_range_end.year']).subscribe((res: any) => {
         this.hasChanges = true;
         if (res.error) {
           this.ui.showErrorSnackBar('snackbar.record_changed.error');

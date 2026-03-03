@@ -172,27 +172,79 @@ public class SolrIndexer {
         return ret;
     }
 
-    // Save changes to author
-    // Add / modify kapp_authors field
+    // Save changes to author in authors core
+    // Add / modify authors_raw field in titles core
     public static JSONObject saveAuthor(JSONObject js) {
 
         JSONObject ret = new JSONObject();
-//        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
-//            SolrInputDocument doc = new SolrInputDocument();
-//            doc.setField("pid", js.getString("pid"));
-//
-//            Map<String, Object> partialUpdate = new HashMap<>();
-//            partialUpdate.put("set", js.getString("decisionDate"));
-//            doc.setField("decision_date", partialUpdate);
-//            
-//            solr.add("titles", doc);
-//            solr.commit("titles");
-//            ret.put("msg", "saved");
-//
-//        } catch (Exception ex) {
-//            LOGGER.log(Level.SEVERE, null, ex);
-//            ret.put("error", ex);
-//        }
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            /**
+  id: string,
+  nameIdentifier?: string,
+  full: string, 
+  family: string, 
+  given: string, 
+
+  date: string,
+  
+  'date_range_start.year'?: number,
+  'date_range_end.year'?: number,
+  'date.min'?: Date,
+  'date.max'?: Date,
+  confirmed_start_year?: boolean,
+  confirmed_end_year?:boolean,
+            */
+            
+            //Save to authors
+            SolrInputDocument adoc = new SolrInputDocument();
+            adoc.setField("id", js.getString("id"));
+            adoc.setField("nameIdentifier", js.optString("nameIdentifier"));
+            adoc.setField("full", js.optString("full"));
+            adoc.setField("family", js.optString("family"));
+            adoc.setField("given", js.optString("given"));
+            adoc.setField("date", js.optString("date"));
+            adoc.setField("date_range_start.year", js.optInt("date_range_start.year"));
+            adoc.setField("date_range_end.year", js.optInt("date_range_end.year"));
+            adoc.setField("date.min", js.optInt("date.min"));
+            adoc.setField("date.max", js.optInt("date.max"));
+            adoc.setField("confirmed_start_year", js.optBoolean("confirmed_start_year"));
+            adoc.setField("confirmed_end_year", js.optBoolean("confirmed_end_year"));
+            solr.add("authors", adoc);
+            solr.commit("authors");
+            
+            
+            // save all titles
+            SolrInputDocument tdoc = new SolrInputDocument();
+            
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
+    private static JSONObject saveAuthorInTitle(String pid, JSONObject js) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrInputDocument tdoc = new SolrInputDocument();
+            tdoc.setField("pid",  pid);
+
+            Map<String, Object> partialUpdate = new HashMap<>();
+            partialUpdate.put("set", js.toString());
+            tdoc.setField("authors_raw", partialUpdate);
+
+            solr.add("titles", tdoc);
+            solr.commit("titles");
+            
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
         return ret;
     }
 

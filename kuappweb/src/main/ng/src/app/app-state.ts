@@ -25,12 +25,12 @@ import { Batch } from "./shared/batch";
 
     encodeState() {
         const obj = {q: this.q, f: this.usedFacets()};
-        return btoa(JSON.stringify(obj));
+        return btoa(encodeURIComponent(JSON.stringify(obj)));
     }
 
     decodeState(s: string) {
         if (s) {
-            const obj = JSON.parse(atob(s));
+            const obj = JSON.parse(atob(decodeURIComponent(s)));
             this.q = obj.q;
             this.usedFacets.set(obj.f);
         } else {
@@ -39,6 +39,4 @@ import { Batch } from "./shared/batch";
             this.usedFacets.set([]);
         }
     }
-
-    
 }
