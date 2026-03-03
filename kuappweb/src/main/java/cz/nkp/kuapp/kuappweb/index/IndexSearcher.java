@@ -141,7 +141,9 @@ public class IndexSearcher {
             if (request.getParameter("model") != null) {
                 jrequest = jrequest.withFilter("model:" + request.getParameter("model"));
             } else {
-                jrequest = jrequest.withFilter("model:(monograph OR periodical)");
+                if (request.getParameter("q") == null) {
+                    jrequest = jrequest.withFilter("model:(monograph OR periodical)");
+                }
             }
 
 

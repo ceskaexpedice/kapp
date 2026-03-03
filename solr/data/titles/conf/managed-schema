@@ -2,6 +2,7 @@
 <!-- Solr managed schema - automatically generated - DO NOT EDIT -->
 <schema name="kuapp-titles" version="18.0">
   <uniqueKey>pid</uniqueKey>
+
   <fieldType name="_bbox_coord" class="solr.TrieDoubleField" stored="false" docValues="false" precisionStep="8"/>
   <fieldType name="alphaOnlySort" class="solr.TextField" omitNorms="true" sortMissingLast="true">
     <analyzer>
@@ -19,6 +20,8 @@
   <fieldType name="double" class="solr.TrieDoubleField" omitNorms="true" positionIncrementGap="0" sortMissingLast="true" precisionStep="0"/>
   <fieldType name="float" class="solr.TrieFloatField" omitNorms="true" positionIncrementGap="0" sortMissingLast="true" precisionStep="0"/>
   <fieldType name="ignored" class="solr.StrField" indexed="false" stored="false" multiValued="true"/>
+  <fieldType name="pint" class="solr.IntPointField" docValues="true"/>
+
   <fieldType name="int" class="solr.TrieIntField" omitNorms="true" positionIncrementGap="0" sortMissingLast="true" precisionStep="0"/>
   <fieldType name="location_rpt" class="solr.SpatialRecursivePrefixTreeFieldType" geo="true" maxDistErr="0.000009" distErrPct="0.025"/>
   <fieldType name="long" class="solr.TrieLongField" omitNorms="true" positionIncrementGap="0" sortMissingLast="true" precisionStep="0"/>
@@ -230,82 +233,57 @@
   <field name="_version_" type="long" indexed="true" stored="true"/>
 
 
-
+   <!-- kontrolovano kym -->
   <field name="checked_by" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
-	
-  <!-- TODO: Delete -->		
-  <field name="check_NK" type="boolean" docValues="true" multiValued="false" indexed="true" stored="true"/>
-  <field name="check_MZK" type="boolean" docValues="true" multiValued="false" indexed="true" stored="true"/>
-
+  
   <field name="confirmed_end_year" type="boolean" indexed="true" uninvertible="true" stored="true"/>
   <field name="confirmed_start_year" type="boolean" indexed="true" uninvertible="true" stored="true"/>
-
-  	
+  
+  <field name="source" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
+  
   <field name="is_hierarchical" type="boolean" multiValued="false" indexed="false" stored="true"/>
-  <field name="biblio_mods" type="string" multiValued="true" indexed="false" stored="true"/>
+  <field name="biblio_mods" type="string" multiValued="true" indexed="false" stored="true" docValues="false"/>
   <field name="biblio_mods_md5" type="string" multiValued="true" indexed="false" stored="true"/>
   <dynamicField name="biblio_mods_dl_*" type="string" multiValued="true" indexed="false" stored="true"/>
-  			
+
   
   <field name="created" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
-  <field name="date.max" type="date" docValues="true" multiValued="false" indexed="true" required="false" stored="true"/>
-  <field name="date.min" type="date" docValues="true" multiValued="false" indexed="true" required="false" stored="true"/>
-  <field name="date.str" type="string" docValues="false" multiValued="false" indexed="true" stored="true"/>
-  <field name="date_range_end.day" type="int" multiValued="false" indexed="true" stored="true"/>
-  <field name="date_range_end.month" type="int" multiValued="false" indexed="true" stored="true"/>
-  <field name="date_range_end.year" type="int" multiValued="false" indexed="true" stored="true"/>
-  <field name="date_range_start.day" type="int" multiValued="false" indexed="true" stored="true"/>
-  <field name="date_range_start.month" type="int" multiValued="false" indexed="true" stored="true"/>
-  <field name="date_range_start.year" type="int" multiValued="false" indexed="true" stored="true"/>
-  <field name="imported" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
-  <!--	
-  <field name="in_collections" type="string" multiValued="true" indexed="true" stored="true"/>
-  <field name="in_collections.direct" type="string" multiValued="true" indexed="true" stored="true"/>
-  -->
+
+  <field name="date_issued_str" type="string" docValues="true" multiValued="false" indexed="true"  stored="true"/>
+  <field name="date_issued_year" type="pint" docValues="true" multiValued="false" indexed="true" stored="true"/>
+
   
   <field name="indexed" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
-  <field name="indexer_version" type="int" multiValued="false" indexed="true" stored="true"/>
-  <field name="issue.type.code" type="string" multiValued="false" indexed="true" stored="true"/>
-  <field name="issue.type.sort" type="int" multiValued="false" indexed="true" stored="true"/>
-  <field name="keywords.facet" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
-  <field name="keywords.search" type="text_fgs" docValues="false" multiValued="true" indexed="true" stored="true"/>
-  <field name="level" type="int" indexed="true" stored="true"/>
-  
+  <field name="keywords" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="licenses" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
+  <field name="licenses_facet" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <dynamicField name="licenses_*" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>  
 
 
-  
   <field name="model" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="note" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
-  <field name="nameIdentifier" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
   <field name="modified" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
-  <field name="physical_locations.facet" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
-  
+  <field name="physical_locations" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="pid" type="string" indexed="true" required="true" stored="true"/>
-  <field name="public" type="boolean" multiValued="false" indexed="true" stored="true"/>
-  <field name="public_since"  type="int" docValues="true" multiValued="false" indexed="true" stored="true"/>
-  <field name="public_string" type="string" multiValued="false" indexed="true" stored="true"/>
-  <field name="root.title" type="string" indexed="true" stored="true"/>
-  <field name="root.pid" type="string" indexed="true" stored="true"/>
-  <field name="title" type="string" indexed="true" stored="true"/>
-  <field name="source" type="string" indexed="true" stored="true"/>
 
-  <field name="year_of_death_last_author"  type="int" docValues="true" multiValued="false" indexed="true" stored="true"/>
-  <field name="last_author" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
-  <field name="last_author_nameIdentifier" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
+
+  <field name="root_title" type="string" indexed="true" stored="true"/>
+  <field name="root_pid" type="string" indexed="true" stored="true"/>
+  <field name="title" type="string" indexed="true" stored="true"/>
+
   
   <field name="authors_kramerius" type="string" docValues="true" multiValued="true" indexed="false" stored="true"/>
-  <field name="authors_raw" type="string" docValues="true" multiValued="true" indexed="false" stored="true"/>
+  <field name="authors_kapp" type="string" docValues="true" multiValued="true" indexed="false" stored="true"/>
   <field name="authors" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="authors_ids" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
+  <field name="nameIdentifier" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
   
   <field name="labels" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="batch" type="string" docValues="true" indexed="true" stored="true"/>
-  <field name="assigned_license" type="string" docValues="true" indexed="true" stored="true"/>
+  <field name="assigned_licenses" type="string"  multiValued="true" docValues="true" indexed="true" stored="true"/>
+  <!-- decision date; vyplni indexer  datum vydani nebo kurator zmeni podle posledniho autora --> 
   <field name="decision_date" type="int" multiValued="false" indexed="true" stored="true"/>
   <field name="digital_library" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
-
 
   <field name="state" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
   <field name="state_reason" type="string" multiValued="false" indexed="true" stored="true"/>
@@ -315,17 +293,17 @@
   
   <dynamicField name="id_*" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>  
   
-  
   <field name="full_text" type="text_general_lemmatized" multiValued="true" indexed="true" stored="false"/>
-  
   <field name="indextime" type="date" indexed="true" stored="true" default="NOW" /> 
   
-  <field name="licenses.facet" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
 
   <field name="contracts" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   
   <copyField source="authors" dest="full_text"/>
-  <copyField source="root.title" dest="full_text"/>
+  <copyField source="root_title" dest="full_text"/>
+  <copyField source="title" dest="full_text"/>
+  <copyField source="note" dest="full_text"/>
+  <copyField source="keywords" dest="full_text"/>
   <copyField source="pid" dest="full_text"/>
   <copyField source="id_*" dest="full_text"/>
 </schema>

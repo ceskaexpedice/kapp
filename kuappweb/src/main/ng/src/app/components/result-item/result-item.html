@@ -207,7 +207,12 @@
 	<mat-card-actions align="end">
 		<div class="app-fxLayout app-row app-gap-2">
 			<button matButton="outlined" (click)="addAuthor()">{{ 'action.add_author' | translate }}</button>
-			<button matButton="outlined" [disabled]="doc()['is_hierarchical']" (click)="setState()">{{ (doc()['state'] ? ('state.' + doc()['state']) : 'action.set_state') | translate }}</button>
+			<button matButton="outlined" 
+			
+			[disabled]="doc()['is_hierarchical']" 
+			[class.state-ke-kontrole]="doc()['state'] === 'KE_KONTROLE'"
+        [class.state-nekontrolovano]="doc()['state']?.startsWith('NEKONTROLOVANO')"
+			(click)="setState()">{{ (doc()['state'] ? ('state.' + doc()['state']) : 'action.set_state') | translate }}</button>
 			<button matButton="outlined" [matMenuTriggerFor]="batchesMenu">{{'action.add_doc_to_bacth' | translate}}</button>
 		</div>
 		<mat-menu #batchesMenu="matMenu">
