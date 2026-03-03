@@ -20,6 +20,8 @@
   <fieldType name="double" class="solr.TrieDoubleField" omitNorms="true" positionIncrementGap="0" sortMissingLast="true" precisionStep="0"/>
   <fieldType name="float" class="solr.TrieFloatField" omitNorms="true" positionIncrementGap="0" sortMissingLast="true" precisionStep="0"/>
   <fieldType name="ignored" class="solr.StrField" indexed="false" stored="false" multiValued="true"/>
+  <fieldType name="pint" class="solr.IntPointField" docValues="true"/>
+
   <fieldType name="int" class="solr.TrieIntField" omitNorms="true" positionIncrementGap="0" sortMissingLast="true" precisionStep="0"/>
   <fieldType name="location_rpt" class="solr.SpatialRecursivePrefixTreeFieldType" geo="true" maxDistErr="0.000009" distErrPct="0.025"/>
   <fieldType name="long" class="solr.TrieLongField" omitNorms="true" positionIncrementGap="0" sortMissingLast="true" precisionStep="0"/>
