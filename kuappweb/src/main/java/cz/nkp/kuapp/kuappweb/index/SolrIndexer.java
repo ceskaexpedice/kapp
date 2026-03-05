@@ -1,15 +1,20 @@
 package cz.nkp.kuapp.kuappweb.index;
 
 import cz.nkp.kuapp.kuappweb.Options;
+import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
+import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
+import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.util.NamedList;
 import org.json.JSONArray;
 import org.json.JSONObject;
 
@@ -20,6 +25,12 @@ import org.json.JSONObject;
 public class SolrIndexer {
 
     public static final Logger LOGGER = Logger.getLogger(SolrIndexer.class.getName());
+    
+    private static void addAtomicField(SolrInputDocument doc, String modifier, Object value, String field) {
+            Map<String, Object> partialUpdate = new HashMap<>();
+            partialUpdate.put(modifier, value);
+            doc.setField(field, partialUpdate);
+    }
 
     public static JSONObject saveConfig(JSONArray js, String id) {
 
@@ -70,11 +81,7 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
 
-            Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", js.getJSONArray("labels"));
-            doc.setField("labels", partialUpdate);
-
-            // doc.setField("labels", js.getJSONArray("labels").toString());
+            addAtomicField(doc, "set", js.getJSONArray("labels"), "labels");
             solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
@@ -85,6 +92,26 @@ public class SolrIndexer {
         }
         return ret;
     }
+
+    public static JSONObject indexAuthorLabels(JSONObject js) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField("id", js.getString("id"));
+
+            addAtomicField(doc, "set", js.getJSONArray("labels"), "labels");
+            solr.add("authors", doc);
+            solr.commit("authors");
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
 
     public static JSONObject indexBatches(JSONArray js) {
 
@@ -99,9 +126,7 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
 
-            Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", js.getString("batch"));
-            doc.setField("batch", partialUpdate);
+            addAtomicField(doc, "set", js.getString("batch"), "batch");
 
             // doc.setField("labels", js.getJSONArray("labels").toString());
             solr.add("titles", doc);
@@ -123,17 +148,13 @@ public class SolrIndexer {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
-
-            Map<String, Object> partialUpdate = new HashMap<>();
+            
             String modifier = js.optBoolean("selected") ? "set" : "remove";
-            partialUpdate.put(modifier, js.getString("contract"));
-            doc.setField("contracts", partialUpdate);
+            addAtomicField(doc, modifier, js.getString("contract"), "contracts");
 
             if (js.optBoolean("withState")) {
                 String state = "KONTROLOVANE_NEVEREJNE_LICENCE";
-                Map<String, Object> partialUpdateS = new HashMap<>();
-                partialUpdateS.put("set", state);
-                doc.setField("state", partialUpdateS); 
+                addAtomicField(doc, "set", state, "state");
                 
                 fillState(doc, state, js.getJSONArray("licenses"), "Smlouva " + js.getString("contract"), user);
 
@@ -156,10 +177,8 @@ public class SolrIndexer {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
-
-            Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", js.getString("decisionDate"));
-            doc.setField("decision_date", partialUpdate);
+            
+            addAtomicField(doc, "set", js.getString("decisionDate"), "decision_date");
 
             solr.add("titles", doc);
             solr.commit("titles");
@@ -178,35 +197,44 @@ public class SolrIndexer {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
-            /**
-  id: string,
-  nameIdentifier?: string,
-  full: string, 
-  family: string, 
-  given: string, 
-
-  date: string,
-  
-  'date_range_start.year'?: number,
-  'date_range_end.year'?: number,
-  'date.min'?: Date,
-  'date.max'?: Date,
-  confirmed_start_year?: boolean,
-  confirmed_end_year?:boolean,
-            */
             
             //Save to authors
+            
+            /**
+  <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
+  <field name="family" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="full" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="full_text" type="text_general_lemmatized" multiValued="true" indexed="true" stored="false"/>
+  <field name="given" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="labels" type="text_general"/>
+  <field name="nameIdentifier" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="termsOfAddress" type="string" multiValued="false" indexed="true" stored="true"/>
+ 
+  <field name="confirmed_end_year" type="boolean" uninvertible="true" indexed="true" stored="true"/>
+  <field name="confirmed_start_year" type="boolean" uninvertible="true" indexed="true" stored="true"/>
+  
+  <field name="date" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="date_birth" type="string" multiValued="false" indexed="true" stored="true"/>
+  <field name="date_death" type="string" multiValued="false" indexed="true" stored="true"/>
+
+  <field name="year_birth" type="pint" multiValued="false" indexed="true" stored="true"/>
+  <field name="year_death" type="pint" multiValued="false" indexed="true" stored="true"/>
+  * 
+  * 
+             */
             SolrInputDocument adoc = new SolrInputDocument();
             adoc.setField("id", js.getString("id"));
             adoc.setField("nameIdentifier", js.optString("nameIdentifier"));
             adoc.setField("full", js.optString("full"));
             adoc.setField("family", js.optString("family"));
             adoc.setField("given", js.optString("given"));
-            adoc.setField("date", js.optString("date"));
-            adoc.setField("date_range_start.year", js.optInt("date_range_start.year"));
-            adoc.setField("date_range_end.year", js.optInt("date_range_end.year"));
-            adoc.setField("date.min", js.optInt("date.min"));
-            adoc.setField("date.max", js.optInt("date.max"));
+            adoc.setField("labels", js.optJSONArray("labels"));
+            adoc.setField("termsOfAddress", js.optString("termsOfAddress"));
+            adoc.setField("date", js.optString("termsOfAddress"));
+            adoc.setField("date_birth", js.optString("date_birth"));
+            adoc.setField("date_death", js.optString("date_death"));
+            adoc.setField("year_birth", js.optInt("year_birth"));
+            adoc.setField("year_death", js.optInt("year_death"));
             adoc.setField("confirmed_start_year", js.optBoolean("confirmed_start_year"));
             adoc.setField("confirmed_end_year", js.optBoolean("confirmed_end_year"));
             solr.add("authors", adoc);
@@ -225,16 +253,61 @@ public class SolrIndexer {
         return ret;
     }
     
-    private static JSONObject saveAuthorInTitle(String pid, JSONObject js) {
+    private static JSONObject saveAuthorsInAllTitles(String id, JSONObject js) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            String q = "*";
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery(q)
+                    .withFilter("authors_ids:(\"" + id + "\")")
+                    .returnFields("pid,authors_ids,nameIdentifier,authors_raw:[json]")
+                    .setLimit(1000);
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+                
+            NamedList<Object> resp = solr.request(jrequest, "titles");
+            InputStream is = (InputStream) resp.get("stream");
+            JSONArray docs = (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response")).getJSONArray("docs"); 
+            
+            for (int i = 0; i < docs.length(); i++) {
+                JSONObject doc = docs.getJSONObject(i);
+                saveAuthorInTitle(solr, doc.getString("pid"), js, doc.getJSONArray("authors_raw"));
+            }
+            
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
+    private static JSONObject saveAuthorInTitle(SolrClient solr, String pid, JSONObject new_author, JSONArray authors_raw) {
+
+        JSONObject ret = new JSONObject();
+        try {
             SolrInputDocument tdoc = new SolrInputDocument();
             tdoc.setField("pid",  pid);
-
-            Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", js.toString());
-            tdoc.setField("authors_raw", partialUpdate);
+            String id = new_author.getString("id");
+            int idx = -1;
+            for (int i = 0; i < authors_raw.length(); i++) {
+                JSONObject doc = authors_raw.getJSONObject(i);
+                if (id.equals(doc.getString("id"))) {
+                    idx = i;
+                    break;
+                }
+            }
+            
+            if (idx > -1) {
+                authors_raw.put(idx, new_author);
+            } else {
+                authors_raw.put(new_author);
+            }
+            
+            addAtomicField(tdoc, "set", authors_raw.toString(), "authors_raw");
+            addAtomicField(tdoc, "add-distinct", id, "authors_ids");
+            addAtomicField(tdoc, "add-distinct", new_author.getString("nameIdentifier"), "nameIdentifier");
 
             solr.add("titles", tdoc);
             solr.commit("titles");
@@ -266,10 +339,8 @@ public class SolrIndexer {
         try {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", pid);
-
-            Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", batch);
-            doc.setField("batch", partialUpdate);
+            
+            addAtomicField(doc, "set", batch, "batch");
 
             // doc.setField("labels", js.getJSONArray("labels").toString()); 
             solr.add("titles", doc);
@@ -356,27 +427,14 @@ public class SolrIndexer {
 
     private static void fillState(SolrInputDocument doc, String state, JSONArray licenses, String reason, String user) {
 
-            Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put("set", state);
-            doc.setField("state", partialUpdate);
-
-            Map<String, Object> licensesM = new HashMap<>();
-            licensesM.put("set", licenses);
-            doc.setField("licenses", licensesM);
-
-            Map<String, Object> userM = new HashMap<>();
-            userM.put("set", user);
-            doc.setField("state_user", userM);
-
-            Map<String, Object> reasonM = new HashMap<>();
-            reasonM.put("set", reason);
-            doc.setField("state_reason", reasonM);
+            addAtomicField(doc, "set", state, "state");
+            addAtomicField(doc, "set", licenses, "licenses");
+            addAtomicField(doc, "set", user, "state_user");
+            addAtomicField(doc, "set", reason, "state_reason");
             
             String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
             
-            Map<String, Object> date = new HashMap<>();
-            date.put("set", d);
-            doc.setField("state_date", date);
+            addAtomicField(doc, "set", d, "state_date");
 
             JSONObject h = new JSONObject()
                     .put("date", d)
@@ -384,10 +442,8 @@ public class SolrIndexer {
                     .put("licenses", licenses)
                     .put("user", user)
                     .put("state", state);
-
-            Map<String, Object> state_history = new HashMap<>();
-            state_history.put("add", h.toString());
-            doc.addField("state_history", state_history);
+            
+            addAtomicField(doc, "add", h.toString(), "state_history");
     }
 
     public static JSONObject saveContract(JSONObject js) {

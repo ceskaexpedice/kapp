@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialogContent, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
-import { Author } from '../../shared/author';
+import { Author, AuthorTitle } from '../../shared/author';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppService } from '../../app.service';
 import { UIService } from '../../ui.service';
@@ -28,7 +28,7 @@ export class AuthorDialog {
   readonly service = inject(AppService);
   readonly ui = inject(UIService);
   readonly dialogRef = inject(MatDialogRef<AuthorDialog>);
-  readonly data = inject<{pid: string, author: Author}>(MAT_DIALOG_DATA);
+  readonly data = inject<{pid: string, author: AuthorTitle}>(MAT_DIALOG_DATA);
 
 
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
@@ -37,7 +37,7 @@ export class AuthorDialog {
   editing = signal<boolean>(false);
   isNew = signal<boolean>(false);
 
-  author = signal<Author>(null);
+  author = signal<AuthorTitle>(null);
 
   hasChanges: boolean;
 

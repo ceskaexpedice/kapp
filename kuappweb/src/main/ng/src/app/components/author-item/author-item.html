@@ -3,10 +3,11 @@
 	@if(loadingLinks()){
 <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 }
+@if(author) {
 	<mat-card-header>
 		<mat-card-title>
 			<div class="app-fxLayout app-row app-gap-1">
-				<div class="app-fxFlex" [title]="doc()['id']">{{ doc()['full']}}</div>
+				<div class="app-fxFlex" [title]="author['id']">{{ author['full']}}</div>
 				@if(numTitles()) {
 				<div>
 					<button matButton (click)="gotoTitles()" class="app-mr-1">{{ 'action.found_in_titles' | translate }}: {{ numTitles() }}</button>
@@ -37,13 +38,27 @@
 	<mat-card-content>
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.date' | translate }}:</span>
-			<span class="app-value">{{ doc()['date']}}</span>
+			<span class="app-value">{{ author['date']}}</span>
 		</div>
-		@if (doc().nameIdentifier) {
+		<div class="app-metadata-row">
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.date_death' | translate }}</mat-label>
+				<input matInput [disabled]="!editing()" [(ngModel)]="author['date_range_end.year']" />
+			</mat-form-field>
+		</div>
+		<div class="app-metadata-row">
+			<div class="app-value">
+				<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.note' | translate }}</mat-label>
+				<textarea matInput [disabled]="!editing()" [(ngModel)]="author['note']" rows="3"></textarea>
+			</mat-form-field>
+			</div>
+		</div>
+		@if (author.nameIdentifier) {
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.id' | translate }}:</span>
-			<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+doc().nameIdentifier" class="app-value">
-				<span>{{ doc().nameIdentifier}}</span>
+			<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+author.nameIdentifier" class="app-value">
+				<span>{{ author.nameIdentifier}}</span>
 				<mat-icon>open_in_new</mat-icon>
 			</a>
 		</div>
@@ -65,20 +80,21 @@
 		<button matButton (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
 		@for(a of aut(); track $index) {
 		<div class="app-metadata-row">
-			<span class="app-label">{{ a['datafield_100a'] }}</span>
+			<span class="app-label">{{ a['datafield_100a'] }} {{ a['datafield_100d'] }} </span>
 			(<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+a['controlfield_001']" class="app-value">
 				<span>{{ a['controlfield_001'] }}</span>
 				<mat-icon>open_in_new</mat-icon>
 			</a>)
+			<button mat-icon-button (click)="setFromAut(a)" [title]="'fill from aut' | translate" ><mat-icon>done</mat-icon></button>
 		</div>
 		}
 		}
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.note' | translate }}:</span>
-			<div class="app-value">
-				<span>{{ doc()['note']}}</span>
-				<a (click)="editNote()" class="app-value"><mat-icon>edit</mat-icon></a>
-			</div>
-		</div>
 	</mat-card-content>
+	<mat-card-actions align="end">
+		<div class="app-fxLayout app-row app-gap-2">
+			<button matButton="outlined" (click)="save()">{{ 'action.save' | translate }}<mat-icon matSuffix>save</mat-icon></button>
+			<button matButton (click)="toggleEdit()" >{{ 'action.edit' | translate }}<mat-icon matSuffix>edit</mat-icon></button>
+		</div>
+	</mat-card-actions>
+}
 </mat-card>
