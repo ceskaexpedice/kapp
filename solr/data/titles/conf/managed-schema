@@ -238,7 +238,7 @@
   
   <field name="confirmed_end_year" type="boolean" indexed="true" uninvertible="true" stored="true"/>
   <field name="confirmed_start_year" type="boolean" indexed="true" uninvertible="true" stored="true"/>
-  
+  <!-- zdroj pravdy aut; -->
   <field name="source" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
   
   <field name="is_hierarchical" type="boolean" multiValued="false" indexed="false" stored="true"/>
@@ -251,6 +251,8 @@
 
   <field name="date_issued_str" type="string" docValues="true" multiValued="false" indexed="true"  stored="true"/>
   <field name="date_issued_year" type="pint" docValues="true" multiValued="false" indexed="true" stored="true"/>
+  <field name="date_issued_start_year" type="pint" docValues="true" multiValued="false" indexed="true" stored="true"/>
+  <field name="date_issued_end_year" type="pint" docValues="true" multiValued="false" indexed="true" stored="true"/>
 
   
   <field name="indexed" type="date" docValues="true" multiValued="false" indexed="true" stored="true"/>
