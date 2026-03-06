@@ -61,6 +61,7 @@ export class Results {
   loading = signal(false);
   solrResponse: any;
   docs = signal<any[]>([]);
+  numTitles: {[pid: string]: number} = {};
   contracts = signal<any[]>([]);
   hasFacets = signal<boolean>(false);
   view = signal<string>('titles');
@@ -103,11 +104,12 @@ export class Results {
   }
 
   ngOnInit(): void {
-    this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
+    this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
     const s = this.route.queryParams.subscribe((p: any) => {
-      this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'exact', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
+      this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
       this.getData();
     });
+    console.log(this.view())
     this.getContracts();
   }
 
@@ -160,7 +162,6 @@ export class Results {
     p.sort = 'filename asc';
 
     this.service.searchContracts(p as HttpParams).subscribe((resp: any) => {
-      this.solrResponse = resp;
       this.contracts.set(this.solrResponse.response.docs);
     });
   }
@@ -197,8 +198,23 @@ export class Results {
       this.solrResponse = resp;
       this.numFound = this.solrResponse.response.numFound;
       this.docs.set(this.solrResponse.response.docs);
+      // if (this.view() === 'authors') {
+      //   this.searchTitlesByAuthors();
+      // }
     });
   }
+
+  // searchTitlesByAuthors() {
+  //   const p: any = {};
+  //   p.rows = 0;
+  //   p.author_id = this.docs().map(d => d.id);
+  //   p.only_pid = true;
+  //   this.service.searchTitlesByAuthor(p as HttpParams).subscribe((resp: any) => {
+
+  //     this.numTitles.set(resp.response.numFound);
+  //   });
+
+  // }
 
   downLoadFile(data: any) {
     let blob = new Blob([data], { type: 'text/csv;charset=utf-8' });

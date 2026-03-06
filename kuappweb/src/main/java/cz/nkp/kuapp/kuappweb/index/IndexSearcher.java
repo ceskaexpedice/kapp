@@ -14,6 +14,7 @@ import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
+import org.apache.solr.client.solrj.request.json.DomainMap;
 import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
 import org.apache.solr.client.solrj.request.json.TermsFacetMap;
 import org.apache.solr.client.solrj.util.ClientUtils;
@@ -134,8 +135,8 @@ public class IndexSearcher {
                             .setMinCount(1))
                     .setOffset(offset)
                     .setSort(sort)
-                    .returnFields("*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
-                    .setLimit(rows);
+                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
+                    .setLimit(rows); 
 
 
             if (request.getParameter("model") != null) {
@@ -228,13 +229,51 @@ public class IndexSearcher {
             String q = "*";
             String fl = Boolean.parseBoolean(request.getParameter("only_pid")) ? 
                     "pid" : 
-                    "*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))";
+                    "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withFilter("authors_ids:(\"" + request.getParameter("author_id") + "\")")
-                    .withParam("fq", "{!collapse field=root.pid}") 
+                    .withParam("fq", "{!collapse field=root_pid}") 
                     .setOffset(offset)
                     .setSort(sort)
+                    .returnFields(fl)
+                    .setLimit(rows);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+                
+            NamedList<Object> resp = solr.request(jrequest, "titles");
+            InputStream is = (InputStream) resp.get("stream");
+            
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+            
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
+    public static JSONObject searchTitlesByAuthors(HttpServletRequest request) {
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            String rowsP = request.getParameter("rows");
+            int rows = 0;
+            if (rowsP != null && !rowsP.isBlank()) {
+                rows = Integer.parseInt(rowsP);
+            }
+            
+            int offset = 0;
+            if (request.getParameter("offset") != null) {
+                offset = Integer.parseInt(request.getParameter("offset")); 
+            }
+            String q = "*";
+            String fl ="pid";
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery(q)
+                    .withFilter("authors_ids:(\"" + request.getParameter("author_id") + "\")")
+                    .withParam("fq", "{!collapse field=root_pid}") 
+                    .setOffset(offset)
                     .returnFields(fl)
                     .setLimit(rows);
 
@@ -274,10 +313,10 @@ public class IndexSearcher {
             String q = "*";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
-                    .withParam("fq", "{!collapse field=root.pid}") 
+                    .withParam("fq", "{!collapse field=root_pid}") 
                     .setOffset(offset)
                     .setSort(sort)
-                    .returnFields("*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
+                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
                     .setLimit(rows);
 
 
@@ -318,7 +357,7 @@ public class IndexSearcher {
                 sort = request.getParameter("sort");
             }
             String q = "*";
-            String fl = "*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))";
+            String fl = "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withParam("fq", "{!join from=ccnb fromIndex=contracts to=id_ccnb}filename:\""+request.getParameter("contract")+"\"") 
@@ -382,7 +421,7 @@ public class IndexSearcher {
                             .setMinCount(1))
                     .setOffset(offset)
                     .setSort("indextime desc")
-                    .returnFields("*")
+                    .returnFields("*,date_birth:date_issued_start_year,date_death:date_issued_end_year ")
                     .setLimit(rows);
 
 
@@ -460,7 +499,7 @@ public class IndexSearcher {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery("pid:\""+pid + "\"")
-                    .returnFields("*,authors_kramerius:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
+                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101))")
                     .setLimit(1);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
@@ -480,8 +519,8 @@ public class IndexSearcher {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("root.pid:\""+pid + "\"")
-                    .returnFields("*,authors_kramerius:[json],state_history:[json]")
+                    .setQuery("root_pid:\""+pid + "\"")
+                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json]")
                     .setLimit(200); 
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
@@ -530,7 +569,7 @@ public class IndexSearcher {
                     .withFacet("state", new TermsFacetMap("state")
                             .setLimit(1000)
                             .setMinCount(1)) 
-                    .returnFields(onlyPids ? "pid" : "*,authors_kramerius:[json],state_history:[json]")
+                    .returnFields(onlyPids ? "pid" : "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json]")
                     .setLimit(200); 
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
@@ -622,7 +661,7 @@ public class IndexSearcher {
             HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
             ret = new JSONObject(response.body());
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "Error getting links for {0}: {1}", new Object[]{autid, ex});
             ret.put("error", ex);
         }
         return ret;

@@ -20,7 +20,7 @@
 			</div>
 			<mat-form-field appearance="outline">
 				<mat-label>{{ 'field.date_death' | translate }}</mat-label>
-				<input matInput [disabled]="!editing()" [(ngModel)]="author()['date_range_end.year']" />
+				<input matInput [disabled]="!editing()" [(ngModel)]="author().year_death" />
 			</mat-form-field>
 			<mat-form-field appearance="outline">
 				<mat-label>{{ 'field.role' | translate }}</mat-label>

@@ -15,7 +15,7 @@
 				}
 				<mat-chip-set>
 					@for(l of labels; track $index) {
-					<mat-chip [style.background-color]="l.color"
+					<mat-chip [style.background-color]="l.color" [style.color]="l.text_color "
 						(removed)="removeLabel(l)"><!--style="--mat-chip-label-text-color: {{l.text_color}};"-->
 						{{ l.name }}
 						<button matChipRemove [attr.aria-label]="'remove ' + l.name">
@@ -41,18 +41,39 @@
 			<span class="app-value">{{ author['date']}}</span>
 		</div>
 		<div class="app-metadata-row">
-			<mat-form-field appearance="outline">
-				<mat-label>{{ 'field.date_death' | translate }}</mat-label>
-				<input matInput [disabled]="!editing()" [(ngModel)]="author['date_range_end.year']" />
-			</mat-form-field>
+			@if(editing()) {
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'field.year_birth' | translate }}</mat-label>
+					<input matInput [(ngModel)]="author.date_birth" />
+				</mat-form-field>
+			} @else {
+				<span class="app-label">{{ 'field.year_birth' | translate }}:</span>
+				<span class="app-value">{{ author.date_birth}}</span>
+			}
 		</div>
 		<div class="app-metadata-row">
-			<div class="app-value">
+			@if(editing()) {
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'field.year_death' | translate }}</mat-label>
+					<input matInput [(ngModel)]="author.date_death" />
+				</mat-form-field>
+			} @else {
+				<span class="app-label">{{ 'field.year_death' | translate }}:</span>
+				<span class="app-value">{{ author.date_death}}</span>
+			}
+		</div>
+		<div class="app-metadata-row">
+
+			
+			@if(editing()) {
 				<mat-form-field appearance="outline">
 				<mat-label>{{ 'field.note' | translate }}</mat-label>
-				<textarea matInput [disabled]="!editing()" [(ngModel)]="author['note']" rows="3"></textarea>
-			</mat-form-field>
-			</div>
+				<textarea matInput [(ngModel)]="author['note']" rows="3"></textarea>
+				</mat-form-field>
+			} @else {
+				<span class="app-label">{{ 'field.note' | translate }}:</span>
+				<span class="app-value">{{ author.note}}</span>
+			}
 		</div>
 		@if (author.nameIdentifier) {
 		<div class="app-metadata-row">
@@ -76,7 +97,7 @@
 			}
 			}
 		</div>
-		} @else {
+		} 
 		<button matButton (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
 		@for(a of aut(); track $index) {
 		<div class="app-metadata-row">
@@ -88,7 +109,7 @@
 			<button mat-icon-button (click)="setFromAut(a)" [title]="'fill from aut' | translate" ><mat-icon>done</mat-icon></button>
 		</div>
 		}
-		}
+		
 	</mat-card-content>
 	<mat-card-actions align="end">
 		<div class="app-fxLayout app-row app-gap-2">

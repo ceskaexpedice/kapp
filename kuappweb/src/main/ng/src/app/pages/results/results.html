@@ -208,7 +208,7 @@
             }
           } @else {
             @for(doc of docs(); track $index){
-              <app-author-item [doc]="doc"></app-author-item>
+              <app-author-item [inputAuthor]="doc" ></app-author-item>
             }
           }
         }

@@ -1,6 +1,7 @@
 package cz.nkp.kuapp.kuappweb.index;
 
 import cz.nkp.kuapp.kuappweb.Options;
+import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -10,6 +11,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
 import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
@@ -192,7 +194,7 @@ public class SolrIndexer {
     }
 
     // Save changes to author in authors core
-    // Add / modify authors_raw field in titles core
+    // Add / modify authors_kapp field in titles core
     public static JSONObject saveAuthor(JSONObject js) {
 
         JSONObject ret = new JSONObject();
@@ -238,11 +240,16 @@ public class SolrIndexer {
             adoc.setField("confirmed_start_year", js.optBoolean("confirmed_start_year"));
             adoc.setField("confirmed_end_year", js.optBoolean("confirmed_end_year"));
             solr.add("authors", adoc);
-            solr.commit("authors");
+            
             
             
             // save all titles
-            SolrInputDocument tdoc = new SolrInputDocument();
+            saveAuthorsInAllTitles(solr, js.getString("old_id"), js);
+            
+            if (!js.optString("old_id").equals(js.getString("id"))) {
+                solr.deleteById("authors", js.optString("old_id"));
+            }
+            solr.commit("authors");
             
             ret.put("msg", "saved");
 
@@ -253,15 +260,13 @@ public class SolrIndexer {
         return ret;
     }
     
-    private static JSONObject saveAuthorsInAllTitles(String id, JSONObject js) {
+    private static void saveAuthorsInAllTitles(SolrClient solr, String id, JSONObject js) throws SolrServerException, IOException {
 
-        JSONObject ret = new JSONObject();
-        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             String q = "*";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withFilter("authors_ids:(\"" + id + "\")")
-                    .returnFields("pid,authors_ids,nameIdentifier,authors_raw:[json]")
+                    .returnFields("pid,authors_ids,nameIdentifier,authors_kapp:[json]")
                     .setLimit(1000);
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
                 
@@ -271,28 +276,19 @@ public class SolrIndexer {
             
             for (int i = 0; i < docs.length(); i++) {
                 JSONObject doc = docs.getJSONObject(i);
-                saveAuthorInTitle(solr, doc.getString("pid"), js, doc.getJSONArray("authors_raw"));
+                saveAuthorInTitle(solr, doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()));
             }
             
-            ret.put("msg", "saved");
-
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-            ret.put("error", ex);
-        }
-        return ret;
     }
     
-    private static JSONObject saveAuthorInTitle(SolrClient solr, String pid, JSONObject new_author, JSONArray authors_raw) {
+    private static void saveAuthorInTitle(SolrClient solr, String pid, JSONObject new_author, JSONArray authors_kapp) throws SolrServerException, IOException {
 
-        JSONObject ret = new JSONObject();
-        try {
             SolrInputDocument tdoc = new SolrInputDocument();
             tdoc.setField("pid",  pid);
             String id = new_author.getString("id");
             int idx = -1;
-            for (int i = 0; i < authors_raw.length(); i++) {
-                JSONObject doc = authors_raw.getJSONObject(i);
+            for (int i = 0; i < authors_kapp.length(); i++) {
+                JSONObject doc = authors_kapp.getJSONObject(i);
                 if (id.equals(doc.getString("id"))) {
                     idx = i;
                     break;
@@ -300,25 +296,19 @@ public class SolrIndexer {
             }
             
             if (idx > -1) {
-                authors_raw.put(idx, new_author);
+                authors_kapp.put(idx, new_author);
             } else {
-                authors_raw.put(new_author);
+                authors_kapp.put(new_author);
             }
             
-            addAtomicField(tdoc, "set", authors_raw.toString(), "authors_raw");
+            addAtomicField(tdoc, "set", authors_kapp.toString(), "authors_kapp");
             addAtomicField(tdoc, "add-distinct", id, "authors_ids");
             addAtomicField(tdoc, "add-distinct", new_author.getString("nameIdentifier"), "nameIdentifier");
 
             solr.add("titles", tdoc);
             solr.commit("titles");
             
-            ret.put("msg", "saved");
 
-        } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
-            ret.put("error", ex);
-        }
-        return ret;
     }
 
     public static JSONObject addDocToBatch(String pid, String batch) {

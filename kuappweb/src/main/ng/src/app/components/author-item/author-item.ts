@@ -27,7 +27,9 @@ import { FormsModule } from '@angular/forms';
 })
 export class AuthorItem {
 
-  doc = input<any>();
+  inputAuthor = input<any>();
+  //numTitles = input<number>(0);
+   numTitles = signal<number>(0);
   author: Author = null;
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
@@ -40,7 +42,6 @@ export class AuthorItem {
 
 
   aut = signal<any[]>([]);
-  numTitles = signal<number>(0);
 
   constructor(
     public router: Router,
@@ -49,7 +50,7 @@ export class AuthorItem {
     private config: AppConfiguration
   ) {
     effect(() => {
-      this.author = this.doc();
+      this.author = this.inputAuthor();
       if (this.author.nameIdentifier) {
         this.getLinks();
       }
@@ -59,6 +60,8 @@ export class AuthorItem {
           const l = this.state.labels().find(la => la.name === name);
           if (l) {
             this.labels.push({ name: name, color: l.color, text_color: l.text_color });
+          } else {
+            this.labels.push({ name: name, color: '#920707', text_color: '#000' });
           }
 
         });
@@ -121,19 +124,21 @@ export class AuthorItem {
 
   setFromAut(a: any) {
 
-    const dates = a['datafield_100d'].split('-');
+    const dates = a['datafield_100d'] ? a['datafield_100d'].split('-') : [];
     const auth: Author = {
+      old_id: this.author.id,
       id: a['controlfield_001'],
       nameIdentifier: a['controlfield_001'],
       full: a['datafield_100a'],
       family: a['family']?.[0],
       given: a['given']?.[0],
-
       date: a['datafield_100d'],
-
-      'date_range_start.year': dates[0],
-      'date_range_end.year': dates.length > 1 ? dates[1] : '',
-      labels: this.author.labels
+      date_birth: dates[0] ? dates[0] : null,
+      date_death: dates.length > 1 ? dates[1] : null,
+      year_birth: dates[0] ? parseInt(dates[0]) : null,
+      year_death: dates.length > 1 ? parseInt(dates[1]) : null,
+      // labels: [...this.author.labels, 'kapp_modified']
+      labels: ['kapp_modified']
 
     }
     this.author = auth;

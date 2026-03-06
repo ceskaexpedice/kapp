@@ -46,6 +46,8 @@
     "date": "Datum",
     "date_birth": "Datum narození",
     "date_death": "Datum úmrtí",
+    "year_birth": "Rok narození",
+    "year_death": "Rok úmrtí",
     "role": "Role",
     "id": "Identifikator",
     "last_author": "Poslední autor",
