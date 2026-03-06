@@ -2,7 +2,7 @@
 	<mat-card-header>
 		<mat-card-title>
 			<div class="app-fxLayout app-row app-gap-1">
-				<div class="app-fxFlex">{{ doc()['root.title']}} ({{ doc()['model']}})</div>
+				<div class="app-fxFlex">{{ doc()['root_title']}} ({{ doc()['model']}})</div>
 				<mat-chip-set>
 					@for(l of labels; track $index) {
 					<mat-chip [style.background-color]="l.color"
@@ -55,7 +55,7 @@
 		</div>
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.pid' | translate }}:</span>
-			@if (doc()['physical_locations.facet']?.[0] === 'ABA001') {
+			@if (doc()['physical_locations']?.[0] === 'ABA001') {
 				<a target="_blank" [href]="'https://ndk.cz/view/'+doc()['pid']" class="app-value">
 					<span>{{doc()['pid']}}</span>
 					<mat-icon>open_in_new</mat-icon>
@@ -69,7 +69,7 @@
 		</div>
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.physical_locations' | translate }}:</span>
-			<span class="app-value">{{ doc()['physical_locations.facet'] }}</span>
+			<span class="app-value">{{ doc()['physical_locations'] }}</span>
 		</div>
 		@if(doc()['public_since']) {
 			<div class="app-metadata-row">
@@ -79,7 +79,7 @@
 		}
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.date_issued' | translate }}:</span>
-			<span class="app-value">{{ doc()['date_issued']}}</span>
+			<span class="app-value">{{ doc()['date_issued_str']}}</span>
 		</div>	
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.indextime' | translate }}:</span>
@@ -88,7 +88,7 @@
 
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.assigned_license' | translate }}:</span>
-			<span class="app-value"><b>{{ doc()['assigned_license']}}</b></span>
+			<span class="app-value"><b>{{ doc()['assigned_licenses']}}</b></span>
 		</div>
 
 		<div class="app-metadata-row">
@@ -99,7 +99,7 @@
 
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.kramlicenses' | translate }}:</span>
-			<span class="app-value">{{ doc()['licenses_nkp']}}</span>
+			<span class="app-value">{{ doc()['licenses']}}</span>
 		</div>
 
 
@@ -150,7 +150,7 @@
 							<td>{{ ch['model']}}</td>
 							<td style="min-width: 200px">
 								<div class="app-text-cutter-wrapper">
-									<div class="app-text-cutter">{{ ch['root.title']}}</div>
+									<div class="app-text-cutter">{{ ch['root_title']}}</div>
 								</div>
 							</td>
 							<td class="app-col-icon">

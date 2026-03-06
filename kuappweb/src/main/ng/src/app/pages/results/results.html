@@ -187,7 +187,7 @@
               <td mat-cell *matCellDef="let element" [attr.colspan]="columnsToDisplayWithExpand().length" class="app-col-detail">
                 <div class="app-element-detail-wrapper" [class.app-element-detail-wrapper-expanded]="isExpanded(element)">
                   <div class="app-element-detail">
-                    <app-result-item [doc]="element" [expanded]="expanded(element['root.pid'])"></app-result-item>
+                    <app-result-item [doc]="element" [expanded]="expanded(element['root_pid'])"></app-result-item>
                   </div>
                 </div>
               </td>
@@ -204,7 +204,7 @@
         } @else {
           @if (view() === 'titles') {
             @for(doc of docs(); track $index){
-            <app-result-item [doc]="doc" [expanded]="expanded(doc['root.pid'])"></app-result-item>
+            <app-result-item [doc]="doc" [expanded]="expanded(doc['root_pid'])"></app-result-item>
             }
           } @else {
             @for(doc of docs(); track $index){

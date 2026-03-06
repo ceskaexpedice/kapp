@@ -92,13 +92,13 @@ public class IndexSearcher {
 //                    .withFacet("authors", new TermsFacetMap("authors")
 //                            .setLimit(1000)
 //                            .setMinCount(1))
-                    .withParam("fq", "{!collapse field=root.pid}") 
+                    .withParam("fq", "{!collapse field=root_pid}")
                     .withParam("expand", true)
                     .withParam("expand.rows", 100)
                     .withParam("modelboost", "model:monograph") 
-                    .withFacet("public", new TermsFacetMap("public")
-                            .setLimit(10)
-                            .setMinCount(1))
+//                    .withFacet("public", new TermsFacetMap("public")
+//                            .setLimit(10)
+//                            .setMinCount(1))
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(100)
                             .setMinCount(1))
@@ -108,7 +108,7 @@ public class IndexSearcher {
                     .withFacet("nameIdentifier", new TermsFacetMap("nameIdentifier")
                             .setLimit(100)
                             .setMinCount(1))
-                    .withFacet("assigned_license", new TermsFacetMap("assigned_license")
+                    .withFacet("assigned_licenses", new TermsFacetMap("assigned_licenses")
                             .setLimit(100)
                             .setMinCount(1))
                     .withFacet("licenses", new TermsFacetMap("licenses")
@@ -122,13 +122,13 @@ public class IndexSearcher {
                     .withFacet("model", new TermsFacetMap("model")
                             .setLimit(20)
                             .setMinCount(1))
-                    .withFacet("physical_locations", new TermsFacetMap("physical_locations.facet")
+                    .withFacet("physical_locations", new TermsFacetMap("physical_locations")
                             .setLimit(100)
                             .setMinCount(1))
                     .withFacet("contracts", new TermsFacetMap("contracts")
                             .setLimit(100)
                             .setMinCount(1))
-                    .withFacet("date", new TermsFacetMap("date_range_start.year")
+                    .withFacet("date", new TermsFacetMap("date_issued_year")
                             //.setSort("index desc")
                             .setLimit(20)
                             .setMinCount(1))
@@ -675,7 +675,8 @@ public class IndexSearcher {
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "contracts");
             InputStream is = (InputStream) resp.get("stream");
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+            String content = IOUtils.toString(is, "UTF-8");
+            ret = new JSONObject(content);
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
