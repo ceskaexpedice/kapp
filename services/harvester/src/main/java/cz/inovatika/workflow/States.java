@@ -2,11 +2,9 @@ package cz.inovatika.workflow;
 
 import cz.inovatika.Constants;
 import cz.inovatika.conf.WorkflowConfig;
-import cz.inovatika.impl.HarvesterImpl;
 import cz.inovatika.model.HarvesterContext;
 
 import cz.inovatika.solr.SolrInputDocumentWrapper;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
@@ -15,7 +13,6 @@ import org.apache.solr.common.SolrInputDocument;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -200,7 +197,6 @@ public enum States {
         }
     }
     /*,
-
     PARENT_CONTROLLED("parent_controlled",LicensesAssignation.NONE, true) {
         @Override
         public States calculateNextState(HarvesterContext ctx, WorkflowDoc currentDoc) {
@@ -217,7 +213,8 @@ public enum States {
         try {
             SolrQuery q = new SolrQuery()
                     .setQuery("root.pid:\"" + ctx.item().getRootPid() + "\"")
-                    .setRows(300).addFilterQuery("model:\"monographunit\" OR model:\"periodicalvolume\"");
+                    .setRows(300)
+                    .addFilterQuery("model:\"monographunit\" OR model:\"periodicalvolume\"");
             for (SolrDocument doc : ctx.solrClient().query("titles", q).getResults()) {
                 Object state = doc.get("state");
                 if (TO_CONTROL.name().equals(state)) {
@@ -252,31 +249,31 @@ public enum States {
             SolrDocument parent = null;
             List<SolrDocument> children = new ArrayList<>();
             for (SolrDocument doc : results) {
-                if (doc.getFieldValue(Constants.TitlesCollectionFields.FromKramFields.PID_FIELD).equals(rootPid)) {
+                if (doc.getFieldValue(Constants.TitlesCollectionFields.AppDataFields.PID_FIELD).equals(rootPid)) {
                     parent = doc;
                 } else {
                     children.add(doc);
                 }
             }
-            List<String> states = children.stream().map(sdoc -> sdoc.getFieldValue(Constants.TitlesCollectionFields.ApplFields.STATE_FIELD).toString()).collect(Collectors.toList());
+            List<String> states = children.stream().map(sdoc -> sdoc.getFieldValue(Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD).toString()).collect(Collectors.toList());
             if (states.contains(TO_CONTROL.name())) {
                 SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
-                        Constants.TitlesCollectionFields.FromKramFields.PID_FIELD,
+                        Constants.TitlesCollectionFields.AppDataFields.PID_FIELD,
                         new SolrInputDocument(),
                         SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
-                wrapper.setField(Constants.TitlesCollectionFields.FromKramFields.PID_FIELD, rootPid);
-                wrapper.addField(Constants.TitlesCollectionFields.ApplFields.STATE_FIELD, PARENT_OPEN.name());
+                wrapper.setField(Constants.TitlesCollectionFields.AppDataFields.PID_FIELD, rootPid);
+                wrapper.addField(Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD, PARENT_OPEN.name());
                 child.solrClient().add( "titles", wrapper.getDocument());
             } else {
 
                 SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
-                        Constants.TitlesCollectionFields.FromKramFields.PID_FIELD,
+                        Constants.TitlesCollectionFields.AppDataFields.PID_FIELD,
                         new SolrInputDocument(),
                         SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
-                wrapper.setField(Constants.TitlesCollectionFields.FromKramFields.PID_FIELD, rootPid);
-                wrapper.addField(Constants.TitlesCollectionFields.ApplFields.STATE_FIELD, PARENT_CLOSED.name());
+                wrapper.setField(Constants.TitlesCollectionFields.AppDataFields.PID_FIELD, rootPid);
+                wrapper.addField(Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD, PARENT_CLOSED.name());
                 child.solrClient().add( "titles", wrapper.getDocument());
             }
         } catch (SolrServerException | IOException e) {

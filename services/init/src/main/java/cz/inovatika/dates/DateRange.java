@@ -26,13 +26,13 @@ public record DateRange(
             LOGGER.log(Level.SEVERE, "Suspicious year range: {0}-{1}", new Object[]{this.startYear(), this.endYear()});
         }
 
-        docWrapper.setField(ApplFields.DATE_RANGE_START_YEAR, yearStart);
-        docWrapper.setField(ApplFields.DATE_RANGE_END_YEAR, yearEnd);
+        docWrapper.setField(AppComputedFields.DATE_ISSUED_YEAR, yearStart);
+        //docWrapper.setField(AppComputedFields.DATE_RANGE_END_YEAR, yearEnd);
 
-        docWrapper.setField(ApplFields.DATE_MIN, String.format("%04d-01-01T00:00:00Z", yearStart));
-        docWrapper.setField(ApplFields.DATE_MAX, String.format("%04d-12-31T00:00:00Z", yearEnd));
+        //docWrapper.setField(AppComputedFields.DATE_MIN, String.format("%04d-01-01T00:00:00Z", yearStart));
+        //docWrapper.setField(AppComputedFields.DATE_MAX, String.format("%04d-12-31T00:00:00Z", yearEnd));
 
-        docWrapper.setField(ApplFields.CONFIRMED_START_YEAR, this.startConfirmed());
-        docWrapper.setField(ApplFields.CONFIRMED_END_YEAR, this.endConfirmed());
+        docWrapper.setField(AppComputedFields.CONFIRMED_START_YEAR, this.startConfirmed());
+        docWrapper.setField(AppComputedFields.CONFIRMED_END_YEAR, this.endConfirmed());
     }
 }

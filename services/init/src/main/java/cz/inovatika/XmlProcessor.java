@@ -5,9 +5,11 @@ import java.time.Year;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
+import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
 import cz.inovatika.authors.AuthorData;
 import org.apache.commons.lang3.math.NumberUtils;
 import org.apache.solr.common.SolrInputDocument;
@@ -18,6 +20,8 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 
 //TODO: Rewrite !!
 public class XmlProcessor {
+
+    public static final Logger LOGGER = Logger.getLogger(XmlProcessor.class.getName());
 
 
 //    public static AuthorData[] processBiblioMods(Document xml, SolrInputDocument doc) throws IOException, InterruptedException {
@@ -288,9 +292,8 @@ public class XmlProcessor {
 
     private static void dateFormatError(SolrInputDocument doc,int recordNumber, String Originalvalue, String value, String message) {
         String recNum = (recordNumber > 0) ? (" on row: " + recordNumber) : "";
-
-        System.err.println(message + recNum + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
-        doc.addField(ApplFields.LABELS_FIELD, "failedToParseData");
+        LOGGER.severe(message + recNum + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
+        doc.addField(AppComputedFields.LABELS_FIELD, "failedToParseData");
     }
 
     static void addyear(String year, SolrInputDocument doc, boolean confirmed) {
@@ -307,20 +310,26 @@ public class XmlProcessor {
             int yearStart = Integer.parseInt(year_start);
             int yearEnd = Integer.parseInt(year_end);
             if (yearStart > yearEnd || yearEnd > Year.now().getValue()) {
-                System.out.println("Suspicious year range: " + year_start + "-" + year_end);
-                doc.addField(ApplFields.LABELS_FIELD, "Suspicious year range");
+                doc.addField(AppComputedFields.LABELS_FIELD, "Suspicious year range");
             }
+            doc.addField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_YEAR_FIELD, yearEnd);
+            doc.addField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_END_YEAR_FIELD, yearEnd);
+            doc.addField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_START_YEAR_FIELD, yearStart);
+
+            /*
             doc.addField("date_range_start.year", yearStart);
             doc.addField("date_range_end.year", yearEnd);
             doc.addField("date.min", String.format("%04d-01-01T00:00:00Z", yearStart));
             doc.addField("date.max", String.format("%04d-12-31T00:00:00Z", yearEnd));
             //doc.addField("date_range_start.month", "1");
             //doc.addField("date_range_end.month", "12");
-            doc.addField("confirmed_start_year", confirmed_start);
-            doc.addField("confirmed_end_year", confirmed_end);
+            */
+
+            doc.addField(AppComputedFields.CONFIRMED_START_YEAR, confirmed_start);
+            doc.addField(AppComputedFields.CONFIRMED_END_YEAR, confirmed_end);
         } catch (NumberFormatException e) {
-            System.err.println("Failed to parse year range: " + year_start + "-" + year_end);
-            doc.addField(ApplFields.LABELS_FIELD,"failedToParseData");
+            LOGGER.log(Level.SEVERE, "Failed to parse year range: " + year_start + "-" + year_end);
+            doc.addField(AppComputedFields.LABELS_FIELD,"failedToParseData");
         }
     }
 
@@ -338,7 +347,7 @@ public class XmlProcessor {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Critical Exception occurred in:last_author_nameIdentifier: " + e.getMessage());
+            LOGGER.log(Level.SEVERE, e.getMessage(),e);
         }
     }
 

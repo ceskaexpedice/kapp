@@ -16,13 +16,14 @@ import java.time.LocalDateTime;
 //import java.util.Arrays;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 //import java.util.stream.Collectors;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
+import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
 import cz.inovatika.authors.AuthorData;
 import cz.inovatika.authors.AuthorDataUtils;
 import org.apache.commons.csv.CSVFormat;
@@ -33,7 +34,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
-import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.SolrInputField;
@@ -46,6 +46,9 @@ import org.xml.sax.SAXException;
 
 //TODO: Refactor !!
 public class TsvToSolrIndexer {
+
+    public static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(TsvToSolrIndexer.class.getName());
+
 
     private static final String SOLR_URL = "http://localhost:8983/solr";//"http://solr-kappScheduler:8983/solr";//
     public static final String MODEL_FIELD = "model";
@@ -76,7 +79,7 @@ public class TsvToSolrIndexer {
         boolean show_comma_info = false;
         File folder = new File(DIRECTORY_PATH);
         if (!folder.isDirectory()) {
-            System.err.println("Invalid directory: " + DIRECTORY_PATH);
+            LOGGER.severe("Invalid directory: " + DIRECTORY_PATH);
             return;
         }
         // before looping files, load config:
@@ -84,14 +87,14 @@ public class TsvToSolrIndexer {
         try {
             mappingsLoader = new ConfigMappingsLoader(Path.of(TSV_MAPPINGS));
         } catch (IOException e) {
-            System.err.println("Failed to load TSV mappings: " + e.getMessage());
+            LOGGER.severe("Failed to load TSV mappings: " + e.getMessage());
             return;
         }
         try {
             File[] tsvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".tsv"));
 
             if (tsvFiles == null || tsvFiles.length == 0) {
-                System.out.println("No TSV files found in directory.");
+                LOGGER.severe("No TSV files found in directory.");
                 return;
             }
 
@@ -104,12 +107,12 @@ public class TsvToSolrIndexer {
                 try (Reader reader = new FileReader(tsvFile); CSVParser parser = new CSVParser(reader, format)) {
                     Map<String, String> headers = mappingsLoader.getHeadersForFile(tsvFile.getName());
                     if (headers == null) {
-                        System.out.println("No configuration for this file: " + tsvFile.getName());
+                        LOGGER.info("No header found for file: " + tsvFile.getName());
                         continue;
                     }
                     for (CSVRecord record : parser) {
                         SolrInputDocument doc = new SolrInputDocument();
-                        doc.addField(ApplFields.LABELS_FIELD,"from Excel");
+                        doc.addField(AppComputedFields.LABELS_FIELD,"from Excel");
                         int recordNumber = (int) record.getRecordNumber() + 1; // +1 to account for header
                         String pid;
                         String rootPid;
@@ -228,7 +231,8 @@ public class TsvToSolrIndexer {
                         }
                         parsePublicString(doc, recordNumber);
                         setState(doc);
-                        ParseDates(doc, getField(doc, "date.str"), recordNumber, show_comma_info);
+
+                        ParseDates(doc, getField(doc, Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_STR), recordNumber, show_comma_info);
                         assert nameIDArray != null;
                         XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
 
@@ -241,38 +245,39 @@ public class TsvToSolrIndexer {
 
                         for (SolrInputDocument authorDoc : Arrays.stream(nameIDArray).map(AuthorData::toAuthoritySolrDocument).toList()) {
                             if (authorDoc != null)
-                                solrClient.add("authors", authorDoc);
-                        }
-                        if(doc.get("pid")==doc.get("root.pid")){
-                            doc.addField(ROOT_TITLE_FIELD, doc.get("title"));
+                                solrClient.add(Constants.Collection.AUTHORS_COLLECTION, authorDoc);
                         }
                         //doc.addField("state_user", "TableParser");
-                        solrClient.add("titles", doc); 
+                        solrClient.add(Constants.Collection.TITLES_COLLECTION , doc);
                     }
                 }catch (ConnectException e) {
-                        System.err.println("Kramerius connection error " + e.getMessage());
-                        e.printStackTrace();
+                        LOGGER.log(Level.SEVERE, e.getMessage(),e);
                         System.exit(1);
                     }
                  catch (Exception e) {
-                    System.out.println("Critical Exception: in file:" + tsvFile.getName() + "of type:" + e.getClass()
-                            + ": " + e.getMessage());
-                    // sent_request = true;
+                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
                 }
             }
 
-            solrClient.commit("titles");
-            solrClient.commit("authors");
-            System.out.println("All TSV files indexed successfully.");
+            LOGGER.info("All TSV files indexed successfully.");
             System.exit(0);
 
-        } catch (ConnectException e) {
-            System.err.println("Failed to connect to Solr " + e.getMessage());
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, e.getMessage(), e);
             System.exit(1);
-        } catch (IOException | SolrServerException e) {
-            System.err.println(
-                    "Error indexing data: Exception type: " + e.getClass().getName() + " Message:" + e.getMessage());
-            System.exit(1);
+        } finally {
+            if (solrClient != null) {
+                try {
+                    solrClient.commit(Constants.Collection.TITLES_COLLECTION);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                }
+                try {
+                    solrClient.commit(Constants.Collection.AUTHORS_COLLECTION);
+                } catch (Exception e) {
+                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                }
+            }
         }
     }
 
@@ -298,7 +303,7 @@ public class TsvToSolrIndexer {
             }
             default -> {
                 System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
-                doc.addField(ApplFields.LABELS_FIELD,"Incorrect public/onsite value in Excel");
+                doc.addField(AppComputedFields.LABELS_FIELD,"Incorrect public/onsite value in Excel");
             }
         }
     }

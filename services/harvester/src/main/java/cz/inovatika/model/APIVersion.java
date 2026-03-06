@@ -290,12 +290,15 @@ public enum APIVersion {
         int attempts = 0;
         while(attempts++ < 10) {
             try {
+
                 HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
                         .uri(URI.create(modsUrl))
                         .GET()
                         .build(), HttpResponse.BodyHandlers.ofInputStream());
+
                 if (response != null && response.statusCode() == 200) {
                     return response.body();
+
                 } else {
                     LOGGER.log(Level.SEVERE, "HTTP error: {0}", response != null ? response.statusCode() : "null");
                     return null;

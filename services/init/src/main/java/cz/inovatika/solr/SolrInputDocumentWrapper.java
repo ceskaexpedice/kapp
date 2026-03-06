@@ -87,12 +87,12 @@ public record SolrInputDocumentWrapper(String idKey, SolrInputDocument document,
                         if (name.equals(idKey)) {
                             document.setField(name, value);
                         } else {
+
                             document.addField(name, atomicOperation("remove", value));
                         }
                     }
                 }
             }
-
         }
     }
 

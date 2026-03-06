@@ -2,12 +2,10 @@ package cz.inovatika.impl;
 
 import cz.inovatika.Constants;
 import cz.inovatika.UpdateParentState;
-import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.workflow.States;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
-import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
@@ -16,7 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -39,7 +36,8 @@ public class UpdateParentStateImpl implements UpdateParentState {
             int toIndex = Math.min(i + BATCH_SIZE, allParentPids.size());
             List<String> currentBatch = allParentPids.subList(i, toIndex);
 
-            StringBuilder queryBuilder = new StringBuilder("root.pid:(");
+
+            StringBuilder queryBuilder = new StringBuilder( String.format("%s:(", Constants.TitlesCollectionFields.AppDataFields.ROOT_PID_FIELD));
             for (int j = 0; j < currentBatch.size(); j++) {
                 queryBuilder.append("\"").append(currentBatch.get(j)).append("\"");
                 if (j < currentBatch.size() - 1) queryBuilder.append(" OR ");
@@ -49,10 +47,10 @@ public class UpdateParentStateImpl implements UpdateParentState {
             String jsonFacet = "{" +
                     "  parents: {" +
                     "    type: 'terms'," +
-                    "    field: 'root.pid'," +
+      String.format("    field: '%s',", Constants.TitlesCollectionFields.AppDataFields.ROOT_PID_FIELD) +
                     "    limit: " + BATCH_SIZE + "," +
                     "    facet: {" +
-                    "      stavy: { type: 'terms', field: 'state' }" +
+      String.format("      stavy: { type: 'terms', field: '%s' }", Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD) +
                     "    }" +
                     "  }" +
                     "}";
@@ -62,7 +60,7 @@ public class UpdateParentStateImpl implements UpdateParentState {
             params.set("rows", 0);
             params.set("json.facet", jsonFacet);
 
-            QueryResponse response = solrClient.query("titles", params);
+            QueryResponse response = solrClient.query(Constants.Collection.TITLES_COLLECTION, params);
             processBatchResponse(response);
         }
     }
@@ -92,18 +90,20 @@ public class UpdateParentStateImpl implements UpdateParentState {
 
             States parentState = childStates.isEmpty() || childStates.contains(States.TO_CONTROL.name()) ?  States.PARENT_OPEN : States.PARENT_CLOSED;
             SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
-                    Constants.TitlesCollectionFields.FromKramFields.PID_FIELD,
+                    Constants.TitlesCollectionFields.AppDataFields.PID_FIELD,
                     new SolrInputDocument(),
                     SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
-            wrapper.addField(Constants.TitlesCollectionFields.FromKramFields.PID_FIELD, rootPid);
-            wrapper.setField(Constants.TitlesCollectionFields.ApplFields.STATE_FIELD, parentState.name());
+
+            wrapper.addField(Constants.TitlesCollectionFields.AppDataFields.PID_FIELD, rootPid);
+            wrapper.setField(Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD, parentState.name());
+
             updates.add(wrapper.getDocument());
         }
 
         if (!updates.isEmpty()) {
             try {
-                this.solrClient.add("titles", updates);
+                this.solrClient.add(Constants.Collection.TITLES_COLLECTION, updates);
             } catch (SolrServerException | IOException e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
@@ -145,12 +145,12 @@ public class UpdateParentStateImpl implements UpdateParentState {
         return results;
     }
 
-    private static Http2SolrClient buildSolrClient(String url) {
-        return new Http2SolrClient.Builder(url)
-                .withConnectionTimeout(200, TimeUnit.SECONDS)
-                .withIdleTimeout(5, TimeUnit.MINUTES)
-                .withRequestTimeout(5, TimeUnit.MINUTES).useHttp1_1(true)
-                .build();
-    }
+//    private static Http2SolrClient buildSolrClient(String url) {
+//        return new Http2SolrClient.Builder(url)
+//                .withConnectionTimeout(200, TimeUnit.SECONDS)
+//                .withIdleTimeout(5, TimeUnit.MINUTES)
+//                .withRequestTimeout(5, TimeUnit.MINUTES).useHttp1_1(true)
+//                .build();
+//    }
 
 }

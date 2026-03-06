@@ -1,8 +1,8 @@
 package cz.inovatika.impl;
 
 import cz.inovatika.Constants;
-import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
-import cz.inovatika.Constants.TitlesCollectionFields.FromKramFields;
+import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
+import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import cz.inovatika.Harvester;
 import cz.inovatika.UpdateParentState;
 import cz.inovatika.XmlProcessor;
@@ -45,7 +45,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
-import java.time.Duration;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
@@ -69,10 +68,12 @@ public class HarvesterImpl implements Harvester {
 
     private static final boolean IGNORE_CHECKTIME = true;
     public static final int NUMBER_OF_THREAD = 4;
+    public static final String HTTP_CLIENT_THREAD_KEY = "nkp-http-client-thread-";
 
 
     public SolrClient solrClient = null;
     private HttpClient  httpClient = null;
+    private ExecutorService  httpClientExecutorService = null;
 
 
 
@@ -267,9 +268,8 @@ public class HarvesterImpl implements Harvester {
             InputStream resourceAsStream = new FileInputStream(System.getProperty("user.home") + "/.kapp/app.conf");
             ApplicationConfig applicationConfig = ApplicationConfig.loadFromStream(resourceAsStream);
             harvester.start(applicationConfig);
-        } catch (FileNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "Failed to load configuration", e);
-            e.printStackTrace(System.err);
+        } catch (Exception e) {
+            LOGGER.log(Level.SEVERE, "Harvesting problem", e);
             throw new RuntimeException(e);
         } finally {
 
@@ -304,8 +304,23 @@ public class HarvesterImpl implements Harvester {
 
     @Override
     public void start(ApplicationConfig applicationConfig) {
-        if (solrClient == null) { solrClient = buildSolrClient(applicationConfig); }
-        if (httpClient == null) { httpClient  = buildHTTPClient(); }
+        if (solrClient == null) {
+            this.solrClient = buildSolrClient(applicationConfig);
+        }
+        if (httpClient == null) {
+            this.httpClientExecutorService =  Executors.newFixedThreadPool(
+                    NUMBER_OF_THREAD,
+                    r -> {
+                        Thread t = new Thread(r);
+                        t.setName(HTTP_CLIENT_THREAD_KEY + t.getId());
+                        return t;
+                    }
+            );
+
+
+
+            this.httpClient  = buildHTTPClient(this.httpClientExecutorService);
+        }
 
         List<Instance> instances = applicationConfig.instances();
         for (Instance i : instances) {
@@ -353,7 +368,6 @@ public class HarvesterImpl implements Harvester {
         UpdateParentState updateParentState = new UpdateParentStateImpl(this.solrClient);
         updateParentState.updateParentState();
 
-
     }
 
     private void sendBatch(String collection, final List<SolrInputDocument> docs)
@@ -369,10 +383,13 @@ public class HarvesterImpl implements Harvester {
                                 new Object[]{response.getStatus(), response.getQTime()});
                     LOGGER.log(Level.INFO, "Indexed batch of {0} documents.", docs.size());
 
-
                     break;
                 } catch (IOException | SolrServerException e) {
                     LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt);
+                } catch(Exception e) {
+                    LOGGER.log(Level.SEVERE, e.getMessage(),e);
+                    for (SolrInputDocument doc : docs) { LOGGER.log(Level.SEVERE, "DOC: {0}", doc); }
+                    throw e;
                 }
             }
         } else {
@@ -394,14 +411,15 @@ public class HarvesterImpl implements Harvester {
             if (exists) {
                 try {
                     SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
-                            FromKramFields.PID_FIELD,
+                            AppDataFields.PID_FIELD,
                             new SolrInputDocument(),
                             SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
-                    wrapper.setField(FromKramFields.PID_FIELD, ctx.item().getPid());
-                    wrapper.addField(FromKramFields.LICENSES_FIELD, Arrays.asList(ctx.item().getLicenses()));
-                    wrapper.addField(String.format("%s%s", FromKramFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), Arrays.asList(ctx.item().getLicenses()));
-                    wrapper.addField(ApplFields.DIGITAL_LIBRARY, ctx.config().getAcronym(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_ADD_DISTINCT);
+                    wrapper.setField(AppDataFields.PID_FIELD, ctx.item().getPid());
+
+                    wrapper.addField(AppDataFields.LICENSES_FIELD, Arrays.asList(ctx.item().getLicenses()));
+                    wrapper.addField(String.format("%s%s", AppDataFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), Arrays.asList(ctx.item().getLicenses()));
+                    wrapper.addField(AppComputedFields.DIGITAL_LIBRARY, ctx.config().getAcronym(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_ADD_DISTINCT);
 
                     List<String> cPhysicalLocations = config.getPhysicalLocations();
                     List<String> touchStorePhysicalLocations = ctx.touchStore().getPhysicalLocations(pid);
@@ -434,18 +452,19 @@ public class HarvesterImpl implements Harvester {
                             try {
                                 Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
 
-                                wrapper.addField(FromKramFields.MODEL_FIELD, ctx.item().getModel(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_SET);
-                                wrapper.addField(FromKramFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
-                                wrapper.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
-                                wrapper.setField(FromKramFields.TITLE_FIELD, ctx.item().getTitles());
+                                wrapper.addField(AppDataFields.MODEL_FIELD, ctx.item().getModel(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_SET);
+                                wrapper.addField(AppDataFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
+                                wrapper.setField(AppDataFields.ROOT_PID_FIELD, ctx.item().getRootPid());
+                                wrapper.setField(AppDataFields.TITLE_FIELD, ctx.item().getTitles());
 
-                                wrapper.setField(FromKramFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
-                                wrapper.setField(FromKramFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
+                                wrapper.setField(AppDataFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
+                                wrapper.setField(AppDataFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
 
                                 parseDateRange(wrapper, parsed);
+
                                 List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("physicalLocation")).stream().map(Element::getTextContent).toList();
                                 if (!physicalLocation.isEmpty()) {
-                                    wrapper.setField(FromKramFields.PHYSICAL_LOCATIONS_FACET_FIELD, createSetOperation(physicalLocation));
+                                    wrapper.setField(AppDataFields.PHYSICAL_LOCATIONS_FACET_FIELD, createSetOperation(physicalLocation));
                                 }
 
                                 // store to touch store
@@ -455,7 +474,7 @@ public class HarvesterImpl implements Harvester {
                                 // Authors
                                 processAuthors(wrapper, authorsBuffer, parsed);
 
-                                Integer dateRangeEnd = (Integer) wrapper.getFieldValue(ApplFields.DATE_RANGE_END_YEAR);
+                                Integer dateRangeEnd = (Integer) wrapper.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
                                 if (dateRangeEnd != null && dateRangeEnd > 0) {
                                     final String user = "importer";
 
@@ -470,7 +489,7 @@ public class HarvesterImpl implements Harvester {
                                     Workflow wf = new Workflow();
 
                                     // state differs
-                                    JSONObject oldDoc = getExistingDocument((String) wrapper.document().getFieldValue(FromKramFields.PID_FIELD));
+                                    JSONObject oldDoc = getExistingDocument((String) wrapper.document().getFieldValue(AppDataFields.PID_FIELD));
                                     if (oldDoc != null && oldDoc.has("state")) {
                                         String oldState = oldDoc.getString("state");
                                         States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
@@ -497,20 +516,20 @@ public class HarvesterImpl implements Harvester {
 
                 //Stopwatch sw = Stopwatch.createStarted();
                 SolrInputDocumentWrapper doc = new SolrInputDocumentWrapper(
-                        FromKramFields.PID_FIELD,
+                        AppDataFields.PID_FIELD,
                         new SolrInputDocument(),
                         SolrInputDocumentWrapper.TypeOfChange.SIMPLE);
 
-                doc.setField(FromKramFields.PID_FIELD, ctx.item().getPid());
-                doc.addField(FromKramFields.LICENSES_FIELD, ctx.item().getLicenses());
-                doc.addField(String.format("%s%s", FromKramFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), ctx.item().getLicenses());
-                doc.addField(FromKramFields.MODEL_FIELD, ctx.item().getModel());
-                doc.addField(FromKramFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
-                doc.setField(FromKramFields.ROOT_PID_FIELD, ctx.item().getRootPid());
-                doc.setField(FromKramFields.TITLE_FIELD, ctx.item().getTitles());
-                doc.setField(ApplFields.IS_HIERARCHICAL_FIELD, ctx.item().isHierarchical());
+                doc.setField(AppDataFields.PID_FIELD, ctx.item().getPid());
+                doc.addField(AppDataFields.LICENSES_FIELD, ctx.item().getLicenses());
+                doc.addField(String.format("%s%s", AppDataFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), ctx.item().getLicenses());
+                doc.addField(AppDataFields.MODEL_FIELD, ctx.item().getModel());
+                doc.addField(AppDataFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
+                doc.setField(AppDataFields.ROOT_PID_FIELD, ctx.item().getRootPid());
+                doc.setField(AppDataFields.TITLE_FIELD, ctx.item().getTitles());
+                doc.setField(AppComputedFields.IS_HIERARCHICAL_FIELD, ctx.item().isHierarchical());
 
-                doc.addField(ApplFields.DIGITAL_LIBRARY, ctx.config().getAcronym());
+                doc.addField(AppComputedFields.DIGITAL_LIBRARY, ctx.config().getAcronym());
 
                 try {
                     InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
@@ -522,13 +541,13 @@ public class HarvesterImpl implements Harvester {
                     Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
                     if (parsed != null) {
 
-                        doc.setField(FromKramFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
-                        doc.setField(FromKramFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
+                        doc.setField(AppDataFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
+                        doc.setField(AppDataFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
 
                         parseDateRange(doc, parsed);
                         List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("physicalLocation")).stream().map(Element::getTextContent).toList();
                         if (!physicalLocation.isEmpty()) {
-                            doc.addField(FromKramFields.PHYSICAL_LOCATIONS_FACET_FIELD, physicalLocation);
+                            doc.addField(AppDataFields.PHYSICAL_LOCATIONS_FACET_FIELD, physicalLocation);
                         }
 
                         // store to touch store
@@ -538,7 +557,7 @@ public class HarvesterImpl implements Harvester {
                         // Authors
                         processAuthors(doc, authorsBuffer, parsed);
 
-                        Integer dateRangeEnd = (Integer) doc.getFieldValue(ApplFields.DATE_RANGE_END_YEAR);
+                        Integer dateRangeEnd = (Integer) doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
                         if (ctx.item().isHierarchical() || (dateRangeEnd != null && dateRangeEnd > 0)) {
                             final String user = "importer";
                             String message = String.format("Imported from '%s'", config.getUrl());
@@ -573,15 +592,15 @@ public class HarvesterImpl implements Harvester {
 
     private void processAuthors(SolrInputDocumentWrapper doc, List<SolrInputDocument> authorsBuffer, Document parsed) {
         List<AuthorData> authorData = AuthorDataUtils.parseAuthorData(parsed);
-        doc.addField(FromKramFields.AUTHORS_FIELD, authorData.stream().map(AuthorData::getFull).toList());
+        doc.addField(AppDataFields.AUTHORS_FIELD, authorData.stream().map(AuthorData::getFull).toList());
         authorData.forEach(author -> {
-            doc.addField(FromKramFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
+            doc.addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
             if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
-                doc.addField(FromKramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
-                doc.addField(FromKramFields.AUTHORS_IDS, author.getNameIdentifier());
+                doc.addField(AppDataFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+                doc.addField(AppDataFields.AUTHORS_IDS, author.getNameIdentifier());
             } else {
                 String name = author.getFull() + (author.getDate() != null ? author.getDate() : "") ;
-                doc.addField(FromKramFields.AUTHORS_IDS, XmlProcessor.normalize(name));
+                doc.addField(AppDataFields.AUTHORS_IDS, XmlProcessor.normalize(name));
             }
         });
 
@@ -621,7 +640,7 @@ public class HarvesterImpl implements Harvester {
         if (dateIssued != null) {
 
             String dateText = dateIssued.getTextContent();
-            wrapper.addField(FromKramFields.DATE_STR_FIELD, dateText);
+            wrapper.addField(AppDataFields.DATE_ISSUED_STR, dateText);
 
             DateRange parsedDateRange = new DateRangeParser().parse(DateNormalizer.normalize(dateText));
             if (parsedDateRange != null) {
@@ -646,10 +665,10 @@ public class HarvesterImpl implements Harvester {
                 .put("user", "importer")
                 .put("state", nState.toString());
 
-        idoc.setField(ApplFields.STATE_FIELD, nState.toString());
-        idoc.setField(ApplFields.STATE_DATE_FIELD, d);
-        idoc.setField(ApplFields.STATE_USER_FIELD, "importer");
-        idoc.setField(ApplFields.STATE_REASON_FIELD, "import from " + config.getUrl());
+        idoc.setField(AppComputedFields.STATE_FIELD, nState.toString());
+        idoc.setField(AppComputedFields.STATE_DATE_FIELD, d);
+        idoc.setField(AppComputedFields.STATE_USER_FIELD, "importer");
+        idoc.setField(AppComputedFields.STATE_REASON_FIELD, "import from " + config.getUrl());
 
         if (oldDoc != null) {
 
@@ -657,12 +676,12 @@ public class HarvesterImpl implements Harvester {
             if (historyExists) {
                 Map<String, Object> partialUpdate = new HashMap<>();
                 partialUpdate.put("add", h.toString());
-                idoc.addField(ApplFields.STATE_HISTORY_FIELD, partialUpdate);
+                idoc.addField(AppComputedFields.STATE_HISTORY_FIELD, partialUpdate);
             } else {
-                idoc.addField(ApplFields.STATE_HISTORY_FIELD, h.toString());
+                idoc.addField(AppComputedFields.STATE_HISTORY_FIELD, h.toString());
             }
         } else {
-            idoc.addField(ApplFields.STATE_HISTORY_FIELD, h.toString());
+            idoc.addField(AppComputedFields.STATE_HISTORY_FIELD, h.toString());
         }
 
     }
@@ -676,20 +695,20 @@ public class HarvesterImpl implements Harvester {
     }
 
 
-    private static HttpClient buildHTTPClient() {
-        ExecutorService executor = Executors.newFixedThreadPool(NUMBER_OF_THREAD);
-        return HttpClient.newBuilder()
+    private static HttpClient buildHTTPClient(ExecutorService executor) {
+        HttpClient httpClient = HttpClient.newBuilder()
                 .executor(executor)
-                .version(HttpClient.Version.HTTP_1_1)
-                .connectTimeout(Duration.ofMinutes(1))
+                //.version(HttpClient.Version.HTTP_1_1)
+                //.connectTimeout(Duration.ofMinutes(1))
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
+        return httpClient;
     }
 
     private JSONObject getExistingDocument(String pid) {
         SolrQuery q = new SolrQuery()
-                .setQuery(String.format("%s:\"%s\"", FromKramFields.PID_FIELD, pid))
-                .setFields(ApplFields.STATE_HISTORY_FIELD)
+                .setQuery(String.format("%s:\"%s\"", AppDataFields.PID_FIELD, pid))
+                .setFields(AppComputedFields.STATE_HISTORY_FIELD)
                 .setRows(1);
         try {
             SolrDocumentList docs = this.solrClient.query(Constants.Collection.TITLES_COLLECTION, q).getResults();
@@ -699,13 +718,6 @@ public class HarvesterImpl implements Harvester {
             return null;
         }
     }
-
-//    private static void elapseAndReset(Stopwatch sw) {
-//        sw.stop();
-//        LOGGER.log(Level.INFO, "{0} ms", sw.elapsed(TimeUnit.MILLISECONDS));
-//        sw.reset().start();
-//    }
-
 
     @Override
     public void closeClients() {
@@ -722,6 +734,9 @@ public class HarvesterImpl implements Harvester {
             } catch (Exception e) {
                 LOGGER.log(Level.SEVERE, "Failed to close http client", e);
             }
+        }
+        if (this.httpClientExecutorService != null) {
+            this.httpClientExecutorService.shutdown();
         }
     }
 }
