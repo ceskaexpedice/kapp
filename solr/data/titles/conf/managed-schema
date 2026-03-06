@@ -54,6 +54,11 @@
   <fieldType name="point" class="solr.PointType" subFieldSuffix="_d" dimension="2"/>
   <fieldType name="random" class="solr.RandomSortField" indexed="true"/>
   <fieldType name="string" class="solr.StrField" omitNorms="true" sortMissingLast="true"/>
+  <fieldType name="string_big" class="solr.TextField" omitNorms="true" sortMissingLast="true">
+    <analyzer>
+      <tokenizer class="solr.KeywordTokenizerFactory"/>
+    </analyzer>
+  </fieldType>
   <fieldType name="string_lower" class="solr.TextField" omitNorms="true" positionIncrementGap="100" sortMissingLast="true">
     <analyzer>
       <tokenizer class="solr.KeywordTokenizerFactory"/>
@@ -242,7 +247,7 @@
   <field name="source" type="string" docValues="true" multiValued="false" indexed="true" stored="true"/>
   
   <field name="is_hierarchical" type="boolean" multiValued="false" indexed="false" stored="true"/>
-  <field name="biblio_mods" type="string" multiValued="true" indexed="false" stored="true" docValues="false"/>
+  <field name="biblio_mods" type="string_big" multiValued="true" indexed="false" stored="true" docValues="false"/>
   <field name="biblio_mods_md5" type="string" multiValued="true" indexed="false" stored="true"/>
   <dynamicField name="biblio_mods_dl_*" type="string" multiValued="true" indexed="false" stored="true"/>
 
