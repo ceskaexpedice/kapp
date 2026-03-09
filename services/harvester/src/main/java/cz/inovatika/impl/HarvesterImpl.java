@@ -9,13 +9,13 @@ import cz.inovatika.XmlProcessor;
 import cz.inovatika.authors.AuthorData;
 import cz.inovatika.authors.AuthorDataUtils;
 import cz.inovatika.conf.ApplicationConfig;
-import cz.inovatika.dates.DateNormalizer;
 import cz.inovatika.dates.DateRange;
 import cz.inovatika.dates.DateRangeParser;
 import cz.inovatika.identifiers.IdentifierUtils;
 import cz.inovatika.model.*;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.touchstore.TouchStore;
+import cz.inovatika.dates.normalization.utils.TitleNormalizationUtils;
 import cz.inovatika.utils.XMLUtils;
 import cz.inovatika.workflow.LicensesAssignation;
 import cz.inovatika.workflow.States;
@@ -417,8 +417,15 @@ public class HarvesterImpl implements Harvester {
 
                     wrapper.setField(AppDataFields.PID_FIELD, ctx.item().getPid());
 
-                    wrapper.addField(AppDataFields.LICENSES_FIELD, Arrays.asList(ctx.item().getLicenses()));
-                    wrapper.addField(String.format("%s%s", AppDataFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), Arrays.asList(ctx.item().getLicenses()));
+
+
+
+                    if (ctx.item().getLicenses() != null && ctx.item().getLicenses().length > 0) {
+                        wrapper.addField(AppDataFields.LICENSES_FIELD, Arrays.asList(ctx.item().getLicenses()));
+                        wrapper.addField(String.format("%s%s", AppDataFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), Arrays.asList(ctx.item().getLicenses()));
+                    }
+
+
                     wrapper.addField(AppComputedFields.DIGITAL_LIBRARY, ctx.config().getAcronym(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_ADD_DISTINCT);
 
                     List<String> cPhysicalLocations = config.getPhysicalLocations();
@@ -477,7 +484,6 @@ public class HarvesterImpl implements Harvester {
                                 Integer dateRangeEnd = (Integer) wrapper.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
                                 if (dateRangeEnd != null && dateRangeEnd > 0) {
                                     final String user = "importer";
-
                                     WorkflowDoc workflowDoc = new WorkflowDoc(
                                             dateRangeEnd,
                                             States.IMPORTED,
@@ -642,16 +648,10 @@ public class HarvesterImpl implements Harvester {
             String dateText = dateIssued.getTextContent();
             wrapper.addField(AppDataFields.DATE_ISSUED_STR, dateText);
 
-            DateRange parsedDateRange = new DateRangeParser().parse(DateNormalizer.normalize(dateText));
+            DateRange parsedDateRange = new DateRangeParser().parse(TitleNormalizationUtils.normalize(dateText));
             if (parsedDateRange != null) {
                 parsedDateRange.mapToSolrDocument(wrapper);
             }
-
-            /*
-             TODO: change it
-            dateText = XmlProcessor.replaceWordsWithQMarks(dateText, 0, dateText);
-            XmlProcessor.parseDateBasic(doc, dateText, 0, dateText);
-             */
         }
     }
 

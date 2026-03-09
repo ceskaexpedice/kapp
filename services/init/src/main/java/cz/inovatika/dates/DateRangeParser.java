@@ -10,7 +10,7 @@ public class DateRangeParser {
     public static final Logger LOGGER = Logger.getLogger(DateRangeParser.class.getName());
 
     public DateRange parse(String standardValue) {
-        String[] parts = standardValue.split("-");
+        String[] parts = standardValue.split("-", 2);
         return switch (parts.length) {
             case 1 -> parseSingleYear(parts[0]);
             case 2 -> parseYearRange(parts[0], parts[1]);

@@ -2,8 +2,13 @@ package cz.inovatika.authors;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Logger;
 
+import cz.inovatika.Constants;
 import cz.inovatika.XmlProcessor;
+import cz.inovatika.dates.DateRange;
+import cz.inovatika.dates.DateRangeParser;
+import cz.inovatika.dates.normalization.utils.AuthorNormalizationUtils;
 import cz.inovatika.utils.XMLUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.eclipse.jetty.util.StringUtil;
@@ -11,6 +16,8 @@ import org.json.JSONObject;
 import org.w3c.dom.Element;
 
 public class AuthorData {
+
+    public static final Logger LOGGER = Logger.getLogger(AuthorData.class.getName());
 
     private String full;
     private String family;
@@ -154,16 +161,32 @@ public class AuthorData {
         if (this.getNameIdentifier() != null) {
             aDoc.addField("id", this.getNameIdentifier());
         } else {
-            aDoc.addField("id", XmlProcessor.normalize(this.getFull() + this.getDate()));
+            String name = this.getFull() + (this.getDate() != null ? this.getDate() : "") ;
+            aDoc.addField("id", XmlProcessor.normalize(name));
         }
         aDoc.addField("full", this.getFull());
         aDoc.addField("family", this.getFamily());
         aDoc.addField("given", this.getGiven());
-        aDoc.addField("date", this.getDate());
         aDoc.addField("termsOfAddress", this.getTermsOfAddress());
 
         if (this.getDate() != null) {
-            XmlProcessor.parseDateBasic(aDoc, this.getDate(), -1, this.getDate());
+            String date =  this.getDate();
+            String normalized = AuthorNormalizationUtils.normalize(date);
+            DateRange parsed = (new DateRangeParser()).parse(normalized);
+            if (parsed != null) {
+                aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_DATE_STR, date);
+                if (parsed.startYear() != null) {
+                    aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_BIRTH, parsed.startYear());
+                    aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, parsed.startConfirmed());
+
+                }
+                if (parsed.endYear() != null) {
+                    aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_DEATH, parsed.endYear());
+                    aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, parsed.endConfirmed());
+                }
+            } else {
+                LOGGER.warning(String.format( "Could not parse date from  %s" , date));
+            }
         }
         return aDoc;
 

@@ -8,6 +8,22 @@ public class Constants {
         public static final String AUTHORS_COLLECTION = "authors";
     }
 
+    /** Authors fields */
+    public static final class AuthorsCollectionFields {
+        public static class AppComputedFields {
+            public static final String AUTHOR_DATE_STR = "date";
+            public static final String AUTHOR_YEAR_DEATH = "year_death";
+            public static final String AUTHOR_YEAR_BIRTH = "year_birth";
+
+            public static final String AUTHOR_DATE_DEATH = "date_death";
+            public static final String AUTHOR_DATE_BIRTH = "date_birth";
+
+            public static final String AUTHOR_CONFIRMED_YEAR_DEATH = "confirmed_end_year";
+            public static final String AUTHOR_CONFIRMED_YEAR_BIRTH = "confirmed_start_year";
+        }
+    }
+
+    /** Titles fields */
     public static class TitlesCollectionFields {
 
         public static final class KramFields {
@@ -58,6 +74,7 @@ public class Constants {
 
         }
 
+
         /** Pole generovane aplikaci */
         public static class AppComputedFields {
 
@@ -72,10 +89,8 @@ public class Constants {
             public static final String STATE_REASON_FIELD = "state_reason";
             public static final String STATE_HISTORY_FIELD = "state_history";
 
-            /*
-              <field name="date_issued_str" type="string" docValues="true" multiValued="false" indexed="true"  stored="true"/>
-              <field name="date_issued_year" type="pint" docValues="true" multiValued="false" indexed="true" stored="true"/>
-            */
+
+
 
             public static final String DATE_ISSUED = "date_issued_str";
             public static final String DATE_ISSUED_YEAR = "date_issued_year";
