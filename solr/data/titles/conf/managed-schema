@@ -313,4 +313,6 @@
   <copyField source="keywords" dest="full_text"/>
   <copyField source="pid" dest="full_text"/>
   <copyField source="id_*" dest="full_text"/>
+  <copyField source="authors_ids" dest="full_text"/>
+  <copyField source="nameIdentifier" dest="full_text"/>
 </schema>

@@ -285,6 +285,8 @@
   <dynamicField name="*_p" type="location" indexed="true" stored="true"/>
   <copyField source="full" dest="full_text"/>
   <copyField source="id_*" dest="full_text"/>
+  <copyField source="nameIdentifier" dest="full_text"/>
+  <copyField source="id" dest="full_text"/>
   <copyField source="value" dest="value_str" maxChars="256"/>
   <copyField source="labels" dest="labels_str" maxChars="256"/>
 </schema>
