@@ -2,7 +2,7 @@ package cz.inovatika;
 
 import cz.inovatika.Constants.Collection;
 import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
-import cz.inovatika.Constants.TitlesCollectionFields.KramFields;
+import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import cz.inovatika.Constants.TitlesCollectionFields.Labels;
 import cz.inovatika.authors.AuthorData;
 import cz.inovatika.authors.AuthorDataUtils;
@@ -111,7 +111,7 @@ public class TsvToSolrIndexer {
                     }
                     for (CSVRecord record : parser) {
                         SolrInputDocumentWrapper doc = new SolrInputDocumentWrapper(
-                                KramFields.PID_FIELD,
+                                AppDataFields.PID_FIELD,
                                 SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
                         doc.addField(AppComputedFields.LABELS_FIELD, Labels.EXCEL);
                         int recordNumber = (int) record.getRecordNumber() + 1; // +1 to account for header
@@ -199,11 +199,11 @@ public class TsvToSolrIndexer {
                                         JSONObject item = getItem(client, pid,
                                                 "https://ndk.cz/search/api/v5.0/item/" + pid);
                                         if (item != null) {
-                                            doc.setField(KramFields.MODEL_FIELD, item.optString("model"));
+                                            doc.setField(AppDataFields.MODEL_FIELD, item.optString("model"));
                                             model = item.optString("model");
-                                            //doc.setField(KramFields.ROOT_PID_FIELD, item.optString("root_pid"));
+                                            //doc.setField(AppDataFields.ROOT_PID_FIELD, item.optString("root_pid"));
                                             rootPid = item.optString("root_pid");
-                                            //doc.setField(KramFields.ROOT_TITLE_FIELD, item.optString("root_title"));
+                                            //doc.setField(AppDataFields.ROOT_TITLE_FIELD, item.optString("root_title"));
                                         } else {
                                             item = getItem(client, pid,
                                                     MZKLink + "search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), StandardCharsets.UTF_8));
@@ -211,11 +211,11 @@ public class TsvToSolrIndexer {
                                                 var docs = item.getJSONObject("response").getJSONArray("docs");
                                                 if (!docs.isEmpty()) {
                                                     var obj = docs.getJSONObject(0);
-                                                    doc.setField(KramFields.MODEL_FIELD, obj.optString("model"));
+                                                    doc.setField(AppDataFields.MODEL_FIELD, obj.optString("model"));
                                                     model = obj.optString("model");
-                                                    //doc.setField(KramFields.ROOT_PID_FIELD, obj.optString("root.pid"));
+                                                    //doc.setField(AppDataFields.ROOT_PID_FIELD, obj.optString("root.pid"));
                                                     rootPid = obj.optString("root.pid");
-                                                    //doc.setField(KramFields.ROOT_TITLE_FIELD, obj.optString("root.title"));
+                                                    //doc.setField(AppDataFields.ROOT_TITLE_FIELD, obj.optString("root.title"));
                                                 }
                                             }
                                         }
@@ -295,9 +295,9 @@ public class TsvToSolrIndexer {
                         if(nameIDArray!=null) {XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
 
                         Arrays.asList(nameIDArray).forEach(author -> {
-                            doc.addField(KramFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
+                            doc.addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
                             if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
-                                doc.addField(KramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+                                doc.addField(AppDataFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
                             }
                         });
 
@@ -305,8 +305,8 @@ public class TsvToSolrIndexer {
                             if (authorDoc != null)
                                 solrClient.add(Collection.AUTHORS_COLLECTION, authorDoc);
                         }}/*
-                        if (doc.getFieldValue(KramFields.PID_FIELD) == doc.getFieldValue(KramFields.ROOT_PID_FIELD)) {
-                            doc.setField(KramFields.ROOT_TITLE_FIELD, doc.getFieldValue(KramFields.TITLE_FIELD));
+                        if (doc.getFieldValue(AppDataFields.PID_FIELD) == doc.getFieldValue(AppDataFields.ROOT_PID_FIELD)) {
+                            doc.setField(AppDataFields.ROOT_TITLE_FIELD, doc.getFieldValue(AppDataFields.TITLE_FIELD));
                         }*/
                         //doc.addField("state_user", "TableParser");
                         solrClient.add(Collection.TITLES_COLLECTION, doc.getDocument());
