@@ -8,20 +8,6 @@ import org.junit.jupiter.api.Test;
 public class AuthorNormalizationUtilsTest {
 
 
-//    @Test
-//    public void testDateAuthors() throws IOException {
-//        InputStream resourceAsStream = TitleDateNormalizatoinUtilsTest.class.getResourceAsStream("author_dates.txt");
-//        List<String> dates = IOUtils.readLines(resourceAsStream, "UTF-8");
-//        List<Pair<String,String>> pairs = new ArrayList<>();
-//        dates.forEach(it-> {
-//            Pair<String,String> p =  Pair.of(it, AuthorNormalizationUtils.normalize(it));
-//            System.out.println(p);
-//            pairs.add(p);
-//        });
-//
-//        FileWriter fw = new FileWriter("aut-ouutput.txt");
-//        IOUtils.writeLines(pairs,"\n",fw);
-//    }
 
 
     @Test
@@ -149,7 +135,6 @@ public class AuthorNormalizationUtilsTest {
         var inputStep2 = new NormalizationStep(raw2, false);
         var result2 = AuthorNormalizationUtils.openRange(inputStep2);
         Assertions.assertNotNull(result2);
-        System.out.println( result2.value());
         Assertions.assertTrue(result2.isDone());
     }
 
