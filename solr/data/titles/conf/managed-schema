@@ -280,7 +280,7 @@
 
   
   <field name="authors_kramerius" type="string" docValues="true" multiValued="true" indexed="false" stored="true"/>
-  <field name="authors_kapp" type="string" docValues="true" multiValued="true" indexed="false" stored="true"/>
+  <field name="authors_kapp" type="string" docValues="true" multiValued="false" indexed="false" stored="true"/>
   <field name="authors" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="authors_ids" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="nameIdentifier" type="string" docValues="false" multiValued="true" indexed="true" stored="true"/>
