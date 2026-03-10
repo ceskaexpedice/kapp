@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import cz.inovatika.XmlProcessor;
+import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.utils.XMLUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.eclipse.jetty.util.StringUtil;
@@ -149,7 +150,9 @@ public class AuthorData {
     }
 
     public SolrInputDocument toAuthoritySolrDocument() {
-        SolrInputDocument aDoc = new SolrInputDocument();
+        SolrInputDocumentWrapper aDoc = new SolrInputDocumentWrapper(
+                "id",
+                SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
         aDoc.addField("nameIdentifier", this.getNameIdentifier());
         if (this.getNameIdentifier() != null) {
             aDoc.addField("id", this.getNameIdentifier());
@@ -165,7 +168,7 @@ public class AuthorData {
         if (this.getDate() != null) {
             XmlProcessor.parseDateBasic(aDoc, this.getDate(), -1, this.getDate());
         }
-        return aDoc;
+        return aDoc.getDocument();
 
     }
 

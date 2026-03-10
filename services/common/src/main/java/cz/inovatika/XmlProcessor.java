@@ -9,9 +9,8 @@ import java.util.stream.Collectors;
 
 import cz.inovatika.Constants.TitlesCollectionFields.ApplFields;
 import cz.inovatika.authors.AuthorData;
+import cz.inovatika.solr.SolrInputDocumentWrapper;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 //import org.w3c.dom.Element;
 import org.apache.commons.text.similarity.LevenshteinDistance;
 //import org.w3c.dom.NodeList;
@@ -124,12 +123,14 @@ public class XmlProcessor {
         return name.getElementsByTagNameNS("http://www.loc.gov/mods/v3", localName);
     }
 */
-    public static List<SolrInputDocument> extractAuthorData(final List<AuthorData> authors) {
+    public static List<SolrInputDocumentWrapper> extractAuthorData(final List<AuthorData> authors) {
         if (authors == null) {
             return null;
         }
         return authors.stream().map(author-> {
-            SolrInputDocument aDoc = new SolrInputDocument();
+            SolrInputDocumentWrapper aDoc = new SolrInputDocumentWrapper(
+                    Constants.TitlesCollectionFields.FromKramFields.PID_FIELD,
+                    SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
             aDoc.addField("nameIdentifier", author.getNameIdentifier());
             if (author.getNameIdentifier() != null) {
                 aDoc.addField("id", author.getNameIdentifier());
@@ -160,7 +161,7 @@ public class XmlProcessor {
         return result;
     }
 
-    public static void parseDateBasic(SolrInputDocument doc, String value, int recordNumber, String Originalvalue) {
+    public static void parseDateBasic(SolrInputDocumentWrapper doc, String value, int recordNumber, String Originalvalue) {
         value = value.replaceAll("ca\\.?\\s*", "?");//replace ca with ?
         value = value.replaceAll("asi\\s*", "?").trim();
         String[] parts = value.split("-");
@@ -283,25 +284,25 @@ public class XmlProcessor {
         }
     }
 
-    private static void dateFormatError(SolrInputDocument doc,int recordNumber, String Originalvalue, String value) {
+    private static void dateFormatError(SolrInputDocumentWrapper doc,int recordNumber, String Originalvalue, String value) {
         dateFormatError(doc,recordNumber,Originalvalue,value,"Unexpected date format");}
 
-    private static void dateFormatError(SolrInputDocument doc,int recordNumber, String Originalvalue, String value, String message) {
+    private static void dateFormatError(SolrInputDocumentWrapper doc,int recordNumber, String Originalvalue, String value, String message) {
         String recNum = (recordNumber > 0) ? (" on row: " + recordNumber) : "";
 
         System.err.println(message + recNum + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
         doc.addField(ApplFields.LABELS_FIELD, "failedToParseData");
     }
 
-    static void addyear(String year, SolrInputDocument doc, boolean confirmed) {
+    static void addyear(String year, SolrInputDocumentWrapper doc, boolean confirmed) {
         add_year_range(year, confirmed, year, confirmed, doc);
     }
 
-    static void add_year_since(String year, SolrInputDocument doc, boolean confirmed) {
+    static void add_year_since(String year, SolrInputDocumentWrapper doc, boolean confirmed) {
         add_year_range(year, confirmed, "1999", false, doc);
     }
 
-    public static void add_year_range(String year_start, boolean confirmed_start, String year_end, boolean confirmed_end, SolrInputDocument doc) {
+    public static void add_year_range(String year_start, boolean confirmed_start, String year_end, boolean confirmed_end, SolrInputDocumentWrapper doc) {
 
         try {
             int yearStart = Integer.parseInt(year_start);
@@ -324,14 +325,14 @@ public class XmlProcessor {
         }
     }
 
-    public static void trySetLastAuthor(SolrInputDocument doc, List<AuthorData> nameIDArray) {
-        SolrInputField field = doc.getField("last_author");
-        String last_author = field != null ? (String) field.getValue() : null;
+    public static void trySetLastAuthor(SolrInputDocumentWrapper doc, List<AuthorData> nameIDArray) {
+        Object field = doc.getFieldValue("last_author");
+        String last_author = field != null ? field.toString() : null;
 
         try {
             if (last_author != null && (nameIDArray != null)) {
                 for (AuthorData autor : nameIDArray) {
-                    if (similartyMatch(normalize(last_author), normalize(autor.getFull()), .5)) {
+                    if (similarityMatch(normalize(last_author), normalize(autor.getFull()), .5)) {
                         autor.setLast( true);
                         doc.setField("last_author_nameIdentifier", autor.getNameIdentifier());
                     }
@@ -342,7 +343,7 @@ public class XmlProcessor {
         }
     }
 
-    private static boolean similartyMatch(String catalogNormalizedTitle, String distriNormalizedTitle, double shoda) {
+    private static boolean similarityMatch(String catalogNormalizedTitle, String distriNormalizedTitle, double shoda) {
         LevenshteinDistance dist = LevenshteinDistance.getDefaultInstance();
         Integer calculatedDistance = dist.apply(catalogNormalizedTitle, distriNormalizedTitle);
         double maxDistance = Math.round((1 - shoda) * ((double) distriNormalizedTitle.length()));
@@ -350,7 +351,7 @@ public class XmlProcessor {
         return maxDistance >= calculatedDistance;
     }
 
-    public static String replaceWordsWithQMarks(SolrInputDocument doc,String value,int recordNumber, String Originalvalue) {
+    public static String replaceWordsWithQMarks(SolrInputDocumentWrapper doc, String value, int recordNumber, String Originalvalue) {
         if (value.contains("asi")) {
             String year = value.replaceAll("[^0-9]", "");
             if (year.length() == 4) {

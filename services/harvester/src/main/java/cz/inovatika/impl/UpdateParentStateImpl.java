@@ -2,7 +2,6 @@ package cz.inovatika.impl;
 
 import cz.inovatika.Constants;
 import cz.inovatika.UpdateParentState;
-import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.workflow.States;
 import org.apache.solr.client.solrj.SolrClient;
@@ -93,7 +92,6 @@ public class UpdateParentStateImpl implements UpdateParentState {
             States parentState = childStates.isEmpty() || childStates.contains(States.TO_CONTROL.name()) ?  States.PARENT_OPEN : States.PARENT_CLOSED;
             SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
                     Constants.TitlesCollectionFields.FromKramFields.PID_FIELD,
-                    new SolrInputDocument(),
                     SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
             wrapper.addField(Constants.TitlesCollectionFields.FromKramFields.PID_FIELD, rootPid);

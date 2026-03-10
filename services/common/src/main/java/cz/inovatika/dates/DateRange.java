@@ -17,6 +17,7 @@ public record DateRange(
 
     public static final Logger LOGGER = Logger.getLogger(DateRange.class.getName());
 
+    /// Does only check suspicious year ranges
     public void mapToSolrDocument(SolrInputDocumentWrapper docWrapper) throws NumberFormatException {
 
         int yearStart = Integer.parseInt(this.startYear());
@@ -25,14 +26,15 @@ public record DateRange(
         if (yearStart > yearEnd || yearEnd > Year.now().getValue()) {
             LOGGER.log(Level.SEVERE, "Suspicious year range: {0}-{1}", new Object[]{this.startYear(), this.endYear()});
         }
-
+        docWrapper.setField(ApplFields.DATE_ISSUED_YEAR, yearEnd);
+/*
         docWrapper.setField(ApplFields.DATE_RANGE_START_YEAR, yearStart);
-        docWrapper.setField(ApplFields.DATE_RANGE_END_YEAR, yearEnd);
 
         docWrapper.setField(ApplFields.DATE_MIN, String.format("%04d-01-01T00:00:00Z", yearStart));
         docWrapper.setField(ApplFields.DATE_MAX, String.format("%04d-12-31T00:00:00Z", yearEnd));
 
         docWrapper.setField(ApplFields.CONFIRMED_START_YEAR, this.startConfirmed());
         docWrapper.setField(ApplFields.CONFIRMED_END_YEAR, this.endConfirmed());
+        */
     }
 }

@@ -35,10 +35,9 @@ test {
 }
 
 dependencies {
-    api project(':services:init')
     api project(':services:common')
 
-    api 'org.apache.commons:commons-lang3:3.12.0'
+    api 'org.apache.commons:commons-lang3:3.18.0'
 
     api 'com.google.code.gson:gson:2.10.1'
     api 'commons-io:commons-io:2.16.1'
