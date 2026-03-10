@@ -181,6 +181,9 @@ public class TitleNormalizationUtils {
         while (matcher.find()) {
             applied = true;
             String raw = matcher.group(1);
+            if (sb.length() > 0) {
+                sb.append(" ");
+            }
             sb.append(raw);
         }
         return applied ? new NormalizationStep(sb.toString(), !sb.toString().endsWith("-")) : step;

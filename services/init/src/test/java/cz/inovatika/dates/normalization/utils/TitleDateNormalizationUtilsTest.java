@@ -49,6 +49,13 @@ public class TitleDateNormalizationUtilsTest {
         Assertions.assertNotNull(result3);
         Assertions.assertTrue(result3.isDone());
         Assertions.assertEquals( "2010-2012",result3.value());
+
+        String  raw4= "c2004, c1995";
+        var inputStep4 = new NormalizationStep(raw4, false);
+        var result4 = TitleNormalizationUtils.copyRightYears(inputStep4);
+        Assertions.assertNotNull(result4);
+        Assertions.assertTrue(result4.isDone());
+        Assertions.assertEquals( "2004 1995",result4.value());
     }
 
     @Test
@@ -248,6 +255,16 @@ public class TitleDateNormalizationUtilsTest {
         Assertions.assertNotNull(result2);
         Assertions.assertTrue(result2.isDone());
         Assertions.assertEquals( "1900-1999",result2.value());
+
+        String raw3 = "[186-?]-";
+        var inputStep3 = new NormalizationStep(raw3, false);
+        var result3 = TitleNormalizationUtils.modifyOpenRanges(inputStep3);
+        Assertions.assertNotNull(result3);
+        Assertions.assertTrue(result3.isDone());
+        System.out.println(result3.value());
+        //Assertions.assertEquals( "1900-1999",result3.value());
+
+        //[186-?]
     }
 
     @Test
@@ -283,4 +300,5 @@ public class TitleDateNormalizationUtilsTest {
         Assertions.assertTrue(result2.isDone());
         Assertions.assertEquals( "1988",result2.value());
     }
+
 }

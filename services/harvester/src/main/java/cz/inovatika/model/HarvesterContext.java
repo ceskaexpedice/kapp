@@ -27,5 +27,8 @@ public record HarvesterContext(
         TouchStore touchStore,
         HttpClient client,
         SolrClient solrClient,
-        Instance config
+        Instance config,
+        long harvestStartTimestamp,
+        int numItems,
+        int processedSoFar
 ){}
