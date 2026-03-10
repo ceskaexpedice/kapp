@@ -39,7 +39,7 @@ public class TitleDateNormalizationUtilsTest {
         var inputStep2 = new NormalizationStep(raw2, false);
         var result2 = TitleNormalizationUtils.copyRightYears(inputStep2);
         Assertions.assertNotNull(result2);
-        Assertions.assertTrue(result2.isDone());
+        Assertions.assertFalse(result2.isDone());
         // should not be final ??
         Assertions.assertEquals( "2013-",result2.value());
 
@@ -258,6 +258,13 @@ public class TitleDateNormalizationUtilsTest {
         Assertions.assertNotNull(result1);
         Assertions.assertTrue(result1.isDone());
         Assertions.assertEquals( "1499",result1.value());
+
+        String raw2 = "28.11.2025";
+        var inputStep2 = new NormalizationStep(raw2, false);
+        var result2 = TitleNormalizationUtils.extractYearFromFullDate(inputStep2);
+        Assertions.assertNotNull(result2);
+        Assertions.assertTrue(result2.isDone());
+        Assertions.assertEquals( "2025",result2.value());
     }
 
     @Test
