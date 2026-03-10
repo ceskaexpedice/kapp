@@ -41,6 +41,7 @@ import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dia
 import { SimpleDialogData } from '../../components/simple-dialog/simple-dialog';
 import { Contract } from '../../shared/contract';
 import { TranslateService } from '@ngx-translate/core';
+import { AuthorTitle } from '../../shared/author';
 
 @Component({
   selector: 'app-results',
@@ -61,7 +62,7 @@ export class Results {
   loading = signal(false);
   solrResponse: any;
   docs = signal<any[]>([]);
-  numTitles: {[pid: string]: number} = {};
+  numTitles: { [pid: string]: number } = {};
   contracts = signal<any[]>([]);
   hasFacets = signal<boolean>(false);
   view = signal<string>('titles');
@@ -109,7 +110,6 @@ export class Results {
       this.view.set(this.router.isActive('authors', { paths: 'exact', queryParams: 'ignored', fragment: 'ignored', matrixParams: 'ignored' }) ? 'authors' : 'titles');
       this.getData();
     });
-    console.log(this.view())
     this.getContracts();
   }
 
@@ -154,20 +154,16 @@ export class Results {
   getContracts() {
     this.contracts.set([]);
     const p: any = {};
-    p.rows = this.rows;
-    p.offset = this.pageIndex * p.rows;
-    if (this.state.q) {
-      p.q = this.state.q;
-    }
+    p.rows = 1000;
     p.sort = 'filename asc';
 
     this.service.searchContracts(p as HttpParams).subscribe((resp: any) => {
-      this.contracts.set(this.solrResponse.response.docs);
+      this.contracts.set(resp.response.docs);
     });
   }
 
   getData(csv: boolean = false) {
-    
+
     this.loading.set(true);
     const p: any = {};
     p.rows = this.rows;
@@ -198,10 +194,27 @@ export class Results {
       this.solrResponse = resp;
       this.numFound = this.solrResponse.response.numFound;
       this.docs.set(this.solrResponse.response.docs);
-      // if (this.view() === 'authors') {
-      //   this.searchTitlesByAuthors();
-      // }
+
     });
+  }
+
+  mergedAuthors(d: any) {
+    let mergedAuthors: AuthorTitle[] = [];
+    if (d['authors_kapp']) {
+      mergedAuthors = [...d['authors_kapp']];
+    }
+    if (d['authors_kramerius']) {
+      d['authors_kramerius'].forEach((ak: AuthorTitle) => {
+        if (!mergedAuthors.find((ma: any) => ak.id === ma.old_id) &&
+          !mergedAuthors.find((ma: any) => ak.id === ma.id) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier === ma.nameIdentifier) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier === ma.old_id)) {
+          mergedAuthors.push(ak);
+        }
+
+      });
+    }
+    return mergedAuthors;
   }
 
   // searchTitlesByAuthors() {
@@ -263,7 +276,7 @@ export class Results {
   // -- pedro
   addAuthor(doc: any) {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: { pid: doc.pid, author: null },
+      data: { pid: doc.pid, authors_kapp: null },
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -380,6 +393,10 @@ export class Results {
     }
     console.log(el, this.state.titleColumns())
     localStorage.setItem('titleColumns', JSON.stringify(this.state.titleColumns()));
+  }
+
+  authorChanged() {
+    this.getData();
   }
 
 }

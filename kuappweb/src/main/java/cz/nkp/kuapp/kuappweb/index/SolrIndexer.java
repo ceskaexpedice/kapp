@@ -224,15 +224,18 @@ public class SolrIndexer {
   * 
   * 
              */
+            
+                    
             SolrInputDocument adoc = new SolrInputDocument();
             adoc.setField("id", js.getString("id"));
+            adoc.setField("old_id", js.optString("old_id"));
             adoc.setField("nameIdentifier", js.optString("nameIdentifier"));
             adoc.setField("full", js.optString("full"));
             adoc.setField("family", js.optString("family"));
             adoc.setField("given", js.optString("given"));
             adoc.setField("labels", js.optJSONArray("labels"));
             adoc.setField("termsOfAddress", js.optString("termsOfAddress"));
-            adoc.setField("date", js.optString("termsOfAddress"));
+            adoc.setField("date", js.optString("date"));
             adoc.setField("date_birth", js.optString("date_birth"));
             adoc.setField("date_death", js.optString("date_death"));
             adoc.setField("year_birth", js.optInt("year_birth"));
@@ -242,11 +245,11 @@ public class SolrIndexer {
             solr.add("authors", adoc);
             
             
-            
             // save all titles
-            saveAuthorsInAllTitles(solr, js.getString("old_id"), js);
+            String old_id = js.optString("old_id", null);
+            saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id"):old_id , js);
             
-            if (!js.optString("old_id").equals(js.getString("id"))) {
+            if (old_id != null && !js.optString("old_id").equals(js.getString("id"))) {
                 solr.deleteById("authors", js.optString("old_id"));
             }
             solr.commit("authors");
@@ -261,32 +264,51 @@ public class SolrIndexer {
     }
     
     private static void saveAuthorsInAllTitles(SolrClient solr, String id, JSONObject js) throws SolrServerException, IOException {
-
             String q = "*";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withFilter("authors_ids:(\"" + id + "\")")
-                    .returnFields("pid,authors_ids,nameIdentifier,authors_kapp:[json]")
+                    .returnFields("pid,authors_ids,nameIdentifier,authors_kapp:[json],authors_kramerius:[json]")
+                    //.returnFields("pid,authors_ids,nameIdentifier,authors_kramerius:[json]")
                     .setLimit(1000);
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
                 
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            JSONArray docs = (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response")).getJSONArray("docs"); 
+            String r = IOUtils.toString(is, "UTF-8");
+            JSONArray docs = (new JSONObject(r).getJSONObject("response")).getJSONArray("docs"); 
             
             for (int i = 0; i < docs.length(); i++) {
                 JSONObject doc = docs.getJSONObject(i);
-                saveAuthorInTitle(solr, doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()));
+                saveAuthorInTitle(solr, doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray()));
+                //saveAuthorInTitle(solr, doc.getString("pid"), js, new JSONArray());
             }
             
     }
     
-    private static void saveAuthorInTitle(SolrClient solr, String pid, JSONObject new_author, JSONArray authors_kapp) throws SolrServerException, IOException {
+    private static void saveAuthorInTitle(SolrClient solr, String pid, JSONObject new_author, JSONArray authors_kapp, JSONArray authors_kramerius) throws SolrServerException, IOException {
 
             SolrInputDocument tdoc = new SolrInputDocument();
             tdoc.setField("pid",  pid);
             String id = new_author.getString("id");
+            String old_id = new_author.optString("old_id");
+            JSONObject new_author_title = new JSONObject(new_author.toString());
+                    
             int idx = -1;
+            // addAtomicField(tdoc, "set", null, "authors_kapp");
+            
+            // Find author in kramerius to keep role and isLast
+            for (int i = 0; i < authors_kramerius.length(); i++) {
+                JSONObject doc = authors_kramerius.getJSONObject(i);
+                if (id.equals(doc.optString("id")) || 
+                        id.equals(doc.optString("nameIdentifier")) || 
+                        old_id.equals(doc.optString("nameIdentifier")) ) {
+                    new_author_title.put("role", doc.optJSONArray("role"));
+                    new_author_title.put("isLast", doc.optBoolean("isLast"));
+                    break;
+                }
+            }
+            
             for (int i = 0; i < authors_kapp.length(); i++) {
                 JSONObject doc = authors_kapp.getJSONObject(i);
                 if (id.equals(doc.getString("id"))) {
@@ -296,18 +318,44 @@ public class SolrIndexer {
             }
             
             if (idx > -1) {
-                authors_kapp.put(idx, new_author);
+                authors_kapp.put(idx, new_author_title);
             } else {
-                authors_kapp.put(new_author);
+                authors_kapp.put(new_author_title);
             }
             
             addAtomicField(tdoc, "set", authors_kapp.toString(), "authors_kapp");
             addAtomicField(tdoc, "add-distinct", id, "authors_ids");
             addAtomicField(tdoc, "add-distinct", new_author.getString("nameIdentifier"), "nameIdentifier");
+            JSONArray labels = new_author.optJSONArray("labels", new JSONArray());
+            for (int i = 0; i < labels.length(); i++) {
+                addAtomicField(tdoc, "add-distinct", labels.getString(i), "labels");
+            }
+            
 
             solr.add("titles", tdoc);
             solr.commit("titles");
             
+
+    }
+    
+    public static JSONObject saveAuthorsInTitle(JSONObject js) throws SolrServerException, IOException {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField("pid", js.getString("pid"));
+            
+            addAtomicField(doc, "set", js.getJSONArray("authors").toString(), "authors_kapp");
+
+            solr.add("titles", doc);
+            solr.commit("titles");
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
 
     }
 

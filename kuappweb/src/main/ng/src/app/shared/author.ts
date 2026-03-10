@@ -43,7 +43,7 @@ export interface Author {
 
 export interface AuthorTitle extends Author {
   role?: string[];
-  isLast?: boolean
+  isLast?: boolean;
 }
 
 

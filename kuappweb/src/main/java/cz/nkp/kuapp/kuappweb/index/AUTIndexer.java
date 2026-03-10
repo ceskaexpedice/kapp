@@ -8,6 +8,7 @@ import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -66,7 +67,7 @@ public class AUTIndexer {
 
             SolrDocumentList docs = solr.query("aut", query).getResults();
             if (docs.getNumFound() > 0) {
-                return docs.get(0).getFirstValue("datestamp").toString();
+                return ((Date)docs.get(0).getFirstValue("datestamp")).toInstant().toString();
             } else {
                 return null;
             }

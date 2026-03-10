@@ -8,7 +8,7 @@ import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
 import { MatIconModule } from '@angular/material/icon';
-import { Author } from '../../shared/author';
+import { Author, AuthorTitle } from '../../shared/author';
 import { AuthorDialog } from '../author-dialog/author-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
@@ -46,6 +46,8 @@ export class ResultItem {
   editingDate = signal(false);
   decisionDate: number;
 
+  mergedAuthors: AuthorTitle[] = [];
+
   constructor(
     private dialog: MatDialog,
     public state: AppState,
@@ -62,6 +64,21 @@ export class ResultItem {
           const l = this.state.labels().find(la => la.name === name);
           if (l) {
             this.labels.push({ name: name, color: l.color, text_color: l.text_color });
+          }
+
+        });
+      }
+
+      if (this.doc()['authors_kapp']) {
+        this.mergedAuthors = [...this.doc()['authors_kapp']];
+      }
+      if (this.doc()['authors_kramerius']) {
+        this.doc()['authors_kramerius'].forEach((ak: AuthorTitle) => {
+          if (!this.mergedAuthors.find((ma: any) =>  ak.id === ma.old_id ) &&
+              !this.mergedAuthors.find((ma: any) =>  ak.id === ma.id ) &&
+              !this.mergedAuthors.find((ma: any) =>  ak.nameIdentifier === ma.nameIdentifier ) &&
+              !this.mergedAuthors.find((ma: any) =>  ak.nameIdentifier === ma.old_id )) {
+            this.mergedAuthors.push(ak);
           }
 
         });
@@ -103,7 +120,7 @@ export class ResultItem {
 
   infoAuthor(a: Author) {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: {pid:this.doc().pid, author:a},
+      data: {pid:this.doc().pid, authors_kapp:this.doc().authors_kapp,  author: a},
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -120,7 +137,7 @@ export class ResultItem {
 
   addAuthor() {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: {pid:this.doc().pid, author:null},
+      data: {pid:this.doc().pid, authors_kapp:this.doc().authors_kapp, author:null},
     });
 
     dialogRef.afterClosed().subscribe(result => {

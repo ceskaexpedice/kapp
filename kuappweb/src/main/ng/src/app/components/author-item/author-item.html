@@ -1,6 +1,6 @@
 
 <mat-card appearance="outlined">
-	@if(loadingLinks()){
+	@if(loading()){
 <mat-progress-bar mode="indeterminate"></mat-progress-bar>
 }
 @if(author) {
@@ -15,8 +15,8 @@
 				}
 				<mat-chip-set>
 					@for(l of labels; track $index) {
-					<mat-chip [style.background-color]="l.color" [style.color]="l.text_color "
-						(removed)="removeLabel(l)"><!--style="--mat-chip-label-text-color: {{l.text_color}};"-->
+					<mat-chip [style.background-color]="l.color" style="--mat-chip-label-text-color: {{l.text_color}};"
+						(removed)="removeLabel(l)">
 						{{ l.name }}
 						<button matChipRemove [attr.aria-label]="'remove ' + l.name">
 							<mat-icon>cancel</mat-icon>
@@ -106,7 +106,7 @@
 				<span>{{ a['controlfield_001'] }}</span>
 				<mat-icon>open_in_new</mat-icon>
 			</a>)
-			<button mat-icon-button (click)="setFromAut(a)" [title]="'fill from aut' | translate" ><mat-icon>done</mat-icon></button>
+			<button mat-icon-button (click)="setFromAut(a)" [title]="a.existing_author ? 'merge_author' : 'choose_author' | translate" ><mat-icon>{{ a.existing_author ? 'merge' : 'done' }}</mat-icon></button>
 		</div>
 		}
 		

@@ -15,7 +15,7 @@
 							<mat-label>Color</mat-label>
 							<input matInput [(ngModel)]="l.color" [disabled]="l.name === 'test'" />
 						</mat-form-field>
-						<mat-chip class="app-fxFlex" [style.background-color]="l.color" [style.color]="l.text_color" (removed)="removeLabel()" [matTooltip]="'remove_this_record' | translate">
+						<mat-chip class="app-fxFlex" [style.background-color]="l.color" style="--mat-chip-label-text-color: {{l.text_color}};" (removed)="removeLabel()" [matTooltip]="'remove_this_record' | translate">
 							{{ l.name }}
 							@if(l.name !== 'test') {
 								<button matChipRemove [attr.aria-label]="'remove ' + l.name">

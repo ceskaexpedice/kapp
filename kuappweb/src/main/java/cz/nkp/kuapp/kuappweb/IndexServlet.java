@@ -115,6 +115,19 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     AUTIndexer fh = new AUTIndexer();
+                    json = fh.update();
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        AUT_FULL {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    AUTIndexer fh = new AUTIndexer();
                     json = fh.full();
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -374,6 +387,19 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
+        SAVE_AUTHORS_IN_TITLE {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.saveAuthorsInTitle(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         SAVE_DECISION_DATE {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -599,6 +625,18 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     json = IndexSearcher.getAuthorById(req.getParameter("id"));
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        GET_AUT_BY_ID {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = IndexSearcher.getAutById(req.getParameter("id"));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

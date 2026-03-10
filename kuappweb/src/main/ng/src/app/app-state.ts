@@ -30,7 +30,7 @@ import { Batch } from "./shared/batch";
 
     decodeState(s: string) {
         if (s) {
-            const obj = JSON.parse(atob(decodeURIComponent(s)));
+            const obj = JSON.parse(decodeURIComponent(atob(s)));
             this.q = obj.q;
             this.usedFacets.set(obj.f);
         } else {

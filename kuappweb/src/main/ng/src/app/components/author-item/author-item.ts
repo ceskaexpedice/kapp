@@ -1,4 +1,4 @@
-import { Component, effect, input, signal } from '@angular/core';
+import { Component, effect, input, output, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatChipsModule } from '@angular/material/chips';
@@ -16,6 +16,7 @@ import { Author } from '../../shared/author';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { FormsModule } from '@angular/forms';
+import { UIService } from '../../ui.service';
 
 @Component({
   selector: 'app-author-item',
@@ -33,7 +34,7 @@ export class AuthorItem {
   author: Author = null;
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
-  loadingLinks = signal<boolean>(false);
+  // loadingLinks = signal<boolean>(false);
   loading = signal(false);
   editing = signal<boolean>(false);
 
@@ -43,8 +44,11 @@ export class AuthorItem {
 
   aut = signal<any[]>([]);
 
+  authorChanged = output<boolean>();
+
   constructor(
     public router: Router,
+    private ui: UIService,
     public state: AppState,
     private service: AppService,
     private config: AppConfiguration
@@ -60,9 +64,7 @@ export class AuthorItem {
           const l = this.state.labels().find(la => la.name === name);
           if (l) {
             this.labels.push({ name: name, color: l.color, text_color: l.text_color });
-          } else {
-            this.labels.push({ name: name, color: '#920707', text_color: '#000' });
-          }
+          } 
 
         });
       }
@@ -79,9 +81,9 @@ export class AuthorItem {
   getLinks() {
     const p: any = {};
         p.id = this.author.nameIdentifier;
-        this.loadingLinks.set(true);
+        this.loading.set(true);
         this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
-          this.loadingLinks.set(false);
+          this.loading.set(false);
           if (resp.links) {
             this.links.set(resp.links);
             this.linkTypes.set(Object.keys(resp.links));
@@ -112,13 +114,13 @@ export class AuthorItem {
   }
 
   checkAutor() {
-    this.loadingLinks.set(true);
+    this.loading.set(true);
     const p: any = {};
     p.rows = 10;
     p.author = this.author['full'];
     this.service.checkAuthor(p as HttpParams).subscribe((resp: any) => {
       this.aut.set(resp.response.docs);
-      this.loadingLinks.set(false);
+      this.loading.set(false);
     });
   }
 
@@ -126,7 +128,7 @@ export class AuthorItem {
 
     const dates = a['datafield_100d'] ? a['datafield_100d'].split('-') : [];
     const auth: Author = {
-      old_id: this.author.id,
+      old_id: this.author.old_id ? this.author.old_id : this.author.id,
       id: a['controlfield_001'],
       nameIdentifier: a['controlfield_001'],
       full: a['datafield_100a'],
@@ -137,8 +139,8 @@ export class AuthorItem {
       date_death: dates.length > 1 ? dates[1] : null,
       year_birth: dates[0] ? parseInt(dates[0]) : null,
       year_death: dates.length > 1 ? parseInt(dates[1]) : null,
-      // labels: [...this.author.labels, 'kapp_modified']
-      labels: ['kapp_modified']
+      // labels: [...this.author.labels, 'author_modified']
+      labels: [...this.labels.map(l => l.name).filter(l => l !== 'author_modified'), 'author_modified']
 
     }
     this.author = auth;
@@ -147,8 +149,15 @@ export class AuthorItem {
 
   save() {
 
+    this.loading.set(true);
+    this.author.labels = [...this.labels.map(l => l.name).filter(l => l !== 'author_modified'), 'author_modified'];
     this.service.saveAuthor(this.author).subscribe((res: any) => {
-      console.log(res)
+    this.loading.set(false);
+      if (res.error) {
+        this.ui.showErrorSnackBar(res.error)
+      } else {
+        this.authorChanged.emit(true);
+      }
     })
   }
 

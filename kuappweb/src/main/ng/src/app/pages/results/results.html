@@ -104,13 +104,8 @@
             <ng-container matColumnDef="authors">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'authors')" [style.width]="columnSizes['authors'] + 'px'"><span mat-sort-header>{{ 'field.authors' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">
-                @for(a of doc.authors_kramerius; track $index) {
-                  <span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><!-- <mat-icon>info</mat-icon> -->
-                  @for(l of a.links; track $index) {
-                    <a target="_blank" [href]="l.url" class="app-value">
-                      <span>{{ l }}</span><!-- <mat-icon>open_in_new</mat-icon> -->
-                    </a>
-                  }
+                @for(a of mergedAuthors(doc); track $index) {
+                  <span>{{ a.full }} {{ a.date }} ({{ a.role }}) </span><!-- <mat-icon>info</mat-icon> -->
                 }  
               </td>
             </ng-container>
@@ -171,11 +166,11 @@
                   @for(a of contracts(); track $index) {
                     <button mat-menu-item (click)="addToContract(a, doc)" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
                       @if (inContract(a.filename, doc)) { <mat-icon>check_box</mat-icon> }
-                      {{ a.filename }}
+                      {{ a.title }}
                     </button>
                   }
                 </mat-menu>
-                  <button matIconButton aria-label="expand row" (click)="toggle(doc); $event.stopPropagation()" class="app-btn-toggle" [class.app-btn-toggle-expanded]="isExpanded(doc)" [matTooltip]="'test' | translate">
+                  <button matIconButton aria-label="expand row" (click)="toggle(doc); $event.stopPropagation()" class="app-btn-toggle" [class.app-btn-toggle-expanded]="isExpanded(doc)" >
                     <mat-icon>keyboard_arrow_down</mat-icon>
                   </button>
                 </div>
@@ -208,7 +203,7 @@
             }
           } @else {
             @for(doc of docs(); track $index){
-              <app-author-item [inputAuthor]="doc" ></app-author-item>
+              <app-author-item [inputAuthor]="doc" (authorChanged)="authorChanged()" ></app-author-item>
             }
           }
         }

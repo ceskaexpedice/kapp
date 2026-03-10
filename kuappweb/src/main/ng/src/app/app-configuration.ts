@@ -115,8 +115,16 @@ import { Label } from './shared/label';
                     } 
                     this.state.contractTitleColumns.update(a => [...ctc1]);
 
+                    const labels: Label[] = [];
+                    const labelsJson: Label[] = [...this.config.labels];
                     const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels')?.value;
                     if (labelsC) {
+                        const names = labelsC.map(l => l.name);
+                        labelsJson.forEach(l => {
+                            if (!names.includes(l.name)) {
+                                labels.push(l);
+                            }
+                        });
                         labelsC.forEach(l => {
                             const r = parseInt(l.color.substring(1,3), 16);
                             const g = parseInt(l.color.substring(3,5), 16);
@@ -124,8 +132,11 @@ import { Label } from './shared/label';
                             // const c = parseInt(l.color.substring(1), 16);
                             const c = r+g+b;
                             l.text_color = c > 256 ? '#000' : '#fff';
+                            labels.push(l);
                         });
-                        this.state.labels.set(labelsC);
+                        this.state.labels.set([...labels]);
+                    } else {
+                        this.state.labels.set([...this.config.labels]);
                     }
                     
                     const licenses: string[] = resp.config.find((a: any) => a.id === 'licenses')?.value;

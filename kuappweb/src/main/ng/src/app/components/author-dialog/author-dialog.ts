@@ -28,7 +28,7 @@ export class AuthorDialog {
   readonly service = inject(AppService);
   readonly ui = inject(UIService);
   readonly dialogRef = inject(MatDialogRef<AuthorDialog>);
-  readonly data = inject<{pid: string, author: AuthorTitle}>(MAT_DIALOG_DATA);
+  readonly data = inject<{pid: string, authors_kapp: AuthorTitle[], author: AuthorTitle}>(MAT_DIALOG_DATA);
 
 
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
@@ -77,7 +77,7 @@ export class AuthorDialog {
       const p: any = {};
       p.rows = 10;
       p.id = id
-      this.service.getAuthorById(p as HttpParams).subscribe((resp: any) => {
+      this.service.getAutById(p as HttpParams).subscribe((resp: any) => {
         const a = resp.response.docs[0];
         if (!a) {
           alert('Id not found')
@@ -113,8 +113,16 @@ export class AuthorDialog {
   }
 
   save(): void {
-        console.log(this.author());
-      this.service.saveAuthor(this.author()).subscribe((res: any) => {
+      console.log(this.author());
+      const authors = [...this.data.authors_kapp];
+      const ka = authors.find(a => a.id === this.author().id);
+      if (ka) {
+        ka.role = this.author().role
+      } else {
+        authors.push(this.author())
+      }
+
+      this.service.saveAuthorsInTitle(authors, this.data.pid).subscribe((res: any) => {
         if (res.error) {
           this.ui.showErrorSnackBar('snackbar.record_saved.error');
         } else {

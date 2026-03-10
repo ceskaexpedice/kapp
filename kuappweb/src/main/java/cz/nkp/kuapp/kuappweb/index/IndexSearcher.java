@@ -19,6 +19,7 @@ import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
 import org.apache.solr.client.solrj.request.json.TermsFacetMap;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.util.NamedList;
+import org.json.JSONArray;
 import org.json.JSONObject;
 
 /**
@@ -457,6 +458,7 @@ public class IndexSearcher {
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(request.getParameter("author"))
+                    //.withParam("fq", "{!join fromIndex=authors from=nameIdentifier to=controlfield_001}full_text:\""+request.getParameter("author")+"\"") 
                     .withParam("df", "full_text")
                     .setLimit(rows);
 
@@ -464,6 +466,16 @@ public class IndexSearcher {
             NamedList<Object> resp = solr.request(jrequest, "aut");
             InputStream is = (InputStream) resp.get("stream");
             ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
+            // Find existing authors in aothors by nameIdentifier. Add field to response
+            JSONArray docs = ret.getJSONObject("response").getJSONArray("docs");
+            for (int i = 0; i < docs.length(); i++) {
+                JSONObject doc = docs.getJSONObject(i);
+                JSONObject a = getAuthorById(doc.getString("controlfield_001"));
+                if (a.getJSONObject("response").getInt("numFound") > 0) {
+                    doc.put("existing_author", a.getJSONObject("response").getJSONArray("docs").getJSONObject(0));
+                }
+            }
+            
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -473,6 +485,28 @@ public class IndexSearcher {
     }
 
     public static JSONObject getAuthorById(String id) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            JsonQueryRequest jrequest = new JsonQueryRequest()
+                    .setQuery("*")
+                    .withFilter("id:"+id)
+                    .returnFields("nameIdentifier")
+                    .setLimit(1);
+
+            jrequest.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> resp = solr.request(jrequest, "authors");
+            InputStream is = (InputStream) resp.get("stream");
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+    
+    public static JSONObject getAutById(String id) {
 
         // https://nklink.toolforge.org/link.php?autid=kup19980000039661&format=json
         JSONObject ret = new JSONObject();

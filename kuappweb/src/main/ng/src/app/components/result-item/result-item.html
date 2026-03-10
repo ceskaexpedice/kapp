@@ -30,8 +30,22 @@
 		<div class="app-metadata-row app-multiple">
 			<span class="app-label">{{ 'field.authors' | translate }}:</span>
 			<ul>
-				@if (doc()['authors_kapp']) {
-					@for(a of doc()['authors_kapp'][0]; track $index) {
+
+				@for(a of mergedAuthors; track $index) {
+						<li>
+							<a (click)="infoAuthor(a)" class="app-value">
+								<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
+							</a>
+							<!-- @for(l of a.links; track $index) {
+								<a target="_blank" [href]="l.url" class="app-value">
+									<span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
+								</a>
+							} -->
+						</li>
+					}
+
+				<!-- @if (doc()['authors_kapp']) {
+					@for(a of doc()['authors_kapp']; track $index) {
 						<li>
 							<a (click)="infoAuthor(a)" class="app-value">
 								<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
@@ -57,7 +71,7 @@
 							}
 						</li>
 					}
-				}
+				} -->
 			</ul>
 			
 		</div>

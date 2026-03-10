@@ -575,6 +575,11 @@ $alerts: (
     item-label-text-tracking: 0px,
     item-label-text-weight: 400
   ));
+
+  .mat-mdc-menu-panel.mat-mdc-menu-panel {
+    max-width: initial !important;
+  }
+
   .mat-mdc-menu-item {
     min-height: var(--app-menu-item-height) !important;
 
@@ -665,4 +670,7 @@ $alerts: (
       @include mat.elevation($i);
     }
   }
+
+  
+
 }

@@ -18,10 +18,14 @@
 				<span class="app-label">{{ 'field.date' | translate }}:</span>
 				<span class="app-value">{{ author().date }}</span>
 			</div>
-			<mat-form-field appearance="outline">
-				<mat-label>{{ 'field.date_death' | translate }}</mat-label>
-				<input matInput [disabled]="!editing()" [(ngModel)]="author().year_death" />
-			</mat-form-field>
+			<div class="app-metadata-row app-mb-4">
+				<span class="app-label">{{ 'field.date_birth' | translate }}:</span>
+				<span class="app-value">{{ author().year_birth }}</span>
+			</div>
+			<div class="app-metadata-row app-mb-4">
+				<span class="app-label">{{ 'field.date_death' | translate }}:</span>
+				<span class="app-value">{{ author().year_death }}</span>
+			</div>
 			<mat-form-field appearance="outline">
 				<mat-label>{{ 'field.role' | translate }}</mat-label>
 				<input matInput [disabled]="!editing()" [(ngModel)]="author().role" />

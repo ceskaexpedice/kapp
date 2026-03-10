@@ -3,7 +3,7 @@ import { Injectable } from '@angular/core';
 import { Observable, map, finalize, catchError, of } from 'rxjs';
 import { Label } from './shared/label';
 import { Batch } from './shared/batch';
-import { Author } from './shared/author';
+import { Author, AuthorTitle } from './shared/author';
 import { Contract } from './shared/contract';
 
 @Injectable({
@@ -113,6 +113,10 @@ export class AppService {
     return this.get('index/get_author_by_id', params);
   }
 
+  getAutById(params: HttpParams): Observable<any> {
+    return this.get('index/get_aut_by_id', params);
+  }
+
   getLinks(params: HttpParams): Observable<any> {
     return this.get('index/get_links', params)
   }
@@ -151,6 +155,10 @@ export class AppService {
 
   saveAuthor(author: Author): Observable<any> {
     return this.post('index/save_author', author);
+  }
+
+  saveAuthorsInTitle(authors: AuthorTitle[], pid: string): Observable<any> {
+    return this.post('index/save_authors_in_title', {pid, authors});
   }
 
   saveAuthorLabels(pid: string, labels: string[]): Observable<any> {

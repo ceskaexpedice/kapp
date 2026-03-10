@@ -1,3 +1,4 @@
+import { Label } from "./label";
 
 export interface Sort { label: string; field: string; dir: string; entity?: string[]};
 
@@ -17,6 +18,7 @@ export class Configuration {
   titleColumns: {field: string, selected: boolean, width: number}[];
   contractColumns: {field: string, selected: boolean, width: number}[];
   contractTitleColumns: {field: string, selected: boolean, width: number}[];
+  labels: Label[];
   licenses: string[];
   digitalni_knihovny: string[];
 }
