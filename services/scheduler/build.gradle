@@ -24,8 +24,8 @@ jib {
     }
 
     to {
-        image = 'jiriminov/kappscheduler:latest'
-        //image = "registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kappscheduler"
+        //image = 'jiriminov/kappscheduler:latest'
+        image = "registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kappscheduler"
         tags = ['latest',project.version]
     }
 
