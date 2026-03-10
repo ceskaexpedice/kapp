@@ -33,16 +33,15 @@ public record WorkflowDoc(
         idoc.setField(AppComputedFields.STATE_REASON_FIELD,  message);
         idoc.addField(AppComputedFields.STATE_HISTORY_FIELD, historyItem(d, message).toString());
         switch (this.assignation) {
-            case null-> {
-                //no license assigned
-            }
             case PUBLIC -> {
                 idoc.setField(AppComputedFields.DECISION_DATE,dateRangeEndYear);
-                idoc.setField(AppComputedFields.ASSIGNED_LICENSE, "public");
+                idoc.removeField(AppComputedFields.ASSIGNED_LICENSES, "onsite");
+                idoc.addField(AppComputedFields.ASSIGNED_LICENSES, "public");
             }
             case ONSITE -> {
                 idoc.setField(AppComputedFields.DECISION_DATE,dateRangeEndYear);
-                idoc.setField(AppComputedFields.ASSIGNED_LICENSE, "onsite");
+                idoc.removeField(AppComputedFields.ASSIGNED_LICENSES, "public");
+                idoc.addField(AppComputedFields.ASSIGNED_LICENSES, "onsite");
             }
             default -> {
                 //no license assigned

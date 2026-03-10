@@ -1,31 +1,17 @@
 package cz.inovatika;
 
-import java.io.*;
-//import java.io.InputStream;
-import java.net.ConnectException;
-import java.net.URI;
-//import java.net.URLDecoder;
-import java.net.URLEncoder;
-import java.net.http.HttpClient;
-import java.net.http.HttpRequest;
-import java.net.http.HttpResponse;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Path;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-//import java.util.Arrays;
-import java.util.*;
-import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-//import java.util.stream.Collectors;
-
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-import javax.xml.parsers.ParserConfigurationException;
-
+import cz.inovatika.Constants.Collection;
 import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
+import cz.inovatika.Constants.TitlesCollectionFields.KramFields;
+import cz.inovatika.Constants.TitlesCollectionFields.Labels;
 import cz.inovatika.authors.AuthorData;
 import cz.inovatika.authors.AuthorDataUtils;
+import cz.inovatika.conf.ApplicationConfig;
+import cz.inovatika.solr.SolrInputDocumentWrapper;
+import cz.inovatika.workflow.LicensesAssignation;
+import cz.inovatika.workflow.States;
+import cz.inovatika.workflow.Workflow;
+import cz.inovatika.workflow.WorkflowDoc;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.apache.commons.csv.CSVRecord;
@@ -35,39 +21,52 @@ import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.util.ClientUtils;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 import org.json.JSONObject;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.w3c.dom.Document;
 import org.xml.sax.InputSource;
 import org.xml.sax.SAXException;
 
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import javax.xml.parsers.ParserConfigurationException;
+import java.io.*;
+import java.net.ConnectException;
+import java.net.URI;
+import java.net.URLEncoder;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
+import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.util.Arrays;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
+
 //TODO: Refactor !!
 public class TsvToSolrIndexer {
 
-    public static final java.util.logging.Logger LOGGER = java.util.logging.Logger.getLogger(TsvToSolrIndexer.class.getName());
-
-
     private static final String SOLR_URL = "http://localhost:8983/solr";//"http://solr-kappScheduler:8983/solr";//
-    public static final String MODEL_FIELD = "model";
-    public static final String ROOT_PID_FIELD = "root.pid";
-    public static final String ROOT_TITLE_FIELD = "root.title";
-    public static final String AUTHORS_KRAMERIUS_FIELD = "authors_kramerius";
-    public static final String NAME_IDENTIFIER_FIELD = "nameIdentifier";
-    private static final Logger log = LoggerFactory.getLogger(TsvToSolrIndexer.class);
 
     private static String DIRECTORY_PATH = System.getProperty("user.home") + "/.kapp/Data";//"../Data"; // change this
     private static final String TSV_MAPPINGS = System.getProperty("user.home") + "/.kapp/tsv-mappings.json";//"services/init/src/main/resources/tsv-mappings.json"
-    private final static SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).withConnectionTimeout(100,TimeUnit.SECONDS).build();
+    private final static SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).withConnectionTimeout(100, TimeUnit.SECONDS).build();
+    static ApplicationConfig applicationConfig;
 
     private final static String MZKLink = "https://api.kramerius.mzk.cz/search/api/client/v7.0/";
 
-    public static void main(String[] args) throws ParserConfigurationException {
+    public static void main(String[] args) throws ParserConfigurationException, FileNotFoundException {
         if (args.length > 0) {
             DIRECTORY_PATH = args[0];
         }
+        InputStream resourceAsStream = new FileInputStream(System.getProperty("user.home") + "/.kapp/app.conf");
+        applicationConfig = ApplicationConfig.loadFromStream(resourceAsStream);
         DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
         HttpClient client = HttpClient.newHttpClient();
         factory.setValidating(true);
@@ -79,7 +78,7 @@ public class TsvToSolrIndexer {
         boolean show_comma_info = false;
         File folder = new File(DIRECTORY_PATH);
         if (!folder.isDirectory()) {
-            LOGGER.severe("Invalid directory: " + DIRECTORY_PATH);
+            System.err.println("Invalid directory: " + DIRECTORY_PATH);
             return;
         }
         // before looping files, load config:
@@ -87,14 +86,14 @@ public class TsvToSolrIndexer {
         try {
             mappingsLoader = new ConfigMappingsLoader(Path.of(TSV_MAPPINGS));
         } catch (IOException e) {
-            LOGGER.severe("Failed to load TSV mappings: " + e.getMessage());
+            System.err.println("Failed to load TSV mappings: " + e.getMessage());
             return;
         }
         try {
             File[] tsvFiles = folder.listFiles((dir, name) -> name.toLowerCase().endsWith(".tsv"));
 
             if (tsvFiles == null || tsvFiles.length == 0) {
-                LOGGER.severe("No TSV files found in directory.");
+                System.out.println("No TSV files found in directory.");
                 return;
             }
 
@@ -107,17 +106,21 @@ public class TsvToSolrIndexer {
                 try (Reader reader = new FileReader(tsvFile); CSVParser parser = new CSVParser(reader, format)) {
                     Map<String, String> headers = mappingsLoader.getHeadersForFile(tsvFile.getName());
                     if (headers == null) {
-                        LOGGER.info("No header found for file: " + tsvFile.getName());
+                        System.out.println("No configuration for this file: " + tsvFile.getName());
                         continue;
                     }
                     for (CSVRecord record : parser) {
-                        SolrInputDocument doc = new SolrInputDocument();
-                        doc.addField(AppComputedFields.LABELS_FIELD,"from Excel");
+                        SolrInputDocumentWrapper doc = new SolrInputDocumentWrapper(
+                                KramFields.PID_FIELD,
+                                SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
+                        doc.addField(AppComputedFields.LABELS_FIELD, Labels.EXCEL);
                         int recordNumber = (int) record.getRecordNumber() + 1; // +1 to account for header
-                        String pid;
-                        String rootPid;
+                        String pid = null;
+                        String rootPid = null;
+                        String model = null;
                         String[] authorArray;
                         AuthorData[] nameIDArray = null;
+                        int decision_date = -1;
                         for (Map.Entry<String, String> entry : record.toMap().entrySet()) {
                             String header = headers.get(entry.getKey());
                             if (header == null) {
@@ -138,7 +141,7 @@ public class TsvToSolrIndexer {
                                             doc.addField(header, authorArray);
                                         }
                                     }
-                                    case "imported" -> {
+                                    /*case "imported" -> {
                                         if (value != null && !value.isEmpty()) {
                                             String[] imported = value.split("\\.");
                                             doc.addField(header,
@@ -148,7 +151,7 @@ public class TsvToSolrIndexer {
                                         } else {
                                             System.err.println("Empty imported date on row: " + recordNumber);
                                         }
-                                    }
+                                    }*/
                                     case "pid" -> {
                                         String[] parts = value.trim().replaceAll("\\|", " ").split("\\s+");
                                         for (int i = 0; i < parts.length; i++) {
@@ -169,9 +172,9 @@ public class TsvToSolrIndexer {
                                             // System.out.println("Multiple UUIDs found, First one: " + uuid + " Second
                                             // one:" + secondPid + " Row: " + recordNumber);
                                         }
-                                        
+
                                         doc.setField(header, pid);
-                                        doc.setField(ROOT_PID_FIELD, rootPid);
+                                        //doc.setField(KramFields.ROOT_PID_FIELD, rootPid);
 
                                         // NDK. K5
                                         Document xml = getBiblioMods(client, builder, pid,
@@ -180,48 +183,63 @@ public class TsvToSolrIndexer {
                                             // MZK. K7
                                             // https://api.kramerius.mzk.cz/search/api/client/v7.0/items/uuid:4f0d2790-37d6-11e6-8746-005056825209/metadata/mods
                                             xml = getBiblioMods(client, builder, pid,
-                                                    MZKLink+"items/" + pid
+                                                    MZKLink + "items/" + pid
                                                             + "/metadata/mods");
                                         }
 
                                         //nameIDArray =  XmlProcessor.processBiblioMods(xml, doc);
-                                        nameIDArray = AuthorDataUtils.parseAuthorData(xml).toArray(AuthorData[]::new);
+                                        if (xml != null)
+                                            nameIDArray = AuthorDataUtils.parseAuthorData(xml).toArray(AuthorData[]::new);
 
                                         // String query = "q=pid:" + URLEncoder.encode(
                                         // ClientUtils.escapeQueryChars(pid), "UTF-8") ;
                                         // JSONObject item = getItem(client, builder, pid,
                                         // "https://ndk.cz/search/api/v5.0/search?" + query);
+
                                         JSONObject item = getItem(client, pid,
                                                 "https://ndk.cz/search/api/v5.0/item/" + pid);
                                         if (item != null) {
-                                            doc.setField(MODEL_FIELD, item.optString("model"));
-                                            doc.setField(ROOT_PID_FIELD, item.optString("root_pid"));
-                                            doc.setField(ROOT_TITLE_FIELD, item.optString("root_title"));
+                                            doc.setField(KramFields.MODEL_FIELD, item.optString("model"));
+                                            model = item.optString("model");
+                                            //doc.setField(KramFields.ROOT_PID_FIELD, item.optString("root_pid"));
+                                            rootPid = item.optString("root_pid");
+                                            //doc.setField(KramFields.ROOT_TITLE_FIELD, item.optString("root_title"));
                                         } else {
                                             item = getItem(client, pid,
-                                                    MZKLink+"search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), StandardCharsets.UTF_8));
-                                                    if (item != null && !item.getJSONObject("response")
-                                                            .getJSONArray("docs").isEmpty()) {
-                                                doc.setField(MODEL_FIELD, item.getJSONObject("response")
-                                                        .getJSONArray("docs").getJSONObject(0).optString("model"));
-                                                doc.setField(ROOT_PID_FIELD, item.getJSONObject("response")
-                                                        .getJSONArray("docs").getJSONObject(0).optString("root.pid"));
-                                                doc.setField(ROOT_TITLE_FIELD, item.getJSONObject("response")
-                                                        .getJSONArray("docs").getJSONObject(0).optString("root.title"));
+                                                    MZKLink + "search?q=pid:" + URLEncoder.encode(ClientUtils.escapeQueryChars(pid), StandardCharsets.UTF_8));
+                                            if (item != null) {
+                                                var docs = item.getJSONObject("response").getJSONArray("docs");
+                                                if (!docs.isEmpty()) {
+                                                    var obj = docs.getJSONObject(0);
+                                                    doc.setField(KramFields.MODEL_FIELD, obj.optString("model"));
+                                                    model = obj.optString("model");
+                                                    //doc.setField(KramFields.ROOT_PID_FIELD, obj.optString("root.pid"));
+                                                    rootPid = obj.optString("root.pid");
+                                                    //doc.setField(KramFields.ROOT_TITLE_FIELD, obj.optString("root.title"));
+                                                }
                                             }
                                         }
                                     }
-                                    case "year_of_death_last_author", "public_since" -> {
+                                    case "year_of_death_last_author"/*, "public_since"*/ -> {
                                         if (NumberUtils.isCreatable(value) && value.length() == 4) {
-                                            doc.addField(header, value);
+                                            decision_date = Integer.parseInt(value);
+                                            //doc.addField(ApplFields.DECISION_DATE, value);
                                         } /*else {
                                              if(!"?".equals(value))System.err.println("Unexpected year value on row: "
                                              + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ?
                                              Originalvalue : Originalvalue + " _ " + value));
                                         }*/
+                                    }/*
+                                    case "public_since" -> {
+                                        if (NumberUtils.isCreatable(value) && value.length() == 4)
+                                            decision_date = Integer.parseInt(value);
+                                    }*/
+                                    case "date.str" -> {
+                                        doc.addField(AppComputedFields.DATE_ISSUED_STRING, value);
+                                        ParseDates(doc, value, recordNumber, show_comma_info);
                                     }
-                                    default ->
-                                        doc.addField(header, value);
+                                    default -> {
+                                    }//doc.addField(header, value);
                                 }
 
                             } catch (IndexOutOfBoundsException e) {
@@ -229,91 +247,148 @@ public class TsvToSolrIndexer {
                                         + "\n\tVALUE: " + /*Original*/value);
                             }
                         }
-                        parsePublicString(doc, recordNumber);
-                        setState(doc);
 
-                        ParseDates(doc, getField(doc, Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_STR), recordNumber, show_comma_info);
-                        assert nameIDArray != null;
-                        XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
+                        States desiredState = parsePublicString(doc, recordNumber);
+                        if (desiredState == States.CONTROLLED_UNKNOWN) desiredState = setState(doc);
+                        SolrQuery q = new SolrQuery()
+                                .setQuery("pid:\"" + pid + "\"")
+                                .setRows(1);
+                        try {
+                            States old_state;
+                            SolrDocumentList results = solrClient.query(Collection.TITLES_COLLECTION, q).getResults();
+                            if (results.getNumFound()==0){
+                                old_state = States.TO_CONTROL;
+                            }
+                            else {
+                                SolrDocument SolrDoc = results.getFirst();
+                                Object old_state_obj = SolrDoc.getFieldValue(AppComputedFields.STATE_FIELD);
+                                if (old_state_obj == null) {
+                                    old_state = States.TO_CONTROL;
+
+                                }
+                                else{
+                                    String old_state_str = old_state_obj.toString();
+                                    old_state = States.valueOf(old_state_str);
+                                }
+                            }
+
+                            if (rootPid != null && model != null) {
+                                Workflow wf = new Workflow();
+                                WorkflowDoc wfdoc = new WorkflowDoc(
+                                        decision_date,
+                                        old_state,
+                                        "excelImporter",
+                                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")),
+                                        model,
+                                        false,//irrelevant
+                                        LicensesAssignation.NONE
+                                );
+                                States newstate = wf.calculateCuratorTransition(rootPid, solrClient, wfdoc, desiredState);
+                                //System.out.println("NewState: " + newstate.toString());
+                                if(newstate != null)
+                                    wf.executeTransition(wfdoc, wfdoc.user(), "importing from excel", doc, newstate);
+                            }
+                        } catch (Exception e) {
+                            System.err.println("Caught exception in " + tsvFile.getName() +" of type: "+e.getClass()+ ": " + e.getMessage());
+                            e.printStackTrace();
+                        }
+                        if(nameIDArray!=null) {XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
 
                         Arrays.asList(nameIDArray).forEach(author -> {
-                            doc.addField(AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
+                            doc.addField(KramFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
                             if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
-                                doc.addField(NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+                                doc.addField(KramFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
                             }
                         });
 
                         for (SolrInputDocument authorDoc : Arrays.stream(nameIDArray).map(AuthorData::toAuthoritySolrDocument).toList()) {
                             if (authorDoc != null)
-                                solrClient.add(Constants.Collection.AUTHORS_COLLECTION, authorDoc);
-                        }
+                                solrClient.add(Collection.AUTHORS_COLLECTION, authorDoc);
+                        }}/*
+                        if (doc.getFieldValue(KramFields.PID_FIELD) == doc.getFieldValue(KramFields.ROOT_PID_FIELD)) {
+                            doc.setField(KramFields.ROOT_TITLE_FIELD, doc.getFieldValue(KramFields.TITLE_FIELD));
+                        }*/
                         //doc.addField("state_user", "TableParser");
-                        solrClient.add(Constants.Collection.TITLES_COLLECTION , doc);
+                        solrClient.add(Collection.TITLES_COLLECTION, doc.getDocument());
                     }
-                }catch (ConnectException e) {
-                        LOGGER.log(Level.SEVERE, e.getMessage(),e);
-                        System.exit(1);
-                    }
-                 catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                } catch (ConnectException e) {
+                    System.err.println("Kramerius connection error " + e.getMessage());
+                    e.printStackTrace();
+                    System.exit(1);
+                } catch (Exception e) {
+                    System.err.println("Critical Exception: in file:" + tsvFile.getName() + " of type:" + e.getClass()
+                            + ": " + e.getMessage());
+                    e.printStackTrace();
+                    // sent_request = true;
                 }
             }
 
-            LOGGER.info("All TSV files indexed successfully.");
+            //solrClient.commit(Collection.TITLES_COLLECTION);
+            //solrClient.commit(Collection.AUTHORS_COLLECTION);
+            System.out.println("All TSV files indexed successfully.");
             System.exit(0);
 
         } catch (Exception e) {
-            LOGGER.log(Level.SEVERE, e.getMessage(), e);
+            System.err.println(e.getMessage());
             System.exit(1);
         } finally {
             if (solrClient != null) {
                 try {
                     solrClient.commit(Constants.Collection.TITLES_COLLECTION);
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                    System.err.println(e.getMessage());
                 }
                 try {
                     solrClient.commit(Constants.Collection.AUTHORS_COLLECTION);
                 } catch (Exception e) {
-                    LOGGER.log(Level.SEVERE, e.getMessage(), e);
+                    System.err.println(e.getMessage());
                 }
             }
         }
     }
-
+/*
     private static String getField(SolrInputDocument doc, String fieldName) {
         SolrInputField field = doc.getField(fieldName);
         return field != null ? (String) field.getValue() : null;
+    }*/
+
+    private static States parsePublicString(SolrInputDocumentWrapper doc, int recordNumber) {
+        Object val = doc.getFieldValue("public_string");
+        if (val != null) {
+            final String value = val.toString();
+            switch (value.toLowerCase()) {
+                case "ano", "yes", "true" -> {
+                    //doc.setField("public", true);
+                    doc.addField(AppComputedFields.ASSIGNED_LICENSES, "public");
+                    return States.CONTROLLED_PUBLIC;
+                }
+                case "ne", "no", "false" -> {
+                    //doc.setField("public", false);
+                    doc.addField(AppComputedFields.ASSIGNED_LICENSES, "onsite");
+                    return States.CONTROLLED_PRIVATE;
+                }
+                default -> {
+                    System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
+                    doc.addField(AppComputedFields.LABELS_FIELD, Labels.EXCEL_INCORRECT_LICENSE);
+                }
+            }
+        }
+        return States.CONTROLLED_UNKNOWN;
     }
 
-    private static void parsePublicString(SolrInputDocument doc, int recordNumber) {
-        final String value = getField(doc, "public_string");
-        if (value == null) {
-            return;
-        }
-        //final String header = "public";
-        switch (value.toLowerCase()) {
-            case "ano", "yes", "true" -> {
-                //doc.setField(header, true);
-                doc.addField("assigned_license","public");
-            }
-            case "ne", "no", "false" -> {
-                //doc.setField(header, false);
-                doc.addField("assigned_license","onsite");
-            }
-            default -> {
-                System.err.println("Unexpected boolean value on row: " + recordNumber + "\n\tVALUE: " + value);
-                doc.addField(AppComputedFields.LABELS_FIELD,"Incorrect public/onsite value in Excel");
-            }
-        }
-    }
-
-    private static void setState(SolrInputDocument doc) {
+    private static States setState(SolrInputDocumentWrapper doc) {
         String val;
-        if (doc.containsKey("assigned_license")) {
-            val =  doc.getFieldValue("assigned_license").equals("public") ? "controlled_public" : "controlled_private";
-        } else if (doc.containsKey("public_since")) {
-            int public_since = Integer.parseInt(doc.getFieldValue("public_since").toString());
+        /*if (doc.getFieldValue(ApplFields.ASSIGNED_LICENSES)!=null) {
+            return;
+        } else*/
+        Object public_since_obj = doc.getFieldValue("public_since");
+        if (public_since_obj != null) {
+            int public_since;
+            try {
+                public_since = Integer.parseInt(public_since_obj.toString());
+            } catch (NumberFormatException e) {
+                return States.CONTROLLED_UNKNOWN;
+            }
             if (public_since > LocalDate.now().getYear()) {
                 val = "controlled_private"; // KONTROLOVANÉ- NEVEŘEJNÉ
             } else {
@@ -323,21 +398,26 @@ public class TsvToSolrIndexer {
             val = "controlled_unknown"; // KONTROLOVANÉ - NEZNÁMÉ
         }
 
-        doc.setField("state", val);
+        //doc.setField(ApplFields.STATE_FIELD, val);
 
         JSONObject h = new JSONObject()
                 .put("date", LocalDateTime.now().toString())
                 .put("reason", "import from excel")
                 .put("user", "importer")
-                .put("state", val);
+                .put(AppComputedFields.STATE_FIELD, val);
 
         if (documentExists((String) doc.getFieldValue("pid"))) {
             Map<String, Object> partialUpdate = new HashMap<>();
             partialUpdate.put("add", h.toString());
-            doc.addField("state_history", partialUpdate);
+            doc.addField(AppComputedFields.STATE_HISTORY_FIELD, partialUpdate);
         } else {
-            doc.addField("state_history", h.toString());
+            doc.addField(AppComputedFields.STATE_HISTORY_FIELD, h.toString());
         }
+        return switch (val) {
+            case "controlled_public" -> States.CONTROLLED_PUBLIC;
+            case "controlled_private" -> States.CONTROLLED_PRIVATE;
+            default -> States.CONTROLLED_UNKNOWN;
+        };
 
     }
 
@@ -346,9 +426,9 @@ public class TsvToSolrIndexer {
                 .setQuery("pid:\"" + pid + "\"")
                 .setRows(0);
         try {
-            return solrClient.query("titles", q).getResults().getNumFound() > 0;
+            return solrClient.query(Collection.TITLES_COLLECTION, q).getResults().getNumFound() > 0;
         } catch (SolrServerException | IOException e) {
-            log.error(String.valueOf(e));
+            System.err.println(e.getMessage());
             return false;
         }
     }
@@ -401,7 +481,7 @@ public class TsvToSolrIndexer {
         }
     }
 
-    private static void ParseDates(SolrInputDocument doc, String value, int recordNumber, boolean show_comma_info) {
+    private static void ParseDates(SolrInputDocumentWrapper doc, String value, int recordNumber, boolean show_comma_info) {
         try {
             String Originalvalue = value;
             /*
@@ -413,8 +493,8 @@ public class TsvToSolrIndexer {
                 System.err.println("Empty date on row: " + recordNumber);
                 return;
             }
-            value = XmlProcessor.replaceWordsWithQMarks(doc,value, recordNumber, Originalvalue);
-            
+            value = XmlProcessor.replaceWordsWithQMarks(doc, value, recordNumber, Originalvalue);
+
             if (value.contains(",")) {
                 String og = value;
                 value = value.split(",")[0].trim();

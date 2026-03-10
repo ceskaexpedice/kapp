@@ -9,6 +9,7 @@ import cz.inovatika.XmlProcessor;
 import cz.inovatika.dates.DateRange;
 import cz.inovatika.dates.DateRangeParser;
 import cz.inovatika.dates.normalization.utils.AuthorNormalizationUtils;
+import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.utils.XMLUtils;
 import org.apache.solr.common.SolrInputDocument;
 import org.eclipse.jetty.util.StringUtil;
@@ -156,39 +157,42 @@ public class AuthorData {
     }
 
     public SolrInputDocument toAuthoritySolrDocument() {
-        SolrInputDocument aDoc = new SolrInputDocument();
-        aDoc.addField("nameIdentifier", this.getNameIdentifier());
+        SolrInputDocumentWrapper aDoc = new SolrInputDocumentWrapper(
+                "id",
+                SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
+        aDoc.setField("nameIdentifier", this.getNameIdentifier());
         if (this.getNameIdentifier() != null) {
-            aDoc.addField("id", this.getNameIdentifier());
+            aDoc.setField("id", this.getNameIdentifier());
         } else {
             String name = this.getFull() + (this.getDate() != null ? this.getDate() : "") ;
-            aDoc.addField("id", XmlProcessor.normalize(name));
+            aDoc.setField("id", XmlProcessor.normalize(name));
         }
-        aDoc.addField("full", this.getFull());
-        aDoc.addField("family", this.getFamily());
-        aDoc.addField("given", this.getGiven());
-        aDoc.addField("termsOfAddress", this.getTermsOfAddress());
+        aDoc.setField("full", this.getFull());
+        String family_name = this.getFamily();
+        if (family_name != null) {aDoc.setField("family", this.getFamily());}
+        aDoc.setField("given", this.getGiven());
+        aDoc.setField("termsOfAddress", this.getTermsOfAddress());
 
         if (this.getDate() != null) {
             String date =  this.getDate();
             String normalized = AuthorNormalizationUtils.normalize(date);
             DateRange parsed = (new DateRangeParser()).parse(normalized);
             if (parsed != null) {
-                aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_DATE_STR, date);
+                aDoc.setField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_DATE_STR, date);
                 if (parsed.startYear() != null) {
-                    aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_BIRTH, parsed.startYear());
-                    aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, parsed.startConfirmed());
+                    aDoc.setField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_BIRTH, parsed.startYear());
+                    aDoc.setField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, parsed.startConfirmed());
 
                 }
                 if (parsed.endYear() != null) {
-                    aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_DEATH, parsed.endYear());
-                    aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, parsed.endConfirmed());
+                    aDoc.setField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_DEATH, parsed.endYear());
+                    aDoc.setField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, parsed.endConfirmed());
                 }
             } else {
                 LOGGER.warning(String.format( "Could not parse date from  %s" , date));
             }
         }
-        return aDoc;
+        return aDoc.getDocument();
 
     }
 

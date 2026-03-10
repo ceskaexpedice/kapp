@@ -5,8 +5,10 @@ import org.apache.solr.common.SolrInputDocument;
 import java.util.HashMap;
 import java.util.Map;
 
-public record SolrInputDocumentWrapper(String idKey, SolrInputDocument document, TypeOfChange typeOfChange) {
-
+public record SolrInputDocumentWrapper(String idKey,SolrInputDocument document, TypeOfChange typeOfChange) {
+    public SolrInputDocumentWrapper(String idKey, TypeOfChange typeOfChange){
+        this(idKey,new SolrInputDocument(),typeOfChange);
+    }
     public enum TypeOfChange {
         SIMPLE,
         ATOMIC_CHANGE,
@@ -37,8 +39,8 @@ public record SolrInputDocumentWrapper(String idKey, SolrInputDocument document,
         changeField(name, value, TypeOfOperation.ATOMIC_SET);
     }
 
-    public void removeField(String name) {
-        changeField(name, null, TypeOfOperation.ATOMIC_REMOVE);
+    public void removeField(String name,Object value) {
+        changeField(name, value, TypeOfOperation.ATOMIC_REMOVE);
     }
 
     public Object getFieldValue(String name) {
@@ -85,7 +87,7 @@ public record SolrInputDocumentWrapper(String idKey, SolrInputDocument document,
                     }
                     case ATOMIC_REMOVE -> {
                         if (name.equals(idKey)) {
-                            document.setField(name, value);
+                            throw new RuntimeException("Illegal attempt to remove field with name " + name);
                         } else {
 
                             document.addField(name, atomicOperation("remove", value));

@@ -91,7 +91,6 @@ public class UpdateParentStateImpl implements UpdateParentState {
             States parentState = childStates.isEmpty() || childStates.contains(States.TO_CONTROL.name()) ?  States.PARENT_OPEN : States.PARENT_CLOSED;
             SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
                     Constants.TitlesCollectionFields.AppDataFields.PID_FIELD,
-                    new SolrInputDocument(),
                     SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
 
