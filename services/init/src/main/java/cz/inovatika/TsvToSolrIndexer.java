@@ -44,9 +44,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 //TODO: Refactor !!
@@ -292,19 +290,42 @@ public class TsvToSolrIndexer {
                             System.err.println("Caught exception in " + tsvFile.getName() +" of type: "+e.getClass()+ ": " + e.getMessage());
                             e.printStackTrace();
                         }
-                        if(nameIDArray!=null) {XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
-
-                        Arrays.asList(nameIDArray).forEach(author -> {
-                            doc.addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
-                            if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
-                                doc.addField(AppDataFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+                        if(nameIDArray!=null) {
+                            XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
+                            List<String> authorJsons = new ArrayList<>();
+                            Arrays.asList(nameIDArray).forEach(author -> {
+                                authorJsons.add(author.toJsonString());
+                                doc.addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
+                                if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
+                                    doc.addField(AppDataFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+                                }
+                            });
+                            //for (String authorJson : authorJsons) {
+                            if(authorJsons.size()>1){
+                                //doc.getDocument().setField(AppDataFields.AUTHORS_KRAMERIUS_FIELD,"");
+                                System.out.println(pid);
                             }
-                        });
+                            Map<String, Object> operation = new HashMap<>();
+                            operation.put("add-distinct", authorJsons);
 
-                        for (SolrInputDocument authorDoc : Arrays.stream(nameIDArray).map(AuthorData::toAuthoritySolrDocument).toList()) {
-                            if (authorDoc != null)
-                                solrClient.add(Collection.AUTHORS_COLLECTION, authorDoc);
-                        }}/*
+                            doc.getDocument().setField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, operation);
+                            //doc.getDocument().addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, authorJsons);
+                        //}
+
+                            //System.out.println(Arrays.toString(authorJsons.toArray()));
+
+                            //System.out.println("Lenght: "+authorJsons.size()+ ". " + doc.getFieldValue(AppDataFields.AUTHORS_KRAMERIUS_FIELD));
+                            if(authorJsons.size()>1){
+                                //System.out.println(doc.getDocument().getField(AppDataFields.AUTHORS_KRAMERIUS_FIELD).toString());
+                                for (String authorJson : authorJsons) {System.out.println("   "+authorJson);}
+                            }
+
+                            for (SolrInputDocument authorDoc : Arrays.stream(nameIDArray).map(AuthorData::toAuthoritySolrDocument).toList()) {
+                                if (authorDoc != null)
+                                    solrClient.add(Collection.AUTHORS_COLLECTION, authorDoc);
+                            }
+                        }
+                        /*
                         if (doc.getFieldValue(AppDataFields.PID_FIELD) == doc.getFieldValue(AppDataFields.ROOT_PID_FIELD)) {
                             doc.setField(AppDataFields.ROOT_TITLE_FIELD, doc.getFieldValue(AppDataFields.TITLE_FIELD));
                         }*/
