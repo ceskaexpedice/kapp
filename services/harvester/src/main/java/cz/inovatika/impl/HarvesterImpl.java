@@ -488,28 +488,27 @@ public class HarvesterImpl implements Harvester {
                                 processAuthors(wrapper, authorsBuffer, parsed);
 
                                 Integer dateRangeEnd = (Integer) wrapper.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
-                                if (dateRangeEnd != null && dateRangeEnd > 0) {
-                                    final String user = "importer";
-                                    WorkflowDoc workflowDoc = new WorkflowDoc(
-                                            dateRangeEnd,
-                                            States.IMPORTED,
-                                            user,
-                                            LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")),
-                                            ctx.item().getModel(),
-                                            ctx.item().isHierarchical(),
-                                            LicensesAssignation.NONE);
-                                    Workflow wf = new Workflow();
 
-                                    // state differs
-                                    JSONObject oldDoc = getExistingDocument((String) wrapper.document().getFieldValue(AppDataFields.PID_FIELD));
-                                    if (oldDoc != null && oldDoc.has("state")) {
-                                        String oldState = oldDoc.getString("state");
-                                        States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
-                                        // only NONCONTROLLED -> TO_CONTROL
-                                        String message = String.format("Imported from '%s'", config.getUrl());
-                                        if (oldState != null && !oldState.equals(newState.name())) {
-                                            wf.executeTransition( workflowDoc, user, message, wrapper,newState);
-                                        }
+                                final String user = "importer";
+                                WorkflowDoc workflowDoc = new WorkflowDoc(
+                                        dateRangeEnd,
+                                        States.IMPORTED,
+                                        user,
+                                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")),
+                                        ctx.item().getModel(),
+                                        ctx.item().isHierarchical(),
+                                        LicensesAssignation.NONE);
+                                Workflow wf = new Workflow();
+
+                                // state differs
+                                JSONObject oldDoc = getExistingDocument((String) wrapper.document().getFieldValue(AppDataFields.PID_FIELD));
+                                if (oldDoc != null && oldDoc.has("state")) {
+                                    String oldState = oldDoc.getString("state");
+                                    States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
+                                    // only NONCONTROLLED -> TO_CONTROL
+                                    String message = String.format("Imported from '%s'", config.getUrl());
+                                    if (oldState != null && !oldState.equals(newState.name())) {
+                                        wf.executeTransition( workflowDoc, user, message, wrapper,newState);
                                     }
                                 }
                             } catch (ParserConfigurationException | SAXException e) {
@@ -569,25 +568,25 @@ public class HarvesterImpl implements Harvester {
                         processAuthors(doc, authorsBuffer, parsed);
 
                         Integer dateRangeEnd = (Integer) doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
-                        if (ctx.item().isHierarchical() || (dateRangeEnd != null && dateRangeEnd > 0)) {
-                            final String user = "importer";
-                            String message = String.format("Imported from '%s'", config.getUrl());
-                            WorkflowDoc workflowDoc = new WorkflowDoc(
-                                    dateRangeEnd,
-                                    States.IMPORTED,
-                                    user,
-                                    LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")),
-                                    ctx.item().getModel(),
-                                    ctx.item().isHierarchical(),
-                                    LicensesAssignation.NONE);
-                            Workflow workflow = new Workflow();
-                            workflow.executeTransition(
-                                    workflowDoc,
-                                    user, message,
-                                    doc,
-                                    workflow.calculateAutomaticTransition(ctx, workflowDoc)
-                            );
-                        }
+
+                        final String user = "importer";
+                        String message = String.format("Imported from '%s'", config.getUrl());
+                        WorkflowDoc workflowDoc = new WorkflowDoc(
+                                dateRangeEnd,
+                                States.IMPORTED,
+                                user,
+                                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")),
+                                ctx.item().getModel(),
+                                ctx.item().isHierarchical(),
+                                LicensesAssignation.NONE);
+                        Workflow workflow = new Workflow();
+                        workflow.executeTransition(
+                                workflowDoc,
+                                user, message,
+                                doc,
+                                workflow.calculateAutomaticTransition(ctx, workflowDoc)
+                        );
+
                         addToBufferAndSend(createBuffer, authorsBuffer, doc);
                     } else {
                         LOGGER.log(Level.SEVERE, "Failed to process MODS for PID: {0}", ctx.item().getPid());

@@ -261,10 +261,9 @@ public class TitleDateNormalizationUtilsTest {
         var result3 = TitleNormalizationUtils.modifyOpenRanges(inputStep3);
         Assertions.assertNotNull(result3);
         Assertions.assertTrue(result3.isDone());
-        System.out.println(result3.value());
-        //Assertions.assertEquals( "1900-1999",result3.value());
+        // TODO: is it good ?
+        Assertions.assertEquals( "1860-1869",result3.value());
 
-        //[186-?]
     }
 
     @Test
@@ -301,4 +300,43 @@ public class TitleDateNormalizationUtilsTest {
         Assertions.assertEquals( "1988",result2.value());
     }
 
+    @Test
+    public void testSingleYear() {
+        String raw1 = "2010";
+        var inputStep1 = new NormalizationStep(raw1, false);
+        var result1 = TitleNormalizationUtils.sanitizeFinalOutput(inputStep1);
+        Assertions.assertNotNull(result1);
+        Assertions.assertTrue(result1.isDone());
+        Assertions.assertEquals( "2010",result1.value());
+
+        String raw2 = "193-?";
+        var inputStep2 = new NormalizationStep(raw2, false);
+        var result2 = TitleNormalizationUtils.sanitizeFinalOutput(inputStep2);
+        Assertions.assertNotNull(result2);
+        Assertions.assertTrue(result2.isDone());
+        Assertions.assertEquals( "1930",result2.value());
+
+        String raw3 = "2009?";
+        var inputStep3 = new NormalizationStep(raw3, false);
+        var result3 = TitleNormalizationUtils.sanitizeFinalOutput(inputStep3);
+        Assertions.assertNotNull(result3);
+        Assertions.assertTrue(result3.isDone());
+        Assertions.assertEquals( "2009",result3.value());
+
+        String raw4 = "2003 1. dotisk 2. vyd";
+        var inputStep4 = new NormalizationStep(raw4, false);
+        var result4 = TitleNormalizationUtils.sanitizeFinalOutput(inputStep4);
+        Assertions.assertNotNull(result4);
+        Assertions.assertTrue(result4.isDone());
+        Assertions.assertEquals( "2003",result4.value());
+
+        String raw5 = "2003 1. dotisk 2. vyd";
+        var inputStep5 = new NormalizationStep(raw5, false);
+        var result5 = TitleNormalizationUtils.sanitizeFinalOutput(inputStep5);
+        Assertions.assertNotNull(result5);
+        Assertions.assertTrue(result5.isDone());
+        Assertions.assertEquals( "2003",result5.value());
+
+
+    }
 }

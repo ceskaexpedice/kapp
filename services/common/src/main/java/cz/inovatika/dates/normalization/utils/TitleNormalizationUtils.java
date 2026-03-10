@@ -51,6 +51,18 @@ public class TitleNormalizationUtils {
     }
 
 
+    public static NormalizationStep normalizeSingleYearMask(NormalizationStep step) {
+        String input = step.value();
+        Pattern p = Pattern.compile("^([0-9?xu-]{4})\\??$");
+        Matcher m = p.matcher(input);
+        if (m.find()) {
+            String raw = m.group(1);
+            String year = fillMaskWith(raw, "0");
+            return new NormalizationStep(year, true);
+        }
+        return step;
+    }
+
     public static NormalizationStep betweenKeywords(NormalizationStep step) {
         String input = step.value();
         for (String keyword : BETWEEN_KEYWORDS) {
@@ -116,7 +128,7 @@ public class TitleNormalizationUtils {
     public static NormalizationStep modifyOpenRanges(NormalizationStep step) {
         boolean applied = false;
         String input = step.value();
-        Pattern p = Pattern.compile("\\[?([0-9xu?-]{4})\\]?-(?!\\d)");
+        Pattern p = Pattern.compile("\\[?([0-9xu?-]+)\\]?-(?!\\d)");
         Matcher m = p.matcher(input);
         StringBuilder sb = new StringBuilder();
         int lastEnd = 0;
@@ -220,10 +232,13 @@ public class TitleNormalizationUtils {
         if (rangeMatcher.find()) {
             return new NormalizationStep(rangeMatcher.group(1) + "-" + rangeMatcher.group(2), true);
         }
-
-        Pattern singlePattern = Pattern.compile(".*?(\\d{4})\\s*-?.*");
+        Pattern singlePattern = Pattern.compile(".*?([0-9?xu-]{4})\\??.*");
         Matcher singleMatcher = singlePattern.matcher(input);
-
+        if (singleMatcher.find()) {
+            String val = singleMatcher.group(1);
+            String year = fillMaskWith(val, "0");
+            return new NormalizationStep(year, true);
+        }
         if (singleMatcher.find()) {
             String val = singleMatcher.group(1);
             return new NormalizationStep(val, true);

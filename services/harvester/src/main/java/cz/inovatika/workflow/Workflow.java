@@ -17,13 +17,6 @@ public class Workflow {
 */
     public States calculateAutomaticTransition(HarvesterContext ctx, WorkflowDoc currentDoc) {
         States state = currentDoc.state();
-        //States newState = state != null ?  state.calculateNextState(ctx.item().getRootPid(),ctx.solrClient(),ctx.applicationConfig(),currentDoc) : null;
-        /* Must be called after full harvest
-        String model = currentDoc.model();
-        if(state!= newState && (model.equals("monographunit")) || model.equals("periodicalvolume")){
-            States.updateParent(ctx);
-        }
-         */
         return state != null ?  state.calculateNextState(ctx.item().getRootPid(),ctx.solrClient(),ctx.applicationConfig(),currentDoc) : null;
     }
 
