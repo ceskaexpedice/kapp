@@ -5,7 +5,7 @@
 				<mat-card-title> {{ 'admin.labels' | translate}} </mat-card-title>
 			</mat-card-header>
 			<mat-card-content>
-				@for(l of state.labels(); track $index) {
+				@for(l of labels; let idx = $index; track $index) {
 					<div class="app-fxLayout app-row app-baseline-v app-gap-2">
 						<mat-form-field appearance="outline">
 							<mat-label>Name</mat-label>
@@ -15,9 +15,9 @@
 							<mat-label>Color</mat-label>
 							<input matInput [(ngModel)]="l.color" [disabled]="l.name === 'test'" />
 						</mat-form-field>
-						<mat-chip class="app-fxFlex" [style.background-color]="l.color" style="--mat-chip-label-text-color: {{l.text_color}};" (removed)="removeLabel()" [matTooltip]="'remove_this_record' | translate">
+						<mat-chip class="app-fxFlex" [style.background-color]="l.color" style="--mat-chip-label-text-color: {{l.text_color}};" (removed)="removeLabel(idx)" [matTooltip]="'remove_this_record' | translate">
 							{{ l.name }}
-							@if(l.name !== 'test') {
+							@if(!l.inconfig) {
 								<button matChipRemove [attr.aria-label]="'remove ' + l.name">
 									<mat-icon class="app-close">close</mat-icon>
 									<mat-icon class="app-cancel">cancel</mat-icon>

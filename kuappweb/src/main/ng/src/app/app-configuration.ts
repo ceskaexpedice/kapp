@@ -131,7 +131,7 @@ import { Label } from './shared/label';
                             const b = parseInt(l.color.substring(5,7), 16);
                             // const c = parseInt(l.color.substring(1), 16);
                             const c = r+g+b;
-                            l.text_color = c > 256 ? '#000' : '#fff';
+                            l.text_color = c > 500 ? '#000' : '#fff';
                             labels.push(l);
                         });
                         this.state.labels.set([...labels]);

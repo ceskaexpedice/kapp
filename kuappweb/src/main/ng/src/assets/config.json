@@ -11,11 +11,11 @@
         "MZK"
     ],
     "labels": [
-        {"name": "author_modified", "color": "#920707", "text_color": "#fff"},
-        {"name": "excel", "color": "#0b5928", "text_color": "#fff"},
-        {"name": "excel_incorrect_license", "color": "#cb5928", "text_color": "#fff"},
-        {"name": "excel_failed_to_parse_date", "color": "#cb5928", "text_color": "#fff"},
-        {"name": "excel_suspicious_year_range", "color": "#cb5928", "text_color": "#fff"}
+        {"name": "author_modified", "color": "#920707", "text_color": "#fff", "inconfig": true},
+        {"name": "excel", "color": "#0b5928", "text_color": "#fff", "inconfig": true},
+        {"name": "excel_incorrect_license", "color": "#cb5928", "text_color": "#fff", "inconfig": true},
+        {"name": "excel_failed_to_parse_date", "color": "#cb5928", "text_color": "#fff", "inconfig": true},
+        {"name": "excel_suspicious_year_range", "color": "#cb5928", "text_color": "#fff", "inconfig": true}
     ],
     "licenses": [
         "public",

@@ -68,9 +68,9 @@ export class Admin {
     });
   }
 
-  removeLabel() {
-    // todo
-    // success
+  removeLabel(idx: number) {
+
+    this.labels.splice(idx, 1);
     this.ui.showInfoSnackBar('snackbar.record_removed.success');
     // error
     //this.ui.showErrorSnackBar('snackbar.record_removed.error');

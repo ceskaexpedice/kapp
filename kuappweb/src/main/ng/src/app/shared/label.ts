@@ -1,4 +1,4 @@
 
 export interface Label {
-  name: string, color?: string, text_color?: string
+  name: string, color?: string, text_color?: string, inconfig?: boolean
 }

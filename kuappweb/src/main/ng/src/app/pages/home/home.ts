@@ -55,10 +55,18 @@ export class Home {
 
   }
 
+  authorsConflict() {
+
+    this.state.usedFacets.set([
+      { field: 'labels', value: 'author_modified' }
+    ]);
+    this.doSearch('authors');
+  }
+
   toControll() {
 
     this.state.usedFacets.set([
-      { field: 'state', value: 'to_control' }
+      { field: 'state', value: 'TO_CONTROL' }
     ]);
     this.doSearch('titles');
   }
