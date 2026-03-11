@@ -660,14 +660,20 @@ public class HarvesterImpl implements Harvester {
             String dateText = dateIssued.getTextContent();
             wrapper.addField(AppDataFields.DATE_ISSUED_STR, dateText);
 
-            DateRange parsedDateRange = new DateRangeParser().parse(TitleNormalizationUtils.normalize(dateText));
-            if (parsedDateRange != null) {
-                parsedDateRange.mapToSolrDocument(wrapper);
-            }
-            else{
-                LOGGER.warning("Failed to parse date range for dateIssued");
-                LOGGER.warning(dateText);
-                LOGGER.warning(wrapper.getIdKey());
+            try {
+                DateRange parsedDateRange = new DateRangeParser().parse(TitleNormalizationUtils.normalize(dateText));
+                if (parsedDateRange != null) {
+                    parsedDateRange.mapToSolrDocument(wrapper);
+                }
+                else{
+                    LOGGER.warning("Failed to parse date range for dateIssued");
+                    LOGGER.warning(dateText);
+                    LOGGER.warning(wrapper.getIdKey());
+                }
+            } catch (Exception e) {
+                LOGGER.warning(String.format( "Failed to parse date range for dateIssued. Document %s", wrapper.getIdKey()));
+                LOGGER.warning("Raw value"+ dateText);
+                LOGGER.warning("Normalized string :"+TitleNormalizationUtils.normalize(dateText));
             }
         }
     }
