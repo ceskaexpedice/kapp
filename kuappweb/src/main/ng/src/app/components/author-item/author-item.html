@@ -44,22 +44,22 @@
 			@if(editing()) {
 				<mat-form-field appearance="outline">
 					<mat-label>{{ 'field.year_birth' | translate }}</mat-label>
-					<input matInput [(ngModel)]="author.date_birth" />
+					<input matInput [(ngModel)]="author.year_birth" />
 				</mat-form-field>
 			} @else {
 				<span class="app-label">{{ 'field.year_birth' | translate }}:</span>
-				<span class="app-value">{{ author.date_birth}}</span>
+				<span class="app-value">{{ author.year_birth}}</span>
 			}
 		</div>
 		<div class="app-metadata-row">
 			@if(editing()) {
 				<mat-form-field appearance="outline">
 					<mat-label>{{ 'field.year_death' | translate }}</mat-label>
-					<input matInput [(ngModel)]="author.date_death" />
+					<input matInput [(ngModel)]="author.year_death" />
 				</mat-form-field>
 			} @else {
 				<span class="app-label">{{ 'field.year_death' | translate }}:</span>
-				<span class="app-value">{{ author.date_death}}</span>
+				<span class="app-value">{{ author.year_death}}</span>
 			}
 		</div>
 		<div class="app-metadata-row">
@@ -114,7 +114,7 @@
 	<mat-card-actions align="end">
 		<div class="app-fxLayout app-row app-gap-2">
 			<button matButton="outlined" (click)="save()">{{ 'action.save' | translate }}<mat-icon matSuffix>save</mat-icon></button>
-			<button matButton (click)="toggleEdit()" >{{ 'action.edit' | translate }}<mat-icon matSuffix>edit</mat-icon></button>
+			<button matButton="outlined" (click)="toggleEdit()" >{{ 'action.edit' | translate }}<mat-icon matSuffix>edit</mat-icon></button>
 		</div>
 	</mat-card-actions>
 }

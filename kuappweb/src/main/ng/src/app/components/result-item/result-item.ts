@@ -74,10 +74,12 @@ export class ResultItem {
       }
       if (this.doc()['authors_kramerius']) {
         this.doc()['authors_kramerius'].forEach((ak: AuthorTitle) => {
-          if (!this.mergedAuthors.find((ma: any) =>  ak.id === ma.old_id ) &&
-              !this.mergedAuthors.find((ma: any) =>  ak.id === ma.id ) &&
-              !this.mergedAuthors.find((ma: any) =>  ak.nameIdentifier === ma.nameIdentifier ) &&
-              !this.mergedAuthors.find((ma: any) =>  ak.nameIdentifier === ma.old_id )) {
+          if (
+            !this.mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.old_id ) &&
+            !this.mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.id ) &&
+              !this.mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.nameIdentifier ) &&
+              !this.mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.old_id )
+            ) {
             this.mergedAuthors.push(ak);
           }
 

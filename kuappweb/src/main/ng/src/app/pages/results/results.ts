@@ -83,7 +83,7 @@ export class Results {
   columnsToDisplayWithExpand = computed<string[]>(() => [...this.displayedColumns()]);
   expandedElement: any | null = null;
 
-  //['pid', 'title', 'state', 'dateIssued', 'sigla', 'indextime', 'actions']; //Datum vydání; Producent/Umístění (duplicitně k fasetě); Datum importu(?)
+  //['pid', 'title', 'state', 'date_issued', 'sigla', 'indextime', 'actions']; //Datum vydání; Producent/Umístění (duplicitně k fasetě); Datum importu(?)
 
   sort: Sort = { active: 'indextime', direction: 'desc' };
 
@@ -205,15 +205,18 @@ export class Results {
     }
     if (d['authors_kramerius']) {
       d['authors_kramerius'].forEach((ak: AuthorTitle) => {
-        if (!mergedAuthors.find((ma: any) => ak.id === ma.old_id) &&
-          !mergedAuthors.find((ma: any) => ak.id === ma.id) &&
-          !mergedAuthors.find((ma: any) => ak.nameIdentifier === ma.nameIdentifier) &&
-          !mergedAuthors.find((ma: any) => ak.nameIdentifier === ma.old_id)) {
+        if (!mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.old_id) &&
+          !mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.id) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.nameIdentifier) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.old_id)) {
           mergedAuthors.push(ak);
         }
 
       });
     }
+
+
+
     return mergedAuthors;
   }
 

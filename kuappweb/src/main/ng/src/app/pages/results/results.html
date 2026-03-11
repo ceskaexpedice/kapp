@@ -110,14 +110,14 @@
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="date_range_start.year">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'date_range_start.year')" [style.width]="columnSizes['date_range_start.year'] + 'px'"><span mat-sort-header>{{ 'field.dateIssued' | translate }}</span></th>
-              <td mat-cell *matCellDef="let doc">{{ doc['date.str']  }}</td>
+            <ng-container matColumnDef="date_issued">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'date_issued')" [style.width]="columnSizes['date_issued'] + 'px'"><span mat-sort-header>{{ 'field.date_issued' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc['date_issued_str']  }}</td>
             </ng-container>
 
             <ng-container matColumnDef="sigla">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'sigla')" [style.width]="columnSizes['sigla'] + 'px'"><span mat-sort-header>{{ 'field.sigla' | translate }}</span></th>
-              <td mat-cell *matCellDef="let doc">{{ doc['physical_locations.facet'] }}</td>
+              <td mat-cell *matCellDef="let doc">{{ doc['physical_locations'] }}</td>
             </ng-container>
 
             <ng-container matColumnDef="license">
