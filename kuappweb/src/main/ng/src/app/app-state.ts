@@ -1,6 +1,7 @@
 import { Injectable, signal } from "@angular/core";
 import { Label } from "./shared/label";
 import { Batch } from "./shared/batch";
+import { User } from "./shared/user";
 
 @Injectable({
     providedIn: 'root'
@@ -14,17 +15,24 @@ import { Batch } from "./shared/batch";
     public licenses = signal<string[]>([]);
     public labels = signal<Label[]>([]);
     public batches = signal<Batch[]>([]);
-    public titleColumns = signal<{field: string, selected: boolean, width: number}[]>([]);
-    public contractColumns = signal<{field: string, selected: boolean, width: number}[]>([]);
-    public contractTitleColumns = signal<{field: string, selected: boolean, width: number}[]>([]);
+    public titleColumns = signal<{ field: string, selected: boolean, width: number }[]>([]);
+    public contractColumns = signal<{ field: string, selected: boolean, width: number }[]>([]);
+    public contractTitleColumns = signal<{ field: string, selected: boolean, width: number }[]>([]);
 
     // keycloak 
     code: string;
     session_state: string;
     redirect_uri: string;
+    user = signal<User>(null);
+
+
+
+    setUser(user: any) {
+        return this.user.set(user);
+    }
 
     encodeState() {
-        const obj = {q: this.q, f: this.usedFacets()};
+        const obj = { q: this.q, f: this.usedFacets() };
         return btoa(encodeURIComponent(JSON.stringify(obj)));
     }
 
@@ -34,7 +42,7 @@ import { Batch } from "./shared/batch";
             this.q = obj.q;
             this.usedFacets.set(obj.f);
         } else {
-            
+
             this.q = '';
             this.usedFacets.set([]);
         }

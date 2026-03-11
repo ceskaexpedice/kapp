@@ -33,7 +33,7 @@ export class AuthorDialog {
 
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
-  loadingLinks = signal<boolean>(false);
+  loading = signal<boolean>(false);
   editing = signal<boolean>(false);
   isNew = signal<boolean>(false);
 
@@ -56,9 +56,9 @@ export class AuthorDialog {
     if (this.author().nameIdentifier) {
       const p: any = {};
       p.id = this.author().nameIdentifier;
-      this.loadingLinks.set(true);
+      this.loading.set(true);
       this.service.getLinks(p as HttpParams).subscribe((resp: any) => {
-        this.loadingLinks.set(false);
+        this.loading.set(false);
         if (resp.links) {
           this.links.set(resp.links);
           this.linkTypes.set(Object.keys(resp.links));

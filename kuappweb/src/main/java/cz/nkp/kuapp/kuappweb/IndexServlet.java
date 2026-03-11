@@ -62,7 +62,7 @@ public class IndexServlet extends HttpServlet {
                         response.setContentType("plain/text;charset=UTF-8");
                         response.getWriter().println(json.getString("csv"));
                     } else {
-                        response.getWriter().println(json.toString(2));  
+                        response.getWriter().println(json.toString(2));
                     }
                 }
 
@@ -85,18 +85,21 @@ public class IndexServlet extends HttpServlet {
         }
     }
 
-    private static String getUser(HttpServletRequest req) {
-        return "test";
-//        Object user = req.getSession().getAttribute("user");
-//        if (user != null) {
-//            return ((JSONObject) req.getSession().getAttribute("user")).getString("name");
-//        } else {
-//            return null;
-//        }
-    }
+    
 
     enum Actions {
-
+        USER {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    json = UserServlet.getUser(req);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         HOME {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -354,7 +357,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.indexDocContracts(js, getUser(req));
+                    json = SolrIndexer.indexDocContracts(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -422,7 +425,7 @@ public class IndexServlet extends HttpServlet {
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
-                return json; 
+                return json;
             }
         },
         GET_USED_BATCHES {
@@ -432,7 +435,7 @@ public class IndexServlet extends HttpServlet {
                 try {
                     json = IndexSearcher.getUsedBatches();
                 } catch (JSONException ex) {
-                    json.put("error", ex.toString()); 
+                    json.put("error", ex.toString());
                 }
                 return json;
             }
@@ -513,7 +516,7 @@ public class IndexServlet extends HttpServlet {
                     if (Boolean.parseBoolean(req.getParameter("analyze"))) {
                         String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
                         JSONObject gemini = GeminiAnalyzer.analyze(base64Pdf);
-                        
+
                         // candidates[0].content.parts[0].text
                         ret = new JSONObject(gemini.getJSONArray("candidates")
                                 .getJSONObject(0)
@@ -539,17 +542,17 @@ public class IndexServlet extends HttpServlet {
                     File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
                     byte[] pdfBytes = FileUtils.readFileToByteArray(targetFile);
 
-                        String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
-                        JSONObject gemini = GeminiAnalyzer.analyze(base64Pdf);
-                        
-                        // candidates[0].content.parts[0].text
-                        ret = new JSONObject(gemini.getJSONArray("candidates")
-                                .getJSONObject(0)
-                                .getJSONObject("content")
-                                .getJSONArray("parts")
-                                .getJSONObject(0)
-                                .getString("text"));
-                        
+                    String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
+                    JSONObject gemini = GeminiAnalyzer.analyze(base64Pdf);
+
+                    // candidates[0].content.parts[0].text
+                    ret = new JSONObject(gemini.getJSONArray("candidates")
+                            .getJSONObject(0)
+                            .getJSONObject("content")
+                            .getJSONArray("parts")
+                            .getJSONObject(0)
+                            .getString("text"));
+
                 } catch (Exception ex) {
                     ret.put("error", ex);
                 }
@@ -575,7 +578,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.changeState(js, getUser(req));
+                    json = SolrIndexer.changeState(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -588,7 +591,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.changeStateInBatch(js, getUser(req));
+                    json = SolrIndexer.changeStateInBatch(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -601,6 +604,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     json = IndexSearcher.getConfig();
+                    json.put("user", UserServlet.getUser(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

@@ -77,22 +77,76 @@ public class UserServlet extends HttpServlet {
             response.getWriter().print(e1.toString());
         }
     }
-    
+
     private static String getFormDataAsString(Map<String, String> formData) {
-    StringBuilder formBodyBuilder = new StringBuilder();
-    for (Map.Entry<String, String> singleEntry : formData.entrySet()) {
-        if (formBodyBuilder.length() > 0) {
-            formBodyBuilder.append("&");
+        StringBuilder formBodyBuilder = new StringBuilder();
+        for (Map.Entry<String, String> singleEntry : formData.entrySet()) {
+            if (formBodyBuilder.length() > 0) {
+                formBodyBuilder.append("&");
+            }
+            formBodyBuilder.append(URLEncoder.encode(singleEntry.getKey(), StandardCharsets.UTF_8));
+            formBodyBuilder.append("=");
+            formBodyBuilder.append(URLEncoder.encode(singleEntry.getValue(), StandardCharsets.UTF_8));
         }
-        formBodyBuilder.append(URLEncoder.encode(singleEntry.getKey(), StandardCharsets.UTF_8));
-        formBodyBuilder.append("=");
-        formBodyBuilder.append(URLEncoder.encode(singleEntry.getValue(), StandardCharsets.UTF_8));
+        return formBodyBuilder.toString();
     }
-    return formBodyBuilder.toString();
-}
+
+    public static String getUserName(HttpServletRequest req) {
+        JSONObject user = getUser(req);
+        if (user != null) {
+            return user.getString("name");
+        } else {
+            return null;
+        }
+    }
+
+    public static JSONObject getUser(HttpServletRequest req) {
+
+        /**
+         * {
+         * "sub": "1be29aaf-8ae8-4809-827d-01b722fd4b41", "resource_access":
+         * {"account": {"roles": [ "manage-account", "manage-account-2fa",
+         * "manage-account-links", "manage-account-basic-auth", "view-profile"
+         * ]}}, "email_verified": false, "allowed-origins": ["*"], "iss":
+         * "https://eduid.inovatika.dev/realms/kapp", "typ": "Bearer",
+         * "preferred_username": "kapp", "given_name": "Kapp", "sid":
+         * "dff8f9fb-b7f4-4281-a5a4-d90a202d6bea", "aud": "account", "acr": "1",
+         * "realm_access": {"roles": [ "default-roles-kapp", "offline_access",
+         * "uma_authorization" ]}, "azp": "kapp", "auth_time": 1773233912,
+         * "scope": "openid profile email", "name": "Kapp Kapp", "exp":
+         * 1773234213, "session_state": "dff8f9fb-b7f4-4281-a5a4-d90a202d6bea",
+         * "iat": 1773233913, "family_name": "Kapp", "jti":
+         * "36cc75df-d741-411e-83e4-c89d2f46e2e6" }
+         */
+        Object user = req.getSession().getAttribute("user");
+        if (user != null) {
+            return ((JSONObject) req.getSession().getAttribute("user"));
+        } else {
+            return null;
+        }
+    }
 
     enum Actions {
 
+        CHECK {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONObject user = getUser(req);
+                    if (user == null) {
+                        json.put("logged", false);
+                    } else {
+                        json.put("logged", true);
+                        json.put("user", user);
+                    }
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, null, ex);
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
         LOGIN {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
@@ -124,7 +178,7 @@ public class UserServlet extends HttpServlet {
                 try {
                     JSONObject js = Options.getInstance().getJSONObject("keycloak");
 
-                 ///  curl -s -X POST "https://eduid.inovatika.dev/realms/kapp/protocol/openid-connect/token" ^
+                    ///  curl -s -X POST "https://eduid.inovatika.dev/realms/kapp/protocol/openid-connect/token" ^
                     //  -H "Content-Type: application/x-www-form-urlencoded" ^
                     //  -d "grant_type=authorization_code" ^
                     //  -d "client_id=kapp" ^
@@ -132,7 +186,7 @@ public class UserServlet extends HttpServlet {
                     //  -d "scope=openid"
                     
                     String url = js.getString("auth-server-url") + "realms/" + js.getString("realm") + "/protocol/openid-connect/token";
-                    
+
                     Map<String, String> formData = new HashMap<>();
                     formData.put("grant_type", "authorization_code");
                     formData.put("client_id", "kapp");
@@ -148,17 +202,17 @@ public class UserServlet extends HttpServlet {
                             .build();
                     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
                     String r = response.body();
-                    
+
                     JSONObject json = new JSONObject(r);
-                    
+
                     String[] chunks = json.getString("access_token").split("\\.");
                     Base64.Decoder decoder = Base64.getUrlDecoder();
-                    
+
                     String header = new String(decoder.decode(chunks[0]));
                     String payload = new String(decoder.decode(chunks[1]));
                     user = new JSONObject(payload);
                     req.getSession().setAttribute("user", user);
-                    
+
                     // get user by token
                     // curl -X GET -H "Authorization: Bearer $ACCESS_TOKEN" $KCHOST/auth/admin/realms/$REALM/users | jq
 //                    url = js.getString("auth-server-url") + "/admin/realms/" + js.getString("realm") + "/users";
@@ -169,7 +223,6 @@ public class UserServlet extends HttpServlet {
 //                            .build();
 //                    HttpResponse<String> uresponse = client.send(grequest, HttpResponse.BodyHandlers.ofString());
 //                    String u = uresponse.body();
-                    
                 } catch (Exception ex) {
                     LOGGER.log(Level.SEVERE, null, ex);
                     user.put("error", ex.toString());

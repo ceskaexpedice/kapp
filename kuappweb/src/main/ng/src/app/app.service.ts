@@ -78,6 +78,10 @@ export class AppService {
     return of({ response: { 'status': error.status, 'message': error.message, 'errors': [error.error] } });
   }
 
+  getUser(): Observable<any> {
+    return this.get('index/user');
+  }
+
   getHome(): Observable<any> {
     return this.get('index/home');
   }

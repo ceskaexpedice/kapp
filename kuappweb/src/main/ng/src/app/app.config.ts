@@ -10,6 +10,7 @@ import { TranslateService, provideTranslateService } from '@ngx-translate/core';
 import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AppConfiguration } from './app-configuration';
 import { Configuration } from './shared/config';
+import { AuthService } from './auth-service';
 
 
 export const appConfig: ApplicationConfig = {
@@ -28,6 +29,6 @@ export const appConfig: ApplicationConfig = {
     }),
     provideHttpClient(),
     { provide: APP_INITIALIZER, useFactory: (config: AppConfiguration) => () => config.load(), deps: [AppConfiguration], multi: true },
-    TranslateService, AppState, AppService, UIService
+    TranslateService, AuthService, AppState, AppService, UIService
   ]
 };

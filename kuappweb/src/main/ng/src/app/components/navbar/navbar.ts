@@ -32,7 +32,7 @@ export class Navbar {
 
   viewUser() {
     
-    console.log(this.auth.user())
+    console.log(this.state.user())
   }
 
   onLanguageChanged(lang: string) {

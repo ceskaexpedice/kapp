@@ -4,6 +4,7 @@ import { Router } from '@angular/router';
 import { map, Observable } from 'rxjs';
 import { User } from './shared/user';
 import { AppConfiguration } from './app-configuration';
+import { AppState } from './app-state';
 
 @Injectable({
   providedIn: 'root'
@@ -16,7 +17,6 @@ export class AuthService {
   static GLOBAL_ACTIONS_LOADED = 0;
   static SPECIFIC_ACTIONS_LOADED = 0;
 
-  user =  signal<User>(null);
   static token: string;
   static tokenTime: Date;
   static tokenDeadline: Date;
@@ -31,7 +31,8 @@ export class AuthService {
   constructor(
     private http: HttpClient,
     private settings: AppConfiguration,
-    private router: Router
+    private router: Router, 
+    private state: AppState
   ) {
     AuthService.token = localStorage.getItem('account.token');
     AuthService.tokenTime = new Date(localStorage.getItem('account.token.time'));
@@ -70,7 +71,7 @@ export class AuthService {
 
     localStorage.removeItem('account.token');
     localStorage.removeItem('account.token.time');
-    this.user = null;
+    this.state.user.set(null);
 
     const redircetUri = `${this.baseUrl()}${suffix}`;
     //let url = `${this.settings.keycloak.baseUrl}/realms/kramerius/protocol/openid-connect/logout`;
@@ -82,11 +83,11 @@ export class AuthService {
   }
 
   isLoggedIn() {
-    return this.user && this.user().isLoggedIn();
+    return this.state.user && this.state.user().isLoggedIn();
   }
 
   isAuthorized() {
-    let flag = this.user && this.authorizedGlobalActions && this.authorizedGlobalActions.indexOf('a_admin_read') >= 0;
+    let flag = this.state.user && this.authorizedGlobalActions && this.authorizedGlobalActions.indexOf('a_admin_read') >= 0;
     if (flag) {
       return this.authorizedGlobalActions.indexOf("a_admin_read") >= 0;
     }
@@ -96,10 +97,10 @@ export class AuthService {
 
 
   getTextProfileImage(): string {
-    if (!this.user) {
+    if (!this.state.user) {
       return '?';
     }
-    return (this.user.name || this.user().sid || '?')[0];
+    return (this.state.user.name || this.state.user().sid || '?')[0];
   }
 
   checkToken(callback: (arg0: number) => void) {
@@ -109,7 +110,7 @@ export class AuthService {
     }
 
     this.validateToken().subscribe((user: User) => {
-      this.user.set(user);
+      this.state.user.set(user);
     },
       (error) => {
         callback(AuthService.AUTH_NOT_LOGGED_IN);
@@ -122,7 +123,7 @@ export class AuthService {
         if (!user) {
           callback(AuthService.AUTH_NOT_LOGGED_IN);
         } else {
-          this.user.set(user);
+          this.state.user.set(user);
           callback(AuthService.AUTH_AUTHORIZED);
         }
       },

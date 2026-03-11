@@ -4,6 +4,7 @@ import { catchError, of, switchMap, tap } from 'rxjs';
 import { AppState } from './app-state';
 import { Configuration } from './shared/config';
 import { Label } from './shared/label';
+import { AuthService } from './auth-service';
 
 @Injectable({
     providedIn: 'root'
@@ -63,6 +64,10 @@ import { Label } from './shared/label';
             switchMap((cfg: any) => {
                 this.config = cfg as Configuration;
                 return this.http.get('api/index/config').pipe(tap((resp: any) => {
+
+                    if (resp.user) {
+                        this.state.setUser(resp.user);
+                    }
                     const b = resp.config.find((a: any) => a.id === 'batches');
                     if (b && b.value.length > 0) {
                         this.state.batches.set(b.value);
