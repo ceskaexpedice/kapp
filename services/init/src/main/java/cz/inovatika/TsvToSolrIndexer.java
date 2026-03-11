@@ -44,9 +44,7 @@ import java.nio.file.Path;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 //TODO: Refactor !!
@@ -249,7 +247,7 @@ public class TsvToSolrIndexer {
                         }
 
                         States desiredState = parsePublicString(doc, recordNumber);
-                        if (desiredState == States.CONTROLLED_UNKNOWN) desiredState = setState(doc);
+                        //if (desiredState == States.CONTROLLED_UNKNOWN) desiredState = setState(doc,pid);
                         SolrQuery q = new SolrQuery()
                                 .setQuery("pid:\"" + pid + "\"")
                                 .setRows(1);
@@ -292,19 +290,42 @@ public class TsvToSolrIndexer {
                             System.err.println("Caught exception in " + tsvFile.getName() +" of type: "+e.getClass()+ ": " + e.getMessage());
                             e.printStackTrace();
                         }
-                        if(nameIDArray!=null) {XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
+                        if(nameIDArray!=null) {
+                            XmlProcessor.trySetLastAuthor(doc, Arrays.asList(nameIDArray));
+                            List<String> authorJsons = new ArrayList<>();
+                            Arrays.asList(nameIDArray).forEach(author -> {
+                                authorJsons.add(author.toJsonString());
+                                doc.addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
+                                if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
+                                    doc.addField(AppDataFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+                                }
+                            });
+                            //for (String authorJson : authorJsons) {
+                            /*if(authorJsons.size()>1){
+                                //doc.getDocument().setField(AppDataFields.AUTHORS_KRAMERIUS_FIELD,"");
+                                System.out.println(pid);
+                            }*/
+                            Map<String, Object> operation = new HashMap<>();
+                            operation.put("add-distinct", authorJsons);
 
-                        Arrays.asList(nameIDArray).forEach(author -> {
-                            doc.addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
-                            if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
-                                doc.addField(AppDataFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
+                            doc.getDocument().setField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, operation);
+                            //doc.getDocument().addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, authorJsons);
+                        //}
+
+                            //System.out.println(Arrays.toString(authorJsons.toArray()));
+
+                            //System.out.println("Lenght: "+authorJsons.size()+ ". " + doc.getFieldValue(AppDataFields.AUTHORS_KRAMERIUS_FIELD));
+                            /*if(authorJsons.size()>1){
+                                //System.out.println(doc.getDocument().getField(AppDataFields.AUTHORS_KRAMERIUS_FIELD).toString());
+                                for (String authorJson : authorJsons) {System.out.println("   "+authorJson);}
+                            }*/
+
+                            for (SolrInputDocument authorDoc : Arrays.stream(nameIDArray).map(AuthorData::toAuthoritySolrDocument).toList()) {
+                                if (authorDoc != null)
+                                    solrClient.add(Collection.AUTHORS_COLLECTION, authorDoc);
                             }
-                        });
-
-                        for (SolrInputDocument authorDoc : Arrays.stream(nameIDArray).map(AuthorData::toAuthoritySolrDocument).toList()) {
-                            if (authorDoc != null)
-                                solrClient.add(Collection.AUTHORS_COLLECTION, authorDoc);
-                        }}/*
+                        }
+                        /*
                         if (doc.getFieldValue(AppDataFields.PID_FIELD) == doc.getFieldValue(AppDataFields.ROOT_PID_FIELD)) {
                             doc.setField(AppDataFields.ROOT_TITLE_FIELD, doc.getFieldValue(AppDataFields.TITLE_FIELD));
                         }*/
@@ -375,27 +396,28 @@ public class TsvToSolrIndexer {
         }
         return States.CONTROLLED_UNKNOWN;
     }
-
-    private static States setState(SolrInputDocumentWrapper doc) {
-        String val;
-        /*if (doc.getFieldValue(ApplFields.ASSIGNED_LICENSES)!=null) {
+/*
+    private static States setState(SolrInputDocumentWrapper doc,String pid) {
+        //States val;
+        if (doc.getFieldValue(ApplFields.ASSIGNED_LICENSES)!=null) {
             return;
-        } else*/
+        } else
         Object public_since_obj = doc.getFieldValue("public_since");
         if (public_since_obj != null) {
             int public_since;
+            System.out.println("Public since field found");
             try {
                 public_since = Integer.parseInt(public_since_obj.toString());
             } catch (NumberFormatException e) {
                 return States.CONTROLLED_UNKNOWN;
             }
             if (public_since > LocalDate.now().getYear()) {
-                val = "controlled_private"; // KONTROLOVANÉ- NEVEŘEJNÉ
+                val = States.NONCONTROLLED_PRIVATE; // KONTROLOVANÉ- NEVEŘEJNÉ
             } else {
-                val = "controlled_public"; // KONTROLOVANÉ - VOLNÉ
+                val = States.NONCONTROLLED_PUBLIC; // KONTROLOVANÉ - VOLNÉ
             }
         } else {
-            val = "controlled_unknown"; // KONTROLOVANÉ - NEZNÁMÉ
+            val = States.CONTROLLED_UNKNOWN; // KONTROLOVANÉ - NEZNÁMÉ
         }
 
         //doc.setField(ApplFields.STATE_FIELD, val);
@@ -404,22 +426,18 @@ public class TsvToSolrIndexer {
                 .put("date", LocalDateTime.now().toString())
                 .put("reason", "import from excel")
                 .put("user", "importer")
-                .put(AppComputedFields.STATE_FIELD, val);
+                .put(AppComputedFields.STATE_FIELD, val.name());
 
-        if (documentExists((String) doc.getFieldValue("pid"))) {
+        if (documentExists(pid)) {
             Map<String, Object> partialUpdate = new HashMap<>();
             partialUpdate.put("add", h.toString());
-            doc.addField(AppComputedFields.STATE_HISTORY_FIELD, partialUpdate);
+            doc.getDocument().addField(AppComputedFields.STATE_HISTORY_FIELD, partialUpdate);
         } else {
-            doc.addField(AppComputedFields.STATE_HISTORY_FIELD, h.toString());
+            doc.getDocument().setField(AppComputedFields.STATE_HISTORY_FIELD, h.toString());
         }
-        return switch (val) {
-            case "controlled_public" -> States.CONTROLLED_PUBLIC;
-            case "controlled_private" -> States.CONTROLLED_PRIVATE;
-            default -> States.CONTROLLED_UNKNOWN;
-        };
+        return val;
 
-    }
+    }*/
 
     private static boolean documentExists(String pid) {
         SolrQuery q = new SolrQuery()
