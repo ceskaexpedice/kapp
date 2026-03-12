@@ -89,6 +89,7 @@
     "search": "Search",
     "close": "Close",
     "save": "Save",
+    "save_role": "Save role",
     "edit": "Edit",
     "export": "Export",
     "overwrite": "Overwrite",
@@ -112,6 +113,7 @@
     "analyze": "Analyze",
     "add": "Add",
     "found_in_titles": "Titles",
+    "showKramerius": "Show original data from K7",
     "remove_record": "Remove record"
   },
   "state": {
@@ -128,6 +130,7 @@
     "CONTROLLED_NO_AP": "Controlled - no copyright",
     "CONTROLLED_PROHIBITED": "Controlled - inaccessible",
     "CONTROLLED_PRIVATE_LICENSE": "Controlled - non-public licenses",
+    "IMPORTED": "Imported",
     "undefined": "Unknown"
   },
   "admin": {

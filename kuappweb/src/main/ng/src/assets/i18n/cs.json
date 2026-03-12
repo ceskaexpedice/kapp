@@ -89,6 +89,7 @@
     "search": "Hledat",
     "close": "Zavřít",
     "save": "Uložit",
+    "save_role": "Uložit role",
     "edit": "Editovat",
     "export": "Export",
     "overwrite": "Přepsat",
@@ -112,6 +113,7 @@
     "analyze": "Analyzovat",
     "add": "Přidat",
     "found_in_titles": "Díla",
+    "showKramerius": "Zobrazit puvodni data z K7",
     "remove_record": "Odstranit záznam"
   },
   "state": {
@@ -128,6 +130,7 @@
     "CONTROLLED_NO_AP": "Kontrolované - bez autorskych prav",
     "CONTROLLED_PROHIBITED": "Kontrolované - znepřístupněné",
     "CONTROLLED_PRIVATE_LICENSE": "Kontrolované - neveřejné licence",
+    "IMPORTED": "Importované",
     "undefined": "Neznamé"
   },
   "admin": {
@@ -172,6 +175,8 @@
   "alert": {
     "warn_contract": "Opravdu chcete přiřadit dílo ke smlouvě?",
     "batch_exist": "Tato dávka již existuje!",
+    "saving_author_back": "Ulozit autora?",
+    "saving_author_back_desc": "Autor uz byl editovan. Chtete pouzit starou verzi z Krameria?",
     "name_empty": "Název je prázdný!"
    }
 }

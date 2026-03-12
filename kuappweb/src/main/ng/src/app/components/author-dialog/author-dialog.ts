@@ -1,7 +1,7 @@
 import { Component, inject, signal } from '@angular/core';
-import { MAT_DIALOG_DATA, MatDialogContent, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
+import { MAT_DIALOG_DATA, MatDialog, MatDialogContent, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
 import { Author, AuthorTitle } from '../../shared/author';
-import { TranslateModule } from '@ngx-translate/core';
+import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppService } from '../../app.service';
 import { UIService } from '../../ui.service';
 import { HttpParams } from '@angular/common/http';
@@ -12,23 +12,30 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonToggleModule } from '@angular/material/button-toggle';
+import { MatCheckboxModule } from "@angular/material/checkbox";
+import { SimpleDialogData } from '../simple-dialog/simple-dialog';
+import { SimpleDialogComponent } from '../simple-dialog/simple-dialog.component';
 
 @Component({
   selector: 'app-author-dialog',
   imports: [
     TranslateModule, FormsModule,
     MatDialogModule, MatIconModule, MatButtonModule, MatButtonToggleModule,
-    MatProgressBar, MatFormFieldModule, MatInputModule
+    MatProgressBar, MatFormFieldModule, MatInputModule,
+    MatCheckboxModule
   ],
   templateUrl: './author-dialog.html',
   styleUrl: './author-dialog.scss'
 })
 export class AuthorDialog {
 
+  readonly translator = inject(TranslateService);
   readonly service = inject(AppService);
   readonly ui = inject(UIService);
   readonly dialogRef = inject(MatDialogRef<AuthorDialog>);
-  readonly data = inject<{pid: string, authors_kapp: AuthorTitle[], author: AuthorTitle}>(MAT_DIALOG_DATA);
+  readonly data = inject<{ pid: string, authors_kapp: AuthorTitle[], authors_kramerius: AuthorTitle[], id: string }>(MAT_DIALOG_DATA);
+
+  readonly dialog = inject(MatDialog);
 
 
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
@@ -38,6 +45,8 @@ export class AuthorDialog {
   isNew = signal<boolean>(false);
 
   author = signal<AuthorTitle>(null);
+  useKramerius = false;
+  hasKapp = signal<boolean>(false);
 
   hasChanges: boolean;
 
@@ -47,8 +56,26 @@ export class AuthorDialog {
       // Show buttons
       this.isNew.set(true);
     } else {
-      this.author.set(this.data.author);
+      const a = this.data.authors_kapp?.find(a => a.id === this.data.id);
+      if (a) {
+        this.author.set(a);
+        this.useKramerius = false;
+        this.hasKapp.set(true);
+      } else {
+        this.author.set(this.data.authors_kramerius.find(a => a.id === this.data.id));
+        this.useKramerius = true;
+        this.hasKapp.set(false);
+      }
+
       this.getLinks();
+    }
+  }
+
+  setAutor() {
+    if (this.useKramerius) {
+      this.author.set(this.data.authors_kramerius.find(a => a.id === this.data.id));
+    } else {
+      this.author.set(this.data.authors_kapp.find(a => a.id === this.data.id));
     }
   }
 
@@ -104,33 +131,66 @@ export class AuthorDialog {
         });
         this.getLinks();
         if (resp.error) {
-           this.ui.showErrorSnackBar('snackbar.record_changed.error');
+          this.ui.showErrorSnackBar('snackbar.record_changed.error');
         } else {
-           this.ui.showInfoSnackBar('snackbar.record_changed.success');
+          this.ui.showInfoSnackBar('snackbar.record_changed.success');
         }
       });
     }
   }
 
-  save(): void {
-      console.log(this.author());
-      const authors = [...this.data.authors_kapp];
-      const ka = authors.find(a => a.id === this.author().id);
-      if (ka) {
-        ka.role = this.author().role
-      } else {
-        authors.push(this.author())
-      }
+  onSave() {
 
-      this.service.saveAuthorsInTitle(authors, this.data.pid).subscribe((res: any) => {
-        if (res.error) {
-          this.ui.showErrorSnackBar('snackbar.record_saved.error');
-        } else {
-          console.log(this.author());
-          this.ui.showInfoSnackBar('snackbar.record_saved.success');
-          this.hasChanges = true;
-        } 
-      })
+    if (true || this.hasKapp && this.useKramerius) {
+      const data: SimpleDialogData = {
+        title: this.translator.instant('alert.saving_author_back'),
+        message: this.translator.instant('alert.saving_author_back_desc'),
+        alertClass: 'app-warn',
+        btn1: {
+          label: 'Ano',
+          value: 'yes',
+          color: 'warn'
+        },
+        btn2: {
+          label: 'Ne',
+          value: 'no',
+          color: 'default'
+        }
+      };
+      const dialogRef = this.dialog.open(SimpleDialogComponent, {
+        data: data
+      });
+      dialogRef.afterClosed().subscribe(result => {
+        if (result === 'yes') {
+          this.save();
+        }
+      });
+    } else {
+      this.save();
+    }
+
+
+  }
+
+  save(): void {
+    console.log(this.author());
+    const authors = this.data.authors_kapp ? [...this.data.authors_kapp] : [];
+    const ka = authors.find(a => a.id === this.author().id);
+    if (ka) {
+      ka.role = this.author().role
+    } else {
+      authors.push(this.author())
+    }
+
+    this.service.saveAuthorsInTitle(authors, this.data.pid).subscribe((res: any) => {
+      if (res.error) {
+        this.ui.showErrorSnackBar('snackbar.record_saved.error');
+      } else {
+        console.log(this.author());
+        this.ui.showInfoSnackBar('snackbar.record_saved.success');
+        this.hasChanges = true;
+      }
+    })
   }
 
   setAsLast() {

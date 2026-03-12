@@ -2,7 +2,7 @@ import { HttpParams } from '@angular/common/http';
 import { Component, effect, input, model, signal } from '@angular/core';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
-import { RouterModule } from '@angular/router';
+import { Router, RouterModule } from '@angular/router';
 import { TranslateModule } from '@ngx-translate/core';
 import { AppConfiguration } from '../../app-configuration';
 import { AppState } from '../../app-state';
@@ -49,6 +49,7 @@ export class ResultItem {
   mergedAuthors: AuthorTitle[] = [];
 
   constructor(
+    private router: Router,
     private dialog: MatDialog,
     public state: AppState,
     private service: AppService,
@@ -69,33 +70,46 @@ export class ResultItem {
         });
       }
 
-      if (this.doc()['authors_kapp']) {
-        this.mergedAuthors = [...this.doc()['authors_kapp']];
-      }
-      if (this.doc()['authors_kramerius']) {
-        this.doc()['authors_kramerius'].forEach((ak: AuthorTitle) => {
-          if (
-            !this.mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.old_id ) &&
-            !this.mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.id ) &&
-              !this.mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.nameIdentifier ) &&
-              !this.mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.old_id )
-            ) {
-            this.mergedAuthors.push(ak);
-          }
+      this.mergedAuthors = [...this.setMergedAuthors(this.doc())];
 
-        });
-      }
-
-      if (this.expanded() || this.doc()['is_hierarchical']) {
+      if (this.doc()['is_hierarchical']) {
         this.hasCollapsed = true;
         this.getRelated();
+      } else if (this.expanded()) {
+        //zobrazit expanded
+        // this.hasCollapsed = true;
+        // console.log(this.expanded())
+        // this.related.set([...this.expanded().docs]);
+        // console.log(this.related())
       }
     })
   }
 
+  setMergedAuthors(d: any) {
+    let mergedAuthors: AuthorTitle[] = [];
+    if (d['authors_kapp']) {
+      mergedAuthors = [...d['authors_kapp']];
+    }
+    if (d['authors_kramerius']) {
+      d['authors_kramerius'].forEach((ak: AuthorTitle) => {
+        if (!mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.old_id) &&
+          !mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.id) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.nameIdentifier) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.old_id)) {
+          mergedAuthors.push(ak);
+        }
+
+      });
+    }
+
+
+
+    return mergedAuthors;
+  }
+
   getRelated() {
     this.related.set([]);
-    this.service.getRelated(this.doc()['root.pid']).subscribe((resp: any) => {
+    this.service.getRelated(this.doc()['root_pid']).subscribe((resp: any) => {
       if (resp.response?.docs?.length > 0) {
         //    p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
         // let ddcs = [];
@@ -104,10 +118,10 @@ export class ResultItem {
         //     ddcs.push(d);
         //   }
         // });  
-        resp.response.docs.filter((d: any) => d['pid'] != d['root.pid']);
-        let relatedDocs = resp.response.docs.filter((d: any) => d['pid'] != d['root.pid']);
+        resp.response.docs.filter((d: any) => d['pid'] != d['root_pid']);
+        let relatedDocs = resp.response.docs.filter((d: any) => d['pid'] != d['root_pid']);
         const sortedDocs = relatedDocs
-        .filter((d: any) => d['pid'] !== d['root.pid'])
+        .filter((d: any) => d['pid'] !== d['root_pid'])
         .sort((a: any, b: any) => {
           const titleA = (a['root.title'] || '').toLowerCase();
           const titleB = (b['root.title'] || '').toLowerCase();
@@ -120,9 +134,9 @@ export class ResultItem {
     });
   }
 
-  infoAuthor(a: Author) {
+  infoAuthor(a: AuthorTitle) {
     const dialogRef = this.dialog.open(AuthorDialog, {
-      data: {pid:this.doc().pid, authors_kapp:this.doc().authors_kapp,  author: a},
+      data: {pid:this.doc().pid, authors_kapp:this.doc().authors_kapp, authors_kramerius:this.doc().authors_kramerius,  id: a.id},
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -248,5 +262,17 @@ export class ResultItem {
     this.service.saveDecisionDate(this.doc().pid, this.decisionDate).subscribe((res: any) => {
       console.log(res)
     })
+  }
+
+  gotoPid(pid: string) {
+    this.state.q = pid;
+    this.state.usedFacets.set([]);
+    this.router.navigate(['/titles'], { queryParams: { s: this.state.encodeState() } });
+    // const p: any = {};
+    // p.q = pid;
+    // p.only_pid = true;
+    // this.service.searchTitlesByAuthor(p as HttpParams).subscribe((resp: any) => {
+    //   this.numTitles.set(resp.response.numFound);
+    // });
   }
 }

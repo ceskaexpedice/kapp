@@ -9,7 +9,10 @@
 			{{ 'action.add_author' | translate }}
 		}
 	</span>
-	<button matIconButton (click)="toggleEdit()" ><mat-icon>edit</mat-icon></button><!--[checked]="editing()"-->
+	<button matIconButton (click)="toggleEdit()" ><mat-icon>edit</mat-icon></button>
+	@if(hasKapp()) {
+	<mat-button-toggle (click)="useKramerius = !useKramerius; setAutor()" [checked]="useKramerius" [title]="'action.showKramerius' | translate"><mat-icon>local_library</mat-icon></mat-button-toggle>
+	}
 </h2>
 <mat-dialog-content>
 	@if(author()) {
@@ -52,6 +55,7 @@
 				}
 			</div>
 		}
+		
 	}
 </mat-dialog-content>
 <mat-dialog-actions>
@@ -61,6 +65,6 @@
 	@if(!isNew()) {
 		<button matButton="outlined" (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
 	}
-	<button matButton="filled" [disabled]="loading()" (click)="save()">{{ 'action.save' | translate }}</button>
+	<button matButton="filled" [disabled]="loading()" (click)="onSave()">{{ 'action.save_role' | translate }}</button>
 	<button matButton="outlined" [mat-dialog-close]="hasChanges" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>

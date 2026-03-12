@@ -1,8 +1,12 @@
 export class User {
 
+  
+         ///user.realm_access.roles
+
   authenticated: boolean = false;
   sid: string;
   name: string;
+  realm_access: {roles: string[]};
   roles: string[];
   licenses: string[];
   session: any;

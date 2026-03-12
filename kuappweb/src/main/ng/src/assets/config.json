@@ -4,8 +4,12 @@
     "userClientBaseUrl": "https://k7.inovatika.dev",
     "keycloak": {
          "clientId": "kapp",
-         "loginType": "all" 
+         "loginType": "all"
     },
+         "roles": {
+            "kapp_kurator_nkp": ["NKP"],
+            "kapp_kurator_mzk": ["MZK"]
+         },
     "digitalni_knihovny": [
         "NKP",
         "MZK"

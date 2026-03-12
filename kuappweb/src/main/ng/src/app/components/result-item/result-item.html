@@ -27,6 +27,12 @@
 		</mat-card-title>
 	</mat-card-header>
 	<mat-card-content>
+		@if (!doc()['is_hierarchical']) {
+		<div class="app-metadata-row">
+			<span class="app-label">{{ (doc().model === 'periodicalvolume' ? 'periodical' : 'monograph') | translate }}:</span>
+			<a (click)="gotoPid(doc()['root_pid'])" class="app-value" [title]="'gotoParent' | translate">{{ doc()['root_title']}} </a>
+		</div>
+		}
 		<div class="app-metadata-row app-multiple">
 			<span class="app-label">{{ 'field.authors' | translate }}:</span>
 			<ul>
@@ -91,7 +97,7 @@
 					<mat-icon>open_in_new</mat-icon>
 				</a>
 			} @else {
-				<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/view/'+doc()['pid']" class="app-value">
+				<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+doc()['pid']" class="app-value">
 					<span>{{doc()['pid']}}</span>
 					<mat-icon>open_in_new</mat-icon>
 				</a>
@@ -177,7 +183,7 @@
 				<tbody>
 					@for (ch of related(); track ch) {
 						<tr>
-							<td>{{ ch['model']}}</td>
+							<td> <a (click)="gotoPid(ch['pid'])" class="app-value">{{ ch['model']}}</a></td>
 							<td style="min-width: 200px">
 								<div class="app-text-cutter-wrapper">
 									<div class="app-text-cutter">{{ ch['root_title']}}</div>

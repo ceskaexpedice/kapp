@@ -135,8 +135,6 @@ export class AuthorItem {
       family: a['family']?.[0],
       given: a['given']?.[0],
       date: a['datafield_100d'],
-      date_birth: dates[0] ? dates[0] : null,
-      date_death: dates.length > 1 ? dates[1] : null,
       year_birth: dates[0] ? parseInt(dates[0]) : null,
       year_death: dates.length > 1 ? parseInt(dates[1]) : null,
       // labels: [...this.author.labels, 'author_modified']
