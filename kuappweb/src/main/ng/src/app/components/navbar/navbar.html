@@ -12,7 +12,11 @@
     <a [routerLink]="['batches']" routerLinkActive="app-active-link" matButton>{{ 'navbar.batches' | translate}}</a>
     <a [routerLink]="['contracts']" routerLinkActive="app-active-link" matButton>{{ 'navbar.contracts' | translate}}</a>
     @if(state.user()) {
-      <a matButton (click)="viewUser()">{{ state.user().name }}</a>
+      <a matButton [matMenuTriggerFor]="usermenu">{{ state.user().name }}</a>
+      <mat-menu #usermenu="matMenu">
+        <button mat-menu-item  (click)="viewUser()">Profile</button>
+        <button mat-menu-item (click)="logout()">Logout</button>
+      </mat-menu>
     } @else {
      <a matButton (click)="goToKeycloakLogin()">{{ 'navbar.login' | translate}}</a>
     }

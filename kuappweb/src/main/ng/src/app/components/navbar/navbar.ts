@@ -31,8 +31,11 @@ export class Navbar {
   }
 
   viewUser() {
-    
     console.log(this.state.user())
+  }
+
+  logout() {
+    this.auth.logout();
   }
 
   onLanguageChanged(lang: string) {
