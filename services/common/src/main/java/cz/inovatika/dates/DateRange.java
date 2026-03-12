@@ -28,14 +28,5 @@ public record DateRange(
             LOGGER.log(Level.SEVERE, "Suspicious year range: {0}-{1}", new Object[]{this.startYear(), this.endYear()});
         }
         docWrapper.setField(AppComputedFields.DATE_ISSUED_YEAR, yearEnd);
-/*
-        docWrapper.setField(AppDataFields.DATE_ISSUED_START_YEAR_FIELD, yearStart);
-
-        docWrapper.setField(AppDataFields.DATE_ISSUED_START_YEAR_FIELD, String.format("%04d-01-01T00:00:00Z", yearStart));
-        docWrapper.setField(AppDataFields.DATE_ISSUED_END_YEAR_FIELD, String.format("%04d-12-31T00:00:00Z", yearEnd));
-
-        docWrapper.setField(AppComputedFields.CONFIRMED_START_YEAR, this.startConfirmed());
-        docWrapper.setField(AppComputedFields.CONFIRMED_END_YEAR, this.endConfirmed());
-        */
     }
 }

@@ -1,6 +1,7 @@
 package cz.inovatika.solr;
 
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.SolrInputField;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -61,7 +62,16 @@ public record SolrInputDocumentWrapper(String idKey,SolrInputDocument document, 
 
     private void changeField(String name, Object value, TypeOfOperation ofOperation) {
         switch (typeOfChange) {
-            case SIMPLE -> document.addField(name, value);
+            case SIMPLE -> {
+                switch (ofOperation) {
+                    case ATOMIC_ADD, ATOMIC_ADD_DISTINCT -> {
+                        document.addField(name, value);
+                    }
+                    case ATOMIC_SET -> {
+                        document.setField(name, value);
+                    }
+                }
+            }
             case ATOMIC_CHANGE -> {
                 switch (ofOperation) {
                     case ATOMIC_ADD -> {

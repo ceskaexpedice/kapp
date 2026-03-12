@@ -658,7 +658,7 @@ public class HarvesterImpl implements Harvester {
         if (dateIssued != null) {
 
             String dateText = dateIssued.getTextContent();
-            wrapper.addField(AppDataFields.DATE_ISSUED_STR, dateText);
+            wrapper.setField(AppDataFields.DATE_ISSUED_STR, dateText);
 
             try {
                 DateRange parsedDateRange = new DateRangeParser().parse(TitleNormalizationUtils.normalize(dateText));
