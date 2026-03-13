@@ -15,7 +15,7 @@ export interface JSONFacet {
 }
 
 export interface FacetFields {
-  [key: string]: {buckets: JSONFacet[]}
+  [key: string]: {buckets?: JSONFacet[], count?:number}
 }
 
 export interface FacetCounts {

@@ -14,7 +14,7 @@
     @if(state.user()) {
       <a matButton [matMenuTriggerFor]="usermenu">{{ state.user().name }}</a>
       <mat-menu #usermenu="matMenu">
-        <button mat-menu-item  (click)="viewUser()">Profile</button>
+        <!-- <button mat-menu-item  (click)="viewUser()">Profile</button> -->
         <button mat-menu-item (click)="logout()">Logout</button>
       </mat-menu>
     } @else {

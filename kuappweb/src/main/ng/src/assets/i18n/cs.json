@@ -73,16 +73,20 @@
     "datum_platnosti": "Datum platnosti", 
     "kontaktni_osoby": "Kontaktní osoby", 
     "digitalni_knihovny": "Digitální knihovny",
+    "digital_library": "Digitální knihovny",
     "kramlicenses": "Licence v Kramerius",
     "isHlavni": "Je hlavní smlouva",
     "hlavni_smlouva": "Hlavní smlouva",
     "dodatky": "Dodatky ke smlouvě",
     "souhrn": "Souhrn",
-    "assigned_license": "Přiřazená licence",
+    "assigned_licenses": "Přiřazená licence",
     "model": "Model",
     "contracts": "Smlouvy",
     "ccnb": "Ccnb",
-    "issn": "Issn"
+    "issn": "Issn",
+    "hard_facets": "Filtry",
+    "no_nameIdentifier": "Autoři bez nameIdentifier",
+    "no_year_death": "Autoři bez data úmrtí"
   },
   "action": {
     "view": "Zobrazit",

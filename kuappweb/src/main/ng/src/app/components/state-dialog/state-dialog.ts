@@ -93,7 +93,7 @@ export class StateDialog {
         this.ui.showInfoSnackBar('snackbar.record_saved.success');
         console.log(resp);
       }
-      this.dialogRef.close(true);
+      // this.dialogRef.close(true);
     });
   }
 

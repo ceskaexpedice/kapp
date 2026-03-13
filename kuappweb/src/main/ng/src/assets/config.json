@@ -6,10 +6,19 @@
          "clientId": "kapp",
          "loginType": "all"
     },
-         "roles": {
-            "kapp_kurator_nkp": ["NKP"],
-            "kapp_kurator_mzk": ["MZK"]
-         },
+    "roles": {
+        "kapp_kurator": [],
+        "kapp_admin": ["*"],
+        "kapp_uzivatel": [],
+        "kapp_kurator_nkp": ["NKP"],
+        "kapp_kurator_mzk": ["MZK"]
+    },
+
+
+    "hard_facets": {
+      "year_death": "-year_birth:*",
+      "nameIdentifier": "-nameIdentifier:*"
+    },
     "digitalni_knihovny": [
         "NKP",
         "MZK"
@@ -54,7 +63,8 @@
         {"field": "indextime", "selected": true},
         {"field": "decision_date", "selected": false},
         {"field": "release_date", "selected": false},
-        {"field": "license", "selected": false},
+        {"field": "assigned_licenses", "selected": false},
+        {"field": "licenses", "selected": false},
         {"field": "sigla", "selected": true}
     ],
 

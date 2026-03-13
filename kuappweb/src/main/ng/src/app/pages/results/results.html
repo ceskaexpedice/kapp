@@ -7,7 +7,7 @@
           'labels', 
           'state',
           'contracts',
-          'assigned_license', 
+          'assigned_licenses', 
           'licenses', 
           'physical_locations',
           'digital_library',
@@ -15,7 +15,7 @@
           'authors',
           'nameIdentifier',
           'date'
-          ]" [facets]="solrResponse.facets"></app-facets>
+          ]" [facets]="solrResponse.facets" [hard_facets]="view() === 'titles' ? [] : ['no_nameIdentifier', 'no_year_death']"></app-facets>
     </div>
     }
     <div class="app-fxFlex app-right app-oh app-mt-n2">
@@ -120,9 +120,14 @@
               <td mat-cell *matCellDef="let doc">{{ doc['physical_locations'] }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="license">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'license')" [style.width]="columnSizes['license'] + 'px'"><span mat-sort-header>{{ 'field.license' | translate }}</span></th>
-              <td mat-cell *matCellDef="let doc">{{ doc['assigned_license'] }}</td>
+            <ng-container matColumnDef="licenses">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'licenses')" [style.width]="columnSizes['licenses'] + 'px'"><span mat-sort-header>{{ 'field.licenses' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc['licenses'] }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="assigned_licenses">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'assigned_licenses')" [style.width]="columnSizes['assigned_licenses'] + 'px'"><span mat-sort-header>{{ 'field.assigned_licenses' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc['assigned_licenses'] }}</td>
             </ng-container>
 
             <ng-container matColumnDef="indextime">

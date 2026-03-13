@@ -23,6 +23,7 @@ export class FacetsComponent {
 
   facets = input<FacetFields>();
   fields = input<string[]>([]);
+  hard_facets = input<string[]>([]);
   
   onFiltersChanged = output<{field: string, value: string}[]>();
   onMouserOver = output<{field: string, value: string}>();
@@ -34,8 +35,23 @@ export class FacetsComponent {
   constructor(public state: AppState) {
     effect(() => {
       this.usedFacets = this.state.usedFacets();
-      this.hasUsedFacets = this.usedFacets.length > 0;
+      this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
     })
+  }
+
+  isHardUsed(field: string) {
+    return this.usedFacets.findIndex(f => f.field === field) > -1;
+  }
+
+  filterHard(field: string, value: any) {
+    if (value.checked) {
+      this.usedFacets.push({field, value: 'true'});
+    } else {
+      this.usedFacets = this.usedFacets.filter(f => !(f.field === field));
+    }
+    this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
+    this.state.usedFacets.update(f => [...this.usedFacets]);
+    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
   }
 
   isUsed(field: string, value: string) {
@@ -49,14 +65,14 @@ export class FacetsComponent {
     } else {
       this.usedFacets.push({field, value});
     }
-    this.hasUsedFacets = this.usedFacets.length > 0;
+    this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
     this.state.usedFacets.update(f => [...this.usedFacets]);
     this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
   }
 
   unfilter(field: string, value: string) {
     this.usedFacets = this.usedFacets.filter(f => !(f.field === field && f.value === value));
-    this.hasUsedFacets = this.usedFacets.length > 0;
+    this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
     this.state.usedFacets.set(this.usedFacets);
     this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
   }

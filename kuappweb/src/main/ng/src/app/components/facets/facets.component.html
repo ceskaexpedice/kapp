@@ -6,22 +6,42 @@
       </mat-expansion-panel-header>
       <mat-list>
         @for(k of usedFacets; track $index; let idx = $index){
-        <mat-list-item (click)="unfilter(k.field, k.value)">
-          <mat-icon matListItemIcon>close</mat-icon>
-          <span matListItemTitle>
-            <strong>{{ 'field.' + k.field | translate}}: </strong>
-            @if (k.field === 'state') {
-              {{ 'state.' + k.value | translate}}
-            } @else {
-              {{ k.value }}
-            }
-          </span>
-        </mat-list-item>
+          @if(!hard_facets().includes(k.field)) {
+            <mat-list-item (click)="unfilter(k.field, k.value)">
+              <mat-icon matListItemIcon>close</mat-icon>
+              <span matListItemTitle>
+                <strong>{{ 'field.' + k.field | translate}}: </strong>
+                @if (k.field === 'state') {
+                  {{ 'state.' + k.value | translate}}
+                } @else {
+                  {{ k.value }}
+                }
+              </span>
+            </mat-list-item>
+          }
         }
       </mat-list>
     </mat-expansion-panel>
   </div>
 }
+
+@if(hard_facets().length > 0){
+    <div>
+      <mat-expansion-panel [expanded]="true">
+        <mat-expansion-panel-header>
+          <mat-panel-title> {{ 'field.hard_facets' | translate}} </mat-panel-title>
+        </mat-expansion-panel-header>
+        <mat-list class="app-facet">
+          @for(hf of hard_facets(); track $index; let idx = $index){
+            <mat-list-item>
+                <mat-checkbox (change)="filterHard(hf, $event)" [checked]="isHardUsed(hf)">{{ 'field.' + hf | translate }} <span class="app-count">({{facets()[hf].count}})</span> </mat-checkbox>
+            </mat-list-item>
+          }
+        </mat-list>
+      </mat-expansion-panel>
+    </div>
+}
+
 @for(f of fields(); track $index; let idx = $index){
   @if (facets()[f]?.buckets.length > 0) {
     <div>

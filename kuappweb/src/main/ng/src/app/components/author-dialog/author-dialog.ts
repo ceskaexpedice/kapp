@@ -47,6 +47,7 @@ export class AuthorDialog {
   author = signal<AuthorTitle>(null);
   useKramerius = false;
   hasKapp = signal<boolean>(false);
+  old_id = '';
 
   hasChanges: boolean;
 
@@ -61,6 +62,7 @@ export class AuthorDialog {
         this.author.set(a);
         this.useKramerius = false;
         this.hasKapp.set(true);
+        this.old_id = a.old_id;
       } else {
         this.author.set(this.data.authors_kramerius.find(a => a.id === this.data.id));
         this.useKramerius = true;
@@ -73,7 +75,7 @@ export class AuthorDialog {
 
   setAutor() {
     if (this.useKramerius) {
-      this.author.set(this.data.authors_kramerius.find(a => a.id === this.data.id));
+      this.author.set(this.data.authors_kramerius.find(a => a.id === this.old_id));
     } else {
       this.author.set(this.data.authors_kapp.find(a => a.id === this.data.id));
     }
