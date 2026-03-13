@@ -16,6 +16,7 @@ import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
 import org.apache.solr.client.solrj.request.json.DomainMap;
 import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
+import org.apache.solr.client.solrj.request.json.QueryFacetMap;
 import org.apache.solr.client.solrj.request.json.TermsFacetMap;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.util.NamedList;
@@ -116,6 +117,9 @@ public class IndexSearcher {
                     .withFacet("licenses", new TermsFacetMap("licenses")
                             .setLimit(100)
                             .setMinCount(1))
+                    .withFacet("digital_library", new TermsFacetMap("digital_library")
+                            .setLimit(100)
+                            .setMinCount(1))
                     .withFacet("state",
                             new TermsFacetMap("state")
                             .setLimit(20)
@@ -172,8 +176,8 @@ public class IndexSearcher {
             if (request.getParameter("digital_library") != null) {
                 jrequest = jrequest.withFilter("digital_library:" + request.getParameter("digital_library"));
             }
-            if (request.getParameter("assigned_license") != null) {
-                jrequest = jrequest.withFilter("assigned_license:" + request.getParameter("assigned_license"));
+            if (request.getParameter("assigned_licenses") != null) {
+                jrequest = jrequest.withFilter("assigned_licenses:" + request.getParameter("assigned_licenses"));
             }
 
             if (request.getParameter("physical_locations") != null) {
@@ -411,8 +415,10 @@ public class IndexSearcher {
             }
             //String q = "nameIdentifier:*";
             String q = "*";
+            String sort = "indextime desc";
             if (request.getParameter("q") != null) {
                 q = request.getParameter("q");
+                sort = "score desc";
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
@@ -420,8 +426,10 @@ public class IndexSearcher {
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(1000)
                             .setMinCount(1))
+                    .withFacet("no_nameIdentifier", new QueryFacetMap("-nameIdentifier:*"))
+                    .withFacet("no_year_death", new QueryFacetMap("-year_death:*"))
                     .setOffset(offset)
-                    .setSort("indextime desc")
+                    .setSort(sort)
                     .returnFields("*,date_birth:date_issued_start_year,date_death:date_issued_end_year ")
                     .setLimit(rows);
 
@@ -432,6 +440,14 @@ public class IndexSearcher {
 
             if (request.getParameter("labels") != null) {
                 jrequest = jrequest.withFilter("labels:" + request.getParameter("labels"));
+            }
+
+            if (request.getParameter("no_nameIdentifier") != null) {
+                jrequest = jrequest.withFilter("-nameIdentifier:*");
+            }
+
+            if (request.getParameter("no_year_death") != null) {
+                jrequest = jrequest.withFilter("-year_death:*");
             }
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
@@ -527,7 +543,7 @@ public class IndexSearcher {
         return ret;
     }
     
-    public static JSONObject getDocByPid(String pid) {
+    public static JSONObject getTitleByPid(String pid) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {

@@ -204,7 +204,7 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getDocByPid(req.getParameter("pid"));
+                    json = IndexSearcher.getTitleByPid(req.getParameter("pid"));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

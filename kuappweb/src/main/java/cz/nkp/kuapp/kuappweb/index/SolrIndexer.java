@@ -5,7 +5,9 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -15,6 +17,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
 import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
+import org.apache.solr.client.solrj.request.json.TermsFacetMap;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
 import org.json.JSONArray;
@@ -27,11 +30,11 @@ import org.json.JSONObject;
 public class SolrIndexer {
 
     public static final Logger LOGGER = Logger.getLogger(SolrIndexer.class.getName());
-    
+
     private static void addAtomicField(SolrInputDocument doc, String modifier, Object value, String field) {
-            Map<String, Object> partialUpdate = new HashMap<>();
-            partialUpdate.put(modifier, value);
-            doc.setField(field, partialUpdate);
+        Map<String, Object> partialUpdate = new HashMap<>();
+        partialUpdate.put(modifier, value);
+        doc.setField(field, partialUpdate);
     }
 
     public static JSONObject saveConfig(JSONArray js, String id) {
@@ -113,7 +116,6 @@ public class SolrIndexer {
         }
         return ret;
     }
-    
 
     public static JSONObject indexBatches(JSONArray js) {
 
@@ -141,8 +143,6 @@ public class SolrIndexer {
         }
         return ret;
     }
-    
-    
 
     public static JSONObject indexDocContracts(JSONObject js, String user) {
 
@@ -150,14 +150,14 @@ public class SolrIndexer {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
-            
+
             String modifier = js.optBoolean("selected") ? "set" : "remove";
             addAtomicField(doc, modifier, js.getString("contract"), "contracts");
 
             if (js.optBoolean("withState")) {
                 String state = "KONTROLOVANE_NEVEREJNE_LICENCE";
                 addAtomicField(doc, "set", state, "state");
-                
+
                 fillState(doc, state, js.getJSONArray("licenses"), "Smlouva " + js.getString("contract"), user);
 
             }
@@ -179,7 +179,7 @@ public class SolrIndexer {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
-            
+
             addAtomicField(doc, "set", js.getString("decisionDate"), "decision_date");
 
             solr.add("titles", doc);
@@ -199,33 +199,30 @@ public class SolrIndexer {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
-            
-            //Save to authors
-            
-            /**
-  <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
-  <field name="family" type="string" multiValued="false" indexed="true" stored="true"/>
-  <field name="full" type="string" multiValued="false" indexed="true" stored="true"/>
-  <field name="full_text" type="text_general_lemmatized" multiValued="true" indexed="true" stored="false"/>
-  <field name="given" type="string" multiValued="false" indexed="true" stored="true"/>
-  <field name="labels" type="text_general"/>
-  <field name="nameIdentifier" type="string" multiValued="false" indexed="true" stored="true"/>
-  <field name="termsOfAddress" type="string" multiValued="false" indexed="true" stored="true"/>
- 
-  <field name="confirmed_end_year" type="boolean" uninvertible="true" indexed="true" stored="true"/>
-  <field name="confirmed_start_year" type="boolean" uninvertible="true" indexed="true" stored="true"/>
-  
-  <field name="date" type="string" multiValued="false" indexed="true" stored="true"/>
-  <field name="date_birth" type="string" multiValued="false" indexed="true" stored="true"/>
-  <field name="date_death" type="string" multiValued="false" indexed="true" stored="true"/>
 
+            //Save to authors
+            /**
+             * <field name="id" type="string" multiValued="false" indexed="true" required="true" stored="true"/>
+             * <field name="family" type="string" multiValued="false" indexed="true" stored="true"/>
+             * <field name="full" type="string" multiValued="false" indexed="true" stored="true"/>
+             * <field name="full_text" type="text_general_lemmatized" multiValued="true" indexed="true" stored="false"/>
+             * <field name="given" type="string" multiValued="false" indexed="true" stored="true"/>
+             * <field name="labels" type="text_general"/>
+             * <field name="nameIdentifier" type="string" multiValued="false" indexed="true" stored="true"/>
+             * <field name="termsOfAddress" type="string" multiValued="false" indexed="true" stored="true"/>
+             *
+  <field name="confirmed_end_year" type="boolean" uninvertible="true" indexed="true" stored="true"/>
+             * <field name="confirmed_start_year" type="boolean" uninvertible="true" indexed="true" stored="true"/>
+             *
+  <field name="date" type="string" multiValued="false" indexed="true" stored="true"/>
+             * <field name="date_birth" type="string" multiValued="false" indexed="true" stored="true"/>
+             * <field name="date_death" type="string" multiValued="false" indexed="true" stored="true"/>
+             *
   <field name="year_birth" type="pint" multiValued="false" indexed="true" stored="true"/>
-  <field name="year_death" type="pint" multiValued="false" indexed="true" stored="true"/>
-  * 
-  * 
+             * <field name="year_death" type="pint" multiValued="false" indexed="true" stored="true"/>
+             *
+             *
              */
-            
-                    
             SolrInputDocument adoc = new SolrInputDocument();
             adoc.setField("id", js.getString("id"));
             adoc.setField("old_id", js.optString("old_id"));
@@ -243,17 +240,16 @@ public class SolrIndexer {
             adoc.setField("confirmed_start_year", js.optBoolean("confirmed_start_year"));
             adoc.setField("confirmed_end_year", js.optBoolean("confirmed_end_year"));
             solr.add("authors", adoc);
-            
-            
+
             // save all titles
             String old_id = js.optString("old_id", null);
-            saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id"):old_id , js);
-            
+            saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id") : old_id, js);
+
             if (old_id != null && !js.optString("old_id").equals(js.getString("id"))) {
                 solr.deleteById("authors", js.optString("old_id"));
             }
             solr.commit("authors");
-            
+
             ret.put("msg", "saved");
 
         } catch (Exception ex) {
@@ -262,89 +258,88 @@ public class SolrIndexer {
         }
         return ret;
     }
-    
+
     private static void saveAuthorsInAllTitles(SolrClient solr, String id, JSONObject js) throws SolrServerException, IOException {
-            String q = "*";
-            JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery(q)
-                    .withFilter("authors_ids:(\"" + id + "\")")
-                    .returnFields("pid,authors_ids,nameIdentifier,authors_kapp:[json],authors_kramerius:[json]")
-                    //.returnFields("pid,authors_ids,nameIdentifier,authors_kramerius:[json]")
-                    .setLimit(1000);
-            jrequest.setResponseParser(new InputStreamResponseParser("json"));
-                
-            NamedList<Object> resp = solr.request(jrequest, "titles");
-            InputStream is = (InputStream) resp.get("stream");
-            String r = IOUtils.toString(is, "UTF-8");
-            JSONArray docs = (new JSONObject(r).getJSONObject("response")).getJSONArray("docs"); 
-            
-            for (int i = 0; i < docs.length(); i++) {
-                JSONObject doc = docs.getJSONObject(i);
-                saveAuthorInTitle(solr, doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray()));
-                //saveAuthorInTitle(solr, doc.getString("pid"), js, new JSONArray());
-            }
-            
-    }
-    
-    private static void saveAuthorInTitle(SolrClient solr, String pid, JSONObject new_author, JSONArray authors_kapp, JSONArray authors_kramerius) throws SolrServerException, IOException {
+        String q = "*";
+        JsonQueryRequest jrequest = new JsonQueryRequest()
+                .setQuery(q)
+                .withFilter("authors_ids:(\"" + id + "\")")
+                .returnFields("pid,authors_ids,nameIdentifier,authors_kapp:[json],authors_kramerius:[json]")
+                //.returnFields("pid,authors_ids,nameIdentifier,authors_kramerius:[json]")
+                .setLimit(1000);
+        jrequest.setResponseParser(new InputStreamResponseParser("json"));
 
-            SolrInputDocument tdoc = new SolrInputDocument();
-            tdoc.setField("pid",  pid);
-            String id = new_author.getString("id");
-            String old_id = new_author.optString("old_id");
-            JSONObject new_author_title = new JSONObject(new_author.toString());
-                    
-            int idx = -1;
-            // addAtomicField(tdoc, "set", null, "authors_kapp");
-            
-            // Find author in kramerius to keep role and isLast
-            for (int i = 0; i < authors_kramerius.length(); i++) {
-                JSONObject doc = authors_kramerius.getJSONObject(i);
-                if (id.equals(doc.optString("id")) || 
-                        id.equals(doc.optString("nameIdentifier")) || 
-                        old_id.equals(doc.optString("nameIdentifier")) ) {
-                    new_author_title.put("role", doc.optJSONArray("role"));
-                    new_author_title.put("isLast", doc.optBoolean("isLast"));
-                    break;
-                }
-            }
-            
-            for (int i = 0; i < authors_kapp.length(); i++) {
-                JSONObject doc = authors_kapp.getJSONObject(i);
-                if (id.equals(doc.getString("id"))) {
-                    idx = i;
-                    break;
-                }
-            }
-            
-            if (idx > -1) {
-                authors_kapp.put(idx, new_author_title);
-            } else {
-                authors_kapp.put(new_author_title);
-            }
-            
-            addAtomicField(tdoc, "set", authors_kapp.toString(), "authors_kapp");
-            addAtomicField(tdoc, "add-distinct", id, "authors_ids");
-            addAtomicField(tdoc, "add-distinct", new_author.getString("nameIdentifier"), "nameIdentifier");
-            JSONArray labels = new_author.optJSONArray("labels", new JSONArray());
-            for (int i = 0; i < labels.length(); i++) {
-                addAtomicField(tdoc, "add-distinct", labels.getString(i), "labels");
-            }
-            
-
-            solr.add("titles", tdoc);
-            solr.commit("titles");
-            
+        NamedList<Object> resp = solr.request(jrequest, "titles");
+        InputStream is = (InputStream) resp.get("stream");
+        String r = IOUtils.toString(is, "UTF-8");
+        JSONArray docs = (new JSONObject(r).getJSONObject("response")).getJSONArray("docs");
+        List<SolrInputDocument> tdocs = new ArrayList();
+        for (int i = 0; i < docs.length(); i++) {
+            JSONObject doc = docs.getJSONObject(i);
+            tdocs.add(saveAuthorInTitle(solr, doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray())));
+            //saveAuthorInTitle(solr, doc.getString("pid"), js, new JSONArray());
+        }
+        solr.add("titles", tdocs);
+        solr.commit("titles");
 
     }
-    
+
+    private static SolrInputDocument saveAuthorInTitle(SolrClient solr, String pid, JSONObject new_author, JSONArray authors_kapp, JSONArray authors_kramerius) throws SolrServerException, IOException {
+
+        SolrInputDocument tdoc = new SolrInputDocument();
+        tdoc.setField("pid", pid);
+        String id = new_author.getString("id");
+        String old_id = new_author.optString("old_id");
+        JSONObject new_author_title = new JSONObject(new_author.toString());
+
+        int idx = -1;
+        // addAtomicField(tdoc, "set", null, "authors_kapp");
+
+        // Find author in kramerius to keep role and isLast
+        for (int i = 0; i < authors_kramerius.length(); i++) {
+            JSONObject doc = authors_kramerius.getJSONObject(i);
+            if (id.equals(doc.optString("id"))
+                    || id.equals(doc.optString("nameIdentifier"))
+                    || old_id.equals(doc.optString("nameIdentifier"))) {
+                new_author_title.put("role", doc.optJSONArray("role"));
+                new_author_title.put("isLast", doc.optBoolean("isLast"));
+                break;
+            }
+        }
+
+        for (int i = 0; i < authors_kapp.length(); i++) {
+            JSONObject doc = authors_kapp.getJSONObject(i);
+            if (id.equals(doc.getString("id"))) {
+                idx = i;
+                break;
+            }
+        }
+
+        if (idx > -1) {
+            authors_kapp.put(idx, new_author_title);
+        } else {
+            authors_kapp.put(new_author_title);
+        }
+
+        addAtomicField(tdoc, "set", authors_kapp.toString(), "authors_kapp");
+        addAtomicField(tdoc, "add-distinct", id, "authors_ids");
+        addAtomicField(tdoc, "add-distinct", new_author.getString("nameIdentifier"), "nameIdentifier");
+        JSONArray labels = new_author.optJSONArray("labels", new JSONArray());
+        for (int i = 0; i < labels.length(); i++) {
+            addAtomicField(tdoc, "add-distinct", labels.getString(i), "labels");
+        }
+
+        return tdoc;
+
+    }
+
     public static JSONObject saveAuthorsInTitle(JSONObject js) throws SolrServerException, IOException {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
-            
+
             addAtomicField(doc, "set", js.getJSONArray("authors").toString(), "authors_kapp");
 
             solr.add("titles", doc);
@@ -377,7 +372,7 @@ public class SolrIndexer {
         try {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", pid);
-            
+
             addAtomicField(doc, "set", batch, "batch");
 
             // doc.setField("labels", js.getJSONArray("labels").toString()); 
@@ -443,6 +438,44 @@ public class SolrIndexer {
         }
     }
 
+    private static void setParentClosed(SolrClient solr, String pid, JSONArray licenses, String reason, String user) {
+
+        //Kontrollovat parent a pokud zadni potomek nema TO_CONTROL nastavit state na PARENT_CLOSED
+        JSONObject t = IndexSearcher.getTitleByPid(pid).getJSONObject("response");
+        if (t.getInt("numFound") > 0) {
+            JSONObject title = t.getJSONArray("docs").getJSONObject(0);
+            if (!title.optBoolean("is_hierachical")) {
+                try {
+                    String root_pid = title.getString("root_pid");
+                    JsonQueryRequest jrequest = new JsonQueryRequest()
+                            .setQuery("*")
+                            .withFilter("root_pid:\"" + root_pid + "\"")
+                            .withFilter("state:TO_CONTROL")
+                            .setLimit(0);
+                    jrequest.setResponseParser(new InputStreamResponseParser("json"));
+                    NamedList<Object> resp = solr.request(jrequest, "titles");
+                    InputStream is = (InputStream) resp.get("stream");
+                    String s = IOUtils.toString(is, "UTF-8");
+                    JSONObject ret = (new JSONObject(s)).getJSONObject("response");
+                    if (ret.getInt("numFound") > 0) {
+                        // Jeste jsou nekontrolavane potomky
+                    } else {
+                        SolrInputDocument doc = new SolrInputDocument();
+                        doc.setField("pid", root_pid);
+                        fillState(doc, "PARENT_CLOSED", licenses, reason, user);
+                        solr.add("titles", doc);
+                        solr.commit("titles");
+                    }
+                    
+                } catch (SolrServerException | IOException ex) {
+                    LOGGER.log(Level.SEVERE,  "Error setting PARENT_CLOSED: {0}", ex);
+                }
+            }
+        }
+
+        // 
+    }
+
     public static JSONObject changeState(JSONObject js, String user) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -450,14 +483,14 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
             fillState(doc, js.getString("state"), js.getJSONArray("licenses"), js.getString("reason"), user);
-
             solr.add("titles", doc);
             solr.commit("titles");
+            setParentClosed(solr, js.getString("pid"), js.getJSONArray("licenses"), js.getString("reason"), user);
             LOGGER.log(Level.INFO, "state for {0} changed", js.getString("pid"));
             ret.put("msg", "saved");
-            
+
         } catch (Exception ex) {
-            LOGGER.log(Level.SEVERE, null, ex);
+            LOGGER.log(Level.SEVERE, "Error changing state: {0}", ex);
             ret.put("error", ex);
         }
         return ret;
@@ -465,23 +498,23 @@ public class SolrIndexer {
 
     private static void fillState(SolrInputDocument doc, String state, JSONArray licenses, String reason, String user) {
 
-            addAtomicField(doc, "set", state, "state");
-            addAtomicField(doc, "set", licenses, "licenses");
-            addAtomicField(doc, "set", user, "state_user");
-            addAtomicField(doc, "set", reason, "state_reason");
-            
-            String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
-            
-            addAtomicField(doc, "set", d, "state_date");
+        addAtomicField(doc, "set", state, "state");
+        addAtomicField(doc, "set", licenses, "licenses");
+        addAtomicField(doc, "set", user, "state_user");
+        addAtomicField(doc, "set", reason, "state_reason");
 
-            JSONObject h = new JSONObject()
-                    .put("date", d)
-                    .put("reason", reason)
-                    .put("licenses", licenses)
-                    .put("user", user)
-                    .put("state", state);
-            
-            addAtomicField(doc, "add", h.toString(), "state_history");
+        String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
+
+        addAtomicField(doc, "set", d, "state_date");
+
+        JSONObject h = new JSONObject()
+                .put("date", d)
+                .put("reason", reason)
+                .put("licenses", licenses)
+                .put("user", user)
+                .put("state", state);
+
+        addAtomicField(doc, "add", h.toString(), "state_history");
     }
 
     public static JSONObject saveContract(JSONObject js) {
