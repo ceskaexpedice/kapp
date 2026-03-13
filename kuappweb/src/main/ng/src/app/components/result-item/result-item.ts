@@ -9,7 +9,6 @@ import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
 import { MatIconModule } from '@angular/material/icon';
 import { Author, AuthorTitle } from '../../shared/author';
-import { AuthorDialog } from '../author-dialog/author-dialog';
 import { MatDialog } from '@angular/material/dialog';
 import { MatMenuModule } from '@angular/material/menu';
 import { MatChipsModule } from '@angular/material/chips';
@@ -20,6 +19,7 @@ import { Batch } from '../../shared/batch';
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
+import { AuthorTitleDialog } from '../author-title-dialog/author-title-dialog';
 
 @Component({
   selector: 'app-result-item',
@@ -135,7 +135,7 @@ export class ResultItem {
   }
 
   infoAuthor(a: AuthorTitle) {
-    const dialogRef = this.dialog.open(AuthorDialog, {
+    const dialogRef = this.dialog.open(AuthorTitleDialog, {
       data: {pid:this.doc().pid, authors_kapp:this.doc().authors_kapp, authors_kramerius:this.doc().authors_kramerius,  id: a.id},
     });
 
@@ -152,7 +152,7 @@ export class ResultItem {
   }
 
   addAuthor() {
-    const dialogRef = this.dialog.open(AuthorDialog, {
+    const dialogRef = this.dialog.open(AuthorTitleDialog, {
       data: {pid:this.doc().pid, authors_kapp:this.doc().authors_kapp, author:null},
     });
 

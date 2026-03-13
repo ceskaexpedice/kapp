@@ -34,7 +34,6 @@ import { MatSortModule, Sort } from '@angular/material/sort';
 import { ColumnsSettingsDialog } from '../../components/columns-settings-dialog/columns-settings-dialog';
 import { MatMenuModule } from "@angular/material/menu";
 
-import { AuthorDialog } from '../../components/author-dialog/author-dialog';
 import { Batch } from '../../shared/batch';
 import { StateDialog } from '../../components/state-dialog/state-dialog';
 import { SimpleDialogComponent } from '../../components/simple-dialog/simple-dialog.component';
@@ -42,6 +41,7 @@ import { SimpleDialogData } from '../../components/simple-dialog/simple-dialog';
 import { Contract } from '../../shared/contract';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthorTitle } from '../../shared/author';
+import { AuthorTitleDialog } from '../../components/author-title-dialog/author-title-dialog';
 
 @Component({
   selector: 'app-results',
@@ -281,7 +281,7 @@ export class Results {
 
   // -- pedro
   addAuthor(doc: any) {
-    const dialogRef = this.dialog.open(AuthorDialog, {
+    const dialogRef = this.dialog.open(AuthorTitleDialog, {
       data: { pid: doc.pid, authors_kapp: null },
     });
 

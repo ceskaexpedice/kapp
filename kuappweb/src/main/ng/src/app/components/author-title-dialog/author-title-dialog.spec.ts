@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { AuthorDialog } from './author-dialog';
+import { AuthorTitleDialog } from './author-title-dialog';
 
-describe('AuthorDialog', () => {
-  let component: AuthorDialog;
-  let fixture: ComponentFixture<AuthorDialog>;
+describe('AuthorTitleDialog', () => {
+  let component: AuthorTitleDialog;
+  let fixture: ComponentFixture<AuthorTitleDialog>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [AuthorDialog]
+      imports: [AuthorTitleDialog]
     })
     .compileComponents();
 
-    fixture = TestBed.createComponent(AuthorDialog);
+    fixture = TestBed.createComponent(AuthorTitleDialog);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });

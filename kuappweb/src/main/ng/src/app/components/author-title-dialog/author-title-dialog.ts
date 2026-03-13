@@ -1,6 +1,6 @@
 import { Component, inject, signal } from '@angular/core';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogContent, MatDialogModule, MatDialogRef } from "@angular/material/dialog";
-import { Author, AuthorTitle } from '../../shared/author';
+import { AuthorTitle } from '../../shared/author';
 import { TranslateModule, TranslateService } from '@ngx-translate/core';
 import { AppService } from '../../app.service';
 import { UIService } from '../../ui.service';
@@ -24,15 +24,15 @@ import { SimpleDialogComponent } from '../simple-dialog/simple-dialog.component'
     MatProgressBar, MatFormFieldModule, MatInputModule,
     MatCheckboxModule
   ],
-  templateUrl: './author-dialog.html',
-  styleUrl: './author-dialog.scss'
+  templateUrl: './author-title-dialog.html',
+  styleUrl: './author-title-dialog.scss'
 })
-export class AuthorDialog {
+export class AuthorTitleDialog {
 
   readonly translator = inject(TranslateService);
   readonly service = inject(AppService);
   readonly ui = inject(UIService);
-  readonly dialogRef = inject(MatDialogRef<AuthorDialog>);
+  readonly dialogRef = inject(MatDialogRef<AuthorTitleDialog>);
   readonly data = inject<{ pid: string, authors_kapp: AuthorTitle[], authors_kramerius: AuthorTitle[], id: string }>(MAT_DIALOG_DATA);
 
   readonly dialog = inject(MatDialog);
