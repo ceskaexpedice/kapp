@@ -36,7 +36,6 @@
 		<div class="app-metadata-row app-multiple">
 			<span class="app-label">{{ 'field.authors' | translate }}:</span>
 			<ul>
-
 				@for(a of mergedAuthors; track $index) {
 						<li>
 							<a (click)="infoAuthor(a)" class="app-value">
@@ -49,35 +48,10 @@
 							} -->
 						</li>
 					}
-
-				<!-- @if (doc()['authors_kapp']) {
-					@for(a of doc()['authors_kapp']; track $index) {
-						<li>
-							<a (click)="infoAuthor(a)" class="app-value">
-								<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
-							</a>
-							@for(l of a.links; track $index) {
-								<a target="_blank" [href]="l.url" class="app-value">
-									<span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
-								</a>
-							}
-						</li>
-					}
-
-				} @else {
-					@for(a of doc()['authors_kramerius']; track $index) {
-						<li>
-							<a (click)="infoAuthor(a)" class="app-value">
-								<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
-							</a>
-							@for(l of a.links; track $index) {
-								<a target="_blank" [href]="l.url" class="app-value">
-									<span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
-								</a>
-							}
-						</li>
-					}
-				} -->
+					<li>
+                  <button mat-icon-button (click)="addAuthor()" [title]="'action.add_author' | translate">
+                    <mat-icon>person_add</mat-icon>
+                  </button></li>
 			</ul>
 			
 		</div>
@@ -139,6 +113,7 @@
 		</div>
 
 
+    @if (state.user()) {
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.note' | translate }}:</span>
 			<div class="app-value">
@@ -146,6 +121,7 @@
 				<a (click)="editNote()" class="app-value"><mat-icon>edit</mat-icon></a>
 			</div>
 		</div>
+	}
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.decision_date' | translate }}:</span>
 			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
@@ -160,7 +136,10 @@
 				} @else {
 					<div class="app-value">
 						<span>{{ doc()['decision_date']}}</span>
+						
+    				@if (state.user()) {
 						<a (click)="editDecisionDate()" class="app-value"><mat-icon>edit</mat-icon></a>
+					}
 					</div>	
 				}
 			</div>
@@ -208,41 +187,6 @@
 					}
 				</tbody>
 			</table>
-			<!-- to delete old code
-			<div class="app-metadata-row app-multiple">
-				<span class="app-label">{{ 'Části' | translate }}:</span>
-				
-				<ul class="app-clean-list">
-					@for (ch of related(); track ch) {
-						<li>
-						
-							<div class="app-fxLayout app-row app-gap-2 app-center-v app-nowrap">								
-								<span>(<i>{{ ch['model']}}</i>)</span>
-								<span class="app-pipe app-ml-0"></span> 
-								<span>{{ ch['root.title']}}</span> 
-								<span class="app-pipe app-ml-0"></span> 
-
-								
-								<div class="app-fxLayout app-row  app-gap-2 app-center-v">
-									@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
-									
-										<a target="_blank" [href]="'https://ndk.cz/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
-									} @else {
-										<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon matSuffix class="app-small-icon">open_in_new</mat-icon></a>
-									}
-								
-								</div>		
-								<span class="app-pipe app-ml-0"></span>
-									
-								<button matButton="outlined"  (click)="setState()">{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate}}
-								</button>
-								
-
-							</div>
-						</li>
-					}
-				</ul>
-			</div> -->
 		}
 	</mat-card-content>
 	<mat-card-actions align="end">

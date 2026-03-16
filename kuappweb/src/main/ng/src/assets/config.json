@@ -65,6 +65,7 @@
         {"field": "release_date", "selected": false},
         {"field": "assigned_licenses", "selected": false},
         {"field": "licenses", "selected": false},
+        {"field": "digital_library", "selected": false},
         {"field": "sigla", "selected": true}
     ],
 

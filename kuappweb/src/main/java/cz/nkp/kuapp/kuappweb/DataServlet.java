@@ -281,6 +281,7 @@ public class DataServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     json = IndexSearcher.checkAuthor(req);
+                    
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

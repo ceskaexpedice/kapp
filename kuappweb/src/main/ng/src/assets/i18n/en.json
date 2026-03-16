@@ -60,6 +60,8 @@
     "license": "License",
     "licenses": "Licenses",
     "note": "Note",
+    "given": "Given",
+    "family": "Family",
     "pid": "PID",
     "links": "External links",
     "decision_date": "Decision date",

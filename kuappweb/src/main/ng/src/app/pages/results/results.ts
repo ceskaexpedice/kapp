@@ -298,7 +298,7 @@ export class Results {
 
   setState(doc: any) {
 
-    if (doc.is_hierarchical) {
+    if (doc.is_hierarchical || !this.state.user()) {
       return;
     }
 

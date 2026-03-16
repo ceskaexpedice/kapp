@@ -56,10 +56,21 @@ export class AuthorTitleDialog {
   hasChanges: boolean;
 
   ngOnInit() {
-    if (!this.data) {
+    if (!this.data.id) {
       // Dialog to add new author
       // Show buttons
       this.isNew.set(true);
+      const a: AuthorTitle = {
+        id: '',
+        full: '',
+        family: '',
+        given: '',
+        date: '',
+        note: '',
+        role: ['']
+      }
+
+      this.author.set(a);
     } else {
       const a = this.data.authors_kapp?.find(a => a.id === this.data.id);
       if (a) {
@@ -75,6 +86,16 @@ export class AuthorTitleDialog {
 
       this.getLinks();
     }
+  }
+
+  setFull() {
+    this.author().full = this.author().family + ', ' + this.author().given;
+    this.author().date = this.author().year_birth + '-' + this.author().year_death;
+    this.author().id = (this.author().family + this.author().given + 
+      (this.author().year_birth ? this.author().year_birth : '') + 
+      (this.author().year_death ? this.author().year_death : '') +
+      (this.author().note ? this.author().note : '')
+    ).toLowerCase().normalize('NFKD').replace(/[^\w]/g, '');
   }
 
   setAutor() {
@@ -116,33 +137,40 @@ export class AuthorTitleDialog {
           alert('Id not found')
           return;
         }
-        if (a['datafield_100d']) {
-          const p = a['datafield_100d'].split('-');
-          a['date_birth'] = p[0];
-          if (p.length > 1) {
-            a['date_death'] = p[1];
-          }
 
-        }
-        this.author.set({
-          full: a['datafield_100a'],
-          date: a['datafield_100d'],
-          family: a['family'],
-          given: a['given'],
-          year_death: a['year_death'],
+        
+        const dates = a['datafield_100d'] ? a['datafield_100d'].split('-') : [];
+
+        const auth: AuthorTitle = {
+              
+              id: a['controlfield_001'],
+              nameIdentifier: a['controlfield_001'],
+              full: a['datafield_100a'],
+              family: a['family']?.[0],
+              given: a['given']?.[0],
+              date: a['datafield_100d'],
+              year_birth: dates[0] ? parseInt(dates[0]) : null,
+              year_death: dates.length > 1 ? parseInt(dates[1]) : null,
+              // labels: [...this.author.labels, 'author_modified']
           role: null,
-          nameIdentifier: id,
-          id: id,
+              labels: ['author_modified'],
           isLast: false
-        });
-        this.getLinks();
+        
+            }
+
+        this.author.set(auth);
         if (resp.error) {
           this.ui.showErrorSnackBar('snackbar.record_changed.error');
         } else {
-          this.ui.showInfoSnackBar('snackbar.record_changed.success');
+        this.getLinks();
+          //this.ui.showInfoSnackBar('snackbar.record_changed.success');
         }
       });
     }
+  }
+
+  onSaveRole() {
+
   }
 
   onSave() {

@@ -5,6 +5,9 @@
 	<span class="app-fxFlex">
 		@if(author()) {
 			{{ author().full }}
+      @if(isNew()) {
+        ({{ author().id }})
+      }
 		} @else {
 			{{ 'action.add_author' | translate }}
 		}
@@ -13,10 +16,32 @@
 	@if(hasKapp()) {
 	<mat-button-toggle (click)="useKramerius = !useKramerius; setAutor()" [checked]="useKramerius" [title]="'action.showKramerius' | translate"><mat-icon>local_library</mat-icon></mat-button-toggle>
 	}
+	@if(isNew()) {
+	<button matIconButton (click)="setAutor()" [title]="'action.showKramerius' | translate"><mat-icon>search</mat-icon></button>
+	}
 </h2>
 <mat-dialog-content>
 	@if(author()) {
 		<div class="app-fxLayout app-column">
+      
+    @if(isNew()) {
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'field.given' | translate }}</mat-label>
+          <input matInput [disabled]="!editing()" [(ngModel)]="author().given" (ngModelChange)="setFull()" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'field.family' | translate }}</mat-label>
+          <input matInput [disabled]="!editing()" [(ngModel)]="author().family" (ngModelChange)="setFull()" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'field.date_birth' | translate }}</mat-label>
+          <input matInput [disabled]="!editing()" [(ngModel)]="author().year_birth" (ngModelChange)="setFull()" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'field.date_death' | translate }}</mat-label>
+          <input matInput [disabled]="!editing()" [(ngModel)]="author().year_death" (ngModelChange)="setFull()" />
+        </mat-form-field>
+    } @else {
 			<div class="app-metadata-row app-mb-4">
 				<span class="app-label">{{ 'field.date' | translate }}:</span>
 				<span class="app-value">{{ author().date }}</span>
@@ -29,9 +54,17 @@
 				<span class="app-label">{{ 'field.date_death' | translate }}:</span>
 				<span class="app-value">{{ author().year_death }}</span>
 			</div>
+    }
 			<mat-form-field appearance="outline">
 				<mat-label>{{ 'field.role' | translate }}</mat-label>
 				<input matInput [disabled]="!editing()" [(ngModel)]="author().role" />
+	@if(!isNew()) {
+        <mat-icon (click)="onSaveRole()" [title]="'action.save_role' | translate" matSuffix>save</mat-icon>
+  }
+			</mat-form-field>
+			<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.note' | translate }}</mat-label>
+				<input matInput [disabled]="!editing()" [(ngModel)]="author().note" />
 			</mat-form-field>
 		</div>
 	
@@ -59,12 +92,14 @@
 	}
 </mat-dialog-content>
 <mat-dialog-actions>
-	@if(isNew()) {
-		<button matButton="outlined" (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
-	}
-	@if(!isNew()) {
-		<button matButton="outlined" (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
-	}
-	<button matButton="filled" [disabled]="loading()" (click)="onSave()">{{ 'action.save_role' | translate }}</button>
+	@if (state.user()) {
+    @if(isNew()) {
+      <button matButton="outlined" (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
+    }
+    @if(!isNew()) {
+      <button matButton="outlined" (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
+    }
+    <button matButton="filled" [disabled]="loading()" (click)="onSave()">{{ 'action.save' | translate }}</button>
+  }
 	<button matButton="outlined" [mat-dialog-close]="hasChanges" cdkFocusInitial>{{ 'action.close' | translate }}</button>
 </mat-dialog-actions>

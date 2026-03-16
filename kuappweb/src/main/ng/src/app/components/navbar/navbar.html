@@ -9,8 +9,10 @@
   <div class="app-fxLayout app-row app-center-v">
     <a [routerLink]="['titles']" routerLinkActive="app-active-link" matButton>{{ 'navbar.titles' | translate}}</a>
     <a [routerLink]="['authors']" routerLinkActive="app-active-link" matButton>{{ 'navbar.authors' | translate}}</a>
+    @if (state.user()) {
     <a [routerLink]="['batches']" routerLinkActive="app-active-link" matButton>{{ 'navbar.batches' | translate}}</a>
     <a [routerLink]="['contracts']" routerLinkActive="app-active-link" matButton>{{ 'navbar.contracts' | translate}}</a>
+    }
     @if(state.user()) {
       <a matButton [matMenuTriggerFor]="usermenu">{{ state.user().name }}</a>
       <mat-menu #usermenu="matMenu">

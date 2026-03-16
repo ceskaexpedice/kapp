@@ -93,24 +93,28 @@
 			}
 		</div>
 		} 
-		<button matButton (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
-		@for(a of aut(); track $index) {
-		<div class="app-metadata-row">
-			<span class="app-label">{{ a['datafield_100a'] }} {{ a['datafield_100d'] }} </span>
-			(<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+a['controlfield_001']" class="app-value">
-				<span>{{ a['controlfield_001'] }}</span>
-				<mat-icon>open_in_new</mat-icon>
-			</a>)
-			<button mat-icon-button (click)="setFromAut(a)" [title]="a.existing_author ? 'merge_author' : 'choose_author' | translate" ><mat-icon>{{ a.existing_author ? 'merge' : 'done' }}</mat-icon></button>
-		</div>
-		}
+		@if (state.user()) {
+      <button matButton (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
+      @for(a of aut(); track $index) {
+      <div class="app-metadata-row">
+        <span class="app-label">{{ a['datafield_100a'] }} {{ a['datafield_100d'] }} </span>
+        (<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+a['controlfield_001']" class="app-value">
+          <span>{{ a['controlfield_001'] }}</span>
+          <mat-icon>open_in_new</mat-icon>
+        </a>)
+        <button mat-icon-button (click)="setFromAut(a)" [title]="a.existing_author ? 'merge_author' : 'choose_author' | translate" ><mat-icon>{{ a.existing_author ? 'merge' : 'done' }}</mat-icon></button>
+      </div>
+      }
+    }
 		
 	</mat-card-content>
 	<mat-card-actions align="end">
 		<div class="app-fxLayout app-row app-gap-2">
 			@if(numTitles()) {<button matButton (click)="gotoTitles()" class="app-mr-1">{{ 'action.show_titles' | translate }} ({{ numTitles() }})</button>}
+			@if (state.user()) {
 			<button matButton="outlined" [disabled]="loading()" (click)="save()">{{ 'action.save' | translate }}<mat-icon matSuffix>save</mat-icon></button>
 			<button matButton="outlined" (click)="toggleEdit()" >{{ 'action.edit' | translate }}<mat-icon matSuffix>edit</mat-icon></button>
+			}
 		</div>
 	</mat-card-actions>
 }
