@@ -467,7 +467,9 @@ public class HarvesterImpl implements Harvester {
                                 Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
 
                                 wrapper.addField(AppDataFields.MODEL_FIELD, ctx.item().getModel(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_SET);
-                                wrapper.setField(AppDataFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
+                                if (ctx.item().getRootTitle() != null) {
+                                    wrapper.setField(AppDataFields.ROOT_TITLE_FIELD, ctx.item().getRootTitle());
+                                }
                                 wrapper.setField(AppDataFields.ROOT_PID_FIELD, ctx.item().getRootPid());
                                 wrapper.setField(AppDataFields.TITLE_FIELD, ctx.item().getTitles());
 
@@ -533,8 +535,10 @@ public class HarvesterImpl implements Harvester {
                 doc.setField(AppDataFields.PID_FIELD, ctx.item().getPid());
                 doc.addField(AppDataFields.LICENSES_FIELD, ctx.item().getLicenses());
                 doc.addField(String.format("%s%s", AppDataFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), ctx.item().getLicenses());
-                doc.addField(AppDataFields.MODEL_FIELD, ctx.item().getModel());
-                doc.setField(AppDataFields.ROOT_TITLE_FIELD, ctx.item().getTitles());
+                doc.setField(AppDataFields.MODEL_FIELD, ctx.item().getModel());
+                if (ctx.item().getRootTitle() != null) {
+                    doc.setField(AppDataFields.ROOT_TITLE_FIELD, ctx.item().getRootTitle());
+                }
                 doc.setField(AppDataFields.ROOT_PID_FIELD, ctx.item().getRootPid());
                 doc.setField(AppDataFields.TITLE_FIELD, ctx.item().getTitles());
                 doc.setField(AppComputedFields.IS_HIERARCHICAL_FIELD, ctx.item().isHierarchical());
@@ -611,16 +615,31 @@ public class HarvesterImpl implements Harvester {
         if (authorData != null && !authorData.isEmpty()) {
             doc.addField(AppDataFields.AUTHORS_FIELD, authorData.stream().map(AuthorData::getFull).toList());
         }
+
+        List<String> authorsKrameriusList = new ArrayList<>();
+        List<String> nameIdentifiers = new ArrayList<>();
+        List<String> authorIds = new ArrayList<>();
+
         authorData.forEach(author -> {
-            doc.addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, author.toJsonString());
+            authorsKrameriusList.add(author.toJsonString());
+
             if (author.getNameIdentifier() != null && !author.getNameIdentifier().isEmpty()) {
-                doc.addField(AppDataFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
-                doc.addField(AppDataFields.AUTHORS_IDS, author.getNameIdentifier());
+                nameIdentifiers.add(author.getNameIdentifier());
+                authorIds.add(author.getNameIdentifier());
             } else {
                 String name = author.getFull() + (author.getDate() != null ? author.getDate() : "") ;
-                doc.addField(AppDataFields.AUTHORS_IDS, XmlProcessor.normalize(name));
+                authorIds.add(XmlProcessor.normalize(name));
             }
         });
+        if (!authorsKrameriusList.isEmpty()) {
+            doc.addField(AppDataFields.AUTHORS_KRAMERIUS_FIELD, authorsKrameriusList);
+        }
+        if (!nameIdentifiers.isEmpty()) {
+            doc.addField(AppDataFields.NAME_IDENTIFIER_FIELD, nameIdentifiers);
+        }
+        if (!authorIds.isEmpty()) {
+            doc.addField(AppDataFields.AUTHORS_IDS, authorIds);
+        }
 
         List<SolrInputDocument> authorityDocuments = authorData.stream().map(AuthorData::toAuthoritySolrDocument).toList();
         authorsBuffer.addAll(authorityDocuments);
