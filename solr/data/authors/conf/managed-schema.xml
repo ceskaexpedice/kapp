@@ -244,6 +244,12 @@
   <field name="labels" type="string" docValues="true" multiValued="true" indexed="true" stored="true"/>
   <field name="nameIdentifier" type="string" multiValued="false" indexed="true" stored="true"/>
   <field name="termsOfAddress" type="string" multiValued="false" indexed="true" stored="true"/>
+	
+  <!--	
+  Editovane v kapp. Pouziva se pro generovani id (napr zamestnani)
+  id -> normalize jmeno,prijmeni,datum,note
+  -->
+  <field name="note" type="string" multiValued="false" indexed="true" stored="true"/>
 
   <dynamicField name="*_txt_en_split_tight" type="text_en_splitting_tight" indexed="true" stored="true"/>
   <dynamicField name="*_descendent_path" type="descendent_path" indexed="true" stored="true"/>

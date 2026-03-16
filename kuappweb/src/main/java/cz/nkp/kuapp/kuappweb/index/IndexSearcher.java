@@ -181,7 +181,7 @@ public class IndexSearcher {
             }
 
             if (request.getParameter("physical_locations") != null) {
-                jrequest = jrequest.withFilter("{!tag=fffl}physical_locations.facet:(\"" + String.join("\" OR \"", request.getParameterValues("physical_locations")) + "\")");
+                jrequest = jrequest.withFilter("{!tag=fffl}physical_locations:(\"" + String.join("\" OR \"", request.getParameterValues("physical_locations")) + "\")");
             }
 
             if (request.getParameter("date") != null) {

@@ -79,50 +79,50 @@ export class AppService {
   }
 
   getUser(): Observable<any> {
-    return this.get('index/user');
+    return this.get('data/user');
   }
 
   getHome(): Observable<any> {
-    return this.get('index/home');
+    return this.get('data/home');
   }
 
   searchTitles(params: HttpParams, csv: boolean = false): Observable<any> {
     
     const headers = csv ? 'plain/text' : null;
     
-    return this.get('index/titles', params, headers)
+    return this.get('data/titles', params, headers)
   }
 
   getDoc(pid: string): Observable<any> {
-    return this.get('index/get_doc', {pid});
+    return this.get('data/get_doc', {pid});
   }
 
   getRelated(pid: string): Observable<any> {
-    return this.get('index/get_related', {pid});
+    return this.get('data/get_related', {pid});
   }
 
   searchAuthors(params: HttpParams): Observable<any> {
-    return this.get('index/authors', params)
+    return this.get('data/authors', params)
   }
 
   searchTitlesByAuthor(params: HttpParams): Observable<any> {
-    return this.get('index/titles_author', params)
+    return this.get('data/titles_author', params)
   }
 
   checkAuthor(params: HttpParams): Observable<any> {
-    return this.get('index/check_author', params)
+    return this.get('data/check_author', params)
   }
 
   getAuthorById(params: HttpParams): Observable<any> {
-    return this.get('index/get_author_by_id', params);
+    return this.get('data/get_author_by_id', params);
   }
 
   getAutById(params: HttpParams): Observable<any> {
-    return this.get('index/get_aut_by_id', params);
+    return this.get('data/get_aut_by_id', params);
   }
 
   getLinks(params: HttpParams): Observable<any> {
-    return this.get('index/get_links', params)
+    return this.get('data/get_links', params)
   }
 
   saveDK(dk: string[]): Observable<any> {
@@ -178,11 +178,11 @@ export class AppService {
   }
 
   getUsedBatches(): Observable<any> {
-    return this.get('index/get_used_batches');
+    return this.get('data/get_used_batches');
   }
 
   getDocsInBatch(batch: string): Observable<any> {
-    return this.get('index/get_batch_docs', {batch});
+    return this.get('data/get_batch_docs', {batch});
   }
 
   changeState(state: any): Observable<any> {
@@ -198,19 +198,19 @@ export class AppService {
   }
 
   searchContracts(params: HttpParams): Observable<any> {
-    return this.get('index/contracts', params);
+    return this.get('data/contracts', params);
   }
 
   searchTitlesByContract(params: HttpParams): Observable<any> {
-    return this.get('index/titles_contract', params);
+    return this.get('data/titles_contract', params);
   }
 
   findTitlesByContract(params: HttpParams): Observable<any> {
-    return this.get('index/titles_contract_find', params);
+    return this.get('data/titles_contract_find', params);
   }
 
   getContract(id: string): Observable<any> {
-    return this.get('index/get_contract', {id});
+    return this.get('data/get_contract', {id});
   }
 
   uploadContract(form: any): Observable<any> {

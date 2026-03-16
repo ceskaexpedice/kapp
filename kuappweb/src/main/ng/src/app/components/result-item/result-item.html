@@ -195,7 +195,7 @@
 								</div>
 							</td>
 							<td class="app-col-icon">
-								@if (ch['physical_locations.facet']?.[0] === 'ABA001') {
+								@if (ch['physical_locations']?.[0] === 'ABA001') {
 									<a target="_blank" [href]="'https://ndk.cz/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon class="app-ml-1">open_in_new</mat-icon></a>
 								} @else {
 									<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon class="app-ml-1">open_in_new</mat-icon></a>
