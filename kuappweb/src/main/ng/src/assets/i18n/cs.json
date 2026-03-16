@@ -25,10 +25,12 @@
   "add_to_batch": "Přidat do dávky",
   "new_batch_name": "Název nové dávky",
   "no_records_found": "Žádné nalezené záznamy",
+  "merge_author": "Použít údaje z toho záznamu (autor již existuje)",
+  "choose_author": "Použít údaje z toho záznamu",
   "home": {
     "titles": "Díla ",
     "authors": "Autoři",
-    "authors_modified": "Autoři editované v aplikace",
+    "authors_modified": "Autoři editované v aplikaci",
     "authors_modified_desc": "Seznam autorů, u kterých je rozdíl mezi Kramerius a Kuratorske app",
     "titles_to_control": "Díla  ke kontrole",
     "titles_to_control_desc": "Seznam díl ke kurátorské kontrole",
@@ -117,6 +119,7 @@
     "analyze": "Analyzovat",
     "add": "Přidat",
     "found_in_titles": "Díla",
+    "show_titles": "Zobrazit díla",
     "showKramerius": "Zobrazit puvodni data z K7",
     "remove_record": "Odstranit záznam"
   },

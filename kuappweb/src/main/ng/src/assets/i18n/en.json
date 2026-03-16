@@ -25,6 +25,8 @@
   "add_to_batch": "Add to batch",
   "new_batch_name": "New batch name",
   "no_records_found": "No records found",
+  "merge_author": "Použít údaje z toho záznamu (autor již existuje)",
+  "choose_author": "Použít údaje z toho záznamu",
   "home": {
     "titles": "Titles",
     "authors": "Authors",
@@ -117,6 +119,7 @@
     "analyze": "Analyze",
     "add": "Add",
     "found_in_titles": "Titles",
+    "show_titles": "Show titles",
     "showKramerius": "Show original data from K7",
     "remove_record": "Remove record"
   },

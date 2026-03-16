@@ -9,7 +9,7 @@
 			{{ 'action.add_author' | translate }}
 		}
 	</span>
-	<button matIconButton (click)="toggleEdit()" ><mat-icon>edit</mat-icon></button>
+	<button matIconButton (click)="gotoAuthors()" ><mat-icon>edit</mat-icon></button>
 	@if(hasKapp()) {
 	<mat-button-toggle (click)="useKramerius = !useKramerius; setAutor()" [checked]="useKramerius" [title]="'action.showKramerius' | translate"><mat-icon>local_library</mat-icon></mat-button-toggle>
 	}

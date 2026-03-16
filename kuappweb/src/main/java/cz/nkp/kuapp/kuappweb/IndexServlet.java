@@ -53,6 +53,10 @@ public class IndexServlet extends HttpServlet {
         response.setHeader("Pragma", "no-cache"); // HTTP 1.0
         response.setDateHeader("Expires", 0); // Proxies.
         try {
+//            if (UserServlet.getUser(request) == null) {
+//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+//            return;
+//            }
             String actionNameParam = request.getPathInfo().substring(1);
             if (actionNameParam != null) {
                 Actions actionToDo = Actions.valueOf(actionNameParam.toUpperCase());

@@ -15,6 +15,8 @@ import { MatButtonToggleModule } from '@angular/material/button-toggle';
 import { MatCheckboxModule } from "@angular/material/checkbox";
 import { SimpleDialogData } from '../simple-dialog/simple-dialog';
 import { SimpleDialogComponent } from '../simple-dialog/simple-dialog.component';
+import { Router } from '@angular/router';
+import { AppState } from '../../app-state';
 
 @Component({
   selector: 'app-author-dialog',
@@ -30,7 +32,9 @@ import { SimpleDialogComponent } from '../simple-dialog/simple-dialog.component'
 export class AuthorTitleDialog {
 
   readonly translator = inject(TranslateService);
+  readonly router = inject(Router);
   readonly service = inject(AppService);
+  readonly state = inject(AppState);
   readonly ui = inject(UIService);
   readonly dialogRef = inject(MatDialogRef<AuthorTitleDialog>);
   readonly data = inject<{ pid: string, authors_kapp: AuthorTitle[], authors_kramerius: AuthorTitle[], id: string }>(MAT_DIALOG_DATA);
@@ -41,7 +45,7 @@ export class AuthorTitleDialog {
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
   loading = signal<boolean>(false);
-  editing = signal<boolean>(false);
+  editing = signal<boolean>(true);
   isNew = signal<boolean>(false);
 
   author = signal<AuthorTitle>(null);
@@ -143,7 +147,7 @@ export class AuthorTitleDialog {
 
   onSave() {
 
-    if (true || this.hasKapp && this.useKramerius) {
+    if (this.hasKapp && this.useKramerius) {
       const data: SimpleDialogData = {
         title: this.translator.instant('alert.saving_author_back'),
         message: this.translator.instant('alert.saving_author_back_desc'),
@@ -207,5 +211,12 @@ export class AuthorTitleDialog {
         }
       })
     }
+  }
+
+  gotoAuthors() {
+    this.state.usedFacets.set([]);
+    this.state.q = this.author().full;
+    this.router.navigate(['/authors'], { queryParams: { s: this.state.encodeState() } });
+    this.dialogRef.close(false);
   }
 }
