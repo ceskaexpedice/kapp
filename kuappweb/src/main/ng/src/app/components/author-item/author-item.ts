@@ -125,7 +125,7 @@ export class AuthorItem {
   }
 
   setFromAut(a: any) {
-
+    this.editing.set(true);
     const dates = a['datafield_100d'] ? a['datafield_100d'].split('-') : [];
     const auth: Author = {
       old_id: this.author.old_id ? this.author.old_id : this.author.id,

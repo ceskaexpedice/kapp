@@ -300,7 +300,7 @@ public class SolrIndexer {
             JSONObject doc = authors_kramerius.getJSONObject(i);
             if (id.equals(doc.optString("id"))
                     || id.equals(doc.optString("nameIdentifier"))
-                    || old_id.equals(doc.optString("nameIdentifier"))) {
+                    || old_id.equals(doc.optString("id"))) {
                 new_author_title.put("role", doc.optJSONArray("role"));
                 new_author_title.put("isLast", doc.optBoolean("isLast"));
                 break;
@@ -325,9 +325,9 @@ public class SolrIndexer {
         addAtomicField(tdoc, "add-distinct", id, "authors_ids");
         addAtomicField(tdoc, "add-distinct", new_author.getString("nameIdentifier"), "nameIdentifier");
         JSONArray labels = new_author.optJSONArray("labels", new JSONArray());
-        for (int i = 0; i < labels.length(); i++) {
-            addAtomicField(tdoc, "add-distinct", labels.getString(i), "labels");
-        }
+        //for (int i = 0; i < labels.length(); i++) {
+            addAtomicField(tdoc, "add-distinct", labels.toList(), "labels");
+        //}
 
         return tdoc;
 
@@ -462,7 +462,7 @@ public class SolrIndexer {
                     } else {
                         SolrInputDocument doc = new SolrInputDocument();
                         doc.setField("pid", root_pid);
-                        fillState(doc, "PARENT_CLOSED", licenses, reason, user);
+                        fillState(doc, "PARENT_CLOSED", null, reason, user);
                         solr.add("titles", doc);
                         solr.commit("titles");
                     }
