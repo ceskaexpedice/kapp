@@ -44,8 +44,10 @@ export class ResultItem {
   //hasCollapsed = true;
   isCollapsed = signal<boolean>(true);
 
+  editingNote = signal(false);
   editingDate = signal(false);
   decisionDate: number;
+  note: string;
 
   mergedAuthors: AuthorTitle[] = [];
 
@@ -244,7 +246,21 @@ export class ResultItem {
   }
 
   editNote() {
+    if (this.doc()['note']) {
+      this.note = this.doc()['note'];
+    }
+    this.editingNote.set(true)
+  }
 
+  closeEditingNote() {
+    this.editingNote.set(false)
+  }
+
+  saveNote() {
+    
+    this.service.saveTitleNote(this.doc().pid, this.note).subscribe((res: any) => {
+      console.log(res)
+    })
   }
 
   editDecisionDate() {

@@ -193,6 +193,26 @@ public class SolrIndexer {
         return ret;
     }
 
+    public static JSONObject saveTitleNote(JSONObject js) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField("pid", js.getString("pid"));
+
+            addAtomicField(doc, "set", js.getString("note"), "note");
+
+            solr.add("titles", doc);
+            solr.commit("titles");
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
     // Save changes to author in authors core
     // Add / modify authors_kapp field in titles core
     public static JSONObject saveAuthor(JSONObject js, boolean onlyAuthors) {

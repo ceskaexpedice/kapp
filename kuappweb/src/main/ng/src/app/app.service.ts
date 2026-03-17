@@ -173,6 +173,10 @@ export class AppService {
     return this.post('index/save_decision_date', {pid,decisionDate});
   }
 
+  saveTitleNote(pid: string, note: string): Observable<any> {
+    return this.post('index/save_title_note', {pid,note});
+  }
+
   createBatchFromLabel(label: string): Observable<any> {
     return this.post('index/create_batch_from_label', {label});
   }
