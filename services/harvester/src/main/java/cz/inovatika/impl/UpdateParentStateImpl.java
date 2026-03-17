@@ -94,7 +94,7 @@ public class UpdateParentStateImpl implements UpdateParentState {
                     SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
 
-            wrapper.addField(Constants.TitlesCollectionFields.AppDataFields.PID_FIELD, rootPid);
+            wrapper.setField(Constants.TitlesCollectionFields.AppDataFields.PID_FIELD, rootPid);
             wrapper.setField(Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD, parentState.name());
 
             updates.add(wrapper.getDocument());

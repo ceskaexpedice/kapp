@@ -49,6 +49,8 @@ public class HarvestingItem {
      */
     private Instance instance;
 
+    private String rootTitle;
+
     private boolean isHierarchical = false; // true only for monograph with monographunits and periodical
 
 
@@ -66,6 +68,14 @@ public class HarvestingItem {
 
     public void setRootPid(String rootPid) {
         this.rootPid = rootPid;
+    }
+
+    public void setRootTitle(String titles) {
+        this.rootTitle = titles;
+    }
+
+    public String getRootTitle() {
+        return this.rootTitle;
     }
 
     public String getTitles() {
@@ -151,4 +161,7 @@ public class HarvestingItem {
     public int hashCode() {
         return Objects.hash(rootPid, pid, model, titles, Arrays.hashCode(licenses), instance);
     }
+
+
+
 }

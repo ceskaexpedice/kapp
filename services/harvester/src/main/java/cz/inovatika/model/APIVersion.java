@@ -4,6 +4,7 @@ import cz.inovatika.utils.XMLUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
 
+import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
@@ -53,7 +54,7 @@ public enum APIVersion {
 
         @Override
         public String[] fieldList() {
-            return new String[]{"PID", "pid_path", "root_pid", "fedora.model", "dc.title", "dnnt-labels", "dostupnost"};
+            return new String[]{"PID", "pid_path", "root_pid", "root_title", "fedora.model", "dc.title", "dnnt-labels", "dostupnost"};
         }
 
         @Override
@@ -175,7 +176,7 @@ public enum APIVersion {
 
         @Override
         public String[] fieldList() {
-            return new String[]{"pid", "own_pid_path", "root.pid", "model", "titles.search", "licenses_of_ancestors", "licenses"};
+            return new String[]{"pid", "own_pid_path", "root.pid","root.title" , "model", "titles.search", "licenses_of_ancestors", "licenses"};
         }
 
 
@@ -194,12 +195,14 @@ public enum APIVersion {
             final HarvestingItem item = new HarvestingItem();
             item.setInstance(instance);
 
+
             Element modelElm = XMLUtils.findElement(docResultElement, (elm) -> {
                 String nodeName = elm.getNodeName();
                 String name = elm.getAttribute("name");
                 return (nodeName.equals("str") && name.equals("model"));
             });
             if (modelElm != null) {
+                String mname = modelElm.getTextContent();
                 item.setModel(modelElm.getTextContent());
             }
 
@@ -221,6 +224,17 @@ public enum APIVersion {
                 item.setRootPid(rootPidElm.getTextContent());
             }
 
+
+            Element rootTitleElm = XMLUtils.findElement(docResultElement, (elm) -> {
+                String nodeName = elm.getNodeName();
+                String name = elm.getAttribute("name");
+                return (nodeName.equals("str") && name.equals("root.title"));
+            });
+
+            if (rootTitleElm != null) {
+                String titles = rootTitleElm.getTextContent();
+                item.setRootTitle(titles);
+            }
 
             Element titlesElements = XMLUtils.findElement(docResultElement, (elm) -> {
                 String nodeName = elm.getNodeName();

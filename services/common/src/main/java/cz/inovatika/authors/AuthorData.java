@@ -189,9 +189,6 @@ public class AuthorData {
                         aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_BIRTH, parsed.startYear());
                         aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, parsed.startConfirmed());
                     }
-                    aDoc.setField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_BIRTH, parsed.startYear());
-                    aDoc.setField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, parsed.startConfirmed());
-
                 }
                 if (parsed.endYear() != null) {
                     if (parsed.endYear().equals("9999") && !parsed.endConfirmed()) {
@@ -200,8 +197,6 @@ public class AuthorData {
                         aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_DEATH, parsed.endYear());
                         aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, parsed.endConfirmed());
                     }
-                    aDoc.setField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_DEATH, parsed.endYear());
-                    aDoc.setField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, parsed.endConfirmed());
                 }
             } else {
                 aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, false);
@@ -213,7 +208,6 @@ public class AuthorData {
             aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, false);
         }
         return aDoc;
-
     }
 
     public String toJsonString() {
@@ -226,11 +220,44 @@ public class AuthorData {
         json.put("termsOfAddress", termsOfAddress);
 
         if (this.getNameIdentifier() != null) {
+            json.put("id", this.getNameIdentifier());
             json.put("nameIdentifier", this.getNameIdentifier());
         } else {
             String name = this.getFull() + (this.getDate() != null ? this.getDate() : "") ;
-            json.put("nameIdentifier", XmlProcessor.normalize(name));
+            json.put("id", XmlProcessor.normalize(name));
         }
+        if (this.getDate() != null) {
+            String date =  this.getDate();
+            String normalized = AuthorNormalizationUtils.normalize(date);
+            DateRange parsed = (new DateRangeParser()).parse(normalized);
+            if (parsed != null) {
+                json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_DATE_STR, date);
+                if (parsed.startYear() != null) {
+                    if (parsed.startYear().equals("0") && !parsed.startConfirmed()) {
+                        json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, false);
+                    } else {
+                        json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_BIRTH, parsed.startYear());
+                        json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, parsed.startConfirmed());
+                    }
+                }
+                if (parsed.endYear() != null) {
+                    if (parsed.endYear().equals("9999") && !parsed.endConfirmed()) {
+                        json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, false);
+                    } else {
+                        json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_YEAR_DEATH, parsed.endYear());
+                        json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, parsed.endConfirmed());
+                    }
+                }
+            } else {
+                json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, false);
+                json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, false);
+                LOGGER.warning(String.format( "Could not parse date from  %s" , date));
+            }
+        } else {
+            json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, false);
+            json.put(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, false);
+        }
+
 
         json.put("isLast", isLast);
         return json.toString();
