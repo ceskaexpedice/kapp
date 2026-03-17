@@ -265,7 +265,7 @@ public enum States {
                         SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
                 wrapper.setField(Constants.TitlesCollectionFields.AppDataFields.PID_FIELD, rootPid);
-                wrapper.addField(Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD, PARENT_OPEN.name());
+                wrapper.setField(Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD, PARENT_OPEN.name());
                 solrClient.add(Constants.Collection.TITLES_COLLECTION, wrapper.getDocument());
             } else {
 
@@ -274,7 +274,7 @@ public enum States {
                         SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
                 wrapper.setField(Constants.TitlesCollectionFields.AppDataFields.PID_FIELD, rootPid);
-                wrapper.addField(Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD, PARENT_CLOSED.name());
+                wrapper.setField(Constants.TitlesCollectionFields.AppComputedFields.STATE_FIELD, PARENT_CLOSED.name());
                 solrClient.add(Constants.Collection.TITLES_COLLECTION, wrapper.getDocument());
             }
         } catch (SolrServerException | IOException e) {

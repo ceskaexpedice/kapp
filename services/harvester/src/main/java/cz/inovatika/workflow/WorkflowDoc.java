@@ -5,6 +5,8 @@ import org.json.JSONObject;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
+import java.util.Map;
 
 import static cz.inovatika.Constants.TitlesCollectionFields.*;
 
@@ -35,13 +37,21 @@ public record WorkflowDoc(
         switch (this.assignation) {
             case PUBLIC -> {
                 idoc.setField(AppComputedFields.DECISION_DATE,dateRangeEndYear);
-                idoc.removeField(AppComputedFields.ASSIGNED_LICENSES, "onsite");
-                idoc.addField(AppComputedFields.ASSIGNED_LICENSES, "public");
+                Map<String, Object> operation = new HashMap<>();
+                operation.put("remove", "onsite");
+                operation.put("add-distinct", "public");
+                idoc.getDocument().setField(AppComputedFields.ASSIGNED_LICENSES, operation);
+                //idoc.getDocument().remove(AppComputedFields.ASSIGNED_LICENSES, "onsite");
+                //idoc.getDocument().addField(AppComputedFields.ASSIGNED_LICENSES, "public");
             }
             case ONSITE -> {
                 idoc.setField(AppComputedFields.DECISION_DATE,dateRangeEndYear);
-                idoc.removeField(AppComputedFields.ASSIGNED_LICENSES, "public");
-                idoc.addField(AppComputedFields.ASSIGNED_LICENSES, "onsite");
+                Map<String, Object> operation = new HashMap<>();
+                operation.put("remove", "public");
+                operation.put("add-distinct", "onsite");
+                idoc.getDocument().setField(AppComputedFields.ASSIGNED_LICENSES, operation);
+                //idoc.getDocument().remove(AppComputedFields.ASSIGNED_LICENSES, "public");
+                //idoc.getDocument().addField(AppComputedFields.ASSIGNED_LICENSES, "onsite");
             }
             default -> {
                 //no license assigned

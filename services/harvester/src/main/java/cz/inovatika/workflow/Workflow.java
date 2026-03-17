@@ -20,7 +20,12 @@ public class Workflow {
         return state != null ?  state.calculateNextState(ctx.item().getRootPid(),ctx.solrClient(),ctx.applicationConfig(),currentDoc) : null;
     }
 
-    public States calculateCuratorTransition(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
+    public States calculateCuratorTransition(
+            String rootPid,
+            SolrClient solrClient,
+            WorkflowDoc currentDoc,
+            States desiredState
+    ) {
         States state = currentDoc.state();
         States newState = state != null ?  currentDoc.state().transitionByCurator(rootPid,solrClient, currentDoc, desiredState) : null;
         String model = currentDoc.model();
