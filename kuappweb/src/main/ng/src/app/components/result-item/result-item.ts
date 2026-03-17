@@ -20,12 +20,13 @@ import { MatFormFieldModule } from "@angular/material/form-field";
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { AuthorTitleDialog } from '../author-title-dialog/author-title-dialog';
+import { MatListModule } from "@angular/material/list";
 
 @Component({
   selector: 'app-result-item',
   imports: [RouterModule, TranslateModule, FormsModule, DatePipe,
     MatCardModule, MatButtonModule, MatMenuModule,
-    MatIconModule, MatChipsModule, MatFormFieldModule],
+    MatIconModule, MatChipsModule, MatFormFieldModule, MatListModule],
   templateUrl: './result-item.html',
   styleUrl: './result-item.scss'
 })

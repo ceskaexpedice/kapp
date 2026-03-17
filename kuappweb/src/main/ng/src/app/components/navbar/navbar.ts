@@ -35,7 +35,7 @@ export class Navbar {
   }
 
   logout() {
-    this.auth.logout();
+    this.auth.logout('');
   }
 
   onLanguageChanged(lang: string) {

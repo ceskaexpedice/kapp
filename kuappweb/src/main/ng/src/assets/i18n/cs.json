@@ -186,6 +186,8 @@
     "batch_exist": "Tato dávka již existuje!",
     "saving_author_back": "Ulozit autora?",
     "saving_author_back_desc": "Autor uz byl editovan. Chtete pouzit starou verzi z Krameria?",
+    "saving_author_differs": "Prepsat autora?",
+    "saving_author_differs_desc": "Autor jiz existuje a ma rozdily?",
     "name_empty": "Název je prázdný!"
    }
 }

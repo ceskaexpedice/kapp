@@ -195,7 +195,7 @@ public class SolrIndexer {
 
     // Save changes to author in authors core
     // Add / modify authors_kapp field in titles core
-    public static JSONObject saveAuthor(JSONObject js) {
+    public static JSONObject saveAuthor(JSONObject js, boolean onlyAuthors) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -241,13 +241,15 @@ public class SolrIndexer {
             adoc.setField("confirmed_end_year", js.optBoolean("confirmed_end_year"));
             solr.add("authors", adoc);
 
-            // save all titles
-            String old_id = js.optString("old_id", null);
-            saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id") : old_id, js);
-
-            if (old_id != null && !js.optString("old_id").equals(js.getString("id"))) {
-                solr.deleteById("authors", js.optString("old_id"));
+            if (!onlyAuthors) {
+                // save all titles
+                String old_id = js.optString("old_id", null);
+                saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id") : old_id, js);
+                if (old_id != null && !js.optString("old_id").equals(js.getString("id"))) {
+                    solr.deleteById("authors", js.optString("old_id"));
+                }
             }
+
             solr.commit("authors");
 
             ret.put("msg", "saved");
@@ -344,6 +346,10 @@ public class SolrIndexer {
 
             solr.add("titles", doc);
             solr.commit("titles");
+            
+            if (js.has("author")) {
+                saveAuthor(js.getJSONObject("author"), true);
+            }
             ret.put("msg", "saved");
 
         } catch (Exception ex) {

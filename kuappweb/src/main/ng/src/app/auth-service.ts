@@ -75,7 +75,7 @@ export class AuthService {
 
     const redircetUri = `${this.baseUrl()}${suffix}`;
     //let url = `${this.settings.keycloak.baseUrl}/realms/kramerius/protocol/openid-connect/logout`;
-    let url = `${this.settings.clientApiBaseUrl}/user/auth/logout`;
+    let url = `${this.settings.clientApiBaseUrl}/user/auth/logout?&redirect_uri=${redircetUri}`;
     if (this.settings.keycloak.logoutUrl) {
       url = this.settings.keycloak.logoutUrl;
     }
@@ -87,11 +87,9 @@ export class AuthService {
   }
 
   isAuthorized() {
-    let flag = this.state.user && this.authorizedGlobalActions && this.authorizedGlobalActions.indexOf('a_admin_read') >= 0;
-    if (flag) {
-      return this.authorizedGlobalActions.indexOf("a_admin_read") >= 0;
+    if (this.state.user()) {
+      return true;
     }
-    //return true;  
     return false;
   }
 

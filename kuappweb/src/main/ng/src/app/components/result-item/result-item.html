@@ -35,24 +35,20 @@
 		}
 		<div class="app-metadata-row app-multiple">
 			<span class="app-label">{{ 'field.authors' | translate }}:</span>
-			<ul>
+			<mat-list>
 				@for(a of mergedAuthors; track $index) {
-						<li>
+						<mat-list-item>
 							<a (click)="infoAuthor(a)" class="app-value">
-								<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span><mat-icon>info</mat-icon>
+								<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span>
 							</a>
-							<!-- @for(l of a.links; track $index) {
-								<a target="_blank" [href]="l.url" class="app-value">
-									<span>{{ l }}</span><mat-icon>open_in_new</mat-icon>
-								</a>
-							} -->
-						</li>
+						</mat-list-item>
 					}
-					<li>
-                  <button mat-icon-button (click)="addAuthor()" [title]="'action.add_author' | translate">
-                    <mat-icon>person_add</mat-icon>
-                  </button></li>
-			</ul>
+					<mat-list-item>
+							<a (click)="addAuthor()" [title]="'action.add_author' | translate" class="app-value">
+								<mat-icon>person_add</mat-icon>
+							</a>
+				</mat-list-item>
+			</mat-list>
 			
 		</div>
 		<div class="app-metadata-row">

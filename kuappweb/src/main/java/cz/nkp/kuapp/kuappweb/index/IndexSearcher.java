@@ -507,7 +507,7 @@ public class IndexSearcher {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery("*")
                     .withFilter("id:"+id)
-                    .returnFields("nameIdentifier")
+                    .returnFields("*")
                     .setLimit(1);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));

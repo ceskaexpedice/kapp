@@ -7,7 +7,7 @@
         @if(data.alertClass === 'app-success' || data.alertClass === 'app-info' || data.alertClass === 'app-warn' || data.alertClass === 'app-error'){
           <mat-icon></mat-icon>
         }
-        {{ data.message }}
+        <div [innerHTML]="data.message"></div>
       </mat-card-content>
     </mat-card>}
     @if (data.numberInput || data.textInput || data.textAreaInput) {

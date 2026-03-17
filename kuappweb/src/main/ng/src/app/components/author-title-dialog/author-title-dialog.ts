@@ -41,11 +41,10 @@ export class AuthorTitleDialog {
 
   readonly dialog = inject(MatDialog);
 
-
   links = signal<{ [key: string]: { ident: string, url: string }[] }>({});
   linkTypes = signal<string[]>([]);
   loading = signal<boolean>(false);
-  editing = signal<boolean>(true);
+  editing = signal<boolean>(false);
   isNew = signal<boolean>(false);
 
   author = signal<AuthorTitle>(null);
@@ -74,12 +73,13 @@ export class AuthorTitleDialog {
     } else {
       const a = this.data.authors_kapp?.find(a => a.id === this.data.id);
       if (a) {
-        this.author.set(a);
+        this.author.set(JSON.parse(JSON.stringify(a)));
         this.useKramerius = false;
         this.hasKapp.set(true);
         this.old_id = a.old_id;
       } else {
-        this.author.set(this.data.authors_kramerius.find(a => a.id === this.data.id));
+        const k = this.data.authors_kramerius.find(a => a.id === this.data.id);
+        this.author.set(JSON.parse(JSON.stringify(k)));
         this.useKramerius = true;
         this.hasKapp.set(false);
       }
@@ -91,11 +91,16 @@ export class AuthorTitleDialog {
   setFull() {
     this.author().full = this.author().family + ', ' + this.author().given;
     this.author().date = this.author().year_birth + '-' + this.author().year_death;
-    this.author().id = (this.author().family + this.author().given + 
-      (this.author().year_birth ? this.author().year_birth : '') + 
-      (this.author().year_death ? this.author().year_death : '') +
-      (this.author().note ? this.author().note : '')
-    ).toLowerCase().normalize('NFKD').replace(/[^\w]/g, '');
+
+    if (this.author().nameIdentifier) {
+      this.author().id = this.author().nameIdentifier;
+    } else {
+      this.author().id = (this.author().family + this.author().given +
+        (this.author().year_birth ? this.author().year_birth : '') +
+        (this.author().year_death ? this.author().year_death : '') +
+        (this.author().note ? this.author().note : '')
+      ).toLowerCase().normalize('NFKD').replace(/[^\w]/g, '');
+    }
   }
 
   setAutor() {
@@ -138,31 +143,31 @@ export class AuthorTitleDialog {
           return;
         }
 
-        
+
         const dates = a['datafield_100d'] ? a['datafield_100d'].split('-') : [];
 
         const auth: AuthorTitle = {
-              
-              id: a['controlfield_001'],
-              nameIdentifier: a['controlfield_001'],
-              full: a['datafield_100a'],
-              family: a['family']?.[0],
-              given: a['given']?.[0],
-              date: a['datafield_100d'],
-              year_birth: dates[0] ? parseInt(dates[0]) : null,
-              year_death: dates.length > 1 ? parseInt(dates[1]) : null,
-              // labels: [...this.author.labels, 'author_modified']
+
+          id: a['controlfield_001'],
+          nameIdentifier: a['controlfield_001'],
+          full: a['datafield_100a'],
+          family: a['family']?.[0],
+          given: a['given']?.[0],
+          date: a['datafield_100d'],
+          year_birth: dates[0] ? parseInt(dates[0]) : null,
+          year_death: dates.length > 1 ? parseInt(dates[1]) : null,
+          // labels: [...this.author.labels, 'author_modified']
           role: null,
-              labels: ['author_modified'],
+          labels: ['author_modified'],
           isLast: false
-        
-            }
+
+        }
 
         this.author.set(auth);
         if (resp.error) {
           this.ui.showErrorSnackBar('snackbar.record_changed.error');
         } else {
-        this.getLinks();
+          this.getLinks();
           //this.ui.showInfoSnackBar('snackbar.record_changed.success');
         }
       });
@@ -170,43 +175,85 @@ export class AuthorTitleDialog {
   }
 
   onSaveRole() {
-
+    this.save(false);
   }
 
   onSave() {
 
-    if (this.hasKapp && this.useKramerius) {
-      const data: SimpleDialogData = {
-        title: this.translator.instant('alert.saving_author_back'),
-        message: this.translator.instant('alert.saving_author_back_desc'),
-        alertClass: 'app-warn',
-        btn1: {
-          label: 'Ano',
-          value: 'yes',
-          color: 'warn'
-        },
-        btn2: {
-          label: 'Ne',
-          value: 'no',
-          color: 'default'
-        }
-      };
-      const dialogRef = this.dialog.open(SimpleDialogComponent, {
-        data: data
-      });
-      dialogRef.afterClosed().subscribe(result => {
-        if (result === 'yes') {
-          this.save();
+    // check fields
+    if (this.author().nameIdentifier) {
+      const p: any = {};
+      p.rows = 1;
+      p.id = this.author().nameIdentifier;
+      this.service.getAutById(p as HttpParams).subscribe((resp: any) => {
+        const a = resp.response.docs[0];
+        if (!a) {
+          alert('nameIdentifier invalid')
+          return;
+        } else {
+          this.checkEditedAuthor();
         }
       });
     } else {
-      this.save();
+      this.checkEditedAuthor();
     }
 
 
   }
 
-  save(): void {
+  checkEditedAuthor() {
+    const p: any = {};
+    p.rows = 1;
+    p.id = this.author().id;
+    this.service.getAuthorById(p as HttpParams).subscribe((resp: any) => {
+      const a = resp.response.docs[0];
+      if (!a) {
+        //this.save(true);
+      } else {
+
+        if (this.author().family !== a['family'] ||
+          this.author().given !== a['given'] ||
+          this.author().year_birth !== a['year_birth'] ||
+          this.author().year_death !== a['year_death']
+        ) {
+          const message = this.translator.instant('alert.saving_author_differs_desc') +
+                          `<div>${this.translator.instant('field.family')}: ${a['family']} -> ${this.author().family} </div>
+                          <div>${this.translator.instant('field.given')}: ${a['given']} -> ${this.author().given} </div>
+                          <div>${this.translator.instant('field.date_birth')}: ${a['year_birth']} -> ${this.author().year_birth} </div>
+                          <div>${this.translator.instant('field.date_death')}: ${a['year_death']} -> ${this.author().year_death} </div>
+                          `
+          const data: SimpleDialogData = {
+            title: this.translator.instant('alert.saving_author_differs'),
+            message: message,
+            alertClass: 'app-warn',
+            btn1: {
+              label: 'Ano',
+              value: 'yes',
+              color: 'warn'
+            },
+            btn2: {
+              label: 'Ne',
+              value: 'no',
+              color: 'default'
+            }
+          };
+          const dialogRef = this.dialog.open(SimpleDialogComponent, {
+            data: data
+          });
+          dialogRef.afterClosed().subscribe(result => {
+            if (result === 'yes') {
+              this.save(true);
+            }
+          });
+        } else {
+          this.save(true);
+        }
+        
+      }
+    });
+  }
+
+  save(inAuthors: boolean): void {
     console.log(this.author());
     const authors = this.data.authors_kapp ? [...this.data.authors_kapp] : [];
     const ka = authors.find(a => a.id === this.author().id);
@@ -216,7 +263,7 @@ export class AuthorTitleDialog {
       authors.push(this.author())
     }
 
-    this.service.saveAuthorsInTitle(authors, this.data.pid).subscribe((res: any) => {
+    this.service.saveAuthorsInTitle(authors, this.data.pid, inAuthors ? this.author() : null).subscribe((res: any) => {
       if (res.error) {
         this.ui.showErrorSnackBar('snackbar.record_saved.error');
       } else {
