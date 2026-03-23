@@ -123,8 +123,8 @@ public class UserServlet extends HttpServlet {
             return ((JSONObject) req.getSession().getAttribute("user"));
         } else {
             
-//            JSONObject u = new JSONObject().put("name", "mock");
-//            return u;
+            //JSONObject u = new JSONObject().put("name", "mock");
+            //return u;
             return null;
         }
     }
@@ -157,7 +157,6 @@ public class UserServlet extends HttpServlet {
                 try {
                     JSONObject js = Options.getInstance().getJSONObject("keycloak");
 
-                    System.out.println(js);
                     InputStream is = new ByteArrayInputStream(js.toString().getBytes());
                     AuthzClient authzClient = AuthzClient.create(is);
                     // create an authorization request
@@ -166,7 +165,20 @@ public class UserServlet extends HttpServlet {
                     AuthorizationResponse response = authzClient.authorization("kapp", "kapp").authorize(request);
                     String rpt = response.getToken();
 
-                    System.out.println(rpt);
+                } catch (Exception ex) {
+                    LOGGER.log(Level.SEVERE, null, ex);
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        LOGOUT {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    req.getSession().setAttribute("user", null);
+                    req.getSession().invalidate();
                 } catch (Exception ex) {
                     LOGGER.log(Level.SEVERE, null, ex);
                     json.put("error", ex.toString());

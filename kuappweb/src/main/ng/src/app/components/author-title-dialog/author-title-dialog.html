@@ -4,10 +4,7 @@
 <h2 mat-dialog-title class="app-fxLayout app-row app-center-v">
 	<span class="app-fxFlex">
 		@if(author()) {
-		{{ author().full }}
-		@if(isNew()) {
-		({{ author().id }})
-		}
+		{{ author().full }} ({{ author().id }})
 		} @else {
 		{{ 'action.add_author' | translate }}
 		}

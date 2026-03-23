@@ -5,6 +5,7 @@ import { map, Observable } from 'rxjs';
 import { User } from './shared/user';
 import { AppConfiguration } from './app-configuration';
 import { AppState } from './app-state';
+import { AppService } from './app.service';
 
 @Injectable({
   providedIn: 'root'
@@ -32,6 +33,7 @@ export class AuthService {
     private http: HttpClient,
     private settings: AppConfiguration,
     private router: Router, 
+    private service: AppService,
     private state: AppState
   ) {
     AuthService.token = localStorage.getItem('account.token');
@@ -64,22 +66,25 @@ export class AuthService {
   }
 
   logout(suffix: string = "") {
-    AuthService.token = null;
-    AuthService.tokenTime = null;
-    AuthService.tokenDeadline = null;
-    AuthService.tokenCounter = null;
 
-    localStorage.removeItem('account.token');
-    localStorage.removeItem('account.token.time');
-    this.state.user.set(null);
+    this.service.logout().subscribe(() => {
+      AuthService.token = null;
+      AuthService.tokenTime = null;
+      AuthService.tokenDeadline = null;
+      AuthService.tokenCounter = null;
 
-    const redircetUri = `${this.baseUrl()}${suffix}`;
-    //let url = `${this.settings.keycloak.baseUrl}/realms/kramerius/protocol/openid-connect/logout`;
-    let url = `${this.settings.clientApiBaseUrl}/user/auth/logout?&redirect_uri=${redircetUri}`;
-    if (this.settings.keycloak.logoutUrl) {
-      url = this.settings.keycloak.logoutUrl;
-    }
-    window.open(url, '_top');
+      localStorage.removeItem('account.token');
+      localStorage.removeItem('account.token.time');
+      this.state.user.set(null);
+    })
+
+    // const redircetUri = `${this.baseUrl()}${suffix}`;
+    // //let url = `${this.settings.clientApiBaseUrl}/user/auth/logout?&redirect_uri=${redircetUri}`;
+    // let url = `${this.settings.clientApiBaseUrl}/user/auth/logout?&redirect_uri=${redircetUri}`;
+    // if (this.settings.keycloak.logoutUrl) {
+    //   url = this.settings.keycloak.logoutUrl;
+    // }
+    // window.open(url, '_top');
   }
 
   isLoggedIn() {

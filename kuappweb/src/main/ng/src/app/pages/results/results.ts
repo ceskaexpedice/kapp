@@ -41,7 +41,7 @@ import { SimpleDialogData } from '../../components/simple-dialog/simple-dialog';
 import { Contract } from '../../shared/contract';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthorTitle } from '../../shared/author';
-import { AuthorTitleDialog } from '../../components/author-title-dialog/author-title-dialog';
+import { AuthorTitleDialog, AuthorTitleDialogData } from '../../components/author-title-dialog/author-title-dialog';
 
 @Component({
   selector: 'app-results',
@@ -208,10 +208,10 @@ export class Results {
     }
     if (d['authors_kramerius']) {
       d['authors_kramerius'].forEach((ak: AuthorTitle) => {
-        if (!mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.old_id) &&
-          !mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.id) &&
-          !mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.nameIdentifier) &&
-          !mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.old_id)) {
+        if (!mergedAuthors.find((ma: any) => ak.id && ak.id === ma.old_id) &&
+          !mergedAuthors.find((ma: any) => ak.id && ak.id === ma.id) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier && ak.nameIdentifier === ma.nameIdentifier) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier && ak.nameIdentifier === ma.old_id)) {
           mergedAuthors.push(ak);
         }
 
@@ -279,10 +279,18 @@ export class Results {
   }
 
 
-  // -- pedro
   addAuthor(doc: any) {
+
+    const data: AuthorTitleDialogData = {
+      pid: doc.pid,
+      authors_kapp: doc.authors_kapp,
+      authors_kramerius: doc.authors_kramerius,
+      id: null,
+      ids: doc.authors_ids,
+      nameIdentifiers: doc.nameIdentifiers
+    }
     const dialogRef = this.dialog.open(AuthorTitleDialog, {
-      data: { pid: doc.pid, authors_kapp: null },
+      data: data,
     });
 
     dialogRef.afterClosed().subscribe(result => {

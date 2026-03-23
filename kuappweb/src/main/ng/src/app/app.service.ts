@@ -161,8 +161,8 @@ export class AppService {
     return this.post('index/save_author', author);
   }
 
-  saveAuthorsInTitle(authors: AuthorTitle[], pid: string, author: AuthorTitle): Observable<any> {
-    return this.post('index/save_authors_in_title', {pid, authors, author});
+  saveAuthorsInTitle(authors: AuthorTitle[], pid: string, author: AuthorTitle, ids: string[], nameIdentifiers: string[]): Observable<any> {
+    return this.post('index/save_authors_in_title', {pid, authors, author, ids, nameIdentifiers});
   }
 
   saveAuthorLabels(pid: string, labels: string[]): Observable<any> {
@@ -198,6 +198,10 @@ export class AppService {
   }
 
   login(): Observable<any> {
+    return this.post('user/login', {});
+  }
+
+  logout(): Observable<any> {
     return this.post('user/login', {});
   }
 

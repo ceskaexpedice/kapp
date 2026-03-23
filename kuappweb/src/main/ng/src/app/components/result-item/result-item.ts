@@ -19,7 +19,7 @@ import { Batch } from '../../shared/batch';
 import { MatFormFieldModule } from "@angular/material/form-field";
 import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
-import { AuthorTitleDialog } from '../author-title-dialog/author-title-dialog';
+import { AuthorTitleDialog, AuthorTitleDialogData } from '../author-title-dialog/author-title-dialog';
 import { MatListModule } from "@angular/material/list";
 
 @Component({
@@ -138,8 +138,16 @@ export class ResultItem {
   }
 
   infoAuthor(a: AuthorTitle) {
+    const data: AuthorTitleDialogData = {
+      pid:this.doc().pid, 
+      authors_kapp:this.doc().authors_kapp, 
+      authors_kramerius: this.doc().authors_kramerius,  
+      id: a.id,
+      ids: this.doc().authors_ids, 
+      nameIdentifiers: this.doc().nameIdentifiers
+    }
     const dialogRef = this.dialog.open(AuthorTitleDialog, {
-      data: {pid:this.doc().pid, authors_kapp:this.doc().authors_kapp, authors_kramerius:this.doc().authors_kramerius,  id: a.id},
+      data: data,
     });
 
     dialogRef.afterClosed().subscribe(result => {
@@ -155,8 +163,16 @@ export class ResultItem {
   }
 
   addAuthor() {
+    const data: AuthorTitleDialogData = {
+      pid: this.doc().pid, 
+      authors_kapp: this.doc().authors_kapp, 
+      authors_kramerius: this.doc().authors_kramerius,  
+      id: null,
+      ids: this.doc().authors_ids, 
+      nameIdentifiers: this.doc().nameIdentifiers
+    }
     const dialogRef = this.dialog.open(AuthorTitleDialog, {
-      data: {pid:this.doc().pid, authors_kapp:this.doc().authors_kapp, author:null},
+      data: data,
     });
 
     dialogRef.afterClosed().subscribe(result => {

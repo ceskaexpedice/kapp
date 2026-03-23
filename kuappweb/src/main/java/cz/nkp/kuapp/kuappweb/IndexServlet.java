@@ -400,7 +400,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.saveAuthorsInTitle(js);
+                    json = SolrIndexer.saveAuthorsInTitle(js); 
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

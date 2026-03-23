@@ -18,6 +18,15 @@ import { SimpleDialogComponent } from '../simple-dialog/simple-dialog.component'
 import { Router } from '@angular/router';
 import { AppState } from '../../app-state';
 
+export interface AuthorTitleDialogData { 
+    pid: string, 
+    authors_kapp: AuthorTitle[], 
+    authors_kramerius: AuthorTitle[], 
+    id: string,
+    ids: string[], 
+    nameIdentifiers: string[]
+  }
+
 @Component({
   selector: 'app-author-dialog',
   imports: [
@@ -37,7 +46,7 @@ export class AuthorTitleDialog {
   readonly state = inject(AppState);
   readonly ui = inject(UIService);
   readonly dialogRef = inject(MatDialogRef<AuthorTitleDialog>);
-  readonly data = inject<{ pid: string, authors_kapp: AuthorTitle[], authors_kramerius: AuthorTitle[], id: string }>(MAT_DIALOG_DATA);
+  readonly data = inject<AuthorTitleDialogData>(MAT_DIALOG_DATA);
 
   readonly dialog = inject(MatDialog);
 
@@ -90,12 +99,14 @@ export class AuthorTitleDialog {
 
   setFull() {
     this.author().full = this.author().family + ', ' + this.author().given;
-    this.author().date = this.author().year_birth + '-' + this.author().year_death;
+    this.author().date = (this.author().year_birth ? this.author().year_birth : '') + '-' + (this.author().year_death ? this.author().year_death : '');
 
     if (this.author().nameIdentifier) {
       this.author().id = this.author().nameIdentifier;
     } else {
-      this.author().id = (this.author().family + this.author().given +
+      this.author().id = (
+        (this.author().family ? this.author().family : '') +
+        (this.author().given ? this.author().given : '') +
         (this.author().year_birth ? this.author().year_birth : '') +
         (this.author().year_death ? this.author().year_death : '') +
         (this.author().note ? this.author().note : '')
@@ -156,8 +167,8 @@ export class AuthorTitleDialog {
           date: a['datafield_100d'],
           year_birth: dates[0] ? parseInt(dates[0]) : null,
           year_death: dates.length > 1 ? parseInt(dates[1]) : null,
-          // labels: [...this.author.labels, 'author_modified']
           role: null,
+          // labels: [...this.author.labels, 'author_modified']
           labels: ['author_modified'],
           isLast: false
 
@@ -208,7 +219,7 @@ export class AuthorTitleDialog {
     this.service.getAuthorById(p as HttpParams).subscribe((resp: any) => {
       const a = resp.response.docs[0];
       if (!a) {
-        //this.save(true);
+        this.save(true);
       } else {
 
         if (this.author().family !== a['family'] ||
@@ -255,15 +266,29 @@ export class AuthorTitleDialog {
 
   save(inAuthors: boolean): void {
     console.log(this.author());
-    const authors = this.data.authors_kapp ? [...this.data.authors_kapp] : [];
-    const ka = authors.find(a => a.id === this.author().id);
-    if (ka) {
-      ka.role = this.author().role
-    } else {
-      authors.push(this.author())
+    if (this.author().id !== this.data.id) {
+      this.author().old_id = this.data.id;
     }
 
-    this.service.saveAuthorsInTitle(authors, this.data.pid, inAuthors ? this.author() : null).subscribe((res: any) => {
+    if (!this.author().labels) {
+      this.author().labels = ['author_modified']
+    } else if (!this.author().labels.includes('author_modified')){
+      this.author().labels.push('author_modified');
+    }
+    
+    const authors = this.data.authors_kapp ? [...this.data.authors_kapp.filter(a => a.id !== this.author().id)] : [];
+    authors.push(JSON.parse(JSON.stringify(this.author())));
+
+    const authors_kapp_ids = authors.map(a => a.id);
+    const authors_kramerius_ids = this.data.authors_kramerius.filter(a => !authors_kapp_ids.includes(a.id) && a.id !== this.author().old_id ).map(a => a.id);
+    const ids: string[] =  [...authors_kapp_ids, ...authors_kramerius_ids];
+
+    
+    const authors_kapp_nameIdentifiers = authors.filter(a => a.nameIdentifier).map(a => a.nameIdentifier);
+    const authors_kramerius_nameIdentifiers = this.data.authors_kramerius.filter(a => a.nameIdentifier && !authors_kapp_nameIdentifiers.includes(a.nameIdentifier)).map(a => a.nameIdentifier);
+    const nameIdentifiers: string[] =  [...authors_kapp_nameIdentifiers, ...authors_kramerius_nameIdentifiers];
+    
+    this.service.saveAuthorsInTitle(authors, this.data.pid, inAuthors ? this.author() : null, ids, nameIdentifiers).subscribe((res: any) => {
       if (res.error) {
         this.ui.showErrorSnackBar('snackbar.record_saved.error');
       } else {

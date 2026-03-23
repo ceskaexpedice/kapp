@@ -255,8 +255,12 @@ public class SolrIndexer {
             adoc.setField("date", js.optString("date"));
             adoc.setField("date_birth", js.optString("date_birth"));
             adoc.setField("date_death", js.optString("date_death"));
-            adoc.setField("year_birth", js.optInt("year_birth"));
-            adoc.setField("year_death", js.optInt("year_death"));
+            if (js.has("year_birth")) {
+                adoc.setField("year_birth", js.optInt("year_birth"));
+            }
+            if (js.has("year_death")) {
+                adoc.setField("year_death", js.optInt("year_death"));
+            }
             adoc.setField("confirmed_start_year", js.optBoolean("confirmed_start_year"));
             adoc.setField("confirmed_end_year", js.optBoolean("confirmed_end_year"));
             solr.add("authors", adoc);
@@ -264,8 +268,10 @@ public class SolrIndexer {
             if (!onlyAuthors) {
                 // save all titles
                 String old_id = js.optString("old_id", null);
-                saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id") : old_id, js);
-                if (old_id != null && !js.optString("old_id").equals(js.getString("id"))) {
+                boolean idChanged = old_id != null && !js.optString("old_id").equals(js.getString("id"));
+                saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id") : old_id, idChanged, js);
+                // Remove author if id changed
+                if (idChanged) {
                     solr.deleteById("authors", js.optString("old_id"));
                 }
             }
@@ -281,11 +287,11 @@ public class SolrIndexer {
         return ret;
     }
 
-    private static void saveAuthorsInAllTitles(SolrClient solr, String id, JSONObject js) throws SolrServerException, IOException {
+    private static void saveAuthorsInAllTitles(SolrClient solr, String old_id, boolean idChanged, JSONObject js) throws SolrServerException, IOException {
         String q = "*";
         JsonQueryRequest jrequest = new JsonQueryRequest()
                 .setQuery(q)
-                .withFilter("authors_ids:(\"" + id + "\")")
+                .withFilter("authors_ids:(\"" + old_id + "\")")
                 .returnFields("pid,authors_ids,nameIdentifier,authors_kapp:[json],authors_kramerius:[json]")
                 //.returnFields("pid,authors_ids,nameIdentifier,authors_kramerius:[json]")
                 .setLimit(1000);
@@ -298,7 +304,7 @@ public class SolrIndexer {
         List<SolrInputDocument> tdocs = new ArrayList();
         for (int i = 0; i < docs.length(); i++) {
             JSONObject doc = docs.getJSONObject(i);
-            tdocs.add(saveAuthorInTitle(solr, doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray())));
+            tdocs.add(saveAuthorInTitle(doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray()), idChanged));
             //saveAuthorInTitle(solr, doc.getString("pid"), js, new JSONArray());
         }
         solr.add("titles", tdocs);
@@ -306,7 +312,7 @@ public class SolrIndexer {
 
     }
 
-    private static SolrInputDocument saveAuthorInTitle(SolrClient solr, String pid, JSONObject new_author, JSONArray authors_kapp, JSONArray authors_kramerius) throws SolrServerException, IOException {
+    private static SolrInputDocument saveAuthorInTitle(String pid, JSONObject new_author, JSONArray authors_kapp, JSONArray authors_kramerius, boolean idChanged) throws SolrServerException, IOException {
 
         SolrInputDocument tdoc = new SolrInputDocument();
         tdoc.setField("pid", pid);
@@ -344,8 +350,19 @@ public class SolrIndexer {
         }
 
         addAtomicField(tdoc, "set", authors_kapp.toString(), "authors_kapp");
-        addAtomicField(tdoc, "add-distinct", id, "authors_ids");
-        addAtomicField(tdoc, "add-distinct", new_author.getString("nameIdentifier"), "nameIdentifier");
+        
+        // Remove old_id, add new
+        // addAtomicField(tdoc, "add-distinct", id, "authors_ids");
+        if (idChanged) {
+            Map<String, Object> partialUpdate = new HashMap<>();
+            partialUpdate.put("remove", old_id);
+            partialUpdate.put("add-distinct", id);
+            tdoc.setField("authors_ids", partialUpdate);
+        }
+        
+        if (new_author.has("nameIdentifier")) {
+            addAtomicField(tdoc, "add-distinct", new_author.getString("nameIdentifier"), "nameIdentifier");
+        }
         JSONArray labels = new_author.optJSONArray("labels", new JSONArray());
         //for (int i = 0; i < labels.length(); i++) {
             addAtomicField(tdoc, "add-distinct", labels.toList(), "labels");
@@ -363,6 +380,10 @@ public class SolrIndexer {
             doc.setField("pid", js.getString("pid"));
 
             addAtomicField(doc, "set", js.getJSONArray("authors").toString(), "authors_kapp");
+            addAtomicField(doc, "set", js.getJSONArray("ids"), "authors_ids");
+            addAtomicField(doc, "set", js.getJSONArray("nameIdentifiers"), "nameIdentifier");
+            
+            addAtomicField(doc, "add-distinct", "author_modified", "labels");
 
             solr.add("titles", doc);
             solr.commit("titles");
