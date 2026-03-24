@@ -19,11 +19,11 @@
         <!-- <button mat-menu-item  (click)="viewUser()">Profile</button> -->
         <button mat-menu-item (click)="logout()">Logout</button>
       </mat-menu>
+      <a [routerLink]="['admin']" routerLinkActive="app-active-link" matButton>{{ 'navbar.admin' | translate}}</a>
     } @else {
      <a matButton (click)="goToKeycloakLogin()">{{ 'navbar.login' | translate}}</a>
     }
     
-    <a [routerLink]="['admin']" routerLinkActive="app-active-link" matButton>{{ 'navbar.admin' | translate}}</a>
     <a matButton [matMenuTriggerFor]="menu">{{ translator.currentLang | translate}}</a>
     <mat-menu #menu="matMenu">
       <button mat-menu-item (click)="onLanguageChanged('cs')">Český</button>
