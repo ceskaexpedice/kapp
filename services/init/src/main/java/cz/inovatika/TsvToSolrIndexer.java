@@ -251,9 +251,11 @@ public class TsvToSolrIndexer {
                                         + "\n\tVALUE: " + /*Original*/value);
                             }
                         }
-                        if (pid == null||pid.trim().equals("uuid:"))continue;
+                        if (pid == null|| pid.trim().isEmpty() ||pid.trim().equals("uuid:"))continue;
+                        if(pid.equals("uuid:b5d91e40-a260-11ef-8fc3-5ef3fc9bb22f"))
+                            System.out.println("DEBUG");
                         //System.out.println(public_string);
-                        States desiredState = parsePublicString(doc, recordNumber,public_string,labels);
+                        States desiredState = parsePublicString(/*doc,*/ recordNumber,public_string,labels);
                         Map<String,Object> labelsUpdateMap = new HashMap<>();
                         //List<String> removes = new ArrayList<>();
                         //removes.add("{add-distinct=[excel]}");
@@ -302,10 +304,10 @@ public class TsvToSolrIndexer {
                                         false,//irrelevant
                                         LicensesAssignation.NONE
                                 );
-                                States newstate = wf.calculateCuratorTransition(rootPid, solrClient, wfdoc, desiredState);
-                                //System.out.println("NewState: " + newstate.toString());
-                                if(newstate != null)
-                                    wf.executeTransition(wfdoc, wfdoc.user(), "importing from excel", doc, newstate);
+                                States new_state = wf.calculateCuratorTransition(rootPid, solrClient, wfdoc, desiredState);
+                                //System.out.println("NewState: " + new_state.toString());
+                                if(new_state != null)
+                                    wf.executeTransition(wfdoc, wfdoc.user(), "importing from excel", doc, new_state);
                             }
                         } catch (Exception e) {
                             System.err.println("Caught exception in " + tsvFile.getName() +" of type: "+e.getClass()+ ": " + e.getMessage());
@@ -394,11 +396,11 @@ public class TsvToSolrIndexer {
         return field != null ? (String) field.getValue() : null;
     }*/
 
-    private static States parsePublicString(SolrInputDocumentWrapper doc, int recordNumber,String value,ArrayList<String> labels) {
+    private static States parsePublicString(/*SolrInputDocumentWrapper doc,*/ int recordNumber,String value,ArrayList<String> labels) {
         //Object val = doc.getFieldValue("public_string");
         if (value != null) {
             //final String value = val.toString();
-            switch (value.toLowerCase()) {
+            switch (value.trim().toLowerCase()) {
                 case "ano", "yes", "true" -> {
                     //doc.setField("public", true);
                     //doc.getDocument().addField(AppComputedFields.ASSIGNED_LICENSES, "public");
