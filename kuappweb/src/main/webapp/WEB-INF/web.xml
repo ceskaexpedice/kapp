@@ -34,6 +34,7 @@
         <servlet-name>StaticServlet</servlet-name>
         <url-pattern>/admin</url-pattern>
         <url-pattern>/home</url-pattern>
+        <url-pattern>/keycloak</url-pattern>
         <url-pattern>/batches</url-pattern>
         <url-pattern>/titles</url-pattern>
         <url-pattern>/authors</url-pattern>
