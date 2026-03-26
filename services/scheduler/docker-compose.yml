@@ -1,7 +1,7 @@
 services:
 
   scheduler:
-    image: jiriminov/kappscheduler:latest
+    image: registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kappscheduler:latest
     depends_on:
       solr:
         condition: service_healthy
@@ -25,7 +25,7 @@ services:
       start_period: 10s
     restart: unless-stopped
   tomcat:
-    image: jiriminov/kuappweb:latest
+    image: registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb:latest
     container_name: kuappweb
     ports:
       - "8088:8080" 

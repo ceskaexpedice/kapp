@@ -65,11 +65,6 @@ public enum States {
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
             return null;
         }
-
-        @Override
-        public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            return NONCONTROLLED_PRIVATE;
-        }
     },
     /**
      * controlled < 110 let
@@ -78,11 +73,6 @@ public enum States {
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
             return null;
-        }
-
-        @Override
-        public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            return NONCONTROLLED_PUBLIC;
         }
     },
     /**
@@ -93,35 +83,14 @@ public enum States {
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
             return null;
         }
-
-        @Override
-        public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            switch (desiredState) {
-                case CONTROLLED_PRIVATE, CONTROLLED_PUBLIC, CONTROLLED_UNKNOWN -> {
-                    return desiredState;
-                }
-                default -> {
-                    return null;
-                }
-            }
-        }
     },
     CONTROLLED_PUBLIC("controlled_public", LicensesAssignation.PUBLIC, false) {
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
             return null;
         }
-
-        @Override
-        public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            return CONTROLLED_PUBLIC;
-        }
     },
     CONTROLLED_PRIVATE("controlled_private", LicensesAssignation.ONSITE, false) {
-        @Override
-        public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            return CONTROLLED_PRIVATE;
-        }
 
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
@@ -130,10 +99,6 @@ public enum States {
     },
 
     CONTROLLED_UNKNOWN("controlled_unknown", LicensesAssignation.NONE, false) {
-        @Override
-        public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            return CONTROLLED_UNKNOWN;
-        }
 
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
@@ -142,10 +107,6 @@ public enum States {
 
     },
     CONTROLLED_WO_RIGHTS("controlled_unknown", LicensesAssignation.PUBLIC, false) {
-        @Override
-        public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            return CONTROLLED_WO_RIGHTS;
-        }
 
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
@@ -153,10 +114,6 @@ public enum States {
         }
     },
     CONTROLLED_UNKNOWN_PUBLIC("controlled_unknown", LicensesAssignation.PUBLIC, false) {
-        @Override
-        public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            return CONTROLLED_UNKNOWN_PUBLIC;
-        }
 
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
@@ -164,10 +121,6 @@ public enum States {
         }
     },
     CONTROLLED_BLOCKED("controlled_unknown", LicensesAssignation.NONE, false) {
-        @Override
-        public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            return CONTROLLED_BLOCKED;
-        }
 
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
@@ -284,7 +237,16 @@ public enum States {
 
     public abstract States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc);
 
-    public abstract States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState);
+    public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState){
+        switch (desiredState) {
+            case CONTROLLED_PRIVATE, CONTROLLED_PUBLIC, CONTROLLED_UNKNOWN,CONTROLLED_BLOCKED,CONTROLLED_WO_RIGHTS,CONTROLLED_UNKNOWN_PUBLIC -> {
+                return desiredState;
+            }
+            default -> {
+                return null;
+            }
+        }
+    }
 
     public String getValue() {
         return value;
