@@ -77,8 +77,10 @@ public class SolrTouchStoreImpl implements TouchStore {
         try {
             SolrDocument doc = getDocument(pid);
             Object soldM5Sum = doc.getFirstValue("biblio_mods_md5");
-            boolean changed = !md5.equals(soldM5Sum.toString());
-            return changed;
+            if (soldM5Sum != null) {
+                boolean changed = !md5.equals(soldM5Sum.toString());
+                return changed;
+            } else return true;
         } catch (SolrServerException | IOException e) {
             LOGGER.log(Level.SEVERE, null, e);
             return false;
