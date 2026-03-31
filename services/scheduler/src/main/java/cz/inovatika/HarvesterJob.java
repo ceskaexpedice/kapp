@@ -37,15 +37,7 @@ public class HarvesterJob implements Job {
     }
 
     private void performTask() {
-        InputStream resourceAsStream;
-        try {
-            resourceAsStream = new FileInputStream(System.getProperty("user.home") + "/.kapp/app.conf");
-        } catch (FileNotFoundException e) {
-            LOGGER.log(Level.SEVERE, "Failed to load configuration", e);
-            e.printStackTrace(System.err);
-            throw new RuntimeException(e);
-        }
-        ApplicationConfig applicationConfig = ApplicationConfig.loadFromStream(resourceAsStream);
+        ApplicationConfig applicationConfig = SchedulerMain.LoadConfiguration(LOGGER);
 
         Harvester h = new HarvesterImpl();
         try {

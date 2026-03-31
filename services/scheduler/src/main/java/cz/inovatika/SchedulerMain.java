@@ -1,7 +1,14 @@
 package cz.inovatika;
 
+import cz.inovatika.conf.ApplicationConfig;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
+
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.InputStream;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class SchedulerMain {
     public static Scheduler scheduler;
@@ -62,5 +69,16 @@ public class SchedulerMain {
 
         scheduler.triggerJob(jobKey, onDemandParams);
 
+    }
+    static ApplicationConfig LoadConfiguration(Logger logger) {
+        InputStream resourceAsStream;
+        try {
+            resourceAsStream = new FileInputStream(System.getProperty("user.home") + "/.kapp/app.conf");
+        } catch (FileNotFoundException e) {
+            logger.log(Level.SEVERE, "Failed to load configuration", e);
+            e.printStackTrace(System.err);
+            throw new RuntimeException(e);
+        }
+        return ApplicationConfig.loadFromStream(resourceAsStream);
     }
 }
