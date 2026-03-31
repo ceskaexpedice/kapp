@@ -211,7 +211,6 @@ public class HarvesterImpl implements Harvester {
 
     private static String executeSolrQuery(HttpClient client, String url, String query)
             throws IOException, InterruptedException {
-        LOGGER.log(Level.INFO, "Response sent to Solr: {0}", URI.create(url + "/" + query));
 
         int attempt = 0;
         HttpResponse<InputStream> response;
@@ -391,7 +390,7 @@ public class HarvesterImpl implements Harvester {
                     LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt);
                 } catch(Exception e) {
                     LOGGER.log(Level.SEVERE, e.getMessage(),e);
-                    for (SolrInputDocument doc : docs) { LOGGER.log(Level.SEVERE, "DOC: {0}", doc); }
+                    //for (SolrInputDocument doc : docs) { LOGGER.log(Level.SEVERE, "DOC: {0}", doc.get("pid")); }
                     throw e;
                 }
             }
