@@ -39,6 +39,7 @@ dependencies {
 
     api project(':services:init')
     api project(':services:harvester')
+    api project(':services:Updater')
 
     implementation("org.quartz-scheduler:quartz:2.5.2")
 
