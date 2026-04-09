@@ -188,6 +188,7 @@
     "batch_exist": "This batche already exists!",
     "remove_author": "Remove author?",
     "remove_author_desc": "Are you sure you want to remove the author from this title?",
-    "name_empy": "The name is empty!"
+    "name_empy": "The name is empty!",
+    "pid_not_found": "V aplikaci neni zadny zaznam s timto PIDem"
    }
 }

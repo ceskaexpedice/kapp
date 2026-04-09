@@ -175,14 +175,14 @@ export class Batches {
 
     dialogRef.afterClosed().subscribe((pid: any) => {
       if (pid) {
-      this.service.saveDocBatch(pid, this.selectedBatch().name).subscribe((res: any) => {
-        if (res.error) {
-          this.ui.showErrorSnackBar('snackbar.record_added.error');
-        } else {
-          this.ui.showInfoSnackBar('snackbar.record_added.success');
-        }
-        this.loadBatch();
-      });
+        this.service.saveDocBatch(pid, this.selectedBatch().name).subscribe((res: any) => {
+          if (res.error) {
+            this.ui.showErrorSnackBar('alert.' + res.error);
+          } else {
+            this.ui.showInfoSnackBar('snackbar.record_added.success');
+          }
+          this.loadBatch();
+        });
       }
     });
 

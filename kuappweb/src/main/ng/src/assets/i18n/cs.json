@@ -192,6 +192,7 @@
     "saving_author_differs_desc": "Autor jiz existuje a ma rozdily?",
     "remove_author": "Odstranit autora?",
     "remove_author_desc": "Opravdu chcete odstranit autor z díla?",
-    "name_empty": "Název je prázdný!"
+    "name_empty": "Název je prázdný!",
+    "pid_not_found": "V aplikaci neni zadny zaznam s timto PIDem"
    }
 }

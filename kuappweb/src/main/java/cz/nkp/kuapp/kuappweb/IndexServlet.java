@@ -348,7 +348,13 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.indexDocBatches(js);
+                    String pid = js.getString("pid");
+                    JSONObject t = IndexSearcher.getTitleByPid(pid).getJSONObject("response");
+                    if (t.getInt("numFound") > 0) {
+                        json = SolrIndexer.indexDocBatches(js);
+                    } else {
+                        json.put("error", "pid_not_found");
+                    }
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
