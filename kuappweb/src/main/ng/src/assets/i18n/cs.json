@@ -97,6 +97,8 @@
     "search": "Hledat",
     "close": "Zavřít",
     "save": "Uložit",
+    "remove": "Odstranit",
+    "rollback": "Obnovit",
     "save_role": "Uložit role",
     "edit": "Editovat",
     "export": "Export",
@@ -188,6 +190,8 @@
     "saving_author_back_desc": "Autor uz byl editovan. Chtete pouzit starou verzi z Krameria?",
     "saving_author_differs": "Prepsat autora?",
     "saving_author_differs_desc": "Autor jiz existuje a ma rozdily?",
+    "remove_author": "Odstranit autora?",
+    "remove_author_desc": "Opravdu chcete odstranit autor z díla?",
     "name_empty": "Název je prázdný!"
    }
 }

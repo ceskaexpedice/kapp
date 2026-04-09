@@ -39,7 +39,7 @@
 				@for(a of mergedAuthors; track $index) {
 						<mat-list-item>
 							<a (click)="infoAuthor(a)" class="app-value">
-								<span>{{ a.full }} {{ a.date }} ({{ a.role }})</span>
+								<span [class.app-removed]="a.removed">{{ a.full }} {{ a.date }} ({{ a.role }})</span>
 							</a>
 						</mat-list-item>
 					}

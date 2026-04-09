@@ -19,6 +19,7 @@ export interface Author {
 }
 
 export interface AuthorTitle extends Author {
+  removed?: boolean;
   role?: string[];
   isLast?: boolean;
 }

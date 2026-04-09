@@ -100,15 +100,18 @@
 </mat-dialog-content>
 <mat-dialog-actions>
 	@if (state.user()) {
-	@if(isNew()) {
-	<button matButton="outlined" (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
-	}
-	@if(!isNew()) {
-	<button matButton="outlined" (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
-	}
-	@if (!author()?.nameIdentifier || isNew()) {
+		@if(isNew()) {
+		<button matButton="outlined" (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
+		}
+		@if(!isNew()) {
+		<button matButton="outlined" (click)="setAsLast()">{{ 'action.set_as_last' | translate }}</button>
+		}
 		<button matButton="filled" [disabled]="loading() || !author()?.id" (click)="onSave()">{{ 'action.save' | translate}}</button>
-	}
+		@if(!isNew()) {
+			<button matButton="outlined" (click)="toggleRemoved()">{{ (author().removed ? 'action.rollback' : 'action.remove') | translate }}</button>
+		}
+			
+		
 	}
 	<button matButton="outlined" [mat-dialog-close]="hasChanges" cdkFocusInitial>{{ 'action.close' | translate
 		}}</button>

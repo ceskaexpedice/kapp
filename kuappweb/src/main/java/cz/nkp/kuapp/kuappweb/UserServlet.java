@@ -123,9 +123,9 @@ public class UserServlet extends HttpServlet {
             return ((JSONObject) req.getSession().getAttribute("user"));
         } else {
             
-            //JSONObject u = new JSONObject().put("name", "mock");
-            //return u;
-            return null;
+            JSONObject u = new JSONObject().put("name", "mock");
+            return u;
+//            return null;
         }
     }
 

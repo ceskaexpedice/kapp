@@ -225,7 +225,8 @@ export class AuthorTitleDialog {
         if (this.author().family !== a['family'] ||
           this.author().given !== a['given'] ||
           this.author().year_birth !== a['year_birth'] ||
-          this.author().year_death !== a['year_death']
+          this.author().year_death !== a['year_death'] ||
+          this.author().nameIdentifier !== a['id']
         ) {
           const message = this.translator.instant('alert.saving_author_differs_desc') +
                           `<div>${this.translator.instant('field.family')}: ${a['family']} -> ${this.author().family} </div>
@@ -318,5 +319,40 @@ export class AuthorTitleDialog {
     this.state.q = this.author().full;
     this.router.navigate(['/authors'], { queryParams: { s: this.state.encodeState() } });
     this.dialogRef.close(false);
+  }
+
+  toggleRemoved() {
+
+    if (this.author().removed) {
+              this.author().removed = false;
+              this.save(false);
+    } else {
+
+          const data: SimpleDialogData = {
+            title: this.translator.instant('alert.remove_author'),
+            message: this.translator.instant('alert.remove_author_desc'),
+            alertClass: 'app-warn',
+            btn1: {
+              label: 'Ano',
+              value: 'yes',
+              color: 'warn'
+            },
+            btn2: {
+              label: 'Ne',
+              value: 'no',
+              color: 'default'
+            }
+          };
+          const dialogRef = this.dialog.open(SimpleDialogComponent, {
+            data: data
+          });
+          dialogRef.afterClosed().subscribe(result => {
+            if (result === 'yes') {
+              this.author().removed = true;
+              this.save(false);
+            }
+          });
+
+    }
   }
 }

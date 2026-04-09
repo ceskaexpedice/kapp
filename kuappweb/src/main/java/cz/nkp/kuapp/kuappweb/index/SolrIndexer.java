@@ -17,7 +17,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
 import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
-import org.apache.solr.client.solrj.request.json.TermsFacetMap;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
 import org.json.JSONArray;
@@ -388,7 +387,7 @@ public class SolrIndexer {
             solr.add("titles", doc);
             solr.commit("titles");
             
-            if (js.has("author")) {
+            if (js.has("author") && !js.isNull("author")) {
                 saveAuthor(js.getJSONObject("author"), true);
             }
             ret.put("msg", "saved");

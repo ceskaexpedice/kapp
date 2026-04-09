@@ -97,6 +97,8 @@
     "search": "Search",
     "close": "Close",
     "save": "Save",
+    "remove": "Remove",
+    "rollback": "Rollback",
     "save_role": "Save role",
     "edit": "Edit",
     "export": "Export",
@@ -184,6 +186,8 @@
   "alert": {
     "warn_contract": "Are you sure you want to assign the work to the contract?",
     "batch_exist": "This batche already exists!",
+    "remove_author": "Remove author?",
+    "remove_author_desc": "Are you sure you want to remove the author from this title?",
     "name_empy": "The name is empty!"
    }
 }
