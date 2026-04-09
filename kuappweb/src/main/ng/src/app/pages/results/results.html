@@ -6,15 +6,14 @@
       <app-facets [fields]="[
           'labels', 
           'state',
-          'date_issued_year',
           'contracts',
           'assigned_licenses', 
           'licenses', 
-          'physical_locations',
           'digital_library',
           'model',
-          'authors',
-          'nameIdentifier'
+          'date_issued_year',
+          'physical_locations',
+          'authors'
           ]" [facets]="solrResponse.facets" [hard_facets]="view() === 'titles' ? [] : ['no_nameIdentifier', 'no_year_death']"></app-facets>
     </div>
     }

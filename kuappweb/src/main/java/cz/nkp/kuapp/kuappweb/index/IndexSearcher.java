@@ -81,7 +81,7 @@ public class IndexSearcher {
             if (request.getParameter("sort") != null) {
                 sort = request.getParameter("sort");
                 if (sort.contains("release_date")) {
-                    sort = sort.replace("release_date", "sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))");
+                    sort = sort.replace("release_date", "sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))");
                     
                 }
             }
@@ -127,6 +127,7 @@ public class IndexSearcher {
                             .setLimit(20)
                             .setMinCount(1))
                     .withFacet("physical_locations", new TermsFacetMap("physical_locations")
+                            .withDomain(new DomainMap().withTagsToExclude("fffl"))
                             .setLimit(100)
                             .setMinCount(1))
                     .withFacet("contracts", new TermsFacetMap("contracts")
@@ -137,7 +138,7 @@ public class IndexSearcher {
                             .setLimit(20)
                             .setMinCount(1))
                     .setOffset(offset)
-                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
+                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
                     .setSort(sort)
                     .setLimit(rows); 
 
@@ -232,7 +233,7 @@ public class IndexSearcher {
             String q = "*";
             String fl = Boolean.parseBoolean(request.getParameter("only_pid")) ? 
                     "pid" : 
-                    "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))";
+                    "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withFilter("authors_ids:(\"" + request.getParameter("author_id") + "\")")
@@ -319,7 +320,7 @@ public class IndexSearcher {
                     .withParam("fq", "{!collapse field=root_pid}") 
                     .setOffset(offset)
                     .setSort(sort)
-                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
+                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
                     .setLimit(rows);
 
 
@@ -360,7 +361,7 @@ public class IndexSearcher {
                 sort = request.getParameter("sort");
             }
             String q = "*";
-            String fl = "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))";
+            String fl = "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withParam("fq", "{!join from=ccnb fromIndex=contracts to=id_ccnb}filename:\""+request.getParameter("contract")+"\"") 
@@ -547,7 +548,7 @@ public class IndexSearcher {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery("pid:\""+pid + "\"")
-                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
+                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
                     .setLimit(1);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));

@@ -179,7 +179,7 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
 
-            addAtomicField(doc, "set", js.getString("decisionDate"), "decision_date");
+            addAtomicField(doc, "set", js.getString("decisionDate"), "date_issued_year");
 
             solr.add("titles", doc);
             solr.commit("titles");
