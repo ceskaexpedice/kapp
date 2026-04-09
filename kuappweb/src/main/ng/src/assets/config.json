@@ -61,7 +61,6 @@
         {"field": "model", "selected": true},
         {"field": "date_issued_year", "selected": true},
         {"field": "indextime", "selected": true},
-        {"field": "decision_date", "selected": false},
         {"field": "release_date", "selected": false},
         {"field": "assigned_licenses", "selected": false},
         {"field": "licenses", "selected": false},
