@@ -130,7 +130,7 @@ export class Results {
     p.licenses = usedFacets.filter(k => k.field === 'licenses').map(k => k.value);
     p.digital_library = usedFacets.filter(k => k.field === 'digital_library').map(k => k.value);
     p.model = usedFacets.filter(k => k.field === 'model').map(k => k.value);
-    p.date = usedFacets.filter(k => k.field === 'date').map(k => k.value);
+    p.date_issued_year = usedFacets.filter(k => k.field === 'date_issued_year').map(k => k.value);
     p.no_nameIdentifier = usedFacets.filter(k => k.field === 'no_nameIdentifier').map(k => k.value);
     p.no_year_death = usedFacets.filter(k => k.field === 'no_year_death').map(k => k.value);
 

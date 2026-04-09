@@ -67,6 +67,7 @@
     "decision_date": "Rozhodující datum",
     "release_date": "Datum uvolnění",
     "date_issued": "Datum vydání", 
+    "date_issued_year": "Rok vydání", 
     "sigla": "Sigla", 
     "indextime": "Datum importu",
     "filename": "Název souboru", 

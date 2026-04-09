@@ -132,7 +132,7 @@ public class IndexSearcher {
                     .withFacet("contracts", new TermsFacetMap("contracts")
                             .setLimit(100)
                             .setMinCount(1))
-                    .withFacet("date", new TermsFacetMap("date_issued_year")
+                    .withFacet("date_issued_year", new TermsFacetMap("date_issued_year")
                             //.setSort("index desc")
                             .setLimit(20)
                             .setMinCount(1))
@@ -182,8 +182,8 @@ public class IndexSearcher {
                 jrequest = jrequest.withFilter("{!tag=fffl}physical_locations:(\"" + String.join("\" OR \"", request.getParameterValues("physical_locations")) + "\")");
             }
 
-            if (request.getParameter("date") != null) {
-                jrequest = jrequest.withFilter("date_range_start.year:" + request.getParameter("date"));
+            if (request.getParameter("date_issued_year") != null) {
+                jrequest = jrequest.withFilter("date_issued_year:" + request.getParameter("date_issued_year"));
             }
             if (request.getParameter("authors_ids") != null) {
                 jrequest = jrequest.withFilter("authors_ids:" + request.getParameter("authors_ids"));
