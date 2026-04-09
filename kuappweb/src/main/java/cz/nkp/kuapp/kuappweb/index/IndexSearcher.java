@@ -80,6 +80,10 @@ public class IndexSearcher {
             String sort = "indextime desc";
             if (request.getParameter("sort") != null) {
                 sort = request.getParameter("sort");
+                if (sort.contains("release_date")) {
+                    sort = sort.replace("release_date", "sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))");
+                    
+                }
             }
             String q = "*";
             if (request.getParameter("q") != null) {
@@ -92,16 +96,10 @@ public class IndexSearcher {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withParam("df", "full_text") 
-//                    .withFacet("authors", new TermsFacetMap("authors")
-//                            .setLimit(1000)
-//                            .setMinCount(1))
                     .withParam("fq", "{!collapse field=root_pid}")
                     .withParam("expand", true)
                     .withParam("expand.rows", 100)
                     .withParam("modelboost", "model:monograph") 
-//                    .withFacet("public", new TermsFacetMap("public")
-//                            .setLimit(10)
-//                            .setMinCount(1))
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(100)
                             .setMinCount(1))
@@ -139,8 +137,8 @@ public class IndexSearcher {
                             .setLimit(20)
                             .setMinCount(1))
                     .setOffset(offset)
-                    .setSort(sort)
                     .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(decision_date, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
+                    .setSort(sort)
                     .setLimit(rows); 
 
 

@@ -110,8 +110,8 @@
               </td>
             </ng-container>
 
-            <ng-container matColumnDef="date_issued">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'date_issued')" [style.width]="columnSizes['date_issued'] + 'px'"><span mat-sort-header>{{ 'field.date_issued' | translate }}</span></th>
+            <ng-container matColumnDef="date_issued_year">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'date_issued_year')" [style.width]="columnSizes['date_issued_year'] + 'px'"><span mat-sort-header>{{ 'field.date_issued' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">{{ doc['date_issued_str']  }}</td>
             </ng-container>
 
