@@ -161,10 +161,10 @@
             </ng-container>
 
             <ng-container matColumnDef="action" [stickyEnd]="true" >
-              <th mat-header-cell *matHeaderCellDef [style.width]="state.user() ? '80px' : '30px'">
+              <th mat-header-cell *matHeaderCellDef [style.width]="state.user() ? '80px' : '30px'" style="padding: 0;">
                 @if(state.user()) {
-                <div class="app-fxLayout app-row app-gap-1 app-center-h app-actions">
-                  <button mat-icon-button [matMenuTriggerFor]="allBatchesMenu" [matTooltip]="'action.add_doc_to_bacth' | translate">
+                <div class="app-fxLayout app-row app-gap-1  app-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="allBatchesMenu" [matTooltip]="'action.add_docs_to_bacth' | translate">
                     <mat-icon>playlist_add</mat-icon>
                   </button>
                   <mat-menu #allBatchesMenu="matMenu">
@@ -175,7 +175,7 @@
                     }
                   </mat-menu>
 
-                  <button mat-icon-button [matMenuTriggerFor]="allContractsMenu" [matTooltip]="'action.add_doc_to_contract' | translate">
+                  <button mat-icon-button [matMenuTriggerFor]="allContractsMenu" [matTooltip]="'action.add_docs_to_contract' | translate">
                     <mat-icon>history_edu</mat-icon>
                   </button>
                   <mat-menu #allContractsMenu="matMenu">
