@@ -174,7 +174,7 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static JSONObject saveDecisionDate(JSONObject js) {
+    public static JSONObject saveDecisionDate(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -182,6 +182,7 @@ public class SolrIndexer {
             doc.setField("pid", js.getString("pid"));
 
             addAtomicField(doc, "set", js.getString("decisionDate"), "date_issued_year");
+            addAtomicField(doc, "add-distinct", user, "modified_by_user");
 
             solr.add("titles", doc);
             solr.commit("titles");
@@ -194,7 +195,7 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static JSONObject saveTitleNote(JSONObject js) {
+    public static JSONObject saveTitleNote(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -202,6 +203,7 @@ public class SolrIndexer {
             doc.setField("pid", js.getString("pid"));
 
             addAtomicField(doc, "set", js.getString("note"), "note");
+            addAtomicField(doc, "add-distinct", user, "modified_by_user");
 
             solr.add("titles", doc);
             solr.commit("titles");
@@ -216,7 +218,7 @@ public class SolrIndexer {
 
     // Save changes to author in authors core
     // Add / modify authors_kapp field in titles core
-    public static JSONObject saveAuthor(JSONObject js, boolean onlyAuthors) {
+    public static JSONObject saveAuthor(JSONObject js, boolean onlyAuthors, String user) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -264,6 +266,11 @@ public class SolrIndexer {
             }
             adoc.setField("confirmed_start_year", js.optBoolean("confirmed_start_year"));
             adoc.setField("confirmed_end_year", js.optBoolean("confirmed_end_year"));
+            
+            adoc.setField("modified_by_user", user);
+            
+            // addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            
             solr.add("authors", adoc);
 
             if (!onlyAuthors) {
@@ -376,7 +383,7 @@ public class SolrIndexer {
 
     }
 
-    public static JSONObject saveAuthorsInTitle(JSONObject js) throws SolrServerException, IOException {
+    public static JSONObject saveAuthorsInTitle(JSONObject js, String user) throws SolrServerException, IOException {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -388,13 +395,15 @@ public class SolrIndexer {
             addAtomicField(doc, "set", js.getJSONArray("nameIdentifiers"), "nameIdentifier");
             addAtomicField(doc, "set", js.getJSONArray("names"), "authors");
             addAtomicField(doc, "add-distinct", "author_modified", "labels");
+            
+            addAtomicField(doc, "add-distinct", user, "modified_by_user");
 
             solr.add("titles", doc);
             solr.commit("titles");
 
             if (js.has("author") && !js.isNull("author")) {
                 addAtomicField(doc, "add-distinct", "author_modified", "labels");
-                saveAuthor(js.getJSONObject("author"), true);
+                saveAuthor(js.getJSONObject("author"), true, user);
             }
             ret.put("msg", "saved");
 
@@ -479,7 +488,7 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", pid);
 
-            fillState(doc, js.getString("state"), js.getJSONArray("licenses"), js.getString("reason"), user);
+            fillState(doc, js.getString("state"), js.getJSONArray("licenses"), js.optString("reason", ""), user);
 
             solr.add("titles", doc);
             solr.commit("titles");
@@ -534,10 +543,10 @@ public class SolrIndexer {
 
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
-            fillState(doc, js.getString("state"), js.getJSONArray("licenses"), js.getString("reason"), user);
+            fillState(doc, js.getString("state"), js.getJSONArray("licenses"), js.optString("reason", ""), user);
             solr.add("titles", doc);
             solr.commit("titles");
-            setParentClosed(solr, js.getString("pid"), js.getJSONArray("licenses"), js.getString("reason"), user);
+            setParentClosed(solr, js.getString("pid"), js.getJSONArray("licenses"), js.optString("reason", ""), user);
             LOGGER.log(Level.INFO, "state for {0} changed", js.getString("pid"));
             ret.put("msg", "saved");
 
@@ -554,6 +563,7 @@ public class SolrIndexer {
         addAtomicField(doc, "set", licenses, "licenses");
         addAtomicField(doc, "set", user, "state_user");
         addAtomicField(doc, "set", reason, "state_reason");
+        addAtomicField(doc, "add-distinct", user, "modified_by_user");
 
         String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 

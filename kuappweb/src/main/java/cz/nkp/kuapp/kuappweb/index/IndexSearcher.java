@@ -101,6 +101,9 @@ public class IndexSearcher {
                     .withParam("expand", true)
                     .withParam("expand.rows", 100)
                     .withParam("modelboost", "model:monograph")
+//                    .withFacet("modified_by_user", new TermsFacetMap("modified_by_user")
+//                            .setLimit(100)
+//                            .setMinCount(1))
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(100)
                             .setMinCount(1))
@@ -167,6 +170,10 @@ public class IndexSearcher {
 
             if (request.getParameter("state") != null) {
                 jrequest = jrequest.withFilter("state:" + request.getParameter("state"));
+            }
+
+            if (request.getParameter("modified_by_user") != null) {
+                jrequest = jrequest.withFilter("modified_by_user:\"" + request.getParameter("modified_by_user") + "\"");
             }
 
             if (request.getParameter("labels") != null) {

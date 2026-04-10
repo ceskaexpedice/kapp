@@ -94,7 +94,8 @@
     "nameIdentifier": "Identifikator",
     "nameIdentifier_desc": "Identifikator (AUT: controlfield 001, MODS: nameIdentifier)",
     "no_nameIdentifier": "Autoři bez nameIdentifier",
-    "no_year_death": "Autoři bez data úmrtí"
+    "no_year_death": "Autoři bez data úmrtí",
+    "modified_by_user": "Změněno uživatelem"
   },
   "action": {
     "view": "Zobrazit",

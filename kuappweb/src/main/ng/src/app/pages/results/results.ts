@@ -127,6 +127,7 @@ export class Results {
     p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
     p.authors_ids = usedFacets.filter(k => k.field === 'authors_ids').map(k => k.value);
     p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
+    p.modified_by_user = usedFacets.filter(k => k.field === 'modified_by_user').map(k => k.value);
     p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
     p.batch = usedFacets.filter(k => k.field === 'batch').map(k => k.value);
     p.contracts = usedFacets.filter(k => k.field === 'contracts').map(k => k.value);
@@ -423,6 +424,14 @@ export class Results {
 
   authorChanged() {
     this.getData();
+  }
+
+  selectAll(e: any) {
+    this.docs().forEach((d: any) => d['selected']=e.target.checked);
+  }
+
+  numSelected() {
+    return this.docs().filter(d => d.selected).length;
   }
 
 }

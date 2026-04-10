@@ -6,6 +6,7 @@
       <app-facets [fields]="[
           'labels', 
           'state',
+          'modified_by_user',
           'batch',
           'contracts',
           'assigned_licenses', 
@@ -59,6 +60,9 @@
 
             <ng-container matColumnDef="selection" [stickyEnd]="true" >
               <th mat-header-cell *matHeaderCellDef [style.width]="'30px'">
+                <div class="app-fxLayout app-row app-gap-1 app-ml-1 app-center-h">
+                    <mat-checkbox color="primary" (click)="selectAll($event)"></mat-checkbox>
+                </div>
               </th>
               <td mat-cell *matCellDef="let doc">
                 <div class="app-fxLayout app-row app-gap-1 app-ml-1 app-center-h">
@@ -164,7 +168,7 @@
               <th mat-header-cell *matHeaderCellDef [style.width]="state.user() ? '80px' : '30px'" style="padding: 0;">
                 @if(state.user()) {
                 <div class="app-fxLayout app-row app-gap-1  app-actions">
-                  <button mat-icon-button [matMenuTriggerFor]="allBatchesMenu" [matTooltip]="'action.add_docs_to_bacth' | translate">
+                  <button mat-icon-button [matMenuTriggerFor]="allBatchesMenu" [matTooltip]="('action.add_docs_to_bacth' | translate) + ' ('+numSelected()+')'">
                     <mat-icon>playlist_add</mat-icon>
                   </button>
                   <mat-menu #allBatchesMenu="matMenu">
@@ -175,7 +179,7 @@
                     }
                   </mat-menu>
 
-                  <button mat-icon-button [matMenuTriggerFor]="allContractsMenu" [matTooltip]="'action.add_docs_to_contract' | translate">
+                  <button mat-icon-button [matMenuTriggerFor]="allContractsMenu" [matTooltip]="('action.add_docs_to_contract' | translate) + ' ('+numSelected()+')'">
                     <mat-icon>history_edu</mat-icon>
                   </button>
                   <mat-menu #allContractsMenu="matMenu">

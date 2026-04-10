@@ -94,7 +94,8 @@
     "nameIdentifier": "Name identifier",
     "nameIdentifier_desc": "Name identifier (AUT: controlfield 001, MODS: nameIdentifier)",
     "no_nameIdentifier": "Authors without nameIdentifier",
-    "no_year_death": "Authors without death date"
+    "no_year_death": "Authors without death date",
+    "modified_by_user": "Modified by user"
   },
   "action": {
     "view": "View",
