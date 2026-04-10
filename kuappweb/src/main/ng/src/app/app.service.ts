@@ -145,12 +145,12 @@ export class AppService {
     return this.post('index/save_batches', batches);
   }
 
-  saveDocBatch(pid: string, batch: string): Observable<any> {
-    return this.post('index/save_doc_batch', {pid,batch});
+  saveDocBatch(pids: string[], batch: string): Observable<any> {
+    return this.post('index/save_doc_batch', {pids,batch});
   }
 
-  saveDocContract(pid: string, contract: string, withState: boolean, selected: boolean, licenses: string[]): Observable<any> {
-    return this.post('index/save_doc_contract', {pid,contract,withState,selected, licenses});
+  saveDocContract(pids: string[], contract: string, withState: boolean, selected: boolean, licenses: string[]): Observable<any> {
+    return this.post('index/save_doc_contract', {pids,contract,withState,selected, licenses});
   }
 
   saveTitleColumns(columns: {field: string, selected: boolean}[]): Observable<any> {
@@ -161,8 +161,8 @@ export class AppService {
     return this.post('index/save_author', author);
   }
 
-  saveAuthorsInTitle(authors: AuthorTitle[], pid: string, author: AuthorTitle, ids: string[], nameIdentifiers: string[]): Observable<any> {
-    return this.post('index/save_authors_in_title', {pid, authors, author, ids, nameIdentifiers});
+  saveAuthorsInTitle(authors: AuthorTitle[], pid: string, author: AuthorTitle, ids: string[], nameIdentifiers: string[], names: string[]): Observable<any> {
+    return this.post('index/save_authors_in_title', {pid, authors, author, ids, nameIdentifiers, names});
   }
 
   saveAuthorLabels(pid: string, labels: string[]): Observable<any> {

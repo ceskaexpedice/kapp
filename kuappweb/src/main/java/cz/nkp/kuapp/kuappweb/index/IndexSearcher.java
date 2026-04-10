@@ -1,6 +1,7 @@
 package cz.nkp.kuapp.kuappweb.index;
 
 import cz.nkp.kuapp.kuappweb.Options;
+import cz.nkp.kuapp.kuappweb.UserServlet;
 import java.io.InputStream;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -40,18 +41,18 @@ public class IndexSearcher {
                     .setQuery(q)
                     .setLimit(0);
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
-                
+
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            ret.put("titles", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
-            
+            ret.put("titles", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound")));
+
             resp = solr.request(jrequest, "authors");
             is = (InputStream) resp.get("stream");
-            ret.put("authors", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
-            
+            ret.put("authors", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound")));
+
             resp = solr.request(jrequest, "contracts");
             is = (InputStream) resp.get("stream");
-            ret.put("contracts", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound"))); 
+            ret.put("contracts", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getInt("numFound")));
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -59,7 +60,7 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject searchTitles(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -69,20 +70,20 @@ public class IndexSearcher {
                 rows = Integer.parseInt(rowsP);
             }
             if (request.getParameter("export") != null) {
-                rows = 1000; 
+                rows = 1000;
             }
-            
+
             int offset = 0;
             if (request.getParameter("offset") != null) {
-                offset = Integer.parseInt(request.getParameter("offset")); 
+                offset = Integer.parseInt(request.getParameter("offset"));
             }
-            
+
             String sort = "indextime desc";
             if (request.getParameter("sort") != null) {
                 sort = request.getParameter("sort");
                 if (sort.contains("release_date")) {
                     sort = sort.replace("release_date", "sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))");
-                    
+
                 }
             }
             String q = "*";
@@ -95,11 +96,11 @@ public class IndexSearcher {
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
-                    .withParam("df", "full_text") 
+                    .withParam("df", "full_text")
                     .withParam("fq", "{!collapse field=root_pid}")
                     .withParam("expand", true)
                     .withParam("expand.rows", 100)
-                    .withParam("modelboost", "model:monograph") 
+                    .withParam("modelboost", "model:monograph")
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(100)
                             .setMinCount(1))
@@ -120,9 +121,9 @@ public class IndexSearcher {
                             .setMinCount(1))
                     .withFacet("state",
                             new TermsFacetMap("state")
-                            .setLimit(20)
-                            .setSort("index asc")
-                            .setMinCount(1))
+                                    .setLimit(20)
+                                    .setSort("index asc")
+                                    .setMinCount(1))
                     .withFacet("model", new TermsFacetMap("model")
                             .setLimit(20)
                             .setMinCount(1))
@@ -140,8 +141,13 @@ public class IndexSearcher {
                     .setOffset(offset)
                     .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
                     .setSort(sort)
-                    .setLimit(rows); 
+                    .setLimit(rows);
 
+            if (UserServlet.getUser(request) != null) {
+                jrequest = jrequest.withFacet("batch", new TermsFacetMap("batch")
+                        .setLimit(100)
+                        .setMinCount(1));
+            }
 
             if (request.getParameter("model") != null) {
                 jrequest = jrequest.withFilter("model:" + request.getParameter("model"));
@@ -151,9 +157,12 @@ public class IndexSearcher {
                 }
             }
 
-
             if (request.getParameter("author") != null) {
                 jrequest = jrequest.withFilter("{!tag=ffauthors}authors:(\"" + String.join("\" OR \"", request.getParameterValues("author")) + "\")");
+            }
+
+            if (request.getParameter("batch") != null) {
+                jrequest = jrequest.withFilter("batch:\"" + request.getParameter("batch") + "\"");
             }
 
             if (request.getParameter("state") != null) {
@@ -197,13 +206,12 @@ public class IndexSearcher {
             }
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            
-            if (request.getParameter("export") != null) { 
-                ret.put("csv",IOUtils.toString(is, "UTF-8")); 
+
+            if (request.getParameter("export") != null) {
+                ret.put("csv", IOUtils.toString(is, "UTF-8"));
             } else {
-                ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+                ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
             }
-            
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -220,36 +228,35 @@ public class IndexSearcher {
             if (rowsP != null && !rowsP.isBlank()) {
                 rows = Integer.parseInt(rowsP);
             }
-            
+
             int offset = 0;
             if (request.getParameter("offset") != null) {
-                offset = Integer.parseInt(request.getParameter("offset")); 
+                offset = Integer.parseInt(request.getParameter("offset"));
             }
-            
+
             String sort = "indextime desc";
             if (request.getParameter("sort") != null) {
                 sort = request.getParameter("sort");
             }
             String q = "*";
-            String fl = Boolean.parseBoolean(request.getParameter("only_pid")) ? 
-                    "pid" : 
-                    "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))";
+            String fl = Boolean.parseBoolean(request.getParameter("only_pid"))
+                    ? "pid"
+                    : "pid,authors_kramerius:[json],authors_kapp:[json]";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withFilter("authors_ids:(\"" + request.getParameter("author_id") + "\")")
-                    .withParam("fq", "{!collapse field=root_pid}") 
+                    .withParam("fq", "{!collapse field=root_pid}")
                     .setOffset(offset)
                     .setSort(sort)
                     .returnFields(fl)
                     .setLimit(rows);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
-                
+
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
-            
+
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -257,7 +264,7 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject searchTitlesByAuthors(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -266,28 +273,27 @@ public class IndexSearcher {
             if (rowsP != null && !rowsP.isBlank()) {
                 rows = Integer.parseInt(rowsP);
             }
-            
+
             int offset = 0;
             if (request.getParameter("offset") != null) {
-                offset = Integer.parseInt(request.getParameter("offset")); 
+                offset = Integer.parseInt(request.getParameter("offset"));
             }
             String q = "*";
-            String fl ="pid";
+            String fl = "pid";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withFilter("authors_ids:(\"" + request.getParameter("author_id") + "\")")
-                    .withParam("fq", "{!collapse field=root_pid}") 
+                    .withParam("fq", "{!collapse field=root_pid}")
                     .setOffset(offset)
                     .returnFields(fl)
                     .setLimit(rows);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
-                
+
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
-            
+
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -304,12 +310,12 @@ public class IndexSearcher {
             if (rowsP != null && !rowsP.isBlank()) {
                 rows = Integer.parseInt(rowsP);
             }
-            
+
             int offset = 0;
             if (request.getParameter("offset") != null) {
-                offset = Integer.parseInt(request.getParameter("offset")); 
+                offset = Integer.parseInt(request.getParameter("offset"));
             }
-            
+
             String sort = "indextime desc";
             if (request.getParameter("sort") != null) {
                 sort = request.getParameter("sort");
@@ -317,23 +323,21 @@ public class IndexSearcher {
             String q = "*";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
-                    .withParam("fq", "{!collapse field=root_pid}") 
+                    .withParam("fq", "{!collapse field=root_pid}")
                     .setOffset(offset)
                     .setSort(sort)
                     .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
                     .setLimit(rows);
 
-
             if (request.getParameter("contract") != null) {
                 jrequest = jrequest.withFilter("contracts:(\"" + request.getParameter("contract") + "\")");
             }
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
-                
+
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
-            
+
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -341,7 +345,7 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject findTitlesByContract(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -350,12 +354,12 @@ public class IndexSearcher {
             if (rowsP != null && !rowsP.isBlank()) {
                 rows = Integer.parseInt(rowsP);
             }
-            
+
             int offset = 0;
             if (request.getParameter("offset") != null) {
-                offset = Integer.parseInt(request.getParameter("offset")); 
+                offset = Integer.parseInt(request.getParameter("offset"));
             }
-            
+
             String sort = "indextime desc";
             if (request.getParameter("sort") != null) {
                 sort = request.getParameter("sort");
@@ -364,33 +368,32 @@ public class IndexSearcher {
             String fl = "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
-                    .withParam("fq", "{!join from=ccnb fromIndex=contracts to=id_ccnb}filename:\""+request.getParameter("contract")+"\"") 
+                    .withParam("fq", "{!join from=ccnb fromIndex=contracts to=id_ccnb}filename:\"" + request.getParameter("contract") + "\"")
                     .setOffset(offset)
                     .setSort(sort)
                     .returnFields(fl)
                     .setLimit(rows);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
-                
+
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
-            
-            ret.put("ccnb", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs"))); 
-            
+
+            ret.put("ccnb", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs")));
+
             jrequest = new JsonQueryRequest()
                     .setQuery(q)
-                    .withParam("fq", "{!join from=issn fromIndex=contracts to=id_issn}filename:\""+request.getParameter("contract")+"\"") 
+                    .withParam("fq", "{!join from=issn fromIndex=contracts to=id_issn}filename:\"" + request.getParameter("contract") + "\"")
                     .setOffset(offset)
                     .setSort(sort)
                     .returnFields(fl)
                     .setLimit(rows);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
-                
+
             resp = solr.request(jrequest, "titles");
             is = (InputStream) resp.get("stream");
-            ret.put("issn", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs"))); 
-            
+            ret.put("issn", (new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs")));
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -398,7 +401,7 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject searchAuthors(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -407,7 +410,7 @@ public class IndexSearcher {
             if (rowsP != null && !rowsP.isBlank()) {
                 rows = Integer.parseInt(rowsP);
             }
-            
+
             int offset = 0;
             if (request.getParameter("offset") != null) {
                 offset = Integer.parseInt(request.getParameter("offset"));
@@ -421,7 +424,7 @@ public class IndexSearcher {
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
-                    .withParam("df", "full_text") 
+                    .withParam("df", "full_text")
                     .withFacet("labels", new TermsFacetMap("labels")
                             .setLimit(1000)
                             .setMinCount(1))
@@ -431,7 +434,6 @@ public class IndexSearcher {
                     .setSort(sort)
                     .returnFields("*,date_birth:date_issued_start_year,date_death:date_issued_end_year ")
                     .setLimit(rows);
-
 
             if (request.getParameter("state") != null) {
                 jrequest = jrequest.withFilter("state:" + request.getParameter("state"));
@@ -452,7 +454,7 @@ public class IndexSearcher {
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "authors");
             InputStream is = (InputStream) resp.get("stream");
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8")); 
+            ret = new JSONObject(IOUtils.toString(is, "UTF-8"));
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -490,7 +492,6 @@ public class IndexSearcher {
                     doc.put("existing_author", a.getJSONObject("response").getJSONArray("docs").getJSONObject(0));
                 }
             }
-            
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -505,7 +506,7 @@ public class IndexSearcher {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery("*")
-                    .withFilter("id:"+id)
+                    .withFilter("id:" + id)
                     .returnFields("*")
                     .setLimit(1);
 
@@ -520,14 +521,14 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject getAutById(String id) {
 
         // https://nklink.toolforge.org/link.php?autid=kup19980000039661&format=json
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("controlfield_001:"+id)
+                    .setQuery("controlfield_001:" + id)
                     .setLimit(1);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
@@ -541,13 +542,13 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject getTitleByPid(String pid) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("pid:\""+pid + "\"")
+                    .setQuery("pid:\"" + pid + "\"")
                     .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))")
                     .setLimit(1);
 
@@ -562,15 +563,15 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject getRelated(String pid) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("root_pid:\""+pid + "\"")
+                    .setQuery("root_pid:\"" + pid + "\"")
                     .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json]")
-                    .setLimit(200); 
+                    .setLimit(200);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "titles");
@@ -583,24 +584,23 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject getUsedBatches() {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery("*")
-                    .withFacet("batches", new TermsFacetMap("batch") 
+                    .withFacet("batches", new TermsFacetMap("batch")
                             .setLimit(1000)
-                            .setMinCount(1)) 
-                    .setLimit(0);    
+                            .setMinCount(1))
+                    .setLimit(0);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "titles");
             InputStream is = (InputStream) resp.get("stream");
             ret = new JSONObject(IOUtils.toString(is, "UTF-8"))
                     .getJSONObject("facets").getJSONObject("batches");
-            
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -608,18 +608,18 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject getBatchDocs(String batch, boolean onlyPids) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("batch:\""+batch + "\"")
+                    .setQuery("batch:\"" + batch + "\"")
                     .withFacet("state", new TermsFacetMap("state")
                             .setLimit(1000)
-                            .setMinCount(1)) 
+                            .setMinCount(1))
                     .returnFields(onlyPids ? "pid" : "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json]")
-                    .setLimit(200); 
+                    .setLimit(200);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "titles");
@@ -632,15 +632,15 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject getLabelDocs(String label) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("labels:\""+label + "\"")
+                    .setQuery("labels:\"" + label + "\"")
                     .returnFields("pid")
-                    .setLimit(1000); 
+                    .setLimit(1000);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "titles");
@@ -698,10 +698,10 @@ public class IndexSearcher {
 
     public static JSONObject getLinks(String autid) {
 
-            JSONObject ret = new JSONObject();
+        JSONObject ret = new JSONObject();
         try {
             String url = "https://nklink.toolforge.org/link.php?format=json&autid=" + autid;
-            
+
             HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .GET()
@@ -715,7 +715,7 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
+
     public static JSONObject searchContracts(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -724,25 +724,24 @@ public class IndexSearcher {
             if (rowsP != null && !rowsP.isBlank()) {
                 rows = Integer.parseInt(rowsP);
             }
-            
+
             int offset = 0;
             if (request.getParameter("offset") != null) {
                 offset = Integer.parseInt(request.getParameter("offset"));
             }
-            
-            
+
             String sort = "indextime desc";
             if (request.getParameter("sort") != null) {
                 sort = request.getParameter("sort");
             }
-            
+
             String q = "*";
             if (request.getParameter("q") != null) {
                 q = request.getParameter("q");
             }
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
-                    .withParam("df", "search_text") 
+                    .withParam("df", "search_text")
                     .withFacet("hlavni", new TermsFacetMap("hlavni")
                             .setLimit(1000)
                             .setMinCount(1))
@@ -759,7 +758,7 @@ public class IndexSearcher {
                 jrequest = jrequest.withFilter("hlavni:true");
                 jrequest = jrequest.withFilter("filename_search:" + request.getParameter("hlavni_smlouva") + "*");
             }
-            
+
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "contracts");
             InputStream is = (InputStream) resp.get("stream");
@@ -772,13 +771,13 @@ public class IndexSearcher {
         }
         return ret;
     }
-    
-    public static JSONObject getContract(String filename){
+
+    public static JSONObject getContract(String filename) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("filename:\""+filename + "\"")
+                    .setQuery("filename:\"" + filename + "\"")
                     .returnFields("*")
                     .setLimit(1);
 

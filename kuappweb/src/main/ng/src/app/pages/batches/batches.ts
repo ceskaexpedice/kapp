@@ -175,7 +175,7 @@ export class Batches {
 
     dialogRef.afterClosed().subscribe((pid: any) => {
       if (pid) {
-        this.service.saveDocBatch(pid, this.selectedBatch().name).subscribe((res: any) => {
+        this.service.saveDocBatch([pid], this.selectedBatch().name).subscribe((res: any) => {
           if (res.error) {
             this.ui.showErrorSnackBar('alert.' + res.error);
           } else {
@@ -231,7 +231,7 @@ export class Batches {
   }
 
   removeFromBatch(pid: string) {
-    this.service.saveDocBatch(pid, '').subscribe((res: any) => {
+    this.service.saveDocBatch([pid], '').subscribe((res: any) => {
       this.loadBatch();
       if (res.error) {
         this.ui.showErrorSnackBar('snackbar.record_removed.error');

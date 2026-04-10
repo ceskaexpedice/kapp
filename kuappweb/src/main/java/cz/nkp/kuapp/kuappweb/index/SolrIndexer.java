@@ -126,13 +126,14 @@ public class SolrIndexer {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
-            SolrInputDocument doc = new SolrInputDocument();
-            doc.setField("pid", js.getString("pid"));
+            JSONArray pids = js.getJSONArray("pids");
+            for (int i = 0; i < pids.length(); i++) {
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.setField("pid", pids.getString(i));
+                addAtomicField(doc, "set", js.getString("batch"), "batch");
+                solr.add("titles", doc);
+            }
 
-            addAtomicField(doc, "set", js.getString("batch"), "batch");
-
-            // doc.setField("labels", js.getJSONArray("labels").toString());
-            solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
 
@@ -147,21 +148,22 @@ public class SolrIndexer {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
-            SolrInputDocument doc = new SolrInputDocument();
-            doc.setField("pid", js.getString("pid"));
+            JSONArray pids = js.getJSONArray("pids");
+            for (int i = 0; i < pids.length(); i++) {
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.setField("pid", pids.getString(i));
 
-            String modifier = js.optBoolean("selected") ? "set" : "remove";
-            addAtomicField(doc, modifier, js.getString("contract"), "contracts");
+                String modifier = js.optBoolean("selected") ? "set" : "remove";
+                addAtomicField(doc, modifier, js.getString("contract"), "contracts");
 
-            if (js.optBoolean("withState")) {
-                String state = "KONTROLOVANE_NEVEREJNE_LICENCE";
-                addAtomicField(doc, "set", state, "state");
+                if (js.optBoolean("withState")) {
+                    String state = "KONTROLOVANE_NEVEREJNE_LICENCE";
+                    addAtomicField(doc, "set", state, "state");
+                    fillState(doc, state, js.getJSONArray("licenses"), "Smlouva " + js.getString("contract"), user);
+                }
 
-                fillState(doc, state, js.getJSONArray("licenses"), "Smlouva " + js.getString("contract"), user);
-
+                solr.add("titles", doc);
             }
-
-            solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
 
@@ -230,14 +232,14 @@ public class SolrIndexer {
              * <field name="nameIdentifier" type="string" multiValued="false" indexed="true" stored="true"/>
              * <field name="termsOfAddress" type="string" multiValued="false" indexed="true" stored="true"/>
              *
-  <field name="confirmed_end_year" type="boolean" uninvertible="true" indexed="true" stored="true"/>
+             * <field name="confirmed_end_year" type="boolean" uninvertible="true" indexed="true" stored="true"/>
              * <field name="confirmed_start_year" type="boolean" uninvertible="true" indexed="true" stored="true"/>
              *
-  <field name="date" type="string" multiValued="false" indexed="true" stored="true"/>
+             * <field name="date" type="string" multiValued="false" indexed="true" stored="true"/>
              * <field name="date_birth" type="string" multiValued="false" indexed="true" stored="true"/>
              * <field name="date_death" type="string" multiValued="false" indexed="true" stored="true"/>
              *
-  <field name="year_birth" type="pint" multiValued="false" indexed="true" stored="true"/>
+             * <field name="year_birth" type="pint" multiValued="false" indexed="true" stored="true"/>
              * <field name="year_death" type="pint" multiValued="false" indexed="true" stored="true"/>
              *
              *
@@ -349,7 +351,7 @@ public class SolrIndexer {
         }
 
         addAtomicField(tdoc, "set", authors_kapp.toString(), "authors_kapp");
-        
+
         // Remove old_id, add new
         // addAtomicField(tdoc, "add-distinct", id, "authors_ids");
         if (idChanged) {
@@ -358,13 +360,16 @@ public class SolrIndexer {
             partialUpdate.put("add-distinct", id);
             tdoc.setField("authors_ids", partialUpdate);
         }
-        
+
         if (new_author.has("nameIdentifier")) {
             addAtomicField(tdoc, "add-distinct", new_author.getString("nameIdentifier"), "nameIdentifier");
         }
+
+        addAtomicField(tdoc, "add-distinct", new_author.optString("full"), "authors");
+
         JSONArray labels = new_author.optJSONArray("labels", new JSONArray());
         //for (int i = 0; i < labels.length(); i++) {
-            addAtomicField(tdoc, "add-distinct", labels.toList(), "labels");
+        addAtomicField(tdoc, "add-distinct", labels.toList(), "labels");
         //}
 
         return tdoc;
@@ -381,13 +386,14 @@ public class SolrIndexer {
             addAtomicField(doc, "set", js.getJSONArray("authors").toString(), "authors_kapp");
             addAtomicField(doc, "set", js.getJSONArray("ids"), "authors_ids");
             addAtomicField(doc, "set", js.getJSONArray("nameIdentifiers"), "nameIdentifier");
-            
+            addAtomicField(doc, "set", js.getJSONArray("names"), "authors");
             addAtomicField(doc, "add-distinct", "author_modified", "labels");
 
             solr.add("titles", doc);
             solr.commit("titles");
-            
+
             if (js.has("author") && !js.isNull("author")) {
+                addAtomicField(doc, "add-distinct", "author_modified", "labels");
                 saveAuthor(js.getJSONObject("author"), true);
             }
             ret.put("msg", "saved");
@@ -512,9 +518,9 @@ public class SolrIndexer {
                         solr.add("titles", doc);
                         solr.commit("titles");
                     }
-                    
+
                 } catch (SolrServerException | IOException ex) {
-                    LOGGER.log(Level.SEVERE,  "Error setting PARENT_CLOSED: {0}", ex);
+                    LOGGER.log(Level.SEVERE, "Error setting PARENT_CLOSED: {0}", ex);
                 }
             }
         }

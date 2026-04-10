@@ -44,6 +44,7 @@
     "authors": "Authors",
     "authors_ids": "Author Identifier",
     "labels": "Label",
+    "batch": "Batch",
     "state": "State",
     "date": "Date",
     "date_birth": "Date of birth",
@@ -90,6 +91,8 @@
     "ccnb": "Ccnb",
     "issn": "Issn",
     "hard_facets": "Filters",
+    "nameIdentifier": "Name identifier",
+    "nameIdentifier_desc": "Name identifier (AUT: controlfield 001, MODS: nameIdentifier)",
     "no_nameIdentifier": "Authors without nameIdentifier",
     "no_year_death": "Authors without death date"
   },

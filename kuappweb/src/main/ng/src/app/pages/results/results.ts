@@ -77,7 +77,11 @@ export class Results {
   readonly dialog = inject(MatDialog);
 
   viewType = signal<string>('table_view');
-  displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']);
+  displayedColumns = computed<string[]>(() => 
+    this.state.user() ?
+    ['selection', ...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action'] :
+    [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']
+);
   columnSizes: { [field: string]: number } = {};
 
   columnsToDisplayWithExpand = computed<string[]>(() => [...this.displayedColumns()]);
@@ -124,6 +128,7 @@ export class Results {
     p.authors_ids = usedFacets.filter(k => k.field === 'authors_ids').map(k => k.value);
     p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
     p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
+    p.batch = usedFacets.filter(k => k.field === 'batch').map(k => k.value);
     p.contracts = usedFacets.filter(k => k.field === 'contracts').map(k => k.value);
     p.physical_locations = usedFacets.filter(k => k.field === 'physical_locations').map(k => k.value);
     p.assigned_licenses = usedFacets.filter(k => k.field === 'assigned_licenses').map(k => k.value);
@@ -335,12 +340,16 @@ export class Results {
     return doc['contracts']?.includes(filename)
   }
 
-  addToBatch(b: Batch, doc: any) {
-    this.saveDocBatch(b.name, doc);
+  addSelectionToBatch(b: Batch) {
+    this.saveDocBatch(b.name, this.docs().filter(d => d.selected));
   }
 
-  saveDocBatch(bs: string, doc: any) {
-    this.service.saveDocBatch(doc.pid, bs).subscribe((res: any) => {
+  addToBatch(b: Batch, doc: any) {
+    this.saveDocBatch(b.name, [doc]);
+  }
+
+  saveDocBatch(bs: string, docs: any[]) {
+    this.service.saveDocBatch(docs.map(d => d.pid), bs).subscribe((res: any) => {
       if (res.error) {
         this.ui.showErrorSnackBar('snackbar.record_added.error');
       } else {
@@ -350,7 +359,11 @@ export class Results {
     })
   }
 
-  addToContract(contract: Contract, doc: any) {
+  addSelectionToContract(contract: Contract) {
+    this.addToContract(contract, this.docs().filter(d => d.selected));
+  }
+
+  addToContract(contract: Contract, docs: any[]) {
     const checkboxes = [{
       label: String(this.translator.instant('change_licenses_at_same_time')),
       checked: true
@@ -377,7 +390,7 @@ export class Results {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result === 'yes') {
-        this.service.saveDocContract(doc.pid, contract.filename, checkboxes[0].checked, !this.inContract(contract.filename, doc), contract.license).subscribe((res: any) => {
+        this.service.saveDocContract(docs.map(d => d.pid), contract.filename, checkboxes[0].checked, !this.inContract(contract.filename, docs), contract.license).subscribe((res: any) => {
           if (res.error) {
             this.ui.showErrorSnackBar('snackbar.record_added.error');
           } else {
@@ -405,7 +418,6 @@ export class Results {
     } else {
       console.log("nemelo by")
     }
-    console.log(el, this.state.titleColumns())
     localStorage.setItem('titleColumns', JSON.stringify(this.state.titleColumns()));
   }
 

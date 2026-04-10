@@ -289,7 +289,11 @@ export class AuthorTitleDialog {
     const authors_kramerius_nameIdentifiers = this.data.authors_kramerius.filter(a => a.nameIdentifier && !authors_kapp_nameIdentifiers.includes(a.nameIdentifier)).map(a => a.nameIdentifier);
     const nameIdentifiers: string[] =  [...authors_kapp_nameIdentifiers, ...authors_kramerius_nameIdentifiers];
     
-    this.service.saveAuthorsInTitle(authors, this.data.pid, inAuthors ? this.author() : null, ids, nameIdentifiers).subscribe((res: any) => {
+    const authors_kapp_names = authors.map(a => a.full);
+    const authors_kramerius_names = this.data.authors_kramerius.filter(a => !authors_kapp_names.includes(a.full)).map(a => a.full);
+    const names: string[] =  [...authors_kapp_names, ...authors_kramerius_names];
+    
+    this.service.saveAuthorsInTitle(authors, this.data.pid, inAuthors ? this.author() : null, ids, nameIdentifiers, names).subscribe((res: any) => {
       if (res.error) {
         this.ui.showErrorSnackBar('snackbar.record_saved.error');
       } else {

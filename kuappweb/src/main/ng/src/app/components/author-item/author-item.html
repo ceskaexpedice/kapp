@@ -72,7 +72,7 @@
 		</div>
 		@if (author.nameIdentifier) {
 		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.id' | translate }}:</span>
+			<span class="app-label" [title]="'field.nameIdentifier_desc' | translate">{{ 'field.nameIdentifier' | translate }}:</span>
 			<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+author.nameIdentifier" class="app-value">
 				<span>{{ author.nameIdentifier}}</span>
 				<mat-icon>open_in_new</mat-icon>

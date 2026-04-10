@@ -9,7 +9,7 @@
 		{{ 'action.add_author' | translate }}
 		}
 	</span>
-	@if(!author()?.nameIdentifier && !isNew()) {
+	@if(!isNew()) {
 		<button matIconButton (click)="toggleEdit()"><mat-icon>edit</mat-icon></button>
 	}
 	
@@ -44,7 +44,7 @@
 			<input matInput  [(ngModel)]="author().year_death" (ngModelChange)="setFull()" />
 		</mat-form-field>
 		<mat-form-field appearance="outline">
-			<mat-label>{{ 'field.nameIdentifier' | translate }}</mat-label>
+			<mat-label [title]="'field.nameIdentifier_desc' | translate">{{ 'field.nameIdentifier' | translate }}</mat-label>
 			<input matInput  [(ngModel)]="author().nameIdentifier" (ngModelChange)="setFull()" />
 		</mat-form-field>
 
@@ -62,7 +62,7 @@
 			<span class="app-value">{{ author().year_death }}</span>
 		</div>
 		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.nameIdentifier' | translate }}:</span>
+			<span class="app-label" [title]="'field.nameIdentifier_desc' | translate">{{ 'field.nameIdentifier' | translate }}:</span>
 			<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+author().nameIdentifier" class="app-value">
 				<span>{{ author().nameIdentifier }}</span>
 				<mat-icon>open_in_new</mat-icon>

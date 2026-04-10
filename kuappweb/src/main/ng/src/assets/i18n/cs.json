@@ -43,7 +43,8 @@
     "author": "Autor",
     "authors": "Autoři",
     "authors_ids": "Identifikator autora",
-    "labels": "Označení",
+    "labels": "Štítek",
+    "batch": "Dávky",
     "state": "Stav",
     "date": "Datum",
     "date_birth": "Datum narození",
@@ -90,6 +91,8 @@
     "ccnb": "Ccnb",
     "issn": "Issn",
     "hard_facets": "Filtry",
+    "nameIdentifier": "Identifikator",
+    "nameIdentifier_desc": "Identifikator (AUT: controlfield 001, MODS: nameIdentifier)",
     "no_nameIdentifier": "Autoři bez nameIdentifier",
     "no_year_death": "Autoři bez data úmrtí"
   },

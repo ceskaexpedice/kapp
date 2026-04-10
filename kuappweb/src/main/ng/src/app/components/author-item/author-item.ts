@@ -163,7 +163,7 @@ export class AuthorItem {
     const p: any = {};
     p.rows = 0;
     p.author_id = this.author['id'];
-    p.only_pid = true;
+    p.only_pid = false;
     this.service.searchTitlesByAuthor(p as HttpParams).subscribe((resp: any) => {
       this.numTitles.set(resp.response.numFound);
     });

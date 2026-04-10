@@ -6,6 +6,7 @@
       <app-facets [fields]="[
           'labels', 
           'state',
+          'batch',
           'contracts',
           'assigned_licenses', 
           'licenses', 
@@ -55,6 +56,16 @@
           <table mat-table [dataSource]="docs()" class="app-hover app-resize" matSort
             [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction"
             (matSortChange)="sortTable($event)" multiTemplateDataRows>
+
+            <ng-container matColumnDef="selection" [stickyEnd]="true" >
+              <th mat-header-cell *matHeaderCellDef [style.width]="'30px'">
+              </th>
+              <td mat-cell *matCellDef="let doc">
+                <div class="app-fxLayout app-row app-gap-1 app-ml-1 app-center-h">
+                    <mat-checkbox color="primary" [(ngModel)]="doc.selected"></mat-checkbox>
+                </div>
+              </td>
+            </ng-container>
 
             <ng-container matColumnDef="pid">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'pid')" [style.width]="columnSizes['pid'] + 'px'">
@@ -151,6 +162,31 @@
 
             <ng-container matColumnDef="action" [stickyEnd]="true" >
               <th mat-header-cell *matHeaderCellDef [style.width]="state.user() ? '80px' : '30px'">
+                @if(state.user()) {
+                <div class="app-fxLayout app-row app-gap-1 app-center-h app-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="allBatchesMenu" [matTooltip]="'action.add_doc_to_bacth' | translate">
+                    <mat-icon>playlist_add</mat-icon>
+                  </button>
+                  <mat-menu #allBatchesMenu="matMenu">
+                    @for(a of state.batches(); track $index) {
+                      <button mat-menu-item (click)="addSelectionToBatch(a)" class="app-text-cutter-wrapper" [matTooltip]="a.name">
+                        {{ a.name }}
+                      </button>
+                    }
+                  </mat-menu>
+
+                  <button mat-icon-button [matMenuTriggerFor]="allContractsMenu" [matTooltip]="'action.add_doc_to_contract' | translate">
+                    <mat-icon>history_edu</mat-icon>
+                  </button>
+                  <mat-menu #allContractsMenu="matMenu">
+                    @for(a of contracts(); track $index) {
+                      <button mat-menu-item (click)="addSelectionToContract(a)" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
+                        {{ a.title }}
+                      </button>
+                    }
+                  </mat-menu>
+                </div>
+                }
               </th>
               <td mat-cell *matCellDef="let doc">
                 <div class="app-fxLayout app-row app-gap-1 app-center-h app-actions">
@@ -171,7 +207,7 @@
                   </button>
                 <mat-menu #contractsMenu="matMenu">
                   @for(a of contracts(); track $index) {
-                    <button mat-menu-item (click)="addToContract(a, doc)" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
+                    <button mat-menu-item (click)="addToContract(a, [doc])" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
                       @if (inContract(a.filename, doc)) { <mat-icon>check_box</mat-icon> }
                       {{ a.title }}
                     </button>
