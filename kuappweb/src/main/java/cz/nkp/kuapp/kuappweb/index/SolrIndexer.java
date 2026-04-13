@@ -546,7 +546,12 @@ public class SolrIndexer {
             fillState(doc, js.getString("state"), js.getJSONArray("licenses"), js.optString("reason", ""), user);
             solr.add("titles", doc);
             solr.commit("titles");
-            setParentClosed(solr, js.getString("pid"), js.getJSONArray("licenses"), js.optString("reason", ""), user);
+            // Pro model periodicalvolume a monographunit
+            String model = js.optString("model", "");
+            boolean checkParent = model.equals("periodicalvolume") || model.equals("monographunit");
+            if (checkParent) {
+                setParentClosed(solr, js.getString("pid"), js.getJSONArray("licenses"), js.optString("reason", ""), user);
+            }
             LOGGER.log(Level.INFO, "state for {0} changed", js.getString("pid"));
             ret.put("msg", "saved");
 
