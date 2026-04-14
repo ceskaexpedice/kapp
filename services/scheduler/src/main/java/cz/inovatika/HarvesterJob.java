@@ -7,13 +7,6 @@ import org.quartz.Job;
 import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 
-import cz.inovatika.model.Instance;
-
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
-import java.util.List;
-
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
