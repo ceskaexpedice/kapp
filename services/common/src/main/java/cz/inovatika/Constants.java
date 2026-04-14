@@ -76,8 +76,7 @@ public class Constants {
             public static final String DATE_ISSUED_STRING = "date_issued_str";
 
             public static final String DIGITAL_LIBRARY = "digital_library";
-
-            public static final String DECISION_DATE = "decision_date";
+            public static final String LAST_YEAR_DEATH = "last_year_death";
             public static final String LABELS_FIELD = "labels";
         }
 
@@ -87,6 +86,12 @@ public class Constants {
             public static final String EXCEL_FAILED_TO_PARSE_DATE = "excel_failed_to_parse_date";
             public static final String EXCEL_SUSPICIOUS_YEAR_RANGE = "excel_suspicious_year_range";
 
+        }
+        public static class ModelFields {
+            public static final String MONOGRAPH = "monograph";
+            public static final String PERIODICAL = "periodical";
+            public static final String MONOGRAPHUNIT = "monographunit";
+            public static final String PERIODICALVOLUME = "periodicalvolume";
         }
     }
 }
