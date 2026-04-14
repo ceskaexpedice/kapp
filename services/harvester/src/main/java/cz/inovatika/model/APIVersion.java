@@ -1,5 +1,7 @@
 package cz.inovatika.model;
 
+import cz.inovatika.Constants;
+import cz.inovatika.Constants.TitlesCollectionFields.ModelFields;
 import cz.inovatika.utils.XMLUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
@@ -362,14 +364,14 @@ public enum APIVersion {
         });
 
         // periodicals
-        items.stream().filter(harvestingItem -> harvestingItem.getModel().equals("periodical")).forEach(harvestingItem -> {
+        items.stream().filter(harvestingItem -> harvestingItem.getModel().equals(ModelFields.PERIODICAL)).forEach(harvestingItem -> {
             harvestingItem.setHierarchical(true);
         });
     }
 
     private static List<HarvestingItem> getMonographs(List<HarvestingItem> items) {
         return items.stream().filter(item -> {
-            return item.getModel().equals("monograph");
+            return item.getModel().equals(ModelFields.MONOGRAPH);
         }).toList();
     }
 
