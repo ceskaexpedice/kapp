@@ -296,7 +296,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.indexDocLabels(js);
+                    json = SolrIndexer.indexDocLabels(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -322,7 +322,7 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.createBatchFromLabel(js);
+                    json = SolrIndexer.createBatchFromLabel(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -352,7 +352,7 @@ public class IndexServlet extends HttpServlet {
                     // Koukneme na prvni
                     JSONObject t = IndexSearcher.getTitleByPid(pids.getString(0)).getJSONObject("response");
                     if (t.getInt("numFound") > 0) {
-                        json = SolrIndexer.indexDocBatches(js);
+                        json = SolrIndexer.indexDocBatches(js, UserServlet.getUserName(req));
                     } else {
                         json.put("error", "pid_not_found");
                     }
@@ -414,13 +414,13 @@ public class IndexServlet extends HttpServlet {
                 return json;
             }
         },
-        SAVE_DECISION_DATE {
+        SAVE_LAST_YEAR_DEATH {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.saveDecisionDate(js, UserServlet.getUserName(req));
+                    json = SolrIndexer.saveLastYearDeath(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -476,7 +476,7 @@ public class IndexServlet extends HttpServlet {
 
                 BufferedReader reader = new BufferedReader(new InputStreamReader(part.getInputStream()));
                 while (reader.ready()) {
-                    ret = SolrIndexer.addDocToBatch(reader.readLine(), batch);
+                    ret = SolrIndexer.addDocToBatch(reader.readLine(), batch, UserServlet.getUserName(req));
                 }
                 return ret;
             }

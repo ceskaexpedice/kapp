@@ -169,8 +169,8 @@ export class AppService {
     return this.post('index/save_author_labels', {pid,labels});
   }
 
-  saveDecisionDate(pid: string, decisionDate: number): Observable<any> {
-    return this.post('index/save_decision_date', {pid,decisionDate});
+  saveLastYearDeath(pid: string, lastYearDeath: number): Observable<any> {
+    return this.post('index/save_last_year_death', {pid,lastYearDeath});
   }
 
   saveTitleNote(pid: string, note: string): Observable<any> {

@@ -78,7 +78,7 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static JSONObject indexDocLabels(JSONObject js) {
+    public static JSONObject indexDocLabels(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -86,6 +86,7 @@ public class SolrIndexer {
             doc.setField("pid", js.getString("pid"));
 
             addAtomicField(doc, "set", js.getJSONArray("labels"), "labels");
+            addAtomicField(doc, "add-distinct", user, "modified_by_user");
             solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
@@ -122,7 +123,7 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static JSONObject indexDocBatches(JSONObject js) {
+    public static JSONObject indexDocBatches(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -131,6 +132,7 @@ public class SolrIndexer {
                 SolrInputDocument doc = new SolrInputDocument();
                 doc.setField("pid", pids.getString(i));
                 addAtomicField(doc, "set", js.getString("batch"), "batch");
+                addAtomicField(doc, "add-distinct", user, "modified_by_user");
                 solr.add("titles", doc);
             }
 
@@ -158,7 +160,6 @@ public class SolrIndexer {
 
                 if (js.optBoolean("withState")) {
                     String state = "KONTROLOVANE_NEVEREJNE_LICENCE";
-                    addAtomicField(doc, "set", state, "state");
                     fillState(doc, state, js.getJSONArray("licenses"), "Smlouva " + js.getString("contract"), user);
                 }
 
@@ -174,14 +175,14 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static JSONObject saveDecisionDate(JSONObject js, String user) {
+    public static JSONObject saveLastYearDeath(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
 
-            addAtomicField(doc, "set", js.getString("decisionDate"), "date_issued_year");
+            addAtomicField(doc, "set", js.getInt("lastYearDeath"), "last_year_death");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
 
             solr.add("titles", doc);
@@ -277,7 +278,7 @@ public class SolrIndexer {
                 // save all titles
                 String old_id = js.optString("old_id", null);
                 boolean idChanged = old_id != null && !js.optString("old_id").equals(js.getString("id"));
-                saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id") : old_id, idChanged, js);
+                saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id") : old_id, idChanged, js, user);
                 // Remove author if id changed
                 if (idChanged) {
                     solr.deleteById("authors", js.optString("old_id"));
@@ -295,7 +296,7 @@ public class SolrIndexer {
         return ret;
     }
 
-    private static void saveAuthorsInAllTitles(SolrClient solr, String old_id, boolean idChanged, JSONObject js) throws SolrServerException, IOException {
+    private static void saveAuthorsInAllTitles(SolrClient solr, String old_id, boolean idChanged, JSONObject js, String user) throws SolrServerException, IOException {
         String q = "*";
         JsonQueryRequest jrequest = new JsonQueryRequest()
                 .setQuery(q)
@@ -312,7 +313,7 @@ public class SolrIndexer {
         List<SolrInputDocument> tdocs = new ArrayList();
         for (int i = 0; i < docs.length(); i++) {
             JSONObject doc = docs.getJSONObject(i);
-            tdocs.add(saveAuthorInTitle(doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray()), idChanged));
+            tdocs.add(saveAuthorInTitle(doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray()), idChanged, user));
             //saveAuthorInTitle(solr, doc.getString("pid"), js, new JSONArray());
         }
         solr.add("titles", tdocs);
@@ -320,7 +321,7 @@ public class SolrIndexer {
 
     }
 
-    private static SolrInputDocument saveAuthorInTitle(String pid, JSONObject new_author, JSONArray authors_kapp, JSONArray authors_kramerius, boolean idChanged) throws SolrServerException, IOException {
+    private static SolrInputDocument saveAuthorInTitle(String pid, JSONObject new_author, JSONArray authors_kapp, JSONArray authors_kramerius, boolean idChanged, String user) throws SolrServerException, IOException {
 
         SolrInputDocument tdoc = new SolrInputDocument();
         tdoc.setField("pid", pid);
@@ -375,9 +376,8 @@ public class SolrIndexer {
         addAtomicField(tdoc, "add-distinct", new_author.optString("full"), "authors");
 
         JSONArray labels = new_author.optJSONArray("labels", new JSONArray());
-        //for (int i = 0; i < labels.length(); i++) {
         addAtomicField(tdoc, "add-distinct", labels.toList(), "labels");
-        //}
+        addAtomicField(tdoc, "add-distinct", user, "modified_by_user");
 
         return tdoc;
 
@@ -415,11 +415,11 @@ public class SolrIndexer {
 
     }
 
-    public static JSONObject addDocToBatch(String pid, String batch) {
+    public static JSONObject addDocToBatch(String pid, String batch, String user) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
-            ret = addDocToBatch(solr, pid, batch);
+            ret = addDocToBatch(solr, pid, batch, user);
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
             ret.put("error", ex);
@@ -427,7 +427,7 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static JSONObject addDocToBatch(SolrClient solr, String pid, String batch) {
+    public static JSONObject addDocToBatch(SolrClient solr, String pid, String batch, String user) {
 
         JSONObject ret = new JSONObject();
         try {
@@ -435,8 +435,7 @@ public class SolrIndexer {
             doc.setField("pid", pid);
 
             addAtomicField(doc, "set", batch, "batch");
-
-            // doc.setField("labels", js.getJSONArray("labels").toString()); 
+            addAtomicField(doc, "add-distinct", user, "modified_by_user");
             solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
@@ -448,14 +447,14 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static JSONObject createBatchFromLabel(JSONObject js) {
+    public static JSONObject createBatchFromLabel(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
         String label = js.getString("label");
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JSONArray docs = IndexSearcher.getLabelDocs(label).getJSONObject("response").getJSONArray("docs");
             for (int i = 0; i < docs.length(); i++) {
-                addDocToBatch(solr, docs.getJSONObject(i).getString("pid"), "label_" + label);
+                addDocToBatch(solr, docs.getJSONObject(i).getString("pid"), "label_" + label, user);
             }
             ret.put("batch", "label_" + label);
         } catch (Exception ex) {

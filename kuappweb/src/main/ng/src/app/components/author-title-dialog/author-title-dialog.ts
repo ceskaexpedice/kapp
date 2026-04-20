@@ -306,7 +306,7 @@ export class AuthorTitleDialog {
 
   setAsLast() {
     if (this.author().year_death) {
-      this.service.saveDecisionDate(this.data.pid, this.author().year_death).subscribe((res: any) => {
+      this.service.saveLastYearDeath(this.data.pid, this.author().year_death).subscribe((res: any) => {
         this.hasChanges = true;
         if (res.error) {
           this.ui.showErrorSnackBar('snackbar.record_changed.error');

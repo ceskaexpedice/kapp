@@ -131,22 +131,18 @@
 		</div>
 	}
 		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.decision_date' | translate }}:</span>
+			<span class="app-label">{{ 'field.last_year_death' | translate }}:</span>
 			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
 				@if (editingDate()) {
-					<!-- <mat-form-field appearance="outline">
-						<mat-label>{{ 'field.decision_date' | translate }}</mat-label>
-						<input [(ngModel)]="decisionDate" matInput />
-					</mat-form-field> -->
-					<input [(ngModel)]="decisionDate" matInput />
-					<a (click)="saveDecisionDate()" class="app-value"><mat-icon>save</mat-icon></a>
+					<input [(ngModel)]="lastYearDeath" matInput />
+					<a (click)="saveLastYearDeath()" class="app-value"><mat-icon>save</mat-icon></a>
 					<a (click)="closeEditingDate()" class="app-value"><mat-icon>cancel</mat-icon></a>
 				} @else {
 					<div class="app-value">
-						<span>{{ doc()['decision_date']}}</span>
+						<span>{{ doc()['last_year_death']}}</span>
 						
     				@if (state.user()) {
-						<a (click)="editDecisionDate()" class="app-value"><mat-icon>edit</mat-icon></a>
+						<a (click)="editLastYearDeath()" class="app-value"><mat-icon>edit</mat-icon></a>
 					}
 					</div>	
 				}

@@ -46,7 +46,7 @@ export class ResultItem {
 
   editingNote = signal(false);
   editingDate = signal(false);
-  decisionDate: number;
+  lastYearDeath: number;
   note: string;
 
   mergedAuthors: AuthorTitle[] = [];
@@ -279,9 +279,9 @@ export class ResultItem {
     })
   }
 
-  editDecisionDate() {
-    if (this.doc()['decision_date']) {
-      this.decisionDate = this.doc()['decision_date'];
+  editLastYearDeath() {
+    if (this.doc()['last_year_death']) {
+      this.lastYearDeath = this.doc()['last_year_death'];
     }
     this.editingDate.set(true)
   }
@@ -290,9 +290,9 @@ export class ResultItem {
     this.editingDate.set(false)
   }
 
-  saveDecisionDate() {
+  saveLastYearDeath() {
     
-    this.service.saveDecisionDate(this.doc().pid, this.decisionDate).subscribe((res: any) => {
+    this.service.saveLastYearDeath(this.doc().pid, this.lastYearDeath).subscribe((res: any) => {
       console.log(res)
     })
   }

@@ -94,6 +94,15 @@ public class UserServlet extends HttpServlet {
     public static String getUserName(HttpServletRequest req) {
         JSONObject user = getUser(req);
         if (user != null) {
+            return user.getString("preferred_username");
+        } else {
+            return null;
+        }
+    }
+
+    public static String getUserNameHuman(HttpServletRequest req) {
+        JSONObject user = getUser(req);
+        if (user != null) {
             return user.getString("name");
         } else {
             return null;
