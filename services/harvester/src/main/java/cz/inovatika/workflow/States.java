@@ -338,7 +338,7 @@ public enum States {
 
     public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState){
         switch (desiredState) {
-            case CONTROLLED_PRIVATE, CONTROLLED_PUBLIC, CONTROLLED_UNKNOWN,CONTROLLED_BLOCKED,CONTROLLED_WO_RIGHTS,CONTROLLED_UNKNOWN_PUBLIC -> {
+            case CONTROLLED_PRIVATE, CONTROLLED_PUBLIC, CONTROLLED_UNKNOWN,CONTROLLED_BLOCKED,CONTROLLED_WO_RIGHTS,CONTROLLED_UNKNOWN_PUBLIC,TO_CONTROL -> {
                 return desiredState;
             }
             default -> {
