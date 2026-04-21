@@ -105,8 +105,6 @@ Sloupec `public_string` se převádí takto:
 - prázdná hodnota -> `TO_CONTROL`
 - jiná hodnota -> `CONTROLLED_UNKNOWN` a přidá se štítek `excel_incorrect_license`
 
-Pozor: kurátorský workflow přechod v kódu dovoluje jen cílové stavy `CONTROLLED_*`. Prázdná hodnota tedy typicky nevynutí přechod do `TO_CONTROL`, protože tento cílový stav není mezi povolenými kurátorskými přechody.
-
 ## Rok úmrtí posledního autora
 
 Sloupec `year_of_death_last_author` se uloží jen tehdy, když hodnota vypadá jako čtyřmístné číslo.
@@ -143,8 +141,6 @@ Výsledkem jsou pole:
 - `date_issued_year`
 - `date_issued_start_year`
 - `date_issued_end_year`
-
-Poznámka k aktuálnímu stavu: mapování v repozitáři používá pro datum hodnotu `date.str`, zatímco kód očekává `date_issued_str`. Je potřeba sjednotit mapování nebo kód, jinak se datum z TSV nemusí zpracovat.
 
 ## Štítky a poznámky
 

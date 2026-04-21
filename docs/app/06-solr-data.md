@@ -16,7 +16,7 @@ Kolekce `titles` obsahuje záznamy dokumentů z Krameria a workflow informace.
 - `model` typ dokumentu.
 - `title` název dokumentu.
 - `root_title` název kořenového dokumentu.
-- `digital_library` zkratka zdrojové knihovny z `instances[].acronym`.
+- `digital_library` zkratka zdrojové knihovny.
 
 ### MODS a bibliografická metadata
 
@@ -103,7 +103,7 @@ Dokumenty s chybou v hodnotě zveřejnění v TSV:
 labels:excel_incorrect_license
 ```
 
-Dokumenty s podezřelým rozsahem roku vydání:
+Dokumenty s podezřelým rozsahem roku vydání (obvykle díla vydaná v budoucnosti apod.):
 
 ```text
 labels:excel_suspicious_year_range
@@ -135,8 +135,6 @@ Existující dokumenty se často aktualizují atomicky. Používají se operace:
 - `add`
 - `add-distinct`
 - `remove`
-
-To je důležité při ruční kontrole v Solru: u některých polí v logu nebo při ladění neuvidíte prosté hodnoty, ale mapu atomické operace.
 
 ## Stavové hodnoty v indexu
 

@@ -1,6 +1,6 @@
 # Přehled kurátorské aplikace
 
-Tato dokumentace popisuje aktuální stav projektu podle README a dostupného kódu v repozitáři. Webová část `kuratorska-aplikace-web` je v tomto checkoutu pouze neinicializovaný submodul, proto zde nejsou detailně popsané konkrétní obrazovky webového UI. Popsané ovládání se opírá o dostupné backendové moduly, konfiguraci, importní dávky a stavový model.
+Tato dokumentace popisuje aktuální stav backendu projektu. Webová část `kuratorska-aplikace-web` se zde nepopisuje.
 
 ## K čemu aplikace slouží
 
@@ -10,8 +10,6 @@ Aplikace pracuje hlavně s dokumenty typu:
 
 - `monograph`
 - `monographunit`
-- `periodical`
-- `periodicalvolume`
 
 ## Základní části systému
 
@@ -22,19 +20,19 @@ Projekt je vícemodulová Java/Gradle aplikace:
 - `services:scheduler` spouští naplánované úlohy přes Quartz.
 - `services:init` importuje kurátorské výsledky z TSV souborů, typicky exportů z Excelu.
 - `services:common` obsahuje sdílené parsování dat, autorů, datumů a Solr helpery.
-- `kuratorska-aplikace-web` má být webová část aplikace, ale v tomto checkoutu není dostupný zdrojový kód.
 
 ## Hlavní datový tok
 
-1. Operátor připraví konfiguraci v uživatelském adresáři v `.kapp/app.conf`.
-2. Harvester projde nakonfigurované instance Krameria.
-3. Pro každý nalezený záznam stáhne stručná metadata ze search endpointu a následně MODS XML.
-4. Z MODS XML vytěží datum vydání, autory, identifikátory a fyzické lokace.
-5. Podle workflow pravidel určí stav dokumentu.
-6. Záznam uloží do Solru do kolekce `titles`; autority ukládá do kolekce `authors`.
-7. U hierarchických titulů dopočítá stav rodiče podle stavů podřízených jednotek.
-8. Updater později kontroluje dokumenty s licencí `onsite`, kterým mohl časem vzniknout nárok na přeposouzení nebo zveřejnění.
-9. TSV import doplňuje nebo mění kurátorská rozhodnutí podle tabulek.
+1. Na daný server operátor umístí obsah repozitáře nkp-deploy
+2. Případně upraví konfiguraci v `.kapp/app.conf`.
+3. Harvester projde nakonfigurované instance Krameria.
+4. Pro každý nalezený záznam stáhne stručná metadata ze search endpointu a následně MODS XML.
+5. Z MODS XML vytěží datum vydání, autory, identifikátory a fyzické lokace.
+6. Podle workflow pravidel určí stav dokumentu.
+7. Záznam uloží do Solru do kolekce `titles`; autority ukládá do kolekce `authors`.
+8. U hierarchických titulů dopočítá stav rodiče podle stavů podřízených jednotek.
+9. Updater později kontroluje dokumenty s licencí `onsite`, kterým mohl časem vzniknout nárok na přeposouzení nebo zveřejnění.
+10. TSV import simuluje kurátorskou práci podle Excel tabulek.
 
 ## Co aplikace ukládá
 

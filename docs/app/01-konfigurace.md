@@ -3,13 +3,7 @@
 Backendové služby čtou konfiguraci ze souboru:
 
 ```text
-<user-home>/.kapp/app.conf
-```
-
-Na Windows to typicky odpovídá:
-
-```text
-C:\Users\<uživatel>\.kapp\app.conf
+nkp-deploy/.kapp/app.conf
 ```
 
 ## Hlavní konfigurační bloky
@@ -58,8 +52,6 @@ Konfigurace se skládá z těchto částí:
 }
 ```
 
-Poznámka: testovací konfigurace v repozitáři používá v `touchStoreConfig` klíč `folder`, ale aktuální Java record očekává `baseDir`. Pro skutečný provoz je podle kódu potřeba ověřit a používat `baseDir`.
-
 ## `solr`
 
 `solr.url` je základní URL Solru bez názvu kolekce.
@@ -83,21 +75,21 @@ Aplikace zapisuje do kolekcí:
 
 `workflow.publicYear` říká, po kolika letech se dílo považuje za veřejně dostupné podle data vydání.
 
-`workflow.onsiteYear` říká, po kolika letech dokument přestává být automaticky v nedávném/on-site pásmu.
+`workflow.onsiteYear` říká, po kolika letech dokument přestává být automaticky on-site od roku úmrtí autora nebo roku vydání.
 
 Při hodnotách:
 
 ```json
 {
   "publicYear": 110,
-  "onsiteYear": 70
+  "onsiteYear": 50
 }
 ```
 
 platí:
 
 - dokumenty starší nebo rovné hranici `aktuální rok - 110` mohou automaticky získat veřejnou licenci,
-- dokumenty novější nebo rovné hranici `aktuální rok - 70` mohou automaticky spadnout do on-site/neveřejného režimu,
+- dokumenty novější nebo rovné hranici `aktuální rok - 50` mohou automaticky spadnout do on-site/neveřejného režimu,
 - dokumenty mezi těmito hranicemi typicky vyžadují kontrolu.
 
 Hranice se počítají vždy proti aktuálnímu roku při běhu služby.
@@ -106,8 +98,8 @@ Hranice se počítají vždy proti aktuálnímu roku při běhu služby.
 
 `factory` může být:
 
-- `file` používá lokální souborové úložiště.
-- `solr` kontroluje existenci a změny proti existujícím dokumentům v Solru.
+- `file` používá lokální souborové úložiště - efektivnější, ale náročné na inodes filesystému.
+- `solr` používá solr - vhodné na malých serverech, kde nefunguje možnost file.
 
 Při `file` režimu se pro každý PID ukládají pomocné soubory:
 
@@ -144,7 +136,7 @@ Při dalším běhu se tento čas použije jako inkrementální filtr:
 - API v5 používá pole `modified_date`.
 - API v7 používá pole `indexed`.
 
-Pokud timestamp neexistuje, harvester se pokusí importovat bez inkrementálního časového filtru.
+Pokud timestamp neexistuje, harvester provede full harvest.
 
 ## Související soubory
 

@@ -19,7 +19,8 @@ V dostupném kódu je hlavní třída harvesteru:
 cz.inovatika.impl.HarvesterImpl
 ```
 
-Spuštění se provádí přes Gradle úlohu modulu `services:harvester`, případně přes sestavený fat JAR. Tento projekt jsem nespouštěl; orientační postup pro operátora je:
+Harvester je pouštěn primárně skrze scheduler. (`services:scheduler`)
+Jednorázové spuštění je možné přes Gradle úlohu modulu `services:harvester`, případně přes sestavený fat JAR.
 
 ```powershell
 .\gradlew :services:harvester:run
@@ -152,7 +153,3 @@ Po úspěšném importu by mělo platit:
 - workflow změna má záznam ve `state_history`,
 - aplikací přiřazená licence je v `assigned_licenses`,
 - timestamp instance je aktualizovaný.
-
-## Omezení
-
-Plný import přes scheduler není implementovaný. Přímý běh harvesteru bez timestampu může fungovat jako praktický plnější import, ale je potřeba jej brát jako provozní zásah a předem si potvrdit očekávaný rozsah dat.

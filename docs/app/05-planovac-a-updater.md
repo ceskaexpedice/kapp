@@ -1,6 +1,7 @@
 # Plánovač a updater
 
-Modul `services:scheduler` používá Quartz a slouží ke spouštění naplánovaných úloh. V aktuálním kódu je aktivně naplánovaný updater; harvestovací úloha je připravená, ale v `main` metodě scheduleru je její registrace zakomentovaná.
+Modul `services:scheduler` používá Quartz a slouží ke spouštění naplánovaných úloh. 
+Úlohy jsou Harvester a Updater.
 
 ## Hlavní třída
 
@@ -20,7 +21,7 @@ Tento postup projekt spouští; zde je uvedený jen jako dokumentace pro operát
 
 ## Co scheduler aktuálně spouští
 
-Při startu se volá:
+Updatovací úloha:
 
 ```text
 initUpdateJob(scheduler)
@@ -31,8 +32,6 @@ Harvestovací úloha:
 ```text
 initHarvestJob(scheduler)
 ```
-
-je v `main` metodě zakomentovaná.
 
 ## Updater job
 
@@ -90,9 +89,7 @@ runType
 Hodnoty:
 
 - `INCREMENTAL` spustí harvester.
-- `FULL` vyhodí chybu, protože plný harvest přes scheduler není implementovaný.
-
-V aktuální konfiguraci scheduleru se harvest job automaticky neregistruje.
+- `FULL` vyhodí chybu, protože plný harvest přes scheduler není implementovaný, místo toho je ekvivalentní INCREMENTAL, když chybí timestamp.
 
 ## Ruční trigger metody
 
@@ -105,28 +102,6 @@ Tyto metody předpokládají, že scheduler běží a že je zaregistrovaný odp
 
 ## Docker a volumes
 
-V repozitáři je `Dockerfile` pro scheduler a override soubor s volumes:
+V repozitáři je `Dockerfile` pro scheduler.
 
-```yaml
-services:
-  scheduler:
-    volumes:
-      - C:/Users/<user>/.kapp:/root/.kapp
-  solr:
-    volumes:
-      - ./../../kuratorska-aplikace-web/solr:/var/solr
-  tomcat:
-    ports:
-      - "8080:8080"
-    volumes:
-      - C:/Users/<user>/.kapp:/root/.kapp
-```
-
-To znamená, že kontejnerové služby očekávají konfiguraci v `/root/.kapp`, mapovanou z lokálního profilu uživatele.
-
-## Provozní doporučení
-
-- Před zapnutím scheduleru si ověřte, jestli má opravdu běžet jen updater, nebo i harvest.
-- Pokud má běžet harvest periodicky, je potřeba odkomentovat a nastavit `initHarvestJob`.
-- U plného harvestu nepoužívejte `runType=FULL`, dokud nebude implementovaný.
-- Po změně `workflow.publicYear` nebo `workflow.onsiteYear` je vhodné ručně promyslet dopad na updater, protože může hromadně změnit stavy.
+Kontejnerové služby očekávají konfiguraci v `/root/.kapp`, mapovanou z lokálního profilu uživatele viz. `nkp-deploy/.kapp/app.conf`.

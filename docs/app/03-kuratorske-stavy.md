@@ -1,6 +1,6 @@
 # Kurátorské stavy a rozhodování
 
-Aplikace ukládá stav dokumentu do pole `state`. Aktuální implementace zapisuje názvy enum hodnot, například `NONCONTROLLED_PUBLIC`, nikoli jejich textové hodnoty typu `noncontrolled_public`.
+Aplikace ukládá stav dokumentu do pole `state`.
 
 ## Hlavní skupiny stavů
 
@@ -36,10 +36,10 @@ Automatické rozhodnutí se počítá z:
 - informace, zda jde o hierarchický titul,
 - hodnot `workflow.publicYear` a `workflow.onsiteYear`.
 
-Při výchozí konfiguraci `publicYear = 110` a `onsiteYear = 70` se dokumenty rozdělují následovně:
+Při výchozí konfiguraci `publicYear = 110` a `onsiteYear = 50` se dokumenty rozdělují následovně:
 
 - Rok vydání starší nebo rovný hranici `aktuální rok - 110`: `NONCONTROLLED_PUBLIC`.
-- Rok vydání novější nebo rovný hranici `aktuální rok - 70`: `NONCONTROLLED_PRIVATE`.
+- Rok vydání novější nebo rovný hranici `aktuální rok - 50`: `NONCONTROLLED_PRIVATE`.
 - Monografie a monografické jednotky mezi těmito hranicemi: `TO_CONTROL`.
 - Svazky periodik (`periodicalvolume`): `NONCONTROLLED_PRIVATE`.
 - Ostatní modely mimo monografie: `NONCONTROLLED_PRIVATE`.
@@ -68,8 +68,10 @@ Kurátorský přechod dovoluje nastavit jen vybrané cílové stavy:
 - `CONTROLLED_BLOCKED`
 - `CONTROLLED_WO_RIGHTS`
 - `CONTROLLED_UNKNOWN_PUBLIC`
+- `TO_CONTROL`
 
-V dostupném backendu je kurátorské rozhodnutí zpracované hlavně přes TSV import. Webové UI pro ruční přepínání stavů není v tomto checkoutu k dispozici.
+Ty používá výhradně TSV import. Webové rozhraní používá jinou logiku.
+Poté co přestane být TSVImporter používaný, bude i tato funkcionalita deprecated.
 
 ## Licence přiřazované aplikací
 

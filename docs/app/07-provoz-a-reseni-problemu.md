@@ -1,15 +1,25 @@
 # Provoz a řešení problémů
 
-Tento dokument shrnuje praktické kontroly pro operátora. Příkazy jsou uvedené jako postup, projekt jsem při tvorbě dokumentace nespouštěl.
+Tento dokument shrnuje praktické kontroly pro operátora. Příkazy jsou uvedené jako postup.
+
+## Deployment
+- Na server se umístí obsah repozitáře nkp-deploy.
+- Je potřeba aby byl dostupný docker a tomcat.
+- v nkp-deploy jednou spustit: docker compose pull
+  - k images aplikace je potřeba autorizace
+- Následné spouštění probíhá pomocí docker compose up
+  - Spustí se Solr
+  - Webová aplikace
+  - Scheduler s Harvesterem a Updaterem
 
 ## Před spuštěním služby
 
 Zkontrolujte:
-
 - existuje `<user-home>/.kapp/app.conf`,
 - `app.conf` obsahuje `solr.url`,
-- Solr je dostupný na uvedené URL,
-- existují kolekce `titles` a `authors`,
+- Solr (měl by být správně pokud byl spuštěný z dockeru):
+  - Solr je dostupný na uvedené URL ,
+  - existují kolekce `titles` a `authors`,
 - instance Krameria jsou dostupné,
 - pokud používáte `factory: "file"`, existuje a je zapisovatelný adresář `touchStoreConfig.baseDir`,
 - pokud importujete TSV, existuje `<user-home>/.kapp/tsv-mappings.json`,
@@ -88,6 +98,8 @@ Při správném zápisu by u dokumentu měly existovat soubory:
 - `source.txt`
 - `physicalLocations.txt`
 
+Pokud možnost `file` nefunguje použijte solr jako záložní verzi. Omezené servery mohou vyčerpat své inodes pokud používají možnost `file`
+
 ## Když TSV import nezmění stav
 
 Zkontrolujte:
@@ -99,22 +111,6 @@ Zkontrolujte:
 - dokument s daným PID už existuje v Solru,
 - dokument má pole `model`,
 - požadovaný stav je mezi povolenými kurátorskými cíli.
-
-## Když TSV import neparsuje datum
-
-Aktuální kód zpracovává interní klíč:
-
-```text
-date_issued_str
-```
-
-Pokud mapování používá například:
-
-```text
-date.str
-```
-
-datum se nemusí zpracovat. Je potřeba sjednotit mapování nebo kód.
 
 ## Když rodič zůstává otevřený
 
@@ -142,10 +138,6 @@ date_issued_year:{ * TO <aktuální rok - publicYear>}
 ```
 
 Pokud se změnila hodnota `publicYear`, může se rozsah dokumentů výrazně změnit.
-
-## Když scheduler nespouští harvest
-
-V aktuálním kódu scheduler registruje updater, ale registrace harvest jobu je zakomentovaná. To je očekávané chování aktuální verze.
 
 ## Logy a chybové stavy
 
