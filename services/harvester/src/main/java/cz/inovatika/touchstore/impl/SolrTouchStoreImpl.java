@@ -1,9 +1,7 @@
 package cz.inovatika.touchstore.impl;
 
 import cz.inovatika.touchstore.TouchStore;
-import org.apache.commons.lang3.tuple.Pair;
 import org.apache.solr.client.solrj.SolrClient;
-import org.apache.solr.client.solrj.SolrQuery;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
 
@@ -29,7 +27,7 @@ public class SolrTouchStoreImpl implements TouchStore {
                 }
             };
 
-    private SolrClient solrClient;
+    private final SolrClient solrClient;
 
     public SolrTouchStoreImpl(SolrClient solrClient) {
         this.solrClient = solrClient;

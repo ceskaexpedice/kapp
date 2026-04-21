@@ -42,15 +42,19 @@ public enum States {
                         return NONCONTROLLED_PRIVATE;
                     }
                 }
-                if (currentDoc.model().equals(ModelFields.MONOGRAPH) || currentDoc.model().equals(ModelFields.MONOGRAPHUNIT)) {
-                    reason.value = StateChangeReasons.INCONTRLOWINDOWISSUED;
-                    return TO_CONTROL;
-                } else if (currentDoc.model().equals(ModelFields.PERIODICALVOLUME)) {
-                    reason.value = "periodical volume";
-                    return NONCONTROLLED_PRIVATE;
-                } else {
-                    reason.value = "not a monograph";
-                    return NONCONTROLLED_PRIVATE;
+                switch (currentDoc.model()) {
+                    case ModelFields.MONOGRAPH, ModelFields.MONOGRAPHUNIT -> {
+                        reason.value = StateChangeReasons.INCONTRLOWINDOWISSUED;
+                        return TO_CONTROL;
+                    }
+                    case ModelFields.PERIODICALVOLUME -> {
+                        reason.value = "periodical volume";
+                        return NONCONTROLLED_PRIVATE;
+                    }
+                    default -> {
+                        reason.value = "not a monograph";
+                        return NONCONTROLLED_PRIVATE;
+                    }
                 }
             } else {
                 return IMPORTED;

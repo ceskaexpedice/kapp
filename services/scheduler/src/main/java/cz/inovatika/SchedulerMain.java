@@ -12,16 +12,16 @@ import java.util.logging.Logger;
 
 public class SchedulerMain {
     public static Scheduler scheduler;
-    final static String HarvesterGroup = "group1";
-    final static String UpdaterGroup = "group2";
+    final static String HARVESTERGROUP = "group1";
+    final static String UPDATERGROUP = "group2";
     public static void main(String[] args) throws SchedulerException {
 
 
 
         scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
-        //initHarvestJob(scheduler);
-        initUpdateJob(scheduler);
+        initHarvestJob(scheduler);
+        //initUpdateJob(scheduler);
 
 
     }
@@ -31,12 +31,12 @@ public class SchedulerMain {
         System.out.println("XXX");
         // Define the job and tie it to our Job class
         JobDetail job = JobBuilder.newJob(UpdaterJob.class)
-                .withIdentity(UpdaterJob.class.getName(), UpdaterGroup)
+                .withIdentity(UpdaterJob.class.getName(), UPDATERGROUP)
                 .build();
 
         // Trigger the job to run every 'hoursInterval' hours
         Trigger trigger = TriggerBuilder.newTrigger()
-                .withIdentity("MidnightTrigger", UpdaterGroup)
+                .withIdentity("MidnightTrigger", UPDATERGROUP)
                 .startNow()
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule()
                         .withIntervalInHours(hoursInterval)
@@ -52,13 +52,13 @@ public class SchedulerMain {
 
         // Define the job and tie it to our Job class
         JobDetail job = JobBuilder.newJob(HarvesterJob.class)
-                .withIdentity(HarvesterJob.class.getName(), HarvesterGroup)
+                .withIdentity(HarvesterJob.class.getName(), HARVESTERGROUP)
                 .usingJobData("runType", "INCREMENTAL")
                 .build();
 
         // Trigger the job to run every 'hoursInterval' hours
         Trigger trigger = TriggerBuilder.newTrigger()
-                .withIdentity("MidnightTrigger", HarvesterGroup)
+                .withIdentity("MidnightTrigger", HARVESTERGROUP)
                 .startNow()
                 .withSchedule(SimpleScheduleBuilder.simpleSchedule()
                         .withIntervalInHours(hoursInterval)
@@ -73,7 +73,7 @@ public class SchedulerMain {
             throw new SchedulerException("Scheduler is null (main did not run to set things up)");
         }
         // Fire the job on demand with extra parameters
-        JobKey jobKey = JobKey.jobKey(HarvesterJob.class.getName(), HarvesterGroup);
+        JobKey jobKey = JobKey.jobKey(HarvesterJob.class.getName(), HARVESTERGROUP);
 
         JobDataMap onDemandParams = new JobDataMap();
         onDemandParams.put("runType", "FULL");

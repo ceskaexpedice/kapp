@@ -5,7 +5,6 @@ import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
-import org.apache.solr.client.solrj.response.UpdateResponse;
 import org.apache.solr.common.SolrInputDocument;
 
 import java.io.IOException;
@@ -36,7 +35,8 @@ public class SolrDocumentWrapperTest {
             UpdateRequest updateRequest = new UpdateRequest();
             updateRequest.add(wrapper.getDocument());
 
-            UpdateResponse response =  updateRequest.process(solrClient, "titles");
+            //UpdateResponse response = 
+             updateRequest.process(solrClient, "titles");
 
             solrClient.commit("titles");
 

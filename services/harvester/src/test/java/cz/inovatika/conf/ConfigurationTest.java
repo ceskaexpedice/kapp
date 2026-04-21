@@ -20,10 +20,10 @@ public class ConfigurationTest {
         InputStream resourceAsStream = ConfigurationTest.class.getResourceAsStream("app.conf");
         String string = IOUtils.toString(resourceAsStream, "UTF-8");
         ApplicationConfig config = ApplicationConfig.loadFromStream(new ByteArrayInputStream(string.getBytes("UTF-8")));
-        TouchStoreConfig touchStoreConfig = config.touchStoreConfig();
+        //TouchStoreConfig touchStoreConfig = config.touchStoreConfig();
         TouchStoreFactory factory = config.touchStoreConfig().factory();
         Assertions.assertNotNull(factory);
-        Assertions.assertEquals(factory.name(), "file");
+        Assertions.assertEquals("file", factory.name());
 
         List<Instance> instances = config.instances();
         Assertions.assertNotNull(instances);

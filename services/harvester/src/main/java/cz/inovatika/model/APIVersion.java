@@ -1,12 +1,9 @@
 package cz.inovatika.model;
 
-import cz.inovatika.Constants;
 import cz.inovatika.Constants.TitlesCollectionFields.ModelFields;
 import cz.inovatika.utils.XMLUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
-
-import javax.xml.transform.TransformerException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.ConnectException;
@@ -204,7 +201,6 @@ public enum APIVersion {
                 return (nodeName.equals("str") && name.equals("model"));
             });
             if (modelElm != null) {
-                String mname = modelElm.getTextContent();
                 item.setModel(modelElm.getTextContent());
             }
 
@@ -320,7 +316,7 @@ public enum APIVersion {
                     return null;
                 }
             } catch (InterruptedException | ConnectException exception) {
-                LOGGER.warning("Unable to send request, sleeping and trying again for: "+attempts+" time(s)"+ exception.getMessage());
+                LOGGER.log(Level.WARNING, "Unable to send request, sleeping and trying again for: {0} time(s){1}", new Object[]{attempts, exception.getMessage()});
                 Thread.sleep(5000);
             }
         }

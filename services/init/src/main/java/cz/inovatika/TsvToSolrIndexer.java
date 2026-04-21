@@ -74,7 +74,7 @@ public class TsvToSolrIndexer {
                 System.out.println("No TSV files found in directory.");
                 return;
             }
-
+            Set<String> missing_headers = new HashSet<>();
             for (File tsvFile : tsvFiles) {
                 current_table =  tsvFile.getName();
                 System.out.println("Processing: " + tsvFile.getName());
@@ -89,6 +89,7 @@ public class TsvToSolrIndexer {
                         System.out.println("No configuration for this file: " + tsvFile.getName());
                         continue;
                     }
+
                     for (CSVRecord record : parser) {
                         SolrInputDocumentWrapper doc = new SolrInputDocumentWrapper(
                                 AppDataFields.PID_FIELD,
@@ -111,6 +112,10 @@ public class TsvToSolrIndexer {
                         for (Map.Entry<String, String> entry : record.toMap().entrySet()) {
                             String header = headers.get(entry.getKey());
                             if (header == null) {
+                                if(!missing_headers.contains(entry.getKey())){
+                                    System.out.println("Missing header: " + entry.getKey());
+                                    missing_headers.add(entry.getKey());
+                                }
                                 continue;
                             }
                             String value = entry.getValue();
@@ -118,7 +123,7 @@ public class TsvToSolrIndexer {
                             try {
                                 switch (header) {
                                     case "public_string"->public_string = value;
-                                    case "note"-> notes.add(value);
+                                    case "note"-> {if(!value.isEmpty()) notes.add(value);}
                                     /*case "authors" -> {
                                         authorArray = value.split(" {2}|\\|");
                                         if (authorArray.length > 0 && !authorArray[0].isEmpty()) {
@@ -224,9 +229,22 @@ public class TsvToSolrIndexer {
                                         }
                                     }
                                     case "checked_by" ->{
-                                        users.add(value);
+                                        if (value.split("/.").length != 2) {//Some users put dates here
+                                        //System.out.println("Checking by: " + value);
+                                        users.addAll(Arrays.asList(value.split("/")));
+                                        }
+
+                                    }
+                                    case "checked_by_override"->{
+                                        if (!value.isEmpty() && users.isEmpty()){
+                                            System.out.println("Overriding with: " + value);
+                                            users.addAll(Arrays.asList(value.split("/")));
+                                        }
                                     }
                                     default -> {
+                                        if (!Objects.equals(entry.getKey(), "Název") && !Objects.equals(entry.getKey(), "Autor"))
+                                            notes.add(entry.getKey() + " : " +  value);
+                                        //System.out.println("Unknown header: " + header);
                                         //doc.addField(header, value);
                                     }
                                 }
@@ -240,15 +258,7 @@ public class TsvToSolrIndexer {
                         //if(pid.equals("uuid:b5d91e40-a260-11ef-8fc3-5ef3fc9bb22f")) System.out.println("DEBUG");
                         States desiredState = parsePublicString(/*doc,*/ recordNumber,public_string,labels,notes);
                         Map<String,Object> labelsUpdateMap = new HashMap<>();
-                        List<String> removes = new ArrayList<>();
-                        removes.add("{add-distinct=[excel]}");
-                        //removes.add("{add-distinct=excel}");
-                        removes.add("{add-distinct=excel_incorrect_license}");
-                        removes.add("{add-distinct=excel_failed_to_parse_date}");
-                        removes.add("{add-distinct=excel_suspicious_year_range}");
-                        //removes.add("{add-distinct=[excel_incorrect_license, excel]}");
-                        removes.add("{add-distinct=[excel, excel_incorrect_license]}");
-                        labelsUpdateMap.put("remove", removes);
+                        //labelsUpdateMap.put("remove", getRemoves());//Purges the table of broken values
                         /*if(labels.size()>1){
                             System.out.println(labels);
                         }*/
@@ -339,11 +349,11 @@ public class TsvToSolrIndexer {
                         if (doc.getFieldValue(AppDataFields.PID_FIELD) == doc.getFieldValue(AppDataFields.ROOT_PID_FIELD)) {
                             doc.setField(AppDataFields.ROOT_TITLE_FIELD, doc.getFieldValue(AppDataFields.TITLE_FIELD));
                         }*/
-                        //Map<String,Object> userUpdateMap = new HashMap<>();
-                        //userUpdateMap.put("add-distinct",users );
-                        if (users.isEmpty())users.add("Excel without curator");
-                        doc.getDocument().setField("state_user",users.getFirst());//userUpdateMap);
-                        //doc.addField("state_user", "TableParser");
+                        Map<String,Object> userUpdateMap = new HashMap<>();
+                        userUpdateMap.put("add-distinct",users );
+                        doc.getDocument().setField("state_user",(users.isEmpty())?"Excel without curator":"Excel");//userUpdateMap);
+                        doc.getDocument().addField("modified_by_user", userUpdateMap);
+
                         docerr = doc.getDocument();
                         solrClient.add(Collection.TITLES_COLLECTION, doc.getDocument());
                     }
@@ -383,6 +393,18 @@ public class TsvToSolrIndexer {
                 }
             }
         }
+    }
+
+    private static List<String> getRemoves() {
+        List<String> removes = new ArrayList<>();
+        removes.add("{add-distinct=[excel]}");
+        //removes.add("{add-distinct=excel}");
+        removes.add("{add-distinct=excel_incorrect_license}");
+        removes.add("{add-distinct=excel_failed_to_parse_date}");
+        removes.add("{add-distinct=excel_suspicious_year_range}");
+        //removes.add("{add-distinct=[excel_incorrect_license, excel]}");
+        removes.add("{add-distinct=[excel, excel_incorrect_license]}");
+        return removes;
     }
 /*
     private static String getField(SolrInputDocument doc, String fieldName) {
