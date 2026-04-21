@@ -1,9 +1,10 @@
 package cz.inovatika.workflow;
 
 import cz.inovatika.Constants;
+import cz.inovatika.Constants.TitlesCollectionFields.ModelFields;
+import cz.inovatika.Constants.TitlesCollectionFields.StateChangeReasons;
 import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.conf.WorkflowConfig;
-import cz.inovatika.model.HarvesterContext;
 
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import org.apache.solr.client.solrj.SolrClient;
@@ -27,23 +28,28 @@ public enum States {
      */
     IMPORTED("imported", LicensesAssignation.NONE, true) {
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             if (!currentDoc.isHierarchical()) {
                 WorkflowConfig wConfig = config.workflow();
-                if (wConfig != null && currentDoc.dateRangeEndYear() != null) {
-                    int year = currentDoc.dateRangeEndYear();
+                if (wConfig != null && currentDoc.dateIssuedYear() != null) {
+                    int year = currentDoc.dateIssuedYear();
                     if (wConfig.isPublicYear(year)) {
+                        reason.value = StateChangeReasons.SurpassedIssued(config.workflow().getPublicYear());
                         return NONCONTROLLED_PUBLIC;
                     }
                     if (wConfig.isOnsiteYear(year)) {
+                        reason.value = StateChangeReasons.NotYetIssued(config.workflow().getOnsiteYear());
                         return NONCONTROLLED_PRIVATE;
                     }
                 }
-                if (currentDoc.model().equals("monograph") || currentDoc.model().equals("monographunit")) {
+                if (currentDoc.model().equals(ModelFields.MONOGRAPH) || currentDoc.model().equals(ModelFields.MONOGRAPHUNIT)) {
+                    reason.value = StateChangeReasons.INCONTRLOWINDOWISSUED;
                     return TO_CONTROL;
-                } else if (currentDoc.model().equals("periodicalvolume")) {
+                } else if (currentDoc.model().equals(ModelFields.PERIODICALVOLUME)) {
+                    reason.value = "periodical volume";
                     return NONCONTROLLED_PRIVATE;
                 } else {
+                    reason.value = "not a monograph";
                     return NONCONTROLLED_PRIVATE;
                 }
             } else {
@@ -62,7 +68,31 @@ public enum States {
      */
     NONCONTROLLED_PRIVATE("noncontrolled_private", LicensesAssignation.ONSITE, false) {
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
+            WorkflowConfig wConfig = config.workflow();
+            if (wConfig==null)return null;
+            if (currentDoc.last_year_death() != null) {
+                int year = currentDoc.last_year_death();
+                if (!wConfig.isOnsiteYear(year)){//it has been OnsiteYear years from the death of last author
+                    reason.value = "it has been OnsiteYear years from the death of last author";
+                    return TO_CONTROL;
+                }
+                else return null;
+            }
+            else if (currentDoc.dateIssuedYear() != null) {
+                int year = currentDoc.dateIssuedYear();
+                if  (wConfig.isPublicYear(year)){
+                    reason.value = "Last author not specified and is PublicYear years already";
+                    return NONCONTROLLED_PUBLIC;
+                }
+                else if(wConfig.isOnsiteYear(year)){//Still not ready
+                    return null;
+                }
+                else {
+                    reason.value = StateChangeReasons.INCONTRLOWINDOWISSUED;
+                    return TO_CONTROL;}//in the TO_CONTROL window
+            }
+            LOGGER.log(Level.INFO,"State was prompted to change, but there is no info to go of off");
             return null;
         }
     },
@@ -71,29 +101,78 @@ public enum States {
      */
     NONCONTROLLED_PUBLIC("noncontrolled_public", LicensesAssignation.PUBLIC, false) {
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             return null;
         }
     },
+    FOR_REVIEW("for_review", LicensesAssignation.NONE, false) {
+        @Override
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason){
+            return null;
+        }
+    }
+    ,
     /**
      * to control , curator decision
      */
     TO_CONTROL("to_control", LicensesAssignation.NONE, false) {
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
+            WorkflowConfig wConfig = config.workflow();
+            if (wConfig==null)return null;
+            if (currentDoc.last_year_death() != null) {
+                int year = currentDoc.last_year_death();
+                if (!wConfig.isOnsiteYear(year)){
+                    reason.value = StateChangeReasons.SurpassedAuthorDeath(year);//"it has been OnsiteYear years from the death of last author";
+                    return NONCONTROLLED_PUBLIC;
+                }
+                else return null;
+            }
+            else if (currentDoc.dateIssuedYear() != null) {
+                int year = currentDoc.dateIssuedYear();
+                if  (wConfig.isPublicYear(year)){//Last author not specified and is PublicYear years already
+                    reason.value = StateChangeReasons.SurpassedIssued(year);
+                    return NONCONTROLLED_PUBLIC;
+                }
+                else if(wConfig.isOnsiteYear(year)){//Still not ready
+                    reason.value = StateChangeReasons.NotYetIssued(year);
+                    return NONCONTROLLED_PRIVATE;
+                }
+                else return null;//in the TO_CONTROL window
+            }
+            LOGGER.log(Level.INFO,"State was prompted to change, but there is no info to go of off");
             return null;
         }
     },
     CONTROLLED_PUBLIC("controlled_public", LicensesAssignation.PUBLIC, false) {
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             return null;
         }
     },
     CONTROLLED_PRIVATE("controlled_private", LicensesAssignation.ONSITE, false) {
 
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
+            WorkflowConfig wConfig = config.workflow();
+            if (wConfig==null)return null;
+            if (currentDoc.last_year_death() != null) {
+                int year = currentDoc.last_year_death();
+                if (!wConfig.isOnsiteYear(year)){//it has been OnsiteYear years from the death of last author
+                    reason.value = StateChangeReasons.SurpassedAuthorDeath(year);
+                    return FOR_REVIEW;
+                }
+                else return null;
+            }
+            else if (currentDoc.dateIssuedYear() != null) {
+                int year = currentDoc.dateIssuedYear();
+                if  (wConfig.isPublicYear(year)){//Last author not specified and was PublicYear years already
+                    reason.value = StateChangeReasons.SurpassedIssued(year);
+                    return FOR_REVIEW;
+                }
+                else return null;//Its either too early or was already Controlled.
+            }
+            LOGGER.log(Level.INFO,"State was prompted to change, but there is no info to go of off");
             return null;
         }
     },
@@ -101,35 +180,55 @@ public enum States {
     CONTROLLED_UNKNOWN("controlled_unknown", LicensesAssignation.NONE, false) {
 
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
-            return null;
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
+            WorkflowConfig wConfig = config.workflow();
+            if (wConfig==null)return null;
+            if (currentDoc.last_year_death() != null) {
+                //We have new information and the authors are not sufficiently dead yet
+                reason.value = "Probably new information on author";
+                return FOR_REVIEW;
+            }
+            else if (currentDoc.dateIssuedYear() != null) {
+                int year = currentDoc.dateIssuedYear();
+                if  (wConfig.isOnsiteYear(year)){//We got date issued, and it's not even 70 years so we can wait until it makes sense to check it
+                    reason.value = "Probably new information on date issued; "+StateChangeReasons.NotYetIssued(year);
+                    return NONCONTROLLED_PRIVATE;
+                }
+                else if (wConfig.isPublicYear(year)){
+                    reason.value = "Probably new information on date issued; "+StateChangeReasons.SurpassedIssued(year);
+                    return FOR_REVIEW;//There is new information and it may be public now.
+                }
+                else return null; //It was flagged as Unknown likely due to lack of authors. Keep until public
+            }
+            LOGGER.log(Level.INFO,"State was prompted to change, but there is no info to go of off");
+            return null;//Something prompted the change but there in no information to go of off.
         }
 
     },
     CONTROLLED_WO_RIGHTS("controlled_unknown", LicensesAssignation.PUBLIC, false) {
 
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             return null;
         }
     },
     CONTROLLED_UNKNOWN_PUBLIC("controlled_unknown", LicensesAssignation.PUBLIC, false) {
 
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             return null;
         }
     },
     CONTROLLED_BLOCKED("controlled_unknown", LicensesAssignation.NONE, false) {
 
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             return null;
         }
     },
     PARENT_OPEN("parent_open", LicensesAssignation.NONE, true) {
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             return checkChildren(rootPid, solrClient);
         }
 
@@ -140,7 +239,7 @@ public enum States {
     },
     PARENT_CLOSED("parent_closed", LicensesAssignation.NONE, true) {
         @Override
-        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc) {
+        public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             return checkChildren(rootPid, solrClient);
         }
 
@@ -235,7 +334,7 @@ public enum States {
         }
     }
 
-    public abstract States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc);
+    public abstract States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason);
 
     public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState){
         switch (desiredState) {

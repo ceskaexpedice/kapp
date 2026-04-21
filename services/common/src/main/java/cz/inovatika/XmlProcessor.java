@@ -5,17 +5,13 @@ import java.time.Year;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
-import java.util.logging.Level;
+//import java.util.logging.Level;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
-import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
-import cz.inovatika.authors.AuthorData;
+//import cz.inovatika.authors.AuthorData;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import org.apache.commons.lang3.math.NumberUtils;
-//import org.w3c.dom.Element;
 import org.apache.commons.text.similarity.LevenshteinDistance;
-//import org.w3c.dom.NodeList;
 
 //TODO: Rewrite !!
 public class XmlProcessor {
@@ -167,7 +163,7 @@ public class XmlProcessor {
         return result;
     }
 
-    public static void parseDateBasic(SolrInputDocumentWrapper doc, String value, int recordNumber, String Originalvalue) {
+    public static void parseDateBasic(SolrInputDocumentWrapper doc, String value, String where, String Originalvalue,List<String> labels,List<String> notes) {
         value = value.replaceAll("ca\\.?\\s*", "?");//replace ca with ?
         value = value.replaceAll("asi\\s*", "?").trim();
         String[] parts = value.split("-");
@@ -176,7 +172,7 @@ public class XmlProcessor {
                 String yearStart = parts[0].trim();
                 String yearEnd = parts[2].trim();
                 if (yearEnd.length() == 2 || yearEnd.length() == 3) {
-                    yearEnd = "19" + yearEnd; // Assuming 20st century for 2-digit years
+                    yearEnd = "19" + yearEnd; // Assuming 20th century for 2-digit years
                 }
                 add_year_range(
                         yearStart.length() == 4 ? yearStart : yearStart.substring(1),
@@ -239,7 +235,7 @@ public class XmlProcessor {
                         yearStart,
                         confirmedStart,
                         yearEnd,
-                        confirmedEnd, doc);
+                        confirmedEnd, doc,labels,notes);
 
             }
             case 1 -> {
@@ -265,7 +261,7 @@ public class XmlProcessor {
                         year = year.substring(0, 4);
                         confirmed_end = false;
                     } else {
-                        dateFormatError(doc,recordNumber, Originalvalue, value);
+                        dateFormatError(where, Originalvalue, value,labels,notes);
                     }
                 } else if (year.length() == 6 || value.length() == 7) {
                     year = year.substring(1, 5);
@@ -274,50 +270,50 @@ public class XmlProcessor {
                 }
                 if (NumberUtils.isCreatable(year)) {
                     if(!confirmed_start || !confirmed_end){
-                        add_year_range(year, confirmed_start, year, confirmed_end, doc);
+                        add_year_range(year, confirmed_start, year, confirmed_end, doc,labels,notes);
                     }
                     else if (value.contains(year + "-")) {
-                        add_year_since(year, doc, confirmed);
+                        add_year_since(year, doc, confirmed,labels,notes);
                     } else {
-                        addyear(year, doc, confirmed);
+                        addyear(year, doc, confirmed,labels,notes);
                     }
                 } else {
-                    dateFormatError(doc,recordNumber, Originalvalue, value, "Failed to parse date");
+                    dateFormatError(where, Originalvalue, value, Constants.TitlesCollectionFields.Labels.EXCEL_FAILED_TO_PARSE_DATE,labels,notes);
                 }
             }
             default ->
-                dateFormatError(doc,recordNumber, Originalvalue, value);
+                dateFormatError(where, Originalvalue, value,labels,notes);
         }
     }
 
-    private static void dateFormatError(SolrInputDocumentWrapper doc,int recordNumber, String Originalvalue, String value) {
-        dateFormatError(doc,recordNumber,Originalvalue,value,"Unexpected date format");}
+    private static void dateFormatError(String where, String Originalvalue, String value,List<String> labels,List<String> notes) {
+        dateFormatError(where,Originalvalue,value,Constants.TitlesCollectionFields.Labels.UNEXPECTED_DATE_FORMAT,labels,notes);}
 
-    private static void dateFormatError(SolrInputDocumentWrapper doc,int recordNumber, String Originalvalue, String value, String message) {
-        String recNum = (recordNumber > 0) ? (" on row: " + recordNumber) : "";
-        LOGGER.severe(message + recNum + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
-        doc.addField(AppComputedFields.LABELS_FIELD, Constants.TitlesCollectionFields.Labels.EXCEL_FAILED_TO_PARSE_DATE);
+    private static void dateFormatError(String where, String Originalvalue, String value, String message,List<String> labels,List<String> notes) {
+        //LOGGER.severe(message + recNum + "\n\tVALUE: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
+        notes.add(message + where + " Hodnota: " + ((Originalvalue.equals(value)) ? Originalvalue : Originalvalue + " _ " + value));
+        labels.add( message);
     }
 
-    static void addyear(String year, SolrInputDocumentWrapper doc, boolean confirmed) {
-        add_year_range(year, confirmed, year, confirmed, doc);
+    static void addyear(String year, SolrInputDocumentWrapper doc, boolean confirmed,List<String> labels,List<String> notes) {
+        add_year_range(year, confirmed, year, confirmed, doc,labels,notes);
     }
 
-    static void add_year_since(String year, SolrInputDocumentWrapper doc, boolean confirmed) {
-        add_year_range(year, confirmed, "1999", false, doc);
+    static void add_year_since(String year, SolrInputDocumentWrapper doc, boolean confirmed,List<String> labels,List<String> notes) {
+        add_year_range(year, confirmed, "1999", false, doc,labels,notes);
     }
 
-    public static void add_year_range(String year_start, boolean confirmed_start, String year_end, boolean confirmed_end, SolrInputDocumentWrapper doc) {
+    public static void add_year_range(String year_start, boolean confirmed_start, String year_end, boolean confirmed_end, SolrInputDocumentWrapper doc,List<String> labels,List<String> notes) {
 
         try {
             int yearStart = Integer.parseInt(year_start);
             int yearEnd = Integer.parseInt(year_end);
             if (yearStart > yearEnd || yearEnd > Year.now().getValue()) {
-                doc.addField(AppComputedFields.LABELS_FIELD, Constants.TitlesCollectionFields.Labels.EXCEL_SUSPICIOUS_YEAR_RANGE);
+                labels.add( Constants.TitlesCollectionFields.Labels.EXCEL_SUSPICIOUS_YEAR_RANGE);
             }
-            doc.addField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_YEAR_FIELD, yearEnd);
-            doc.addField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_END_YEAR_FIELD, yearEnd);
-            doc.addField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_START_YEAR_FIELD, yearStart);
+            doc.setField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_YEAR_FIELD, yearEnd);
+            doc.setField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_END_YEAR_FIELD, yearEnd);
+            doc.setField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_START_YEAR_FIELD, yearStart);
 
             /*
             doc.addField("date_range_start.year", yearStart);
@@ -331,11 +327,11 @@ public class XmlProcessor {
             //doc.addField(AppComputedFields.CONFIRMED_START_YEAR, confirmed_start);
             //doc.addField(AppComputedFields.CONFIRMED_END_YEAR, confirmed_end);
         } catch (NumberFormatException e) {
-            LOGGER.log(Level.SEVERE, "Failed to parse year range: " + year_start + "-" + year_end);
-            doc.addField(AppComputedFields.LABELS_FIELD, Constants.TitlesCollectionFields.Labels.EXCEL_FAILED_TO_PARSE_DATE);
+            notes.add( "Failed to parse year range: " + year_start + "-" + year_end);
+            labels.add( Constants.TitlesCollectionFields.Labels.EXCEL_FAILED_TO_PARSE_DATE);
         }
     }
-
+/*
     public static void trySetLastAuthor(SolrInputDocumentWrapper doc, List<AuthorData> nameIDArray) {
         Object field = doc.getFieldValue("last_author");
         String last_author = field != null ? field.toString() : null;
@@ -352,7 +348,7 @@ public class XmlProcessor {
         } catch (Exception e) {
             LOGGER.log(Level.SEVERE, e.getMessage(),e);
         }
-    }
+    }*/
 
     private static boolean similarityMatch(String catalogNormalizedTitle, String distriNormalizedTitle, double shoda) {
         LevenshteinDistance dist = LevenshteinDistance.getDefaultInstance();
@@ -362,13 +358,13 @@ public class XmlProcessor {
         return maxDistance >= calculatedDistance;
     }
 
-    public static String replaceWordsWithQMarks(SolrInputDocumentWrapper doc, String value, int recordNumber, String Originalvalue) {
+    public static String replaceWordsWithQMarks(String value, String where, String Originalvalue,List<String> labels,List<String> notes) {
         if (value.contains("asi")) {
             String year = value.replaceAll("[^0-9]", "");
             if (year.length() == 4) {
                 value = year + "?";
             } else {
-                dateFormatError(doc,recordNumber, Originalvalue, value);
+                dateFormatError(where, Originalvalue, value,labels,notes);
             }
         } else if (value.contains("okolo r. 1900")) {
             value = "1900?";
@@ -383,7 +379,7 @@ public class XmlProcessor {
                 case 4 ->
                     value = parts[1] + "-" + parts[3];
                 default ->
-                    dateFormatError(doc,recordNumber, Originalvalue, value);
+                    dateFormatError(where, Originalvalue, value,labels,notes);
             }
         } else if (value.contains("po")) {
             value = value.replace("po roce", "po");
@@ -393,7 +389,7 @@ public class XmlProcessor {
                     .filter(s -> !s.isEmpty())
                     .toArray(String[]::new);
             if (parts.length != 2) {
-                dateFormatError(doc,recordNumber, Originalvalue, value);
+                dateFormatError(where, Originalvalue, value,labels,notes);
 
             } else {
                 String year = parts[1];
@@ -409,7 +405,7 @@ public class XmlProcessor {
             value = value.replaceAll("[\\[\\]]", "");
             String[] parts = value.split(" ");
             if (parts.length != 2) {
-                dateFormatError(doc,recordNumber, Originalvalue, value);
+                dateFormatError(where, Originalvalue, value,labels,notes);
 
             } else {
                 String year = parts[1];
@@ -429,7 +425,7 @@ public class XmlProcessor {
             }
             String[] parts = value.split(" ");
             if (parts.length != 3) {
-                dateFormatError(doc,recordNumber, Originalvalue, value);
+                dateFormatError(where, Originalvalue, value,labels,notes);
             } else {
                 value = parts[0] + "?-" + parts[2] + "?";
             }

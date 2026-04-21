@@ -85,13 +85,21 @@ public class Constants {
             public static final String EXCEL_INCORRECT_LICENSE = "excel_incorrect_license";
             public static final String EXCEL_FAILED_TO_PARSE_DATE = "excel_failed_to_parse_date";
             public static final String EXCEL_SUSPICIOUS_YEAR_RANGE = "excel_suspicious_year_range";
-
+            public static final String UNEXPECTED_DATE_FORMAT = "excel_unexpected date format";
         }
         public static class ModelFields {
             public static final String MONOGRAPH = "monograph";
             public static final String PERIODICAL = "periodical";
             public static final String MONOGRAPHUNIT = "monographunit";
             public static final String PERIODICALVOLUME = "periodicalvolume";
+        }
+        public static class StateChangeReasons{
+            public static String SurpassedIssued(int year){return "Surpassed "+year+" years from date issued";}
+            public static String NotYetIssued(int year){return "Was not yet "+year+" years from date issued";}
+            public static String INCONTRLOWINDOWISSUED = "Within the To_control window of Date issued";
+            public static String SurpassedAuthorDeath(int year){
+                return "Surpassed "+year+" years from author death";
+            }
         }
     }
 }

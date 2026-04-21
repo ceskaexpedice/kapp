@@ -11,13 +11,13 @@ import java.util.Map;
 import static cz.inovatika.Constants.TitlesCollectionFields.*;
 
 public record WorkflowDoc(
-        Integer dateRangeEndYear,
+        Integer dateIssuedYear,
+        Integer last_year_death,
         States state,
         String user,
-        String date,
         String model,
-        boolean isHierarchical,
-        LicensesAssignation assignation
+        boolean isHierarchical//,
+        //LicensesAssignation assignation
 ){
 
     public static final   DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -34,24 +34,24 @@ public record WorkflowDoc(
         idoc.setField(AppComputedFields.STATE_USER_FIELD, this.user);
         idoc.setField(AppComputedFields.STATE_REASON_FIELD,  message);
         idoc.addField(AppComputedFields.STATE_HISTORY_FIELD, historyItem(d, message).toString());
-        switch (this.assignation) {
+        switch (state.getLicensesAssignation()) {
             case PUBLIC -> {
-                idoc.setField(AppComputedFields.DECISION_DATE,dateRangeEndYear);
                 Map<String, Object> operation = new HashMap<>();
                 operation.put("remove", "onsite");
                 operation.put("add-distinct", "public");
                 idoc.getDocument().setField(AppComputedFields.ASSIGNED_LICENSES, operation);
-                //idoc.getDocument().remove(AppComputedFields.ASSIGNED_LICENSES, "onsite");
-                //idoc.getDocument().addField(AppComputedFields.ASSIGNED_LICENSES, "public");
             }
             case ONSITE -> {
-                idoc.setField(AppComputedFields.DECISION_DATE,dateRangeEndYear);
                 Map<String, Object> operation = new HashMap<>();
                 operation.put("remove", "public");
                 operation.put("add-distinct", "onsite");
                 idoc.getDocument().setField(AppComputedFields.ASSIGNED_LICENSES, operation);
-                //idoc.getDocument().remove(AppComputedFields.ASSIGNED_LICENSES, "public");
-                //idoc.getDocument().addField(AppComputedFields.ASSIGNED_LICENSES, "onsite");
+            }
+            case NONE -> {
+                //TODO
+            }
+            case LOCAL -> {
+                //TODO 2
             }
             default -> {
                 //no license assigned

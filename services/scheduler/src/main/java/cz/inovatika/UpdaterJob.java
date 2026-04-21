@@ -4,12 +4,8 @@ import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.impl.UpdaterImpl;
 import org.quartz.DisallowConcurrentExecution;
 import org.quartz.Job;
-import org.quartz.JobDataMap;
 import org.quartz.JobExecutionContext;
 
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.InputStream;
 
 import java.util.logging.Level;
 import java.util.logging.Logger;

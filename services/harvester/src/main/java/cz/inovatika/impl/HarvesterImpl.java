@@ -17,7 +17,6 @@ import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.touchstore.TouchStore;
 import cz.inovatika.dates.normalization.utils.TitleNormalizationUtils;
 import cz.inovatika.utils.XMLUtils;
-import cz.inovatika.workflow.LicensesAssignation;
 import cz.inovatika.workflow.States;
 import cz.inovatika.workflow.Workflow;
 import cz.inovatika.workflow.WorkflowDoc;
@@ -37,7 +36,6 @@ import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
 
 import javax.xml.parsers.ParserConfigurationException;
-import javax.xml.transform.TransformerException;
 import java.io.*;
 import java.net.URI;
 import java.net.http.HttpClient;
@@ -45,7 +43,6 @@ import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.security.NoSuchAlgorithmException;
-import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.*;
@@ -70,7 +67,7 @@ public class HarvesterImpl implements Harvester {
     public static final int NUMBER_OF_THREAD = 4;
     public static final String HTTP_CLIENT_THREAD_KEY = "nkp-http-client-thread-";
 
-
+    final String user = "importer";
     public SolrClient solrClient = null;
     private HttpClient  httpClient = null;
     private ExecutorService  httpClientExecutorService = null;
@@ -144,7 +141,7 @@ public class HarvesterImpl implements Harvester {
             int numberOfResults = 0;
             Element resultElm = XMLUtils.findElement(element, (elm) -> elm.getNodeName().equals("result"));
             if (resultElm != null) {
-                numberOfResults = resultElm.getAttribute("numFound") != null ? Integer.parseInt(resultElm.getAttribute("numFound")) : 0;
+                numberOfResults = Integer.parseInt(resultElm.getAttribute("numFound"));
             }
 
             if (harvestItems.isEmpty()) {
@@ -420,21 +417,12 @@ public class HarvesterImpl implements Harvester {
             String pid = ctx.item().getPid();
             boolean exists = ctx.touchStore().exists(pid);
             if (exists) {
+                SolrInputDocumentWrapper wrapper = getSolrInputDocumentWrapper(ctx,SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
+
+                wrapper.addField(AppComputedFields.DIGITAL_LIBRARY, ctx.config().getAcronym(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_ADD_DISTINCT);
+
+                List<String> cPhysicalLocations = config.getPhysicalLocations();
                 try {
-                    SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
-                            AppDataFields.PID_FIELD,
-                            SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
-
-                    wrapper.setField(AppDataFields.PID_FIELD, ctx.item().getPid());
-
-                    if (ctx.item().getLicenses() != null && ctx.item().getLicenses().length > 0) {
-                        wrapper.addField(AppDataFields.LICENSES_FIELD, Arrays.asList(ctx.item().getLicenses()));
-                        wrapper.addField(String.format("%s%s", AppDataFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), Arrays.asList(ctx.item().getLicenses()));
-                    }
-
-                    wrapper.addField(AppComputedFields.DIGITAL_LIBRARY, ctx.config().getAcronym(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_ADD_DISTINCT);
-
-                    List<String> cPhysicalLocations = config.getPhysicalLocations();
                     List<String> touchStorePhysicalLocations = ctx.touchStore().getPhysicalLocations(pid);
                     if (touchStorePhysicalLocations.isEmpty()) {
                         String rootPid = ctx.touchStore().getRootPid(pid);
@@ -455,61 +443,22 @@ public class HarvesterImpl implements Harvester {
                     }
 
                     if (acceptLibrary) {
-                        InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
-                        if (inputStream == null) {
-                            LOGGER.log(Level.SEVERE, "Failed to get MODS for PID: {0}", ctx.item().getPid());
-                            return;
-                        }
-                        BiblioModsEntity entity = BiblioModsEntity.create(inputStream);
+                        BiblioModsEntity entity = getBiblioModsEntity(config, ctx);
+                        if (entity == null) return;
                         if (ctx.touchStore().isModsChanged(pid, entity.getMd5Sum())) {
                             try {
                                 Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
-
-                                wrapper.addField(AppDataFields.MODEL_FIELD, ctx.item().getModel(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_SET);
-                                if (ctx.item().getRootTitle() != null) {
-                                    wrapper.setField(AppDataFields.ROOT_TITLE_FIELD, ctx.item().getRootTitle());
-                                }
-                                wrapper.setField(AppDataFields.ROOT_PID_FIELD, ctx.item().getRootPid());
-                                wrapper.setField(AppDataFields.TITLE_FIELD, ctx.item().getTitles());
-
-                                wrapper.setField(AppDataFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
-                                wrapper.setField(AppDataFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
-
-                                parseDateRange(wrapper, parsed);
-                                List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("physicalLocation")).stream().map(Element::getTextContent).toList();
-                                if (!physicalLocation.isEmpty()) {
-                                    wrapper.setField(AppDataFields.PHYSICAL_LOCATIONS_FACET_FIELD, physicalLocation);
-                                }
-
-                                // store to touch store
-                                storeToTouchStore(config, ctx, pid, entity, physicalLocation);
-
-                                IdentifierUtils.findIdentifiers(parsed).forEach((k, v) -> wrapper.setField(String.format("id_%s", k), v));
-                                // Authors
-                                processAuthors(wrapper, authorsBuffer, parsed);
-
-                                Integer dateRangeEnd = (Integer) wrapper.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
-
-                                final String user = "importer";
-                                WorkflowDoc workflowDoc = new WorkflowDoc(
-                                        dateRangeEnd,
-                                        States.IMPORTED,
-                                        user,
-                                        LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")),
-                                        ctx.item().getModel(),
-                                        ctx.item().isHierarchical(),
-                                        LicensesAssignation.NONE);
-                                Workflow wf = new Workflow();
+                                WorkflowDoc workflowDoc = buildWorkflowDoc(config,pid,ctx,wrapper, entity, parsed,authorsBuffer);
 
                                 // state differs
                                 JSONObject oldDoc = getExistingDocument((String) wrapper.document().getFieldValue(AppDataFields.PID_FIELD));
                                 if (oldDoc != null && oldDoc.has("state")) {
                                     String oldState = oldDoc.getString("state");
-                                    States newState = wf.calculateAutomaticTransition(ctx, workflowDoc);
+                                    States newState = Workflow.calculateAutomaticTransition(ctx, workflowDoc);
                                     // only NONCONTROLLED -> TO_CONTROL
                                     String message = String.format("Imported from '%s'", config.getUrl());
                                     if (oldState != null && !oldState.equals(newState.name())) {
-                                        wf.executeTransition( workflowDoc, user, message, wrapper,newState);
+                                        Workflow.executeTransition( workflowDoc, user, message, wrapper,newState);
                                     }
                                 }
                             } catch (ParserConfigurationException | SAXException e) {
@@ -527,73 +476,28 @@ public class HarvesterImpl implements Harvester {
             } else {
 
                 //Stopwatch sw = Stopwatch.createStarted();
-                SolrInputDocumentWrapper doc = new SolrInputDocumentWrapper(
-                        AppDataFields.PID_FIELD,
-                        SolrInputDocumentWrapper.TypeOfChange.SIMPLE);
-
-                doc.setField(AppDataFields.PID_FIELD, ctx.item().getPid());
-                doc.addField(AppDataFields.LICENSES_FIELD, ctx.item().getLicenses());
-                doc.addField(String.format("%s%s", AppDataFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), ctx.item().getLicenses());
-                doc.setField(AppDataFields.MODEL_FIELD, ctx.item().getModel());
-                if (ctx.item().getRootTitle() != null) {
-                    doc.setField(AppDataFields.ROOT_TITLE_FIELD, ctx.item().getRootTitle());
-                }
-                doc.setField(AppDataFields.ROOT_PID_FIELD, ctx.item().getRootPid());
-                doc.setField(AppDataFields.TITLE_FIELD, ctx.item().getTitles());
-                doc.setField(AppComputedFields.IS_HIERARCHICAL_FIELD, ctx.item().isHierarchical());
-
+                SolrInputDocumentWrapper doc = getSolrInputDocumentWrapper(ctx,SolrInputDocumentWrapper.TypeOfChange.SIMPLE);
                 doc.addField(AppComputedFields.DIGITAL_LIBRARY, ctx.config().getAcronym());
 
                 try {
-                    InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
-                    if (inputStream == null) {
-                        LOGGER.log(Level.SEVERE, "Failed to get MODS for PID: {0}", ctx.item().getPid());
+                    BiblioModsEntity entity = getBiblioModsEntity(config, ctx);
+                    if (entity == null) return;
+                    Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
+                    if (parsed == null) {
+                        LOGGER.log(Level.SEVERE, "Failed to process MODS for PID: {0}", ctx.item().getPid());
                         return;
                     }
-                    BiblioModsEntity entity = BiblioModsEntity.create(inputStream);
-                    Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
-                    if (parsed != null) {
+                    WorkflowDoc workflowDoc = buildWorkflowDoc(config,pid,ctx,doc, entity, parsed,authorsBuffer);
+                    Workflow.executeTransition(
+                            workflowDoc,
+                            user,
+                            String.format("Imported from '%s'", config.getUrl()),
+                            doc,
+                            Workflow.calculateAutomaticTransition(ctx, workflowDoc)
+                    );
 
-                        doc.setField(AppDataFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
-                        doc.setField(AppDataFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
+                    addToBufferAndSend(createBuffer, authorsBuffer, doc);
 
-                        parseDateRange(doc, parsed);
-                        List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("physicalLocation")).stream().map(Element::getTextContent).toList();
-                        if (!physicalLocation.isEmpty()) {
-                            doc.addField(AppDataFields.PHYSICAL_LOCATIONS_FACET_FIELD, physicalLocation);
-                        }
-
-                        // store to touch store
-                        storeToTouchStore(config, ctx, pid, entity, physicalLocation);
-
-                        IdentifierUtils.findIdentifiers(parsed).forEach((k, v) -> doc.setField(String.format("id_%s", k), v));
-                        // Authors
-                        processAuthors(doc, authorsBuffer, parsed);
-
-                        Integer dateRangeEnd = (Integer) doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
-
-                        final String user = "importer";
-                        String message = String.format("Imported from '%s'", config.getUrl());
-                        WorkflowDoc workflowDoc = new WorkflowDoc(
-                                dateRangeEnd,
-                                States.IMPORTED,
-                                user,
-                                LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")),
-                                ctx.item().getModel(),
-                                ctx.item().isHierarchical(),
-                                LicensesAssignation.NONE);
-                        Workflow workflow = new Workflow();
-                        workflow.executeTransition(
-                                workflowDoc,
-                                user, message,
-                                doc,
-                                workflow.calculateAutomaticTransition(ctx, workflowDoc)
-                        );
-
-                        addToBufferAndSend(createBuffer, authorsBuffer, doc);
-                    } else {
-                        LOGGER.log(Level.SEVERE, "Failed to process MODS for PID: {0}", ctx.item().getPid());
-                    }
                 } catch (final IOException | InterruptedException | NoSuchAlgorithmException |
                                ParserConfigurationException | SAXException e) {
                     LOGGER.severe(e.getMessage());
@@ -604,6 +508,67 @@ public class HarvesterImpl implements Harvester {
 
     }
 
+    private static BiblioModsEntity getBiblioModsEntity(Instance config, HarvesterContext ctx) throws IOException, InterruptedException, NoSuchAlgorithmException {
+        InputStream inputStream = config.getApiVersion().fetchMods(ctx.client(), ctx.config(), ctx.item());
+        if (inputStream == null) {
+            LOGGER.log(Level.SEVERE, "Failed to get MODS for PID: {0}", ctx.item().getPid());
+            return null;
+        }
+        return BiblioModsEntity.create(inputStream);
+    }
+
+    private static SolrInputDocumentWrapper getSolrInputDocumentWrapper(HarvesterContext ctx,SolrInputDocumentWrapper.TypeOfChange typeOfChange) {
+        SolrInputDocumentWrapper doc = new SolrInputDocumentWrapper(
+                AppDataFields.PID_FIELD,
+                typeOfChange
+                );
+
+        doc.setField(AppDataFields.PID_FIELD, ctx.item().getPid());
+        if (ctx.item().getLicenses() != null && ctx.item().getLicenses().length > 0) {
+            List<String> licenses = Arrays.asList(ctx.item().getLicenses());
+            doc.addField(AppDataFields.LICENSES_FIELD, licenses);
+            doc.addField(String.format("%s%s", AppDataFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), licenses);
+        }
+        doc.setField(AppComputedFields.IS_HIERARCHICAL_FIELD, ctx.item().isHierarchical());
+        
+        return doc;
+    }
+
+    private WorkflowDoc buildWorkflowDoc(Instance config,String pid,HarvesterContext ctx,SolrInputDocumentWrapper wrapper, BiblioModsEntity entity, Document parsed,List<SolrInputDocument> authorsBuffer) throws IOException {
+        HarvestingItem hitem = ctx.item();
+        wrapper.setField(AppDataFields.MODEL_FIELD, hitem.getModel());
+        if (hitem.getRootTitle() != null) {
+            wrapper.setField(AppDataFields.ROOT_TITLE_FIELD, hitem.getRootTitle());
+        }
+        wrapper.setField(AppDataFields.ROOT_PID_FIELD, hitem.getRootPid());
+        wrapper.setField(AppDataFields.TITLE_FIELD, hitem.getTitles());
+        wrapper.setField(AppDataFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
+        wrapper.setField(AppDataFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
+
+        parseDateRange(wrapper, parsed);
+        List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("physicalLocation")).stream().map(Element::getTextContent).toList();
+        if (!physicalLocation.isEmpty()) {
+            wrapper.addField(AppDataFields.PHYSICAL_LOCATIONS_FACET_FIELD, physicalLocation);
+        }
+        // store to touch store
+        storeToTouchStore(config, ctx, pid, entity, physicalLocation);
+
+        IdentifierUtils.findIdentifiers(parsed).forEach((k, v) -> wrapper.setField(String.format("id_%s", k), v));
+        // Authors
+        processAuthors(wrapper, authorsBuffer, parsed);
+        Integer dateRangeEnd = (Integer) wrapper.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
+        Integer last_year_death = (Integer) wrapper.getFieldValue(AppComputedFields.LAST_YEAR_DEATH);
+
+        return new WorkflowDoc(
+                dateRangeEnd,
+                last_year_death,
+                States.IMPORTED,
+                user,
+                ctx.item().getModel(),
+                ctx.item().isHierarchical()//, States.IMPORTED.getLicensesAssignation()
+        );
+    }
+
     private void storeToTouchStore(Instance config, HarvesterContext ctx, String pid, BiblioModsEntity entity, List<String> physicalLocation) throws IOException {
         ctx.touchStore().touch(pid, entity.getMd5Sum(), config.getAcronym(), ctx.item().getRootPid(), physicalLocation);
         ctx.touchStore().storeMods(pid, entity.getBiblioMods().trim());
@@ -611,7 +576,7 @@ public class HarvesterImpl implements Harvester {
 
     private void processAuthors(SolrInputDocumentWrapper doc, List<SolrInputDocument> authorsBuffer, Document parsed) {
         List<AuthorData> authorData = AuthorDataUtils.parseAuthorData(parsed);
-        if (authorData != null && !authorData.isEmpty()) {
+        if (!authorData.isEmpty()) {
             doc.addField(AppDataFields.AUTHORS_FIELD, authorData.stream().map(AuthorData::getFull).toList());
         }
 

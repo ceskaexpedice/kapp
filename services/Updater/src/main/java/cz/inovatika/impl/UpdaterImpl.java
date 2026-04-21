@@ -1,11 +1,120 @@
 package cz.inovatika.impl;
 
+import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
+import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import cz.inovatika.Updater;
 import cz.inovatika.conf.ApplicationConfig;
+import cz.inovatika.solr.SolrInputDocumentWrapper;
+import cz.inovatika.workflow.States;
+import cz.inovatika.workflow.StringWrapper;
+import cz.inovatika.workflow.Workflow;
+import cz.inovatika.workflow.WorkflowDoc;
+import org.apache.solr.client.solrj.SolrClient;
+import org.apache.solr.client.solrj.SolrServerException;
+import org.apache.solr.client.solrj.impl.Http2SolrClient;
+import org.apache.solr.client.solrj.response.QueryResponse;
+import org.apache.solr.common.SolrDocument;
+import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.ModifiableSolrParams;
+
+import java.io.IOException;
+import java.time.Year;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import static cz.inovatika.Constants.Collection.TITLES_COLLECTION;
 
 public class UpdaterImpl implements Updater {
+    public static final Logger LOGGER = Logger.getLogger(UpdaterImpl.class.getName());
+    public SolrClient solrClient = null;
+    final int IN_BATCHSIZE = 100;
+    final int OUT_BATCHSIZE = 200;
+    final String USER = "Updater";
+
     @Override
     public void start(ApplicationConfig applicationConfig) {
+        if (solrClient == null) {
+            this.solrClient = buildSolrClient(applicationConfig);
+        }
+        try {
+            String cursorMark = "*";
+            boolean done = false;
+            int currentYear = Year.now().getValue();
+            int threshold =  currentYear - applicationConfig.workflow().getPublicYear();
+            System.out.println(currentYear);
+            System.out.println(threshold);
 
+
+            while (!done) {
+                ModifiableSolrParams params = new ModifiableSolrParams();
+                params.set("q", "*:*");
+                params.set("rows", IN_BATCHSIZE);
+                params.set("cursorMark", cursorMark);
+                params.set("sort", "pid asc");
+                params.add("fq", AppComputedFields.ASSIGNED_LICENSES+":onsite");
+                params.add("fq", AppComputedFields.DATE_ISSUED_YEAR+":{ * TO "+threshold+"}");
+
+                QueryResponse response = solrClient.query(TITLES_COLLECTION, params);
+
+                String nextCursorMark = response.getNextCursorMark();
+
+                List<SolrInputDocument> batch = new ArrayList<>();
+                for (SolrDocument doc : response.getResults()) {
+                    String pid = (String) doc.getFieldValue(AppDataFields.PID_FIELD);
+                    Object dateIssuedObj = doc.getFieldValue(AppDataFields.DATE_ISSUED_YEAR_FIELD);
+                    Object lastYearDeathObj = doc.getFieldValue(AppComputedFields.LAST_YEAR_DEATH);
+                    WorkflowDoc workflowDoc = new WorkflowDoc(
+                            dateIssuedObj!=null? Integer.parseInt(dateIssuedObj.toString()):null,
+                            lastYearDeathObj!=null?Integer.parseInt(lastYearDeathObj.toString()):null,
+                            States.valueOf(doc.getFieldValue(AppComputedFields.STATE_FIELD).toString()),
+                            USER,
+                            doc.getFieldValue(AppDataFields.MODEL_FIELD).toString(),
+                            Boolean.getBoolean(doc.getFieldValue(AppComputedFields.IS_HIERARCHICAL_FIELD).toString())//,state.getLicensesAssignation()
+                    );
+                    StringWrapper reason = new StringWrapper("unspecified") ;
+                    States newState = workflowDoc.state().calculateNextState(doc.getFieldValue(AppDataFields.ROOT_PID_FIELD).toString(),solrClient,applicationConfig,workflowDoc,reason);
+                    if (newState==null)continue;
+                    if (newState != workflowDoc.state())
+                        System.out.println(
+                                "Found book with pid: "+pid
+                                        +"\n\t that had state: "+workflowDoc.state()+" that got changed to: "+newState);
+
+                    SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(pid, SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
+                    updateDoc.getDocument().setField(AppDataFields.PID_FIELD, pid);
+                    Workflow.executeTransition(workflowDoc,USER,reason.value,updateDoc,newState);
+
+
+                    batch.add(updateDoc.getDocument());
+
+                    // send batch
+                    if (batch.size() >= OUT_BATCHSIZE) {
+                        solrClient.add(TITLES_COLLECTION, batch);
+                        batch.clear();
+                    }
+                }
+
+                if (!batch.isEmpty()) {
+                    solrClient.add(TITLES_COLLECTION, batch);
+                }
+
+                solrClient.commit(TITLES_COLLECTION);
+
+                if (cursorMark.equals(nextCursorMark)) {
+                    done = true;
+                }
+                cursorMark = nextCursorMark;
+            }
+        } catch (SolrServerException | IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+    private static Http2SolrClient buildSolrClient(ApplicationConfig applicationConfig) {
+        return new Http2SolrClient.Builder(applicationConfig.solr().getUrl())
+                .withConnectionTimeout(200, TimeUnit.SECONDS)
+                .withIdleTimeout(5, TimeUnit.MINUTES)
+                .withRequestTimeout(5, TimeUnit.MINUTES).useHttp1_1(true)
+                .build();
     }
 }
