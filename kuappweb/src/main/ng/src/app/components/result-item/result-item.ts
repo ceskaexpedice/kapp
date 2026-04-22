@@ -48,6 +48,8 @@ export class ResultItem {
   editingDate = signal(false);
   lastYearDeath: number;
   note: string;
+  noteRows = 3;
+  noteWidth = 200;
 
   mergedAuthors: AuthorTitle[] = [];
 
@@ -61,7 +63,12 @@ export class ResultItem {
     effect(() => {
       this.labels = [];
       let doc = this.doc();
-
+      if (this.doc()['note']) {
+        this.note = this.doc()['note'].join("\n");
+        const lines = this.note.split('\n');
+        this.noteRows = lines.length > 2 ? lines.length : 3;
+      }
+      
       //this.hasCollapsed = this.doc()['is_hierarchical'];
       if (this.doc()['labels']) {
         this.doc()['labels'].forEach((name: string) => {
@@ -95,10 +102,10 @@ export class ResultItem {
     }
     if (d['authors_kramerius']) {
       d['authors_kramerius'].forEach((ak: AuthorTitle) => {
-        if (!mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.old_id) &&
-          !mergedAuthors.find((ma: any) =>  ak.id && ak.id === ma.id) &&
-          !mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.nameIdentifier) &&
-          !mergedAuthors.find((ma: any) => ak.nameIdentifier &&  ak.nameIdentifier === ma.old_id)) {
+        if (!mergedAuthors.find((ma: any) => ak.id && ak.id === ma.old_id) &&
+          !mergedAuthors.find((ma: any) => ak.id && ak.id === ma.id) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier && ak.nameIdentifier === ma.nameIdentifier) &&
+          !mergedAuthors.find((ma: any) => ak.nameIdentifier && ak.nameIdentifier === ma.old_id)) {
           mergedAuthors.push(ak);
         }
 
@@ -124,12 +131,12 @@ export class ResultItem {
         resp.response.docs.filter((d: any) => d['pid'] != d['root_pid']);
         let relatedDocs = resp.response.docs.filter((d: any) => d['pid'] != d['root_pid']);
         const sortedDocs = relatedDocs
-        .filter((d: any) => d['pid'] !== d['root_pid'])
-        .sort((a: any, b: any) => {
-          const titleA = (a['root.title'] || '').toLowerCase();
-          const titleB = (b['root.title'] || '').toLowerCase();
-          return titleA.localeCompare(titleB, 'cs'); // 'cs' zajisti spravne ceske razeni (c vs c)
-        });
+          .filter((d: any) => d['pid'] !== d['root_pid'])
+          .sort((a: any, b: any) => {
+            const titleA = (a['root.title'] || '').toLowerCase();
+            const titleB = (b['root.title'] || '').toLowerCase();
+            return titleA.localeCompare(titleB, 'cs'); // 'cs' zajisti spravne ceske razeni (c vs c)
+          });
 
         this.related.set(sortedDocs);
 
@@ -139,11 +146,11 @@ export class ResultItem {
 
   infoAuthor(a: AuthorTitle) {
     const data: AuthorTitleDialogData = {
-      pid:this.doc().pid, 
-      authors_kapp:this.doc().authors_kapp, 
-      authors_kramerius: this.doc().authors_kramerius,  
+      pid: this.doc().pid,
+      authors_kapp: this.doc().authors_kapp,
+      authors_kramerius: this.doc().authors_kramerius,
       id: a.id,
-      ids: this.doc().authors_ids, 
+      ids: this.doc().authors_ids,
       nameIdentifiers: this.doc().nameIdentifiers
     }
     const dialogRef = this.dialog.open(AuthorTitleDialog, {
@@ -164,11 +171,11 @@ export class ResultItem {
 
   addAuthor() {
     const data: AuthorTitleDialogData = {
-      pid: this.doc().pid, 
-      authors_kapp: this.doc().authors_kapp, 
-      authors_kramerius: this.doc().authors_kramerius,  
+      pid: this.doc().pid,
+      authors_kapp: this.doc().authors_kapp,
+      authors_kramerius: this.doc().authors_kramerius,
       id: null,
-      ids: this.doc().authors_ids, 
+      ids: this.doc().authors_ids,
       nameIdentifiers: this.doc().nameIdentifiers
     }
     const dialogRef = this.dialog.open(AuthorTitleDialog, {
@@ -219,7 +226,7 @@ export class ResultItem {
   }
 
   addToBatch(b: Batch) {
-      this.saveDocBatch(b.name);
+    this.saveDocBatch(b.name);
   }
 
   saveDocBatch(bs: string) {
@@ -241,7 +248,7 @@ export class ResultItem {
   setState() {
 
     const dialogRef = this.dialog.open(StateDialog, {
-      data: {isBatch: false, doc: this.doc()},
+      data: { isBatch: false, doc: this.doc() },
       panelClass: "app-dialog-state"
     });
 
@@ -263,7 +270,7 @@ export class ResultItem {
 
   editNote() {
     if (this.doc()['note']) {
-      this.note = this.doc()['note'];
+      this.note = this.doc()['note'].join("\n");
     }
     this.editingNote.set(true)
   }
@@ -273,7 +280,7 @@ export class ResultItem {
   }
 
   saveNote() {
-    
+
     this.service.saveTitleNote(this.doc().pid, this.note).subscribe((res: any) => {
       console.log(res)
     })
@@ -291,7 +298,7 @@ export class ResultItem {
   }
 
   saveLastYearDeath() {
-    
+
     this.service.saveLastYearDeath(this.doc().pid, this.lastYearDeath).subscribe((res: any) => {
       console.log(res)
     })

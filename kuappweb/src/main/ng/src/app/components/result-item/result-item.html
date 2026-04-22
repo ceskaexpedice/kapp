@@ -110,22 +110,15 @@
 
 
     @if (state.user()) {
-		<div class="app-metadata-row">
+		<div class="app-metadata-row" style="align-items: baseline;">
 			<span class="app-label">{{ 'field.note' | translate }}:</span>
-
 			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
+				<textarea [disabled]="!editingNote()" [(ngModel)]="note" matInput [rows]="noteRows" [style.width]="noteWidth"></textarea>
 				@if (editingNote()) {
-					<input [(ngModel)]="note" matInput />
 					<a (click)="saveNote()" class="app-value"><mat-icon>save</mat-icon></a>
 					<a (click)="closeEditingNote()" class="app-value"><mat-icon>cancel</mat-icon></a>
 				} @else {
-					<div class="app-value">
-						<span>{{ doc()['note']}}</span>
-						
-    				@if (state.user()) {
-						<a (click)="editNote()" class="app-value"><mat-icon>edit</mat-icon></a>
-					}
-					</div>	
+    			<a (click)="editNote()" class="app-value"><mat-icon>edit</mat-icon></a>
 				}
 			</div>
 		</div>
