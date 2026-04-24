@@ -21,6 +21,7 @@ import { FormsModule } from '@angular/forms';
 import { DatePipe } from '@angular/common';
 import { AuthorTitleDialog, AuthorTitleDialogData } from '../author-title-dialog/author-title-dialog';
 import { MatListModule } from "@angular/material/list";
+import { isIndexSignatureDeclaration } from 'typescript';
 
 @Component({
   selector: 'app-result-item',
@@ -52,6 +53,7 @@ export class ResultItem {
   noteWidth = 200;
 
   mergedAuthors: AuthorTitle[] = [];
+  lastAuthor: string;
 
   constructor(
     private router: Router,
@@ -61,6 +63,9 @@ export class ResultItem {
     public config: AppConfiguration
   ) {
     effect(() => {
+
+      //pridat vsechny pole z indexu
+
       this.labels = [];
       let doc = this.doc();
       if (this.doc()['note']) {
@@ -81,6 +86,8 @@ export class ResultItem {
       }
 
       this.mergedAuthors = [...this.setMergedAuthors(this.doc())];
+      const hasLast = this.mergedAuthors.find(a => a.isLast)
+      this.lastAuthor = hasLast ? hasLast.full : '';
 
       if (this.doc()['is_hierarchical']) {
         this.hasCollapsed = true;
@@ -303,8 +310,7 @@ export class ResultItem {
   }
 
   saveLastYearDeath() {
-
-    this.service.saveLastYearDeath(this.doc().pid, this.lastYearDeath).subscribe((res: any) => {
+    this.service.saveLastYearDeath(this.doc().pid, this.lastYearDeath, this.doc().authors_kapp).subscribe((res: any) => {
       console.log(res)
     })
   }

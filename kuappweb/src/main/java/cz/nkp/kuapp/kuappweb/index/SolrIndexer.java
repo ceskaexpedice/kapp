@@ -182,7 +182,9 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
 
-            addAtomicField(doc, "set", js.getInt("lastYearDeath"), "last_year_death");
+            addAtomicField(doc, "set", js.getInt("lastYearDeath"), "last_year_death");            
+            addAtomicField(doc, "set", js.getJSONArray("authors").toString(), "authors_kapp");
+            
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
 
             solr.add("titles", doc);

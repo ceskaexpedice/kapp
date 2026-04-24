@@ -266,7 +266,6 @@ export class AuthorTitleDialog {
   }
 
   save(inAuthors: boolean): void {
-    console.log(this.author());
     if (this.author().id !== this.data.id) {
       this.author().old_id = this.data.id;
     }
@@ -297,7 +296,6 @@ export class AuthorTitleDialog {
       if (res.error) {
         this.ui.showErrorSnackBar('snackbar.record_saved.error');
       } else {
-        console.log(this.author());
         this.ui.showInfoSnackBar('snackbar.record_saved.success');
         this.hasChanges = true;
       }
@@ -306,13 +304,21 @@ export class AuthorTitleDialog {
 
   setAsLast() {
     if (this.author().year_death) {
-      this.service.saveLastYearDeath(this.data.pid, this.author().year_death).subscribe((res: any) => {
+      this.author().isLast = true;
+      
+      //ulozit vsechny autory. jen jeden je last this.author().id
+      const authors = this.data.authors_kapp ? [...this.data.authors_kapp.filter(a => a.id !== this.author().id)] : [];
+      authors.forEach(a => {a.isLast = false});
+      authors.push(JSON.parse(JSON.stringify(this.author())));
+
+      this.service.saveLastYearDeath(this.data.pid, this.author().year_death, authors).subscribe((res: any) => {
         this.hasChanges = true;
         if (res.error) {
           this.ui.showErrorSnackBar('snackbar.record_changed.error');
         } else {
-          console.log(res);
-          this.ui.showInfoSnackBar('snackbar.record_changed.success');
+          this.save(false);
+          // console.log(res);
+          // this.ui.showInfoSnackBar('snackbar.record_changed.success');
         }
       })
     }

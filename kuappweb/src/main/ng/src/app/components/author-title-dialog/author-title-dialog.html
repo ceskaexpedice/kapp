@@ -101,7 +101,7 @@
 	}
 </mat-dialog-content>
 <mat-dialog-actions>
-	@if (state.user() && !useKramerius) {
+	@if (state.user()) {
 		@if(isNew()) {
 		<button matButton="outlined" (click)="addById()">{{ 'action.add_author_by_id' | translate }}</button>
 		}

@@ -39,7 +39,7 @@
 				@for(a of mergedAuthors; track $index) {
 						<mat-list-item>
 							<a (click)="infoAuthor(a)" class="app-value">
-								<span [class.app-removed]="a.removed">{{ a.full }} {{ a.date }} ({{ a.role }})</span>
+								<span [class.app-removed]="a.removed" [class.app-last-author]="a.isLast">{{ a.full }} {{ a.date }} ({{ a.role }})</span>
 							</a>
 						</mat-list-item>
 					}
@@ -53,11 +53,25 @@
 		</div>
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.last_author' | translate }}:</span>
-			<span class="app-value">{{ doc()['last_author']}}</span>
+			<span class="app-value">{{ lastAuthor }}</span>
 		</div>
 		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.year_of_death_last_author' | translate }}:</span>
-			<span class="app-value">{{ doc()['year_of_death_last_author'] }}</span>
+			<span class="app-label">{{ 'field.last_year_death' | translate }}:</span>
+			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
+				@if (editingDate()) {
+					<input [(ngModel)]="lastYearDeath" matInput />
+					<a (click)="saveLastYearDeath()" class="app-value"><mat-icon>save</mat-icon></a>
+					<a (click)="closeEditingDate()" class="app-value"><mat-icon>cancel</mat-icon></a>
+				} @else {
+					<div class="app-value">
+						<span>{{ doc()['last_year_death']}}</span>
+						
+    				@if (state.user()) {
+						<a (click)="editLastYearDeath()" class="app-value"><mat-icon>edit</mat-icon></a>
+					}
+					</div>	
+				}
+			</div>
 		</div>
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.pid' | translate }}:</span>
@@ -102,6 +116,31 @@
 			<span class="app-value"><b>{{ doc()['digital_library']}}</b></span>
 		</div>
 
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.id_urnnbn' | translate }}:</span>
+			<span class="app-value"><b>{{ doc()['id_urnnbn']}}</b></span>
+		</div>
+
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.id_ccnb' | translate }}:</span>
+			<span class="app-value"><b>{{ doc()['id_ccnb']}}</b></span>
+		</div>
+
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.id_sysno' | translate }}:</span>
+			<span class="app-value"><b>{{ doc()['id_sysno']}}</b></span>
+		</div>
+
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.id_isbn' | translate }}:</span>
+			<span class="app-value"><b>{{ doc()['id_isbn']}}</b></span>
+		</div>
+
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.id_barCode' | translate }}:</span>
+			<span class="app-value"><b>{{ doc()['id_barCode']}}</b></span>
+		</div>
+
 
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.licenses' | translate }}:</span>
@@ -123,24 +162,7 @@
 			</div>
 		</div>
 	}
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.last_year_death' | translate }}:</span>
-			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
-				@if (editingDate()) {
-					<input [(ngModel)]="lastYearDeath" matInput />
-					<a (click)="saveLastYearDeath()" class="app-value"><mat-icon>save</mat-icon></a>
-					<a (click)="closeEditingDate()" class="app-value"><mat-icon>cancel</mat-icon></a>
-				} @else {
-					<div class="app-value">
-						<span>{{ doc()['last_year_death']}}</span>
-						
-    				@if (state.user()) {
-						<a (click)="editLastYearDeath()" class="app-value"><mat-icon>edit</mat-icon></a>
-					}
-					</div>	
-				}
-			</div>
-		</div>
+		
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.release_date' | translate }}:</span>
 			<div class="app-value">
