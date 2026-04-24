@@ -128,7 +128,7 @@ public class AUTIndexer {
                 json = XML.toJSONObject(xml, XMLParserConfiguration.ORIGINAL);
                 processResponse(xml, json, ret, solr);
                 LOGGER.log(Level.INFO, "Indexing AUT. Current {0}", ret.getInt("aut"));
-                hasResumption = json.getJSONObject("OAI-PMH").getJSONObject("ListRecords").optString("resumptionToken") != null;
+                hasResumption = json.getJSONObject("OAI-PMH").getJSONObject("ListRecords").optString("resumptionToken", null) != null;
                 Thread.sleep(100);
                 //hasResumption = false;
             }

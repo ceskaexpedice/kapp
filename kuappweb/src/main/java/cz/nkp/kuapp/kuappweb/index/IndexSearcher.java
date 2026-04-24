@@ -61,7 +61,7 @@ public class IndexSearcher {
         return ret;
     }
             
-    final static String release_date = "sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),51,101))";
+    final static String release_date = "if(exists(last_year_death),sum(last_year_death, 71),sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101)))";
     public static JSONObject searchTitles(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
