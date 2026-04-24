@@ -39,7 +39,7 @@
 			@if(editing()) {
 				<mat-form-field appearance="outline">
 					<mat-label>{{ 'field.year_birth' | translate }}</mat-label>
-					<input matInput [(ngModel)]="author.year_birth" />
+					<input matInput [(ngModel)]="author.year_birth" (ngModelChange)="setFull()" />
 				</mat-form-field>
 			} @else {
 				<span class="app-label">{{ 'field.year_birth' | translate }}:</span>
@@ -50,7 +50,7 @@
 			@if(editing()) {
 				<mat-form-field appearance="outline">
 					<mat-label>{{ 'field.year_death' | translate }}</mat-label>
-					<input matInput [(ngModel)]="author.year_death" />
+					<input matInput [(ngModel)]="author.year_death" (ngModelChange)="setFull()" />
 				</mat-form-field>
 			} @else {
 				<span class="app-label">{{ 'field.year_death' | translate }}:</span>

@@ -59,7 +59,7 @@ export class AuthorItem {
     private config: AppConfiguration
   ) {
     effect(() => {
-      this.author = this.inputAuthor();
+      this.author = Object.assign({}, this.inputAuthor());
       if (this.author.nameIdentifier) {
         this.getLinks();
       }
@@ -214,7 +214,6 @@ export class AuthorItem {
   }
 
   save() {
-
     this.loading.set(true);
     if (this.author.id !== this.inputAuthor().id) {
       this.author.old_id = this.inputAuthor().id;
