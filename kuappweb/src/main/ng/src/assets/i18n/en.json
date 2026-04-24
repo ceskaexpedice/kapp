@@ -194,9 +194,14 @@
   "alert": {
     "warn_contract": "Are you sure you want to assign the work to the contract?",
     "batch_exist": "This batche already exists!",
+    "name_empy": "The name is empty!",
+    "saving_author_differs": "Prepsat autora?",
+    "saving_author_differs_desc": "Autor jiz existuje a ma rozdily?",
+    "saving_author_exists": "Autor existuje?",
+    "saving_author_exists_desc": "Autor s timto ID jiz existuje. Opravdu chcete uložit?",
     "remove_author": "Remove author?",
     "remove_author_desc": "Are you sure you want to remove the author from this title?",
-    "name_empy": "The name is empty!",
+    "name_empty": "Název je prázdný!",
     "pid_not_found": "V aplikaci neni zadny zaznam s timto PIDem"
    }
 }

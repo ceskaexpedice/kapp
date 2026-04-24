@@ -276,7 +276,12 @@ export class ResultItem {
   }
 
   closeEditingNote() {
-    this.editingNote.set(false)
+    this.editingNote.set(false);
+    if (this.doc()['note']) {
+      this.note = this.doc()['note'].join("\n");
+    } else {
+      this.note = '';
+    }
   }
 
   saveNote() {

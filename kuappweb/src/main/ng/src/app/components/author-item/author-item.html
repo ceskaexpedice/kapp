@@ -7,7 +7,7 @@
 	<mat-card-header>
 		<mat-card-title>
 			<div class="app-fxLayout app-row app-gap-1">
-				<div class="app-fxFlex" [title]="author['id']">{{ author['full']}}</div>
+				<div class="app-fxFlex" [title]="author['id']">{{ author['full']}} ({{ author.id }})</div>
 				<mat-chip-set>
 					@for(l of labels; track $index) {
 					<mat-chip [style.background-color]="l.color" style="--mat-chip-label-text-color: {{l.text_color}};"
@@ -112,7 +112,7 @@
 		<div class="app-fxLayout app-row app-gap-2">
 			@if(numTitles()) {<button matButton (click)="gotoTitles()" class="app-mr-1">{{ 'action.show_titles' | translate }} ({{ numTitles() }})</button>}
 			@if (state.user()) {
-			<button matButton="outlined" [disabled]="loading()" (click)="save()">{{ 'action.save' | translate }}<mat-icon matSuffix>save</mat-icon></button>
+			<button matButton="outlined" [disabled]="loading()" (click)="onSave()">{{ 'action.save' | translate }}<mat-icon matSuffix>save</mat-icon></button>
 			<button matButton="outlined" (click)="toggleEdit()" >{{ 'action.edit' | translate }}<mat-icon matSuffix>edit</mat-icon></button>
 			}
 		</div>
