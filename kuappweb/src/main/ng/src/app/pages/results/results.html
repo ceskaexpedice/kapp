@@ -104,6 +104,51 @@
               </td>
             </ng-container>
 
+            <ng-container matColumnDef="id_isbn">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_isbn')" [style.width]="columnSizes['id_isbn'] + 'px'"><span mat-sort-header>{{ 'field.id_isbn' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_isbn }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="id_ccnb">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_ccnb')" [style.width]="columnSizes['id_ccnb'] + 'px'"><span mat-sort-header>{{ 'field.id_ccnb' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_ccnb }}
+              </td>
+            </ng-container>
+            
+
+            <ng-container matColumnDef="id_issn">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_issn')" [style.width]="columnSizes['id_issn'] + 'px'"><span mat-sort-header>{{ 'field.id_issn' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_issn }}
+              </td>
+            </ng-container>
+            
+
+            <ng-container matColumnDef="id_sysno">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_sysno')" [style.width]="columnSizes['id_sysno'] + 'px'"><span mat-sort-header>{{ 'field.id_sysno' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_sysno }}
+              </td>
+            </ng-container>
+            
+            <ng-container matColumnDef="id_urnnbn">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_urnnbn')" [style.width]="columnSizes['id_urnnbn'] + 'px'"><span mat-sort-header>{{ 'field.id_urnnbn' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_urnnbn }}
+              </td>
+            </ng-container>
+            
+
+            <ng-container matColumnDef="id_barCode">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_barCode')" [style.width]="columnSizes['id_barCode'] + 'px'"><span mat-sort-header>{{ 'field.id_barCode' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_barCode }}
+              </td>
+            </ng-container>
+
             <ng-container matColumnDef="state">
               <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'state')" [style.width]="columnSizes['state'] + 'px'"><span mat-sort-header>{{ 'field.state' | translate }}</span></th>
               <td mat-cell *matCellDef="let doc">

@@ -66,7 +66,14 @@
         {"field": "assigned_licenses", "selected": false},
         {"field": "licenses", "selected": false},
         {"field": "digital_library", "selected": false},
-        {"field": "sigla", "selected": true}
+        {"field": "id_ccnb", "selected": false},
+        {"field": "id_urnnbn", "selected": false},
+        {"field": "id_isbn", "selected": false},
+        {"field": "id_issn", "selected": false},
+        {"field": "id_barCode", "selected": false},
+        {"field": "id_sysno", "selected": false},
+        {"field": "sigla", "selected": false}
+
     ],
 
     "contractColumns": [
