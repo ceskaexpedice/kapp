@@ -178,11 +178,11 @@ public class IndexSearcher {
             }
 
             if (request.getParameter("labels") != null) {
-                jrequest = jrequest.withFilter("labels:" + request.getParameter("labels"));
+                jrequest = jrequest.withFilter("labels:\"" + request.getParameter("labels") + "\"");
             }
 
             if (request.getParameter("contracts") != null) {
-                jrequest = jrequest.withFilter("contracts:" + request.getParameter("contracts"));
+                jrequest = jrequest.withFilter("contracts:\"" + request.getParameter("contracts") + "\"");
             }
 
             if (request.getParameter("licenses") != null) {
