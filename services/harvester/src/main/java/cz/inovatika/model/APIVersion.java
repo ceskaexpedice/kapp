@@ -117,9 +117,7 @@ public enum APIVersion {
                 return (nodeName.equals("arr") && name.equals("dnnt-labels"));
             });
             if (dnntLabels != null) {
-                List<String> elementsRecursive = XMLUtils.getElementsRecursive(dnntLabels, elm -> {
-                    return elm.getNodeName().equals("str");
-                }).stream().map(Element::getTextContent).toList();
+                List<String> elementsRecursive = XMLUtils.getElementsRecursive(dnntLabels, elm -> elm.getNodeName().equals("str")).stream().map(Element::getTextContent).toList();
                 licenses.addAll(elementsRecursive);
             }
 
@@ -252,9 +250,7 @@ public enum APIVersion {
                 return (nodeName.equals("arr") && name.equals("licenses"));
             });
             if (dLicenses != null) {
-                List<String> elementsRecursive = XMLUtils.getElementsRecursive(dLicenses, elm -> {
-                    return elm.getNodeName().equals("str");
-                }).stream().map(Element::getTextContent).toList();
+                List<String> elementsRecursive = XMLUtils.getElementsRecursive(dLicenses, elm -> elm.getNodeName().equals("str")).stream().map(Element::getTextContent).toList();
                 licenses.addAll(elementsRecursive);
             }
 
@@ -263,9 +259,7 @@ public enum APIVersion {
                 return (elm.getNodeName().equals("arr") && name.equals("licenses_of_ancestors"));
             });
             if (aLicenses != null) {
-                List<String> elementsRecursive = XMLUtils.getElementsRecursive(aLicenses, elm -> {
-                    return elm.getNodeName().equals("str");
-                }).stream().map(Element::getTextContent).toList();
+                List<String> elementsRecursive = XMLUtils.getElementsRecursive(aLicenses, elm -> elm.getNodeName().equals("str")).stream().map(Element::getTextContent).toList();
                 for (String l : elementsRecursive) {
                     if (!licenses.contains(l)) {
                         licenses.add(l);
@@ -313,6 +307,11 @@ public enum APIVersion {
 
                 } else {
                     LOGGER.log(Level.SEVERE, "HTTP error: {0}", response != null ? response.statusCode() : "null");
+                    if (response != null){
+                        LOGGER.log(Level.INFO, "Headers: {0};", response.headers() );
+                        LOGGER.log(Level.INFO, "Body: {0};", response.body() );
+                        LOGGER.log(Level.INFO, "ToString: {0};", response.toString() );
+                    }
                     return null;
                 }
             } catch (InterruptedException | ConnectException exception) {
@@ -326,13 +325,9 @@ public enum APIVersion {
     static void processSubqueryResult(List<HarvestingItem> items, Element resultElm, String pidKey, String rootPidKey) {
 
         Map<String, HarvestingItem> map = new HashMap<>();
-        items.forEach(item -> {
-            map.put(item.getPid(), item);
-        });
+        items.forEach(item -> map.put(item.getPid(), item));
 
-        List<Pair<String, String>> monographUnitPids = XMLUtils.getElementsRecursive(resultElm, (elm) -> {
-            return elm.getNodeName().equals("doc");
-        }).stream().map(docElm -> {
+        List<Pair<String, String>> monographUnitPids = XMLUtils.getElementsRecursive(resultElm, (elm) -> elm.getNodeName().equals("doc")).stream().map(docElm -> {
             Element pidElm = XMLUtils.findElement(docElm, elm -> elm.getAttribute("name").equals(pidKey));
             Element rootPid = XMLUtils.findElement(docElm, elm -> elm.getAttribute("name").equals(rootPidKey));
             if (pidElm != null && rootPid != null) {
@@ -360,15 +355,11 @@ public enum APIVersion {
         });
 
         // periodicals
-        items.stream().filter(harvestingItem -> harvestingItem.getModel().equals(ModelFields.PERIODICAL)).forEach(harvestingItem -> {
-            harvestingItem.setHierarchical(true);
-        });
+        items.stream().filter(harvestingItem -> harvestingItem.getModel().equals(ModelFields.PERIODICAL)).forEach(harvestingItem -> harvestingItem.setHierarchical(true));
     }
 
     private static List<HarvestingItem> getMonographs(List<HarvestingItem> items) {
-        return items.stream().filter(item -> {
-            return item.getModel().equals(ModelFields.MONOGRAPH);
-        }).toList();
+        return items.stream().filter(item -> item.getModel().equals(ModelFields.MONOGRAPH)).toList();
     }
 
     // --- Abstract Methods ---
