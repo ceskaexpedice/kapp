@@ -12,7 +12,7 @@ public class AuthorNormalizationUtils {
 
     private AuthorNormalizationUtils() {}
 
-    public static List<Character> CHARACTERS_TO_REMOVE = Arrays.asList(
+    public static final List<Character> CHARACTERS_TO_REMOVE = Arrays.asList(
             '"', '\'', '(', ')', '^', '!', ',', '>', '<', '[', ']'
     );
 
@@ -141,8 +141,7 @@ public class AuthorNormalizationUtils {
             NormalizationStep mAz = range(new NormalizationStep(rest, false));
             if (mAz.isDone()) return mAz;
 
-            NormalizationStep mSingle = yearOrEpoch(new NormalizationStep(rest, false));
-            if (mSingle != null) return mSingle;
+            return yearOrEpoch(new NormalizationStep(rest, false));
 
 
 

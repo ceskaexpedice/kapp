@@ -1,6 +1,7 @@
 package cz.inovatika.model;
 
 import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -19,9 +20,9 @@ import org.json.JSONObject;
 public class DynamicConfig {
 
     public static final Logger LOGGER = Logger.getLogger(DynamicConfig.class.getName());
-    private final String SOLR_URL = "http://localhost:8983/solr";
 
     public JSONObject loadConfig() {
+        String SOLR_URL = "http://localhost:8983/solr";
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(SOLR_URL).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
@@ -32,7 +33,7 @@ public class DynamicConfig {
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "configuration");
             InputStream is = (InputStream) resp.get("stream");
-            ret.put("config", new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs"));
+            ret.put("config", new JSONObject(IOUtils.toString(is, StandardCharsets.UTF_8)).getJSONObject("response").getJSONArray("docs"));
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);

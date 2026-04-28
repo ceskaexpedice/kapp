@@ -13,10 +13,7 @@ public class ConfigMappingsLoader {
     private final Map<String, Map<String, String>> exact = new HashMap<>();
     private final List<Pair> startsWith = new ArrayList<>();
 
-    private static class Pair {
-        String prefix;
-        Map<String, String> headers;
-        Pair(String p, Map<String, String> h) { prefix = p; headers = h; }
+    private record Pair(String prefix, Map<String, String> headers) {
     }
 
     public ConfigMappingsLoader(Path configPath) throws IOException {

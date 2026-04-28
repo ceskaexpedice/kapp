@@ -12,9 +12,7 @@ public class AuthorDataUtils {
     private AuthorDataUtils() {}
 
     public static List<AuthorData> parseAuthorData(Document biblioMods) {
-        Element modsElm = XMLUtils.findElement(biblioMods.getDocumentElement(), elm-> {
-            return elm.getLocalName().equals("mods");
-        });
+        Element modsElm = XMLUtils.findElement(biblioMods.getDocumentElement(), elm-> elm.getLocalName().equals("mods"));
         if (modsElm != null) {
             return  XMLUtils.getElements(modsElm, elm -> {
                 String localName = elm.getLocalName();

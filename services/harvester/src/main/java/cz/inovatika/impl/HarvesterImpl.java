@@ -241,10 +241,10 @@ public class HarvesterImpl implements Harvester {
     private static final DateTimeFormatter TIME_FMT = DateTimeFormatter.ofPattern("HH:mm");
 
     static final int INTERVALMINUTES = 60;
-    static LocalTime start = LocalTime.now();
-    static LocalTime end = start.plusMinutes(INTERVALMINUTES);
-    static long sleepSeconds = 3600;
-    static boolean exitOnOutOfInterval = false;
+    static final LocalTime start = LocalTime.now();
+    static final LocalTime end = start.plusMinutes(INTERVALMINUTES);
+    static final long sleepSeconds = 3600;
+    static final boolean exitOnOutOfInterval = false;
 
     public static void main(String[] args) {
 //        if (args.length > 0) {
@@ -283,7 +283,7 @@ public class HarvesterImpl implements Harvester {
     }
 
     private static void checkTime()
-            throws InterruptedException, IOException {
+            throws InterruptedException {
         boolean inRange;
         while (true) {
             LocalTime now = LocalTime.now();
@@ -317,7 +317,7 @@ public class HarvesterImpl implements Harvester {
                     NUMBER_OF_THREAD,
                     r -> {
                         Thread t = new Thread(r);
-                        t.setName(HTTP_CLIENT_THREAD_KEY + t.getId());
+                        t.setName(HTTP_CLIENT_THREAD_KEY + t.threadId());
                         return t;
                     }
             );
@@ -369,8 +369,7 @@ public class HarvesterImpl implements Harvester {
 
     }
 
-    private void sendBatch(String collection, final List<SolrInputDocument> docs)
-            throws SolrServerException, IOException {
+    private void sendBatch(String collection, final List<SolrInputDocument> docs) {
         UpdateRequest updateRequest = new UpdateRequest();
         updateRequest.add(docs);
         if (!docs.isEmpty()) {
@@ -384,11 +383,14 @@ public class HarvesterImpl implements Harvester {
 
                     break;
                 } catch (IOException | SolrServerException e) {
-                    LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt);
+                    LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt+1);
                 } catch(Exception e) {
                     LOGGER.log(Level.SEVERE, e.getMessage(),e);
                     //for (SolrInputDocument doc : docs) { LOGGER.log(Level.SEVERE, "DOC: {0}", doc.get("pid")); }
                     throw e;
+                }
+                if (attempt == 9) {
+                    LOGGER.log(Level.SEVERE, "Failed to send batch. Retrying also failed.");
                 }
             }
         } else {
@@ -445,9 +447,9 @@ public class HarvesterImpl implements Harvester {
                     if (acceptLibrary) {
                         BiblioModsEntity entity = getBiblioModsEntity(config, ctx);
                         if (entity == null) return;
-                        if (ctx.touchStore().isModsChanged(pid, entity.getMd5Sum())) {
+                        if (ctx.touchStore().isModsChanged(pid, entity.md5Sum())) {
                             try {
-                                Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
+                                Document parsed = XMLUtils.parseDocument(new StringReader(entity.biblioMods()), true);
                                 WorkflowDoc workflowDoc = buildWorkflowDoc(config,pid,ctx,wrapper, entity, parsed,authorsBuffer);
 
                                 // state differs
@@ -482,7 +484,7 @@ public class HarvesterImpl implements Harvester {
                 try {
                     BiblioModsEntity entity = getBiblioModsEntity(config, ctx);
                     if (entity == null) return;
-                    Document parsed = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
+                    Document parsed = XMLUtils.parseDocument(new StringReader(entity.biblioMods()), true);
                     if (parsed == null) {
                         LOGGER.log(Level.SEVERE, "Failed to process MODS for PID: {0}", ctx.item().getPid());
                         return;
@@ -542,8 +544,8 @@ public class HarvesterImpl implements Harvester {
         }
         wrapper.setField(AppDataFields.ROOT_PID_FIELD, hitem.getRootPid());
         wrapper.setField(AppDataFields.TITLE_FIELD, hitem.getTitles());
-        wrapper.setField(AppDataFields.BIBLIO_MODS_FIELD, entity.getBiblioMods());
-        wrapper.setField(AppDataFields.BIBLIO_MODS_MD_5_FIELD, entity.getMd5Sum());
+        wrapper.setField(AppDataFields.BIBLIO_MODS_FIELD, entity.biblioMods());
+        wrapper.setField(AppDataFields.BIBLIO_MODS_MD_5_FIELD, entity.md5Sum());
 
         parseDateRange(wrapper, parsed);
         List<String> physicalLocation = XMLUtils.getElementsRecursive(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("physicalLocation")).stream().map(Element::getTextContent).toList();
@@ -570,8 +572,8 @@ public class HarvesterImpl implements Harvester {
     }
 
     private void storeToTouchStore(Instance config, HarvesterContext ctx, String pid, BiblioModsEntity entity, List<String> physicalLocation) throws IOException {
-        ctx.touchStore().touch(pid, entity.getMd5Sum(), config.getAcronym(), ctx.item().getRootPid(), physicalLocation);
-        ctx.touchStore().storeMods(pid, entity.getBiblioMods().trim());
+        ctx.touchStore().touch(pid, entity.md5Sum(), config.getAcronym(), ctx.item().getRootPid(), physicalLocation);
+        ctx.touchStore().storeMods(pid, entity.biblioMods().trim());
     }
 
     private void processAuthors(SolrInputDocumentWrapper doc, List<SolrInputDocument> authorsBuffer, Document parsed) {
@@ -612,26 +614,16 @@ public class HarvesterImpl implements Harvester {
     private  void addToBufferAndSend(List<SolrInputDocument> buffer, List<SolrInputDocument> authorsBuffer, SolrInputDocumentWrapper wrapperDoc) {
         buffer.add(wrapperDoc.getDocument());
         if (buffer.size() >= BATCH_SIZE) { // BATCH_SIZE
-            try {
-                sendBatch(Constants.Collection.TITLES_COLLECTION, buffer);
-            } catch (IOException | SolrServerException e) {
-                LOGGER.log(Level.SEVERE, "Failed to send title batch", e);
-                throw new RuntimeException(e);
-            }
+            sendBatch(Constants.Collection.TITLES_COLLECTION, buffer);
             buffer.clear();
             try {
                 if (!IGNORE_CHECKTIME) checkTime();
-            } catch (InterruptedException | IOException e) {
+            } catch (InterruptedException e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
         }
         if (authorsBuffer.size() >= BATCH_SIZE) { // BATCH_SIZE
-            try {
-                sendBatch("authors", authorsBuffer);
-            } catch (IOException | SolrServerException e) {
-                LOGGER.log(Level.SEVERE, "Failed to send authors batch", e);
-                throw new RuntimeException(e);
-            }
+            sendBatch("authors", authorsBuffer);
             authorsBuffer.clear();
         }
     }

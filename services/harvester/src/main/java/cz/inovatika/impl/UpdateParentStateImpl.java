@@ -22,7 +22,7 @@ public class UpdateParentStateImpl implements UpdateParentState {
     public static final Logger LOGGER = Logger.getLogger(UpdateParentStateImpl.class.getName());
     public static final int BATCH_SIZE = 50;
 
-    public SolrClient solrClient = null;
+    public SolrClient solrClient;
 
     public UpdateParentStateImpl(SolrClient solrClient) {
         this.solrClient = solrClient;

@@ -30,7 +30,7 @@ public class TitleNormalizationUtils {
             "dotisk"
     );
 
-    public static final List<String> BETWEEN_KEYWORDS = Arrays.asList(
+    public static final List<String> BETWEEN_KEYWORDS = List.of(
             "mezi"
     );
 
@@ -128,7 +128,7 @@ public class TitleNormalizationUtils {
     public static NormalizationStep modifyOpenRanges(NormalizationStep step) {
         boolean applied = false;
         String input = step.value();
-        Pattern p = Pattern.compile("\\[?([0-9xu?-]+)\\]?-(?!\\d)");
+        Pattern p = Pattern.compile("\\[?([0-9xu?-]+)]?-(?!\\d)");
         Matcher m = p.matcher(input);
         StringBuilder sb = new StringBuilder();
         int lastEnd = 0;
@@ -151,10 +151,10 @@ public class TitleNormalizationUtils {
         boolean applied =  false;
         String input = step.value();
         //Pattern p = Pattern.compile("\\[?([0-9xu?-]{4})\\]?[/-]\\[?([0-9xu?-]{2,4})\\]?(?![0-9])");
-        Pattern p = Pattern.compile("\\[?([0-9xu-]{4})\\??\\]?[/-]\\[?([0-9xu-]{2,4})\\??\\]?(?![0-9])");
+        Pattern p = Pattern.compile("\\[?([0-9xu-]{4})\\??]?[/-]\\[?([0-9xu-]{2,4})\\??]?(?![0-9])");
         Matcher m = p.matcher(input);
         StringBuilder sb = new StringBuilder();
-        int lastEnd = 0;
+        //int lastEnd = 0;
         while (m.find()) {
             applied = true;
 
@@ -169,14 +169,14 @@ public class TitleNormalizationUtils {
                 secondFinal = first.substring(0, 2) + fillMaskWith(secondRaw,"9");
             } else if (secondRaw.length() == 3) {
                 // 1480-482 -> 1480-1482
-                secondFinal = first.substring(0, 1) + fillMaskWith(secondRaw,"9");
+                secondFinal = first.charAt(0) + fillMaskWith(secondRaw,"9");
             } else {
                 // 4 znaky: 19uu-20xx -> 1900-2000
                 secondFinal = fillMaskWith(secondRaw,"9");
             }
 
             sb.append(first).append("-").append(secondFinal);
-            lastEnd = m.end();
+            //lastEnd = m.end();
         }
         return applied ? new  NormalizationStep(sb.toString(), true) : step;
     }
@@ -193,7 +193,7 @@ public class TitleNormalizationUtils {
         while (matcher.find()) {
             applied = true;
             String raw = matcher.group(1);
-            if (sb.length() > 0) {
+            if (!sb.isEmpty()) {
                 sb.append(" ");
             }
             sb.append(raw);
@@ -206,7 +206,7 @@ public class TitleNormalizationUtils {
         if (input.contains("-")) {
             return step;
         }
-        String regex = "(?:\\b\\d{1,2}\\s*\\.\\s*)(?:[0-9]{1,2}|[ivxl]+\\.?)\\s*\\.\\s*(\\d{4})\\b";
+        String regex = "\\b\\d{1,2}\\s*\\.\\s*(?:[0-9]{1,2}|[ivxl]+\\.?)\\s*\\.\\s*(\\d{4})\\b";
         Pattern pattern = Pattern.compile(regex, Pattern.CASE_INSENSITIVE);
         Matcher matcher = pattern.matcher(input);
         if (matcher.find()) {

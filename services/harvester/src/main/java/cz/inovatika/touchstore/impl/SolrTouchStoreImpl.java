@@ -50,12 +50,12 @@ public class SolrTouchStoreImpl implements TouchStore {
 
 
     @Override
-    public void touch(String pid, String md5, String source, String rootPid, List<String> physicalLocations) throws IOException {
+    public void touch(String pid, String md5, String source, String rootPid, List<String> physicalLocations) {
         // no action
     }
 
     @Override
-    public void storeMods(String pid, String biblioMods) throws IOException {
+    public void storeMods(String pid, String biblioMods){
         // no action - already in index
     }
 
@@ -71,13 +71,11 @@ public class SolrTouchStoreImpl implements TouchStore {
     }
 
     @Override
-    public boolean isModsChanged(String pid, String md5) throws IOException {
+    public boolean isModsChanged(String pid, String md5){
         try {
-            SolrDocument doc = getDocument(pid);
-            Object soldM5Sum = doc.getFirstValue("biblio_mods_md5");
+            Object soldM5Sum = getDocument(pid).getFirstValue("biblio_mods_md5");
             if (soldM5Sum != null) {
-                boolean changed = !md5.equals(soldM5Sum.toString());
-                return changed;
+                return !md5.equals(soldM5Sum.toString());
             } else return true;
         } catch (SolrServerException | IOException e) {
             LOGGER.log(Level.SEVERE, null, e);
@@ -86,7 +84,7 @@ public class SolrTouchStoreImpl implements TouchStore {
     }
 
     @Override
-    public List<String> getPhysicalLocations(String pid) throws IOException {
+    public List<String> getPhysicalLocations(String pid) {
         try {
             SolrDocument doc = getDocument(pid);
             if (doc != null) {
@@ -106,7 +104,7 @@ public class SolrTouchStoreImpl implements TouchStore {
     @Override
     public String getRootPid(String pid) throws IOException {
         try {
-            SolrDocument doc = this.solrClient.getById("titles", pid);
+            SolrDocument doc = solrClient.getById("titles", pid);
             Object soldM5Sum = doc.getFirstValue("root.pid");
             return soldM5Sum != null ?  soldM5Sum.toString() : null;
         } catch (SolrServerException e) {
@@ -117,7 +115,7 @@ public class SolrTouchStoreImpl implements TouchStore {
     @Override
     public String getMd5(String pid) throws IOException {
         try {
-            SolrDocument doc = this.solrClient.getById("titles", pid);
+            SolrDocument doc = solrClient.getById("titles", pid);
             Object soldM5Sum = doc.getFirstValue("biblio_mods_md5");
             return soldM5Sum != null ?  soldM5Sum.toString() : null;
         } catch (SolrServerException e) {

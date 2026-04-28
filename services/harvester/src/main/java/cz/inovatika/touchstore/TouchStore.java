@@ -5,17 +5,17 @@ import java.util.List;
 
 public interface TouchStore {
 
-    public void touch(String pid, String md5, String source, String rootPid, List<String> physicalLocations) throws IOException;
+    void touch(String pid, String md5, String source, String rootPid, List<String> physicalLocations) throws IOException;
 
-    public void storeMods(String pid, String biblioMods) throws IOException;
+    void storeMods(String pid, String biblioMods) throws IOException;
 
-    public boolean exists(String pid);
+    boolean exists(String pid);
 
-    public boolean isModsChanged(String pid, String md5) throws IOException;
+    boolean isModsChanged(String pid, String md5) throws IOException;
 
-    public List<String> getPhysicalLocations(String pid) throws IOException;
+    List<String> getPhysicalLocations(String pid) throws IOException;
 
-    public String getRootPid(String pid) throws IOException;
+    String getRootPid(String pid) throws IOException;
 
-    public String getMd5(String pid) throws IOException;
+    String getMd5(String pid) throws IOException;
 }

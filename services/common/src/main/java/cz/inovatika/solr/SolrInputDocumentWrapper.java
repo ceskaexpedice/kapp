@@ -64,12 +64,12 @@ public record SolrInputDocumentWrapper(String idKey,SolrInputDocument document, 
         switch (typeOfChange) {
             case SIMPLE -> {
                 switch (ofOperation) {
-                    case ATOMIC_ADD, ATOMIC_ADD_DISTINCT -> {
+                    case ATOMIC_ADD, ATOMIC_ADD_DISTINCT ->
                         document.addField(name, value);
-                    }
-                    case ATOMIC_SET -> {
+
+                    case ATOMIC_SET ->
                         document.setField(name, value);
-                    }
+
                 }
             }
             case ATOMIC_CHANGE -> {

@@ -9,28 +9,12 @@ import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Logger;
 
-public class BiblioModsEntity {
+public record BiblioModsEntity(String biblioMods, String md5Sum) {
 
-    public static final Logger  LOGGER = Logger.getLogger(BiblioModsEntity.class.getName());
-
-    private String biblioMods;
-    private String md5Sum;
-
-    private BiblioModsEntity(String biblioMods, String md5Sum) {
-        this.biblioMods = biblioMods;
-        this.md5Sum = md5Sum;
-    }
-
-    public String getBiblioMods() {
-        return biblioMods;
-    }
-
-    public String getMd5Sum() {
-        return md5Sum;
-    }
+    public static final Logger LOGGER = Logger.getLogger(BiblioModsEntity.class.getName());
 
     public static BiblioModsEntity create(InputStream inputStream) throws IOException, NoSuchAlgorithmException {
-        try(inputStream) {
+        try (inputStream) {
             byte[] byteArray = IOUtils.toByteArray(inputStream);
             MessageDigest md = MessageDigest.getInstance("MD5");
             md.update(byteArray);
@@ -40,7 +24,7 @@ public class BiblioModsEntity {
                 sb.append(String.format("%02x", b));
             }
             String md5String = sb.toString();
-            return  new BiblioModsEntity(new String(byteArray, StandardCharsets.UTF_8), md5String);
+            return new BiblioModsEntity(new String(byteArray, StandardCharsets.UTF_8), md5String);
         }
     }
 }

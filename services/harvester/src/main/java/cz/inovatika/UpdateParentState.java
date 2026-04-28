@@ -6,5 +6,5 @@ import java.io.IOException;
 
 public interface UpdateParentState {
 
-    public void updateParentState() throws SolrServerException, IOException;
+    void updateParentState() throws SolrServerException, IOException;
 }

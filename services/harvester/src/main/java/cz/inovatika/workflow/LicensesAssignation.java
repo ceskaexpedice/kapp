@@ -8,7 +8,7 @@ public enum LicensesAssignation {
     /** No license association */
     NONE,
     /** Custom license association */
-    LOCAL;
+    LOCAL
 
 
 }

@@ -20,10 +20,10 @@ public class BiblioModsEntityTest {
         Assertions.assertNotNull(resourceAsStream);
         BiblioModsEntity entity = BiblioModsEntity.create(resourceAsStream);
         Assertions.assertNotNull(entity);
-        Assertions.assertNotNull(entity.getBiblioMods());
-        Assertions.assertNotNull(entity.getMd5Sum());
+        Assertions.assertNotNull(entity.biblioMods());
+        Assertions.assertNotNull(entity.md5Sum());
 
-        Document document = XMLUtils.parseDocument(new StringReader(entity.getBiblioMods()), true);
+        Document document = XMLUtils.parseDocument(new StringReader(entity.biblioMods()), true);
         Assertions.assertNotNull(document);
     }
 }

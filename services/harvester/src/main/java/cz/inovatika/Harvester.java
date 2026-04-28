@@ -36,12 +36,12 @@ public interface Harvester {
      *                                 such as calling sub-queries (like fetchMods) using the provided
      *                                 {@code HttpClient} within the context.
      */
-    public void harvest(ApplicationConfig applicationConfig, Instance harvestingInstanceConfig, Consumer<HarvesterContext> consumer);
+    void harvest(ApplicationConfig applicationConfig, Instance harvestingInstanceConfig, Consumer<HarvesterContext> consumer);
 
-    public void start(ApplicationConfig applicationConfig);
-
-
+    void start(ApplicationConfig applicationConfig);
 
 
-    public void closeClients();
+
+
+    void closeClients();
 }

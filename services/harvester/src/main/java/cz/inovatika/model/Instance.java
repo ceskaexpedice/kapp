@@ -25,7 +25,7 @@ public class Instance {
     /**
      * Logger for the {@code Instance} class.
      */
-    public static Logger LOGGER = Logger.getLogger(Instance.class.getName());
+    public final static Logger LOGGER = Logger.getLogger(Instance.class.getName());
 
     private String acronym;
     private String url;
