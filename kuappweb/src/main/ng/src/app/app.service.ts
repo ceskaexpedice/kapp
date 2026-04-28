@@ -173,6 +173,10 @@ export class AppService {
     return this.post('index/save_last_year_death', {pid,lastYearDeath,authors});
   }
 
+  saveTypDila(pid: string, is_anonymous: boolean, is_collective: boolean, is_official: boolean) {
+    return this.post('index/save_typ_dila', {pid,is_anonymous,is_collective,is_official});
+  }
+
   saveTitleNote(pid: string, note: string): Observable<any> {
     return this.post('index/save_title_note', {pid,note});
   }

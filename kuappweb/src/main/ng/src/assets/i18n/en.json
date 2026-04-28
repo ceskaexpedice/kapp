@@ -102,7 +102,10 @@
     "nameIdentifier_desc": "Name identifier (AUT: controlfield 001, MODS: nameIdentifier)",
     "no_nameIdentifier": "Authors without nameIdentifier",
     "no_year_death": "Authors without death date",
-    "modified_by_user": "Modified by user"
+    "modified_by_user": "Modified by user",
+    "is_anonymous": "Anonymní dílo",
+    "is_collective": "Kolektivní dílo",
+    "is_official": "Úřední dílo"
   },
   "action": {
     "view": "View",

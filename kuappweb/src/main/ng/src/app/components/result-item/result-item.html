@@ -74,6 +74,19 @@
 			</div>
 		</div>
 		<div class="app-metadata-row">
+			<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
+			<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
+			<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
+			@if (state.user()) {
+				@if (editingDilo()) {
+					<a (click)="saveTypDila()" class="app-value"><mat-icon>save</mat-icon></a>
+					<a (click)="closeEditingDilo()" class="app-value"><mat-icon>cancel</mat-icon></a>
+				} @else {
+					<a (click)="editTypDila()" class="app-value"><mat-icon>edit</mat-icon></a>
+				}
+			}
+		</div>
+		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.pid' | translate }}:</span>
 			@if (doc()['physical_locations']?.[0] === 'ABA001') {
 				<a target="_blank" [href]="'https://ndk.cz/view/'+doc()['pid']" class="app-value">

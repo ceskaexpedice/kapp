@@ -22,12 +22,13 @@ import { DatePipe } from '@angular/common';
 import { AuthorTitleDialog, AuthorTitleDialogData } from '../author-title-dialog/author-title-dialog';
 import { MatListModule } from "@angular/material/list";
 import { isIndexSignatureDeclaration } from 'typescript';
+import { MatCheckbox } from "@angular/material/checkbox";
 
 @Component({
   selector: 'app-result-item',
   imports: [RouterModule, TranslateModule, FormsModule, DatePipe,
     MatCardModule, MatButtonModule, MatMenuModule,
-    MatIconModule, MatChipsModule, MatFormFieldModule, MatListModule],
+    MatIconModule, MatChipsModule, MatFormFieldModule, MatListModule, MatCheckbox],
   templateUrl: './result-item.html',
   styleUrl: './result-item.scss'
 })
@@ -47,7 +48,11 @@ export class ResultItem {
 
   editingNote = signal(false);
   editingDate = signal(false);
+  editingDilo = signal(false);
   lastYearDeath: number;
+  is_anonymous: boolean;
+  is_collective: boolean;
+  is_official: boolean;
   note: string;
   noteRows = 3;
   noteWidth = 200;
@@ -68,6 +73,9 @@ export class ResultItem {
 
       this.labels = [];
       let doc = this.doc();
+      this.is_anonymous = this.doc()['is_anonymous'];
+      this.is_collective = this.doc()['is_collective'];
+      this.is_official = this.doc()['is_official'];
       if (this.doc()['note']) {
         this.note = this.doc()['note'].join("\n");
         const lines = this.note.split('\n');
@@ -311,6 +319,22 @@ export class ResultItem {
 
   saveLastYearDeath() {
     this.service.saveLastYearDeath(this.doc().pid, this.lastYearDeath, this.doc().authors_kapp).subscribe((res: any) => {
+      console.log(res)
+    })
+  }
+
+
+
+  editTypDila() {
+    this.editingDilo.set(true)
+  }
+
+  closeEditingDilo() {
+    this.editingDilo.set(false)
+  }
+
+  saveTypDila() {
+    this.service.saveTypDila(this.doc().pid, this.is_anonymous, this.is_collective, this.is_official).subscribe((res: any) => {
       console.log(res)
     })
   }

@@ -198,6 +198,29 @@ public class SolrIndexer {
         return ret;
     }
 
+    public static JSONObject saveTypDila(JSONObject js, String user) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField("pid", js.getString("pid"));
+
+            addAtomicField(doc, "set", js.optBoolean("is_anonymous"), "is_anonymous");    
+            addAtomicField(doc, "set", js.optBoolean("is_collective"), "is_collective");    
+            addAtomicField(doc, "set", js.optBoolean("is_official"), "is_official");
+            addAtomicField(doc, "add-distinct", user, "modified_by_user");
+
+            solr.add("titles", doc);
+            solr.commit("titles");
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
     public static JSONObject saveTitleNote(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
