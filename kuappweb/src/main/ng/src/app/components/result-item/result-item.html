@@ -110,6 +110,10 @@
 			<span class="app-label">{{ 'field.physical_locations' | translate }}:</span>
 			<span class="app-value">{{ doc()['physical_locations'] }}</span>
 		</div>
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.archiver_location' | translate }}:</span>
+			<span class="app-value">{{ doc()['archiver_location'] }}</span>
+		</div>
 		@if(doc()['public_since']) {
 			<div class="app-metadata-row">
 				<span class="app-label">{{ 'field.public_since' | translate }}:</span>

@@ -72,7 +72,8 @@
         {"field": "id_issn", "selected": false},
         {"field": "id_barCode", "selected": false},
         {"field": "id_sysno", "selected": false},
-        {"field": "sigla", "selected": false}
+        {"field": "sigla", "selected": false},
+        {"field": "archiver_location", "selected": false}
 
     ],
 

@@ -97,6 +97,7 @@
     "id_sysno": "Sysno",
     "id_urnnbn": "URN:NBN",
     "id_barCode": "Bar code",
+    "archiver_location": "Archive location",
     "hard_facets": "Filters",
     "nameIdentifier": "Name identifier",
     "nameIdentifier_desc": "Name identifier (AUT: controlfield 001, MODS: nameIdentifier)",
