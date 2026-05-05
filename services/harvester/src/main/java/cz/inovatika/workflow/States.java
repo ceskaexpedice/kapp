@@ -77,7 +77,7 @@ public enum States {
             if (wConfig==null)return null;
             if (currentDoc.last_year_death() != null) {
                 int year = currentDoc.last_year_death();
-                if (!wConfig.isOnsiteYear(year)){//it has been OnsiteYear years from the death of last author
+                if (wConfig.isAuthorDeadEnoughYear(year)){//it has been OnsiteYear years from the death of last author
                     reason.value = "it has been OnsiteYear years from the death of last author";
                     return TO_CONTROL;
                 }
@@ -126,7 +126,7 @@ public enum States {
             if (wConfig==null)return null;
             if (currentDoc.last_year_death() != null) {
                 int year = currentDoc.last_year_death();
-                if (!wConfig.isOnsiteYear(year)){
+                if (wConfig.isAuthorDeadEnoughYear(year)){
                     reason.value = StateChangeReasons.SurpassedAuthorDeath(year);//"it has been OnsiteYear years from the death of last author";
                     return NONCONTROLLED_PUBLIC;
                 }
@@ -162,7 +162,7 @@ public enum States {
             if (wConfig==null)return null;
             if (currentDoc.last_year_death() != null) {
                 int year = currentDoc.last_year_death();
-                if (!wConfig.isOnsiteYear(year)){//it has been OnsiteYear years from the death of last author
+                if (wConfig.isAuthorDeadEnoughYear(year)){//it has been OnsiteYear years from the death of last author
                     reason.value = StateChangeReasons.SurpassedAuthorDeath(year);
                     return FOR_REVIEW;
                 }
@@ -194,7 +194,7 @@ public enum States {
             }
             else if (currentDoc.dateIssuedYear() != null) {
                 int year = currentDoc.dateIssuedYear();
-                if  (wConfig.isOnsiteYear(year)){//We got date issued, and it's not even 70 years so we can wait until it makes sense to check it
+                if  (wConfig.isOnsiteYear(year)){//We got date issued, and it's not even onsite years so we can wait until it makes sense to check it
                     reason.value = "Probably new information on date issued; "+StateChangeReasons.NotYetIssued(year);
                     return NONCONTROLLED_PRIVATE;
                 }

@@ -6,6 +6,7 @@ public class WorkflowConfig {
 
     private int publicYear;
     private int onsiteYear;
+    private int authorDeadEnoughYear;
 
     public WorkflowConfig() {
     }
@@ -16,6 +17,10 @@ public class WorkflowConfig {
 
     public int getOnsiteYear() {
         return onsiteYear;
+    }
+
+    public int getAuthorDeadEnoughYear() {
+        return authorDeadEnoughYear;
     }
 
     public int getPublicYear() {
@@ -36,6 +41,10 @@ public class WorkflowConfig {
         return calculateYear(publicYear);
     }
 
+    public int calculateAuthorDeadYear() {
+        return calculateYear(authorDeadEnoughYear);
+    }
+
     public int calculateOnsiteYear() {
         return calculateYear(onsiteYear);
     }
@@ -46,5 +55,8 @@ public class WorkflowConfig {
 
     public boolean isOnsiteYear(int year) {
         return year >= calculateOnsiteYear();
+    }
+    public boolean isAuthorDeadEnoughYear(int year) {
+        return year <= calculateAuthorDeadYear();
     }
 }

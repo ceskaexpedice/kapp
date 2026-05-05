@@ -40,7 +40,7 @@ public class ConfigurationTest {
 
         Assertions.assertEquals(70, config.workflow().getOnsiteYear());
         int calculateOnsiteYear = config.workflow().calculateOnsiteYear();
-        expectation = Year.now().minusYears(70).getValue();
+        expectation = Year.now().minusYears(50).getValue();
         Assertions.assertEquals(expectation, calculateOnsiteYear);
 
     }

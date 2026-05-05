@@ -42,10 +42,10 @@ public class UpdaterImpl implements Updater {
             String cursorMark = "*";
             boolean done = false;
             int currentYear = Year.now().getValue();
-            int threshold =  currentYear - applicationConfig.workflow().getPublicYear();
+            int threshold =  applicationConfig.workflow().calculatePublicYear();
             System.out.println("Current year:"+currentYear);
             System.out.println("Public earliest year:"+threshold);
-            System.out.println("Private latest year:"+(currentYear - applicationConfig.workflow().getOnsiteYear()));
+            System.out.println("Private latest year:"+applicationConfig.workflow().calculateOnsiteYear());
 
             while (!done) {
                 ModifiableSolrParams params = new ModifiableSolrParams();

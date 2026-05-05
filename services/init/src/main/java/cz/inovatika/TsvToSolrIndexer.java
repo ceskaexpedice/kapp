@@ -109,6 +109,7 @@ public class TsvToSolrIndexer {
                         //AuthorData[] nameIDArray = null;
                         Integer year_of_death_last_author = null;
                         Integer date_issued = null;
+                        Integer public_year = null;
                         for (Map.Entry<String, String> entry : record.toMap().entrySet()) {
                             String header = headers.get(entry.getKey());
                             if (header == null) {
@@ -118,6 +119,7 @@ public class TsvToSolrIndexer {
                                 }
                                 continue;
                             }
+                            else header = header.toLowerCase().trim();
                             String value = entry.getValue();
                             //String Originalvalue = value;
                             try {
@@ -212,11 +214,13 @@ public class TsvToSolrIndexer {
                                              + recordNumber + "\n\tVALUE: " + ((Originalvalue.equals(value)) ?
                                              Originalvalue : Originalvalue + " _ " + value));
                                         }*/
-                                    }/*
+                                    }
                                     case "public_since" -> {
                                         if (NumberUtils.isCreatable(value) && value.length() == 4)
-                                            decision_date = Integer.parseInt(value);
-                                    }*/
+                                        {
+                                            public_year = Integer.parseInt(value);
+                                        }
+                                    }
                                     case "date_issued_str" -> {
                                         doc.setField(AppComputedFields.DATE_ISSUED_STRING, value);
                                         ParseDates(doc, value, recordNumber, show_comma_info,labels,notes);
@@ -229,9 +233,9 @@ public class TsvToSolrIndexer {
                                         }
                                     }
                                     case "checked_by" ->{
-                                        if (value.split("/.").length != 2) {//Some users put dates here
+                                        if (!value.contains(".")) {//Some users put dates here
                                         //System.out.println("Checking by: " + value);
-                                        users.addAll(Arrays.asList(value.split("/")));
+                                            users.addAll(Arrays.asList(value.split("/")));
                                         }
 
                                     }
@@ -241,9 +245,108 @@ public class TsvToSolrIndexer {
                                             users.addAll(Arrays.asList(value.split("/")));
                                         }
                                     }
+                                    case "last_author"->{
+                                        if (value.isEmpty())continue;
+                                        notes.add(entry.getKey() + " : " +  value);
+                                        switch (value.toLowerCase()){
+                                            case "kolektivní dílo","kolektivní","vypracoval kolektiv","řada autorů"->
+                                                    doc.setField("is_collective",true);
+                                            case "anonzm","anonym","anonymní","anonymní dílo"->
+                                                    doc.setField("is_anonymous",true);
+                                            case "úřední dílo","úřední dokument"->
+                                                    doc.setField("is_official",true);
+
+                                            case "anonymní/kolektivní","kolektivní/anonymní","kolektivní/anonymni","kolektivní/anonymní edice","anonymní (kolektivní) dílo"->{
+                                                doc.setField("is_anonymous",true);
+                                                doc.setField("is_collective",true);
+                                            }
+                                            case "úúřední dokument/anonym"->{
+                                                doc.setField("is_anonymous",true);
+                                                doc.setField("is_official",true);
+                                            }
+                                            default ->{
+                                                if (value.toLowerCase().contains("anonzm")||value.toLowerCase().contains("anonym")||value.toLowerCase().contains("úřední")){
+                                                    //System.out.println("Labeled: " + value);
+                                                    labels.add("Nejistá anonymita/úřednost/kolektivnost");}
+                                                else {
+                                                    String[] autors = value.replace("–","-").split(";");
+                                                    ArrayList<String> out = new ArrayList<>();
+
+
+                                                    for  (String autor : autors) {
+                                                        autor = autor.replace("(?-?)",", ?-?");
+                                                        autor = autor.replace("(?-? )",", ?-?");
+                                                        autor = autor.replace("( ?-?)",", ?-?");
+                                                        autor = autor.replace("autoři:","");
+
+
+                                                        ArrayList<String> parts = new ArrayList<>(List.of(removeParenthesesContent(autor).trim().split(",")));
+                                                        for (int i = 0; i < parts.size(); i++) {
+                                                            parts.set(i, parts.get(i).trim());
+                                                            String part = parts.get(i);
+                                                            if (part.isEmpty()) {
+                                                                parts.remove(part);
+                                                                i--;
+                                                            }
+                                                        }
+                                                        for (int i=2; i<=parts.size(); i+=3) {
+                                                            String name = "";
+                                                            String surname;
+                                                            String years = "";
+                                                            String part2 = parts.get(i - 1);
+                                                            if(part2.contains("-?")|| part2.contains("?-")||(part2.contains("-") && containsDigit(part2))){
+                                                                String[] fullname = parts.get(i - 2).split(" ");
+                                                                for (int i1 = 1; i1 < fullname.length; i1++) {
+                                                                    name += (i1!=1?" ":"") + fullname[i1];
+                                                                }
+                                                                surname = fullname[0];
+                                                                years = part2;
+                                                                i--;
+                                                            }
+                                                            else{
+                                                                name = part2;
+                                                                surname = parts.get(i - 2);
+                                                                if (name.contains(" ") && containsDigit(name)){
+                                                                    String[] ps = name.split(" ");
+                                                                    name = ps[0];
+                                                                    years = ps[1];
+                                                                    i--;
+                                                                }
+                                                                else if (i!=parts.size()) years = parts.get(i);//the else here makes sense cuz if the abovementioned thing triggered this should not
+
+                                                            }
+
+                                                            if(!years.contains("-")){i--;}
+                                                            if (containsDigit(name)||containsDigit(surname)){
+                                                                labels.add("Chyba v posledním autorovi");
+                                                                //System.out.println("Error: " + value);
+                                                            }else
+                                                                out.add(name+" "+surname+" "+years);
+                                                        }
+
+                                                    }
+                                                    if (!out.isEmpty()) {
+                                                        doc.addField("last_author_excel",out);
+                                                        //System.out.println("AUTHORS: " + out.toString());
+                                                    }
+                                                    else {
+                                                        labels.add("Chyba v posledním autorovi");
+                                                        //System.out.println("Unknown: " + value);
+                                                    }
+                                                }
+                                            }
+                                        }
+
+
+                                    }
+                                    case "title","authors"->{
+                                        //skip
+                                    }
+                                    case "physical_locations"->{
+                                        doc.addField("archiver_location",value);
+                                    }
                                     default -> {
-                                        if (!Objects.equals(entry.getKey(), "Název") && !Objects.equals(entry.getKey(), "Autor"))
-                                            notes.add(entry.getKey() + " : " +  value);
+                                        if (!value.isEmpty()) notes.add(entry.getKey() + " : " +  value);
                                         //System.out.println("Unknown header: " + header);
                                         //doc.addField(header, value);
                                     }
@@ -255,6 +358,24 @@ public class TsvToSolrIndexer {
                             }
                         }
                         if (pid == null|| pid.trim().isEmpty() ||pid.trim().equals("uuid:"))continue;
+                        /*if (Objects.equals(pid, "uuid:da9ae0b0-4c5f-11ec-9253-5ef3fc9bb22f") || Objects.equals(pid, "da9ae0b0-4c5f-11ec-9253-5ef3fc9bb22f")){
+                            System.out.println("DEBUG");
+                        }*/
+                        if (public_year !=null) {
+                            if (year_of_death_last_author != null ) {
+                                int public_year_difference = year_of_death_last_author + applicationConfig.workflow().getAuthorDeadEnoughYear() - public_year;
+                                if (Math.abs(public_year_difference)>1 && public_year_difference!=applicationConfig.workflow().getAuthorDeadEnoughYear()){
+                                    notes.add("Public year in excel: " + public_year);
+                                    labels.add("Excel has unexpected year of publication");
+                                }
+                            } else if(date_issued!=null){
+                                int public_year_difference = date_issued +applicationConfig.workflow().getAuthorDeadEnoughYear() - public_year;
+                                if (Math.abs(public_year_difference)>1 && public_year_difference!=applicationConfig.workflow().getAuthorDeadEnoughYear()){
+                                    notes.add("Public year in excel: " + public_year);
+                                    labels.add("Excel has unexpected year of publication");
+                                }
+                            }
+                        }
                         //if(pid.equals("uuid:b5d91e40-a260-11ef-8fc3-5ef3fc9bb22f")) System.out.println("DEBUG");
                         States desiredState = parsePublicString(/*doc,*/ recordNumber,public_string,labels,notes);
                         Map<String,Object> labelsUpdateMap = new HashMap<>();
@@ -267,6 +388,8 @@ public class TsvToSolrIndexer {
                         Map<String,Object> notesUpdateMap = new HashMap<>();
                         notesUpdateMap.put("add-distinct", notes);
                         doc.getDocument().addField("note",notesUpdateMap);
+
+
                         //if (desiredState == States.CONTROLLED_UNKNOWN) desiredState = setState(doc,pid);
                        // if (desiredState != States.TO_CONTROL) System.out.println(desiredState+" "+pid);
                         SolrQuery q = new SolrQuery()
@@ -618,5 +741,35 @@ public class TsvToSolrIndexer {
             System.out.println("Critical Exception occurred in:date_str: " + e.getMessage());
         }
     }
+    public static String removeParenthesesContent(String input) {
+        if (input == null) return null;
+
+        StringBuilder result = new StringBuilder();
+        int depth = 0;
+
+        for (char c : input.toCharArray()) {
+            if (c == '(') {
+                depth++;
+            } else if (c == ')') {
+                if (depth > 0) depth--;
+            } else if (depth == 0) {
+                result.append(c);
+            }
+        }
+
+        return result.toString();
+    }
+    public static boolean containsDigit(String input) {
+        if (input == null) return false;
+
+        for (char c : input.toCharArray()) {
+            if (Character.isDigit(c)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
 
 }

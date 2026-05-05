@@ -133,7 +133,7 @@ public class HarvesterImpl implements Harvester {
                 errorcount++;
                 continue;
             }
-            LOGGER.log(Level.INFO, "query executed");
+            //LOGGER.log(Level.INFO, "query executed");
             List<HarvestingItem> harvestItems = XMLUtils.getElementsRecursive(element, (elm) -> elm.getNodeName().equals("doc")).stream().map(docElm
                     -> apiVersion.createHarvestItemFromResultElement(docElm, config)
             ).toList();
