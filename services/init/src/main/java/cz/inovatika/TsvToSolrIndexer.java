@@ -241,7 +241,7 @@ public class TsvToSolrIndexer {
                                     }
                                     case "checked_by_override"->{
                                         if (!value.isEmpty() && users.isEmpty()){
-                                            System.out.println("Overriding with: " + value);
+                                            //System.out.println("Overriding with: " + value);
                                             users.addAll(Arrays.asList(value.split("/")));
                                         }
                                     }
