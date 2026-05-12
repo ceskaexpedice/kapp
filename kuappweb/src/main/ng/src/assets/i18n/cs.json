@@ -160,6 +160,7 @@
     "CONTROLLED_PROHIBITED": "Kontrolované - znepřístupněné",
     "CONTROLLED_PRIVATE_LICENSE": "Kontrolované - neveřejné licence",
     "IMPORTED": "Importované",
+    "FOR_REVIEW": "K revizi",
     "undefined": "Neznamé"
   },
   "admin": {

@@ -160,6 +160,7 @@
     "CONTROLLED_PROHIBITED": "Controlled - inaccessible",
     "CONTROLLED_PRIVATE_LICENSE": "Controlled - non-public licenses",
     "IMPORTED": "Imported",
+    "FOR_REVIEW": "For review",
     "undefined": "Unknown"
   },
   "admin": {
