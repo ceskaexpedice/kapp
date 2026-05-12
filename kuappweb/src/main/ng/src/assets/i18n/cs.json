@@ -97,7 +97,7 @@
     "id_sysno": "Sysno",
     "id_urnnbn": "URN:NBN",
     "id_barCode": "Čárový kód",
-    "archiver_location": "Archivováno v",
+    "archiver_location": "Archivátor",
     "hard_facets": "Filtry",
     "nameIdentifier": "Identifikator",
     "nameIdentifier_desc": "Identifikator (AUT: controlfield 001, MODS: nameIdentifier)",
