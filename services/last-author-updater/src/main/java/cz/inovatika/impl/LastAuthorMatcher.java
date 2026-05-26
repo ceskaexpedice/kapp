@@ -17,6 +17,8 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+//TODO: ADD labels for error states
+
 public class LastAuthorMatcher {
     private static final Pattern DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
     private static final Pattern DATE_QUALIFIER_WITHOUT_DOT = Pattern.compile("(?i)\\b(?:ca|asi)\\s+");
