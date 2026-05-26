@@ -53,6 +53,7 @@ export class ResultItem {
   is_anonymous: boolean;
   is_collective: boolean;
   is_official: boolean;
+  is_pseudonymous: boolean;
   note: string;
   noteRows = 3;
   noteWidth = 200;
@@ -76,6 +77,7 @@ export class ResultItem {
       this.is_anonymous = this.doc()['is_anonymous'];
       this.is_collective = this.doc()['is_collective'];
       this.is_official = this.doc()['is_official'];
+      this.is_pseudonymous = this.doc()['is_pseudonymous'];
       if (this.doc()['note']) {
         this.note = this.doc()['note'].join("\n");
         const lines = this.note.split('\n');
@@ -334,7 +336,7 @@ export class ResultItem {
   }
 
   saveTypDila() {
-    this.service.saveTypDila(this.doc().pid, this.is_anonymous, this.is_collective, this.is_official).subscribe((res: any) => {
+    this.service.saveTypDila(this.doc().pid, this.is_anonymous, this.is_collective, this.is_official, this.is_pseudonymous).subscribe((res: any) => {
       console.log(res)
     })
   }

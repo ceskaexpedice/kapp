@@ -78,10 +78,12 @@
 				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
 				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
 				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
+				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</mat-checkbox>
 			} @else {
 				<span [class.app-removed]="!is_anonymous">{{ 'field.is_anonymous' | translate }}</span> &#160;
 				<span [class.app-removed]="!is_collective">{{ 'field.is_collective' | translate }}</span> &#160;
 				<span [class.app-removed]="!is_official">{{ 'field.is_official' | translate }}</span> &#160;
+				<span [class.app-removed]="!is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</span> &#160;
 			}
 			@if (state.user()) {
 				@if (editingDilo()) {

@@ -106,7 +106,8 @@
     "modified_by_user": "Modified by user",
     "is_anonymous": "Anonymní dílo",
     "is_collective": "Kolektivní dílo",
-    "is_official": "Úřední dílo"
+    "is_official": "Úřední dílo",
+    "is_pseudonymous": "Pseudonymní dílo"
   },
   "action": {
     "view": "View",

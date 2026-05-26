@@ -208,6 +208,7 @@ public class SolrIndexer {
             addAtomicField(doc, "set", js.optBoolean("is_anonymous"), "is_anonymous");    
             addAtomicField(doc, "set", js.optBoolean("is_collective"), "is_collective");    
             addAtomicField(doc, "set", js.optBoolean("is_official"), "is_official");
+            addAtomicField(doc, "set", js.optBoolean("is_pseudonymous"), "is_pseudonymous");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
 
             solr.add("titles", doc);
