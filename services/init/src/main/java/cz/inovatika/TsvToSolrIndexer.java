@@ -207,7 +207,7 @@ public class TsvToSolrIndexer {
                                     }
                                     case "year_of_death_last_author"/*, "public_since"*/ -> {
                                         if (NumberUtils.isCreatable(value) && value.length() == 4) {
-                                            year_of_death_last_author = Integer.parseInt(value);
+                                            year_of_death_last_author = Integer.valueOf(value);
                                             doc.setField(AppComputedFields.LAST_YEAR_DEATH, value);
                                         } /*else {
                                              if(!"?".equals(value))System.err.println("Unexpected year value on row: "
@@ -218,7 +218,7 @@ public class TsvToSolrIndexer {
                                     case "public_since" -> {
                                         if (NumberUtils.isCreatable(value) && value.length() == 4)
                                         {
-                                            public_year = Integer.parseInt(value);
+                                            public_year = Integer.valueOf(value);
                                         }
                                     }
                                     case "date_issued_str" -> {
@@ -228,7 +228,7 @@ public class TsvToSolrIndexer {
                                         if (strobj != null) {
                                         String cleanedString = strobj.toString();
                                         cleanedString = cleanedString.replaceAll("[^0-9]", "");
-                                        if (cleanedString.length() == 4) date_issued = Integer.parseInt(cleanedString);
+                                        if (cleanedString.length() == 4) date_issued = Integer.valueOf(cleanedString);
                                         //System.out.println(date_issued);// + " " + year_of_death_last_author);
                                         }
                                     }
