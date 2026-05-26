@@ -33,6 +33,7 @@ public class Constants {
         public static class AppDataFields {
 
             public static final String AUTHORS_KRAMERIUS_FIELD = "authors_kramerius";
+            public static final String AUTHORS_KAPP_FIELD = "authors_kapp";
             public static final String AUTHORS_IDS = "authors_ids";
             public static final String NAME_IDENTIFIER_FIELD = "nameIdentifier";
 
@@ -88,6 +89,7 @@ public class Constants {
             public static final String EXCEL_FAILED_TO_PARSE_DATE = "excel_failed_to_parse_date";
             public static final String EXCEL_SUSPICIOUS_YEAR_RANGE = "excel_suspicious_year_range";
             public static final String UNEXPECTED_DATE_FORMAT = "excel_unexpected date format";
+            public static final String AUTHOR_MODIFIED = "author_modified";
         }
         public static class ModelFields {
             public static final String MONOGRAPH = "monograph";
