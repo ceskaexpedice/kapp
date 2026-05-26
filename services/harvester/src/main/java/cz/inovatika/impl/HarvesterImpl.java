@@ -243,13 +243,13 @@ public class HarvesterImpl implements Harvester {
     static final int INTERVALMINUTES = 60;
     static final LocalTime start = LocalTime.now();
     static final LocalTime end = start.plusMinutes(INTERVALMINUTES);
-    static final long sleepSeconds = 3600;
-    static final boolean exitOnOutOfInterval = false;
+    static final long SLEEPSECONDS = 3600;
+    static final boolean EXITONOUTOFINTERVAL = false;
 
     public static void main(String[] args) {
 //        if (args.length > 0) {
 //            String timeRange = args[0];
-//            sleepSeconds = args.length > 1 ? Long.parseLong(args[1]) : 60;
+//            SLEEPSECONDS = args.length > 1 ? Long.parseLong(args[1]) : 60;
 //
 //            String[] parts = timeRange.split("-");
 //            if (parts.length != 2) {
@@ -295,12 +295,12 @@ public class HarvesterImpl implements Harvester {
                 inRange = !now.isBefore(start) || now.isBefore(end);
             }
             if (inRange) return;
-            if (exitOnOutOfInterval) {
-                LOGGER.info("Not in interval, exiting. (exitOnOutOfInterval==true)");
+            if (EXITONOUTOFINTERVAL) {
+                LOGGER.info("Not in interval, exiting. (EXITONOUTOFINTERVAL==true)");
                 System.exit(0);
             } else {
                 LOGGER.log(Level.INFO, "Outside allowed time ({0}). Sleeping...", now.format(TIME_FMT));
-                Thread.sleep(sleepSeconds * 1000);
+                Thread.sleep(SLEEPSECONDS * 1000);
             }
 
         }
@@ -645,10 +645,10 @@ public class HarvesterImpl implements Harvester {
                     LOGGER.warning(dateText);
                     LOGGER.warning(wrapper.getIdKey());
                 }
-            } catch (Exception e) {
+            } catch (NumberFormatException e) {
                 LOGGER.warning(String.format( "Failed to parse date range for dateIssued. Document %s", wrapper.getIdKey()));
-                LOGGER.warning("Raw value"+ dateText);
-                LOGGER.warning("Normalized string :"+TitleNormalizationUtils.normalize(dateText));
+                LOGGER.warning(() -> "Raw value"+ dateText);
+                LOGGER.warning(() -> "Normalized string :"+TitleNormalizationUtils.normalize(dateText));
             }
         }
     }

@@ -164,16 +164,13 @@ public class TitleNormalizationUtils {
             String secondRaw = m.group(2);
             String secondFinal;
 
-            if (secondRaw.length() == 2) {
-                // 1965/66 nebo 1965/-6 -> 1965-1966
-                secondFinal = first.substring(0, 2) + fillMaskWith(secondRaw,"9");
-            } else if (secondRaw.length() == 3) {
-                // 1480-482 -> 1480-1482
-                secondFinal = first.charAt(0) + fillMaskWith(secondRaw,"9");
-            } else {
-                // 4 znaky: 19uu-20xx -> 1900-2000
-                secondFinal = fillMaskWith(secondRaw,"9");
-            }
+            secondFinal = switch (secondRaw.length()) {
+                case 2 -> first.substring(0, 2) + fillMaskWith(secondRaw,"9");
+                case 3 -> first.charAt(0) + fillMaskWith(secondRaw,"9");
+                default -> fillMaskWith(secondRaw,"9");
+            }; // 1965/66 nebo 1965/-6 -> 1965-1966
+            // 1480-482 -> 1480-1482
+            // 4 znaky: 19uu-20xx -> 1900-2000
 
             sb.append(first).append("-").append(secondFinal);
             //lastEnd = m.end();
@@ -189,7 +186,7 @@ public class TitleNormalizationUtils {
         Matcher matcher = pattern.matcher(input);
 
         StringBuilder sb = new StringBuilder();
-        int lastEnd = 0;
+        //int lastEnd = 0;
         while (matcher.find()) {
             applied = true;
             String raw = matcher.group(1);

@@ -1,7 +1,6 @@
 package cz.inovatika.solr;
 
 import org.apache.solr.common.SolrInputDocument;
-import org.apache.solr.common.SolrInputField;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -69,6 +68,7 @@ public record SolrInputDocumentWrapper(String idKey,SolrInputDocument document, 
 
                     case ATOMIC_SET ->
                         document.setField(name, value);
+                    default -> throw new IllegalArgumentException("Unexpected value: " + ofOperation);
 
                 }
             }

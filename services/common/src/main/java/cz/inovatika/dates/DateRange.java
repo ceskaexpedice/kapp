@@ -1,6 +1,5 @@
 package cz.inovatika.dates;
 
-import cz.inovatika.Constants;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 
 import java.time.Year;
