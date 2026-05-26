@@ -104,10 +104,10 @@
     "no_nameIdentifier": "Authors without nameIdentifier",
     "no_year_death": "Authors without death date",
     "modified_by_user": "Modified by user",
-    "is_anonymous": "Anonymní dílo",
-    "is_collective": "Kolektivní dílo",
-    "is_official": "Úřední dílo",
-    "is_pseudonymous": "Pseudonymní dílo"
+    "is_anonymous": "Anonymous work",
+    "is_collective": "Colaborative work",
+    "is_official": "Official work",
+    "is_pseudonymous": "Pseudonymous work"
   },
   "action": {
     "view": "View",
