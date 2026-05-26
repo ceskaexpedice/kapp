@@ -8,12 +8,6 @@ public class WorkflowConfig {
     private int onsiteYear;
     private int authorDeadEnoughYear;
 
-    public WorkflowConfig() {
-    }
-
-    public void setOnsiteYear(int onsiteYear) {
-        this.onsiteYear = onsiteYear;
-    }
 
     public int getOnsiteYear() {
         return onsiteYear;
@@ -25,10 +19,6 @@ public class WorkflowConfig {
 
     public int getPublicYear() {
         return publicYear;
-    }
-
-    public void setPublicYear(int publicYear) {
-        this.publicYear = publicYear;
     }
 
     private int calculateYear(int s) {
@@ -49,14 +39,19 @@ public class WorkflowConfig {
         return calculateYear(onsiteYear);
     }
 
-    public boolean isPublicYear(int year) {
-        return year <= calculatePublicYear();
+    public boolean isPublicYear(int year_published) {
+        return year_published <= calculatePublicYear();
     }
 
-    public boolean isOnsiteYear(int year) {
-        return year >= calculateOnsiteYear();
+    public boolean isOnsiteYear(int year_published) {
+        return year_published >= calculateOnsiteYear();
     }
-    public boolean isAuthorDeadEnoughYear(int year) {
-        return year <= calculateAuthorDeadYear();
+    public boolean isAuthorDeadEnoughYear(int year_died,Integer year_published) {
+        if (year_published != null)
+            return year_died <= calculateAuthorDeadYear() && !isOnsiteYear(year_published);
+        return year_died <= calculateAuthorDeadYear();
+    }
+    public boolean isPublishableYear(Integer year_died,Integer year_published) {
+        return (year_published!=null && isPublicYear(year_published)) || (year_died !=null && isAuthorDeadEnoughYear(year_died,year_published));
     }
 }

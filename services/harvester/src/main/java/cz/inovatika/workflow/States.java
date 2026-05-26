@@ -52,7 +52,7 @@ public enum States {
                         return NONCONTROLLED_PRIVATE;
                     }
                     default -> {
-                        reason.value = "not a monograph";
+                        reason.value = "not a monograph(unit) or periodical volume";
                         return NONCONTROLLED_PRIVATE;
                     }
                 }
@@ -77,7 +77,7 @@ public enum States {
             if (wConfig==null)return null;
             if (currentDoc.last_year_death() != null) {
                 int year = currentDoc.last_year_death();
-                if (wConfig.isAuthorDeadEnoughYear(year)){//it has been OnsiteYear years from the death of last author
+                if (wConfig.isAuthorDeadEnoughYear(year,currentDoc.dateIssuedYear())){//it has been OnsiteYear years from the death of last author
                     reason.value = "it has been OnsiteYear years from the death of last author";
                     return TO_CONTROL;
                 }
@@ -126,7 +126,7 @@ public enum States {
             if (wConfig==null)return null;
             if (currentDoc.last_year_death() != null) {
                 int year = currentDoc.last_year_death();
-                if (wConfig.isAuthorDeadEnoughYear(year)){
+                if (wConfig.isAuthorDeadEnoughYear(year,currentDoc.dateIssuedYear())){
                     reason.value = StateChangeReasons.SurpassedAuthorDeath(year);//"it has been OnsiteYear years from the death of last author";
                     return NONCONTROLLED_PUBLIC;
                 }
@@ -162,7 +162,7 @@ public enum States {
             if (wConfig==null)return null;
             if (currentDoc.last_year_death() != null) {
                 int year = currentDoc.last_year_death();
-                if (wConfig.isAuthorDeadEnoughYear(year)){//it has been OnsiteYear years from the death of last author
+                if (wConfig.isAuthorDeadEnoughYear(year,currentDoc.dateIssuedYear())){//it has been OnsiteYear years from the death of last author
                     reason.value = StateChangeReasons.SurpassedAuthorDeath(year);
                     return FOR_REVIEW;
                 }

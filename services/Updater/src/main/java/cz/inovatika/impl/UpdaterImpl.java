@@ -54,6 +54,16 @@ public class UpdaterImpl implements Updater {
                 params.set("cursorMark", cursorMark);
                 params.set("sort", "pid asc");
                 params.add("fq", AppComputedFields.ASSIGNED_LICENSES+":onsite");
+                params.add(
+                        "fq",
+                        "(" +
+                                AppComputedFields.DATE_ISSUED_YEAR + ":{* TO " + threshold + "}" +
+                                ") OR (" +
+                                AppComputedFields.DATE_ISSUED_YEAR + ":{* TO "+ applicationConfig.workflow().calculateOnsiteYear()+"}" +
+                                " AND " +
+                                AppComputedFields.LAST_YEAR_DEATH + ":{* TO "+ applicationConfig.workflow().calculateAuthorDeadYear()+"}" +
+                                ")"
+                );
                 params.add("fq", AppComputedFields.DATE_ISSUED_YEAR+":{ * TO "+threshold+"}");
 
                 QueryResponse response = solrClient.query(TITLES_COLLECTION, params);
