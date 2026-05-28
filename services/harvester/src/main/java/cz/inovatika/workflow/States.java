@@ -42,25 +42,24 @@ public enum States {
                         return NONCONTROLLED_PRIVATE;
                     }
                 }
-                else
-                    switch (currentDoc.model()) {
-                        case ModelFields.MONOGRAPH, ModelFields.MONOGRAPHUNIT -> {
-                            reason.value = StateChangeReasons.INCONTRLOWINDOWISSUED;
-                            return TO_CONTROL;
-                        }
-                        case ModelFields.PERIODICALVOLUME -> {
-                            reason.value = "periodical volume";
-                            return NONCONTROLLED_PRIVATE;
-                        }
-                        default -> {
-                            reason.value = "not a monograph(unit) or periodical volume";
-                            return NONCONTROLLED_PRIVATE;
-                        }
+                return NONCONTROLLED_PRIVATE;
+                /*switch (currentDoc.model()) {
+                    case ModelFields.MONOGRAPH, ModelFields.MONOGRAPHUNIT -> {
+                        reason.value = StateChangeReasons.INCONTRLOWINDOWISSUED;
+                        return TO_CONTROL;
                     }
+                    case ModelFields.PERIODICALVOLUME -> {
+                        reason.value = "periodical volume";
+                        return NONCONTROLLED_PRIVATE;
+                    }
+                    default -> {
+                        reason.value = "not a monograph(unit) or periodical volume";
+                        return NONCONTROLLED_PRIVATE;
+                    }
+                }*/
             } else {
                 return checkChildren(rootPid,solrClient);
             }
-            return null;
         }
 
         @Override
