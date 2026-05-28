@@ -30,7 +30,7 @@ public enum States {
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             if (!currentDoc.isHierarchical()) {
-                WorkflowConfig wConfig = config.workflow();
+                /*WorkflowConfig wConfig = config.workflow();
                 if (wConfig != null && currentDoc.dateIssuedYear() != null) {
                     int year = currentDoc.dateIssuedYear();
                     if (wConfig.isPublicYear(year)) {
@@ -41,8 +41,10 @@ public enum States {
                         reason.value = StateChangeReasons.NotYetIssued(config.workflow().getOnsiteYear());
                         return NONCONTROLLED_PRIVATE;
                     }
-                }
-                return NONCONTROLLED_PRIVATE;
+                }*/
+                States s = TO_CONTROL.calculateNextState(rootPid, solrClient, config, currentDoc, reason);
+                if (s == null) return TO_CONTROL;
+                return s;
                 /*switch (currentDoc.model()) {
                     case ModelFields.MONOGRAPH, ModelFields.MONOGRAPHUNIT -> {
                         reason.value = StateChangeReasons.INCONTRLOWINDOWISSUED;
