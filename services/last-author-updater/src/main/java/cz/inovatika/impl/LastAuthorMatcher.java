@@ -18,8 +18,8 @@ import java.util.Set;
 import java.util.regex.Pattern;
 
 //TODO: ADD labels for error states
-
 public class LastAuthorMatcher {
+
     private static final Pattern DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
     private static final Pattern DATE_QUALIFIER_WITHOUT_DOT = Pattern.compile("(?i)\\b(?:ca|asi)\\s+");
     private static final Pattern YEAR_RANGE = Pattern.compile("\\b\\d{3,4}\\s*\\p{Pd}\\s*\\d{0,4}");
@@ -290,15 +290,14 @@ public class LastAuthorMatcher {
             return "";
         }
 
-        String result = value;
-        result = result.replace("ca.", " ");
-        result = result.replace("Ca.", " ");
-        result = result.replace("CA.", " ");
-        result = result.replace("[", " ");
-        result = result.replace("]", " ");
-        result = result.replace("(", " ");
-        result = result.replace(")", " ");
-        result = result.replace("?", " ");
+        String result = value.replace("ca.", " ")
+                .replace("Ca.", " ") 
+                .replace("CA.", " ")
+                .replace("[", " ")
+                .replace("]", " ")
+                .replace("(", " ")
+                .replace(")", " ")
+                .replace("?", " ");
 
         result = DATE_QUALIFIER_WITHOUT_DOT.matcher(result).replaceAll(" ");
         result = YEAR_RANGE.matcher(result).replaceAll(" ");
@@ -355,6 +354,7 @@ public class LastAuthorMatcher {
     private static JSONArray copyArray(JSONArray array) {
         return new JSONArray(array.toString());
     }
+
     private static JSONObject copyObject(JSONObject object) {
         return new JSONObject(object.toString());
     }
@@ -436,6 +436,7 @@ public class LastAuthorMatcher {
     }
 
     private record NameParts(String normalized, Set<String> tokens, String compact, String sortedCompact) {
+
         static NameParts of(String value) {
             String normalized = normalizeName(value);
             Set<String> tokens = new LinkedHashSet<>();
@@ -449,6 +450,7 @@ public class LastAuthorMatcher {
     }
 
     private record AuthorCandidate(JSONObject author, int kappIndex) {
+
         Integer yearDeath() {
             Integer yearDeath = asInteger(author.opt("year_death"));
             if (yearDeath == null || yearDeath <= 0 || yearDeath >= 9999 || yearDeath > Year.now().getValue()) {
@@ -484,6 +486,7 @@ public class LastAuthorMatcher {
     }
 
     private record Match(String excelAuthor, AuthorCandidate candidate, double score, String reason) {
+
         String matchedAuthor() {
             return excelAuthor.isBlank() ? candidate.author().optString("full") : excelAuthor;
         }
@@ -498,13 +501,15 @@ public class LastAuthorMatcher {
             TitleAuthorFields titleAuthorFields,
             int lastYearDeath,
             String reason
-    ) {
+            ) {
+
         static UpdatePlan noMatch(String reason) {
             return new UpdatePlan(false, false, "", new JSONObject(), new JSONArray(), TitleAuthorFields.empty(), 0, reason);
         }
     }
 
     public record TitleAuthorFields(List<String> ids, List<String> nameIdentifiers, List<String> names) {
+
         static TitleAuthorFields empty() {
             return new TitleAuthorFields(List.of(), List.of(), List.of());
         }

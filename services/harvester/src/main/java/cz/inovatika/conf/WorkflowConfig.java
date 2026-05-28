@@ -48,8 +48,8 @@ public class WorkflowConfig {
     }
     public boolean isAuthorDeadEnoughYear(int year_died,Integer year_published) {
         if (year_published != null)
-            return year_died <= calculateAuthorDeadYear() && !isOnsiteYear(year_published);
-        return year_died <= calculateAuthorDeadYear();
+            return year_died < calculateAuthorDeadYear() && !isOnsiteYear(year_published);
+        return year_died < calculateAuthorDeadYear();
     }
     public boolean isPublishableYear(Integer year_died,Integer year_published) {
         return (year_published!=null && isPublicYear(year_published)) || (year_died !=null && isAuthorDeadEnoughYear(year_died,year_published));
