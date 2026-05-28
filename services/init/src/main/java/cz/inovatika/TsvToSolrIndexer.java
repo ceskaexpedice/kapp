@@ -25,6 +25,8 @@ import java.net.ConnectException;
 import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 //TODO: Refactor !!
 public class TsvToSolrIndexer {
@@ -38,6 +40,7 @@ public class TsvToSolrIndexer {
 
     //private final static String MZKLink = "https://api.kramerius.mzk.cz/search/api/client/v7.0/";
     private static String current_table = "";
+    private static final Pattern IMPRECISE_ISSUED_DATE_HINT = Pattern.compile("^\\[?\\s*(?:(\\d{2})--?|(\\d{3})-)\\??\\s*\\]?$");
 
     public static void main(String[] args) throws FileNotFoundException {
         if (args.length > 0) {
@@ -681,12 +684,7 @@ public class TsvToSolrIndexer {
                     System.out.println("Comma found in " + og + ", using first part: " + value + " V tabulce: " +current_table+" na řádku: " + recordNumber);
                 }
             }
-            if (value.contains("19--") && value.length() <= 6) {// Handle 19-- format with or without []
-                value = "1900?-1999?";
-            } else if (value.contains("19-") && value.length() <= 5) {// Handle 19- format with or without []
-                value = "1900?-1999?";
-            }
-            value = value.replaceAll("19(\\d)-", "19$10?-19$19?");
+            value = normalizeImpreciseIssuedDateHint(value, labels);
             if (value.length() == 5) {// 1999] or [1999
                 if (value.endsWith("]")) {
                     value = value.substring(0, 4) + '-' + value;
@@ -694,7 +692,6 @@ public class TsvToSolrIndexer {
                     value = value + '-' + value.substring(1);
                 }
             }
-            value = value.replaceAll("\\[?19--\\??]?", "19");
             value = value.replaceAll("\\s+až\\s+", "-");// replace až with dash
             String kolem_fix = value.replaceAll("kolem r.\\s+", "?");// replace kolem with ?
             value = value.equals(kolem_fix) ? value : kolem_fix + "?";
@@ -706,6 +703,24 @@ public class TsvToSolrIndexer {
             System.out.println("Critical Exception occurred in:date_str: " + e.getMessage());
         }
     }
+
+    static String normalizeImpreciseIssuedDateHint(String value, List<String> labels) {
+        String normalized = value.trim()
+                .replace('–', '-')
+                .replace('—', '-');
+        Matcher matcher = IMPRECISE_ISSUED_DATE_HINT.matcher(normalized);
+        if (!matcher.matches()) {
+            return value;
+        }
+
+        String prefix = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
+        int missingDigits = 4 - prefix.length();
+        if (!labels.contains(Labels.IMPRECISE_DATE_ISSUED)) {
+            labels.add(Labels.IMPRECISE_DATE_ISSUED);
+        }
+        return prefix + "0".repeat(missingDigits) + "?-" + prefix + "9".repeat(missingDigits) + "?";
+    }
+
     public static String removeParenthesesContent(String input) {
         if (input == null) return null;
 

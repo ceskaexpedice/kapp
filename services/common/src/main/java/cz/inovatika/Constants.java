@@ -89,6 +89,7 @@ public class Constants {
             public static final String EXCEL_FAILED_TO_PARSE_DATE = "excel_failed_to_parse_date";
             public static final String EXCEL_SUSPICIOUS_YEAR_RANGE = "excel_suspicious_year_range";
             public static final String UNEXPECTED_DATE_FORMAT = "excel_unexpected date format";
+            public static final String IMPRECISE_DATE_ISSUED = "Nepřesné datum vydání";
             public static final String AUTHOR_MODIFIED = "author_modified";
         }
         public static class ModelFields {
