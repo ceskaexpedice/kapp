@@ -289,64 +289,9 @@ public class TsvToSolrIndexer {
                                                     System.out.println("Labeled: " + value);
                                                     labels.add("Nejistá anonymita/úřednost/kolektivnost");}
                                                 else {
-                                                    String[] autors = value.replace("–","-").split(";");
-                                                    ArrayList<String> out = new ArrayList<>();
-
-
-                                                    for  (String autor : autors) {
-                                                        autor = autor.replace("(?-?)",", ?-?");
-                                                        autor = autor.replace("(?-? )",", ?-?");
-                                                        autor = autor.replace("( ?-?)",", ?-?");
-                                                        autor = autor.replace("autoři:","");
-
-
-                                                        ArrayList<String> parts = new ArrayList<>(List.of(removeParenthesesContent(autor).trim().split(",")));
-                                                        for (int i = 0; i < parts.size(); i++) {
-                                                            parts.set(i, parts.get(i).trim());
-                                                            String part = parts.get(i);
-                                                            if (part.isEmpty()) {
-                                                                parts.remove(part);
-                                                                i--;
-                                                            }
-                                                        }
-                                                        for (int i=2; i<=parts.size(); i+=3) {
-                                                            String name = "";
-                                                            String surname;
-                                                            String years = "";
-                                                            String part2 = parts.get(i - 1);
-                                                            if(part2.contains("-?")|| part2.contains("?-")||(part2.contains("-") && containsDigit(part2))){
-                                                                String[] fullname = parts.get(i - 2).split(" ");
-                                                                for (int i1 = 1; i1 < fullname.length; i1++) {
-                                                                    name += (i1!=1?" ":"") + fullname[i1];
-                                                                }
-                                                                surname = fullname[0];
-                                                                years = part2;
-                                                                i--;
-                                                            }
-                                                            else{
-                                                                name = part2;
-                                                                surname = parts.get(i - 2);
-                                                                if (name.contains(" ") && containsDigit(name)){
-                                                                    String[] ps = name.split(" ");
-                                                                    name = ps[0];
-                                                                    years = ps[1];
-                                                                    i--;
-                                                                }
-                                                                else if (i!=parts.size()) years = parts.get(i);//the else here makes sense cuz if the abovementioned thing triggered this should not
-
-                                                            }
-
-                                                            if(!years.contains("-")){i--;}
-                                                            if (containsDigit(name)||containsDigit(surname)){
-                                                                labels.add("Chyba v posledním autorovi");
-                                                                //System.out.println("Error: " + value);
-                                                            }else
-                                                                out.add(name+" "+surname+" "+years);
-                                                        }
-
-                                                    }
+                                                    List<String> out = LastAuthorExcelParser.parse(value);
                                                     if (!out.isEmpty()) {
-                                                        doc.addField("last_author_excel",out);
+                                                        doc.setField("last_author_excel",out);
                                                         //System.out.println("AUTHORS: " + out.toString());
                                                     }
                                                     else {

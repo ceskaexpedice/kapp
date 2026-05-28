@@ -62,6 +62,7 @@ public class HarvesterImpl implements Harvester {
     private static final int BATCH_SIZE = 200;
     private static final int AUTHOR_BATCH_SIZE = 250;
 
+    public static long REQUEST_COOLDOWN_MILIS = 0;
 
     private static final boolean IGNORE_CHECKTIME = true;
     public static final int NUMBER_OF_THREAD = 4;
@@ -330,6 +331,7 @@ public class HarvesterImpl implements Harvester {
             i.setTimestampPath(String.join(File.separator, System.getProperty("user.home"), ".kapp", "timestamps", i.getAcronym(), "timestamp"));
             try {
                 LOGGER.log(Level.INFO, "Starting: {0}", i.getAcronym());
+                REQUEST_COOLDOWN_MILIS = 0;
                 harvestAndBatch(applicationConfig, i);
             } catch (final IOException | SolrServerException e) {
                 throw new RuntimeException(e);

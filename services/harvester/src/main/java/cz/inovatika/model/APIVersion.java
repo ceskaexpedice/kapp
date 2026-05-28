@@ -1,6 +1,7 @@
 package cz.inovatika.model;
 
 import cz.inovatika.Constants.TitlesCollectionFields.ModelFields;
+import cz.inovatika.impl.HarvesterImpl;
 import cz.inovatika.utils.XMLUtils;
 import org.apache.commons.lang3.tuple.Pair;
 import org.w3c.dom.Element;
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
  * metadata fetching logic.
  */
 public enum APIVersion {
+
 
     /**
      * Implementation for API Version 5.
@@ -296,7 +298,7 @@ public enum APIVersion {
         int attempts = 0;
         while(attempts++ < 10) {
             try {
-
+                if (HarvesterImpl.REQUEST_COOLDOWN_MILIS!=0)Thread.sleep(HarvesterImpl.REQUEST_COOLDOWN_MILIS);
                 HttpResponse<InputStream> response = client.send(HttpRequest.newBuilder()
                         .uri(URI.create(modsUrl))
                         .GET()
@@ -310,7 +312,7 @@ public enum APIVersion {
                     if (response != null){
                         LOGGER.log(Level.INFO, "Headers: {0};", response.headers().map() );
                         List<String> retry = response.headers().map().get("retry-after");
-                        if (retry!=null) Thread.sleep(Long.parseLong(retry.getFirst())* 1000L+1000L);
+                        if (retry!=null) HarvesterImpl.REQUEST_COOLDOWN_MILIS = Long.parseLong(retry.getFirst())* 1000L;
                         //LOGGER.log(Level.INFO, "Body: {0};", response.body() );
                         //LOGGER.log(Level.INFO, "ToString: {0};", response.toString() );
                     }

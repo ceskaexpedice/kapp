@@ -35,6 +35,7 @@ public class LastAuthorMatcher {
             Integer currentLastYearDeath
     ) {
         List<String> normalizedExcelAuthors = lastAuthorsExcel.stream()
+                .map(LastAuthorMatcher::excelAuthorName)
                 .map(LastAuthorMatcher::normalizeExcelAuthorName)
                 .filter(value -> !value.isBlank())
                 .distinct()
@@ -283,6 +284,23 @@ public class LastAuthorMatcher {
 
     private static String normalizeExcelAuthorName(String value) {
         return normalizeName(stripDateParts(value));
+    }
+
+    private static String excelAuthorName(String value) {
+        if (value == null) {
+            return "";
+        }
+
+        String text = value.trim();
+        if (!text.startsWith("{")) {
+            return text;
+        }
+
+        try {
+            return new JSONObject(text).optString("name", "");
+        } catch (JSONException e) {
+            return text;
+        }
     }
 
     private static String stripDateParts(String value) {

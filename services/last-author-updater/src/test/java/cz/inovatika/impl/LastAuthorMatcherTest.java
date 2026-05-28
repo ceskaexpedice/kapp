@@ -51,6 +51,26 @@ class LastAuthorMatcherTest {
     }
 
     @Test
+    void matchesJsonExcelAuthorValue() {
+        JSONArray kramerius = new JSONArray()
+                .put(author("capek18901938", "Čapek, Karel", "Čapek", "Karel", 1938));
+
+        LastAuthorMatcher.UpdatePlan update = matcher.prepareUpdate(
+                List.of(new JSONObject()
+                        .put("name", "Karel Capek")
+                        .put("birthyear", 1890)
+                        .put("deathyear", 1938)
+                        .toString()),
+                new JSONArray(),
+                kramerius,
+                null
+        );
+
+        assertTrue(update.shouldUpdate());
+        assertEquals("Čapek, Karel", update.matchedAuthor().getString("full"));
+    }
+
+    @Test
     void matchesExcelAuthorWithReadableDateCleanupFormats() {
         JSONArray kramerius = new JSONArray()
                 .put(author("capek18901938", "Čapek, Karel", "Čapek", "Karel", 1938));
