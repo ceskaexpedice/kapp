@@ -309,7 +309,7 @@ public enum APIVersion {
                     LOGGER.log(Level.SEVERE, "HTTP error: {0}", response != null ? response.statusCode() : "null");
                     if (response != null){
                         LOGGER.log(Level.INFO, "Headers: {0};", response.headers().map() );
-                        Thread.sleep(Long.parseLong(response.headers().map().get("retry-after").getFirst())* 1000L);
+                        Thread.sleep(Long.parseLong(response.headers().map().get("retry-after").getFirst())* 1000L+1000L);
                         //LOGGER.log(Level.INFO, "Body: {0};", response.body() );
                         //LOGGER.log(Level.INFO, "ToString: {0};", response.toString() );
                     }
