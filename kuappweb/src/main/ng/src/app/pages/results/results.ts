@@ -183,9 +183,11 @@ export class Results {
     p.sort = this.sort.active + " " + this.sort.direction;
     if (csv) {
       p.export = true;
+      p.fl = this.displayedColumns();
     } else {
       this.docs.set([]);
     }
+    console.log(p)
     this.addFilters(p, this.state.usedFacets());
     let s: Observable<any>;
     if (this.view() === 'titles') {

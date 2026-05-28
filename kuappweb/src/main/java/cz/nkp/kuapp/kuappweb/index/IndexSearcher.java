@@ -7,7 +7,6 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.text.SimpleDateFormat;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -77,6 +76,13 @@ public class IndexSearcher {
             int offset = 0;
             if (request.getParameter("offset") != null) {
                 offset = Integer.parseInt(request.getParameter("offset"));
+            }
+            
+            String fl = "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:" + release_date;
+            if (request.getParameter("fl") != null) {
+                fl = String.join(",",request.getParameterValues("fl"));
+                fl = fl.replace("release_date", "release_date:" + release_date);
+                fl = fl.replace("action", "");
             }
 
 
@@ -150,7 +156,7 @@ public class IndexSearcher {
 //                    .withParam("stats", true)
 //                    .withParam("stats.field", "date_issued_year")
                     .setOffset(offset)
-                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:" + release_date)
+                    .returnFields(fl)
                     .setSort(sort)
                     .setLimit(rows);
 
