@@ -31,7 +31,7 @@ import org.json.JSONObject;
 public class IndexSearcher {
 
     public static final Logger LOGGER = Logger.getLogger(IndexSearcher.class.getName());
-    final static SimpleDateFormat dtformatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
+    // final static SimpleDateFormat dtformatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     public static JSONObject home(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
@@ -95,6 +95,7 @@ public class IndexSearcher {
                 }
                 q = "{!boost b=query($modelboost)}" + reqQ;
             }
+            
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withParam("df", "full_text")
@@ -102,6 +103,10 @@ public class IndexSearcher {
                     .withParam("expand", true)
                     .withParam("expand.rows", 100)
                     .withParam("modelboost", "model:monograph")
+                    
+                    .withFacet("date_issued_year", new QueryFacetMap("date_issued_year:[1000 TO 2100]")
+                            .withStatSubFacet("date_issued_year_min", "min(date_issued_year)")
+                            .withStatSubFacet("date_issued_year_max", "max(date_issued_year)"))
                     .withFacet("modified_by_user", new TermsFacetMap("modified_by_user")
                             .setLimit(100)
                             .setMinCount(1))
@@ -138,10 +143,12 @@ public class IndexSearcher {
                     .withFacet("contracts", new TermsFacetMap("contracts")
                             .setLimit(100)
                             .setMinCount(1))
-                    .withFacet("date_issued_year", new TermsFacetMap("date_issued_year")
-                            //.setSort("index desc")
-                            .setLimit(20)
-                            .setMinCount(1))
+//                    .withFacet("date_issued_year", new TermsFacetMap("date_issued_year")
+//                            .setSort("index asc")
+//                            .setLimit(20)
+//                            .setMinCount(1))
+//                    .withParam("stats", true)
+//                    .withParam("stats.field", "date_issued_year")
                     .setOffset(offset)
                     .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:" + release_date)
                     .setSort(sort)
@@ -201,7 +208,10 @@ public class IndexSearcher {
             }
 
             if (request.getParameter("date_issued_year") != null) {
-                jrequest = jrequest.withFilter("date_issued_year:" + request.getParameter("date_issued_year"));
+                String[] parts = request.getParameter("date_issued_year").split(",");
+                String from = parts[0].isBlank() ? "*" : parts[0];
+                String to = parts[1].isBlank() ? "*" : parts[1];
+                jrequest = jrequest.withFilter("date_issued_year:[" + from + " TO " + to + "]");
             }
             if (request.getParameter("authors_ids") != null) {
                 jrequest = jrequest.withFilter("authors_ids:" + request.getParameter("authors_ids"));

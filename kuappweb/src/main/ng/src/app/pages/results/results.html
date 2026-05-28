@@ -4,6 +4,7 @@
     @if(solrResponse?.facets) {
     <div class="app-left">
       <app-facets [fields]="[
+          'date_issued_year',
           'labels', 
           'state',
           'modified_by_user',
@@ -13,7 +14,6 @@
           'licenses', 
           'digital_library',
           'model',
-          'date_issued_year',
           'physical_locations',
           'authors'
           ]" [facets]="solrResponse.facets" [hard_facets]="view() === 'titles' ? [] : ['no_nameIdentifier', 'no_year_death']"></app-facets>

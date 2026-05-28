@@ -8,10 +8,15 @@ import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
 import { AppState } from '../../app-state';
 import { Router } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatButtonModule } from '@angular/material/button';
 
 @Component({
   selector: 'app-facets',
-  imports: [TranslateModule, MatExpansionModule, MatListModule,
+  imports: [TranslateModule, FormsModule, MatFormFieldModule,
+    MatExpansionModule, MatListModule, MatInputModule, MatButtonModule,
     MatCheckboxModule, MatTooltipModule, MatIconModule
   ],
   templateUrl: './facets.component.html',
@@ -32,10 +37,19 @@ export class FacetsComponent {
   hasUsedFacets: boolean;
   usedFacets: {field: string, value: string}[] = [];
 
+  yearFrom: number;
+  yearTo: number;
+
   constructor(public state: AppState) {
     effect(() => {
       this.usedFacets = this.state.usedFacets();
       this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
+
+      if (this.facets()['date_issued_year']) {
+        const diy: any = this.facets()['date_issued_year'];
+        this.yearFrom = diy.date_issued_year_min;
+        this.yearTo = diy.date_issued_year_max;
+      }
     })
   }
 
@@ -56,6 +70,24 @@ export class FacetsComponent {
 
   isUsed(field: string, value: string) {
     return this.usedFacets.findIndex(f => f.field === field && f.value === value) > -1;
+  }
+
+  clearYear() {
+    this.usedFacets = this.usedFacets.filter(f => !(f.field === 'date_issued_year'));
+    this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
+    this.state.usedFacets.set(this.usedFacets);
+    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+  }
+
+  filterYear() {
+    const uf = this.usedFacets.find(f => f.field === 'date_issued_year');
+      const value = this.yearFrom + ',' + this.yearTo;
+      this.usedFacets = this.usedFacets.filter(f => !(f.field === 'date_issued_year'));
+      this.usedFacets.push({field: 'date_issued_year', value});
+      this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
+      this.state.usedFacets.update(f => [...this.usedFacets]);
+      this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+      this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
   }
   
   filter(field: string, value: string) {
