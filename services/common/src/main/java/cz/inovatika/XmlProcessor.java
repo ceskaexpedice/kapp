@@ -5,6 +5,8 @@ import java.time.Year;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 //import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -17,6 +19,7 @@ import org.apache.commons.text.similarity.LevenshteinDistance;
 public class XmlProcessor {
 
     public static final Logger LOGGER = Logger.getLogger(XmlProcessor.class.getName());
+    private static final Pattern IMPRECISE_ISSUED_DATE_HINT = Pattern.compile("^\\[?\\s*(?:(\\d{2})--?|(\\d{3})-)\\??\\s*\\]?$");
 
 
 //    public static AuthorData[] processBiblioMods(Document xml, SolrInputDocument doc) throws IOException, InterruptedException {
@@ -164,6 +167,7 @@ public class XmlProcessor {
     }
 
     public static void parseDateBasic(SolrInputDocumentWrapper doc, String value, String where, String Originalvalue,List<String> labels,List<String> notes) {
+        value = normalizeImpreciseIssuedDateHint(value, labels);
         value = value.replaceAll("ca\\.?\\s*", "?");//replace ca with ?
         value = value.replaceAll("asi\\s*", "?").trim();
         String[] parts = value.split("-");
@@ -330,6 +334,27 @@ public class XmlProcessor {
             notes.add( "Failed to parse year range: " + year_start + "-" + year_end);
             labels.add( Constants.TitlesCollectionFields.Labels.EXCEL_FAILED_TO_PARSE_DATE);
         }
+    }
+
+    public static String normalizeImpreciseIssuedDateHint(String value, List<String> labels) {
+        if (value == null) {
+            return null;
+        }
+
+        String normalized = value.trim()
+                .replace('–', '-')
+                .replace('—', '-');
+        Matcher matcher = IMPRECISE_ISSUED_DATE_HINT.matcher(normalized);
+        if (!matcher.matches()) {
+            return value;
+        }
+
+        String prefix = matcher.group(1) != null ? matcher.group(1) : matcher.group(2);
+        int missingDigits = 4 - prefix.length();
+        if (labels != null && !labels.contains(Constants.TitlesCollectionFields.Labels.IMPRECISE_DATE_ISSUED)) {
+            labels.add(Constants.TitlesCollectionFields.Labels.IMPRECISE_DATE_ISSUED);
+        }
+        return prefix + "0".repeat(missingDigits) + "?-" + prefix + "9".repeat(missingDigits) + "?";
     }
 /*
     public static void trySetLastAuthor(SolrInputDocumentWrapper doc, List<AuthorData> nameIDArray) {

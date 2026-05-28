@@ -630,7 +630,7 @@ public class HarvesterImpl implements Harvester {
         }
     }
 
-    private static void parseDateRange(SolrInputDocumentWrapper wrapper, Document parsed) {
+    static void parseDateRange(SolrInputDocumentWrapper wrapper, Document parsed) {
         Element dateIssued = XMLUtils.findElement(parsed.getDocumentElement(), elm -> elm.getLocalName().equals("dateIssued"));
         if (dateIssued != null) {
 
@@ -638,7 +638,15 @@ public class HarvesterImpl implements Harvester {
             wrapper.setField(AppDataFields.DATE_ISSUED_STR, dateText);
 
             try {
-                DateRange parsedDateRange = new DateRangeParser().parse(TitleNormalizationUtils.normalize(dateText));
+                List<String> labels = new ArrayList<>();
+                String normalizedDateText = XmlProcessor.normalizeImpreciseIssuedDateHint(dateText, labels);
+                if (labels.isEmpty()) {
+                    normalizedDateText = TitleNormalizationUtils.normalize(dateText);
+                } else {
+                    labels.forEach(label -> wrapper.addField(AppComputedFields.LABELS_FIELD, label));
+                }
+
+                DateRange parsedDateRange = new DateRangeParser().parse(normalizedDateText);
                 if (parsedDateRange != null) {
                     parsedDateRange.mapToSolrDocument(wrapper);
                 }

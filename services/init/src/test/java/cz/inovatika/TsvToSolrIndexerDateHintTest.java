@@ -49,8 +49,7 @@ class TsvToSolrIndexerDateHintTest {
                 AppDataFields.PID_FIELD,
                 SolrInputDocumentWrapper.TypeOfChange.SIMPLE);
 
-        String normalized = TsvToSolrIndexer.normalizeImpreciseIssuedDateHint(value, labels);
-        XmlProcessor.parseDateBasic(doc, normalized, "test", value, labels, notes);
+        XmlProcessor.parseDateBasic(doc, value, "test", value, labels, notes);
         return new ParsedDate(doc, labels);
     }
 
