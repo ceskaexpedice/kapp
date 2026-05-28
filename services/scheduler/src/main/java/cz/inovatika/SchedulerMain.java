@@ -20,8 +20,8 @@ public class SchedulerMain {
 
         scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
-        //initHarvestJob(scheduler);
-        initUpdateJob(scheduler);
+        initHarvestJob(scheduler);
+        //initUpdateJob(scheduler);
 
 
     }
