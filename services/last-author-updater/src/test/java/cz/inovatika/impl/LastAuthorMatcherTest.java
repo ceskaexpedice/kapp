@@ -71,6 +71,58 @@ class LastAuthorMatcherTest {
     }
 
     @Test
+    void reusesAuthorityAuthorWhenExcelAuthorIsMissingFromTitleAuthors() {
+        JSONArray kramerius = new JSONArray()
+                .put(author("jo20000076846", "Pétion, Alejandro Sabes", "Pétion", "Alejandro Sabes", 1818))
+                .put(author("mzk2008453576", "Louvet de Couvray, Jean-Baptiste", "Louvet de Couvray", "Jean-Baptiste", 1797));
+        JSONArray authorsCollection = new JSONArray()
+                .put(author("jk01032562", "Gottwald, Adolf", "Gottwald", "Adolf", 1920)
+                        .put("nameIdentifier", "jk01032562"));
+
+        LastAuthorMatcher.UpdatePlan update = matcher.prepareUpdate(
+                List.of("Adolf Gottwald 1878-1920"),
+                new JSONArray(),
+                kramerius,
+                authorsCollection,
+                null
+        );
+
+        assertTrue(update.shouldUpdate());
+        assertEquals(0, update.createdAuthors().size());
+        assertEquals("jk01032562", update.updatedAuthorsKapp().getJSONObject(0).getString("id"));
+        assertTrue(update.updatedAuthorsKapp().getJSONObject(0).getBoolean("isLast"));
+        assertEquals(
+                List.of("jk01032562", "jo20000076846", "mzk2008453576"),
+                update.titleAuthorFields().ids()
+        );
+        assertEquals(
+                List.of("Gottwald, Adolf", "Pétion, Alejandro Sabes", "Louvet de Couvray, Jean-Baptiste"),
+                update.titleAuthorFields().names()
+        );
+    }
+
+    @Test
+    void createsKappAndAuthorityAuthorWhenExcelAuthorIsMissingEverywhere() {
+        LastAuthorMatcher.UpdatePlan update = matcher.prepareUpdate(
+                List.of("Adolf Gottwald 1878-1920"),
+                new JSONArray(),
+                new JSONArray(),
+                new JSONArray(),
+                null
+        );
+
+        assertTrue(update.shouldUpdate());
+        assertEquals(1, update.createdAuthors().size());
+        JSONObject createdAuthor = update.createdAuthors().getFirst();
+        assertEquals("gottwaldadolf18781920", createdAuthor.getString("id"));
+        assertEquals("Gottwald, Adolf", createdAuthor.getString("full"));
+        assertEquals(1878, createdAuthor.getInt("year_birth"));
+        assertEquals(1920, createdAuthor.getInt("year_death"));
+        assertEquals("gottwaldadolf18781920", update.updatedAuthorsKapp().getJSONObject(0).getString("id"));
+        assertEquals(List.of("Gottwald, Adolf"), update.titleAuthorFields().names());
+    }
+
+    @Test
     void matchesExcelAuthorWithReadableDateCleanupFormats() {
         JSONArray kramerius = new JSONArray()
                 .put(author("capek18901938", "Čapek, Karel", "Čapek", "Karel", 1938));
