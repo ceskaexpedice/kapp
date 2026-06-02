@@ -38,7 +38,8 @@ public enum States {
                     }
                     case ModelFields.PERIODICALVOLUME -> {
                         reason.value = "periodical volume";
-                        return  config.workflow().isPublicYear(currentDoc.dateIssuedYear())? NONCONTROLLED_PUBLIC :NONCONTROLLED_PRIVATE;
+                        if (currentDoc.dateIssuedYear()==null) return TO_CONTROL;
+                        return config.workflow().isPublicYear(currentDoc.dateIssuedYear())? NONCONTROLLED_PUBLIC :NONCONTROLLED_PRIVATE;
                     }
                     default -> {
                         reason.value = "not a monograph(unit) or periodical volume";
