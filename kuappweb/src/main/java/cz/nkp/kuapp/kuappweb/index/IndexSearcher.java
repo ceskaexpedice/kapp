@@ -203,7 +203,8 @@ public class IndexSearcher {
             }
 
             if (request.getParameter("digital_library") != null) {
-                jrequest = jrequest.withFilter("digital_library:" + request.getParameter("digital_library"));
+                // jrequest = jrequest.withFilter("digital_library:" + request.getParameter("digital_library"));
+                jrequest = jrequest.withFilter("digital_library:(\"" + String.join("\" AND \"", request.getParameterValues("digital_library")) + "\")");
             }
             if (request.getParameter("assigned_licenses") != null) {
                 jrequest = jrequest.withFilter("assigned_licenses:" + request.getParameter("assigned_licenses"));
