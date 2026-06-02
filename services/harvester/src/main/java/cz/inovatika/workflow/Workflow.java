@@ -6,9 +6,8 @@ import cz.inovatika.solr.SolrInputDocumentWrapper;
 import org.apache.solr.client.solrj.SolrClient;
 
 public class Workflow {
-    public static States calculateAutomaticTransition(HarvesterContext ctx, WorkflowDoc currentDoc) {
+    public static States calculateAutomaticTransition(HarvesterContext ctx, WorkflowDoc currentDoc,StringWrapper reason) {
         States state = currentDoc.state();
-        StringWrapper reason = new StringWrapper(null);//unused
         return state != null ?  state.calculateNextState(ctx.item().getRootPid(),ctx.solrClient(),ctx.applicationConfig(),currentDoc,reason) : States.TO_CONTROL;
     }
 

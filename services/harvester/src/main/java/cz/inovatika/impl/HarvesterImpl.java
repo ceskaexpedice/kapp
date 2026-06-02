@@ -18,6 +18,7 @@ import cz.inovatika.touchstore.TouchStore;
 import cz.inovatika.dates.normalization.utils.TitleNormalizationUtils;
 import cz.inovatika.utils.XMLUtils;
 import cz.inovatika.workflow.States;
+import cz.inovatika.workflow.StringWrapper;
 import cz.inovatika.workflow.Workflow;
 import cz.inovatika.workflow.WorkflowDoc;
 import org.apache.commons.io.IOUtils;
@@ -458,9 +459,9 @@ public class HarvesterImpl implements Harvester {
                                 JSONObject oldDoc = getExistingDocument((String) wrapper.document().getFieldValue(AppDataFields.PID_FIELD));
                                 if (oldDoc != null && oldDoc.has("state")) {
                                     String oldState = oldDoc.getString("state");
-                                    States newState = Workflow.calculateAutomaticTransition(ctx, workflowDoc);
-                                    // only NONCONTROLLED -> TO_CONTROL
-                                    String message = String.format("Imported from '%s'", config.getUrl());
+                                    StringWrapper reason = new StringWrapper("unspecified");
+                                    States newState = Workflow.calculateAutomaticTransition(ctx, workflowDoc,reason);
+                                    String message = String.format("Imported from '%s'"+" + "+reason, config.getUrl());
                                     if (oldState != null && !oldState.equals(newState.name())) {
                                         Workflow.executeTransition( workflowDoc, user, message, wrapper,newState);
                                     }
@@ -492,12 +493,14 @@ public class HarvesterImpl implements Harvester {
                         return;
                     }
                     WorkflowDoc workflowDoc = buildWorkflowDoc(config,pid,ctx,doc, entity, parsed,authorsBuffer);
+                    StringWrapper reason = new StringWrapper("unspecified");
+                    States newState = Workflow.calculateAutomaticTransition(ctx, workflowDoc,reason);
                     Workflow.executeTransition(
                             workflowDoc,
                             user,
-                            String.format("Imported from '%s'", config.getUrl()),
+                            String.format("Imported from '%s'" + " + "+reason, config.getUrl()),
                             doc,
-                            Workflow.calculateAutomaticTransition(ctx, workflowDoc)
+                            newState
                     );
 
                     addToBufferAndSend(createBuffer, authorsBuffer, doc);
@@ -680,7 +683,7 @@ public class HarvesterImpl implements Harvester {
 
         if (oldDoc != null) {
 
-            boolean historyExists = oldDoc.has("state_history");
+            boolean historyExists = oldDoc.has(AppComputedFields.STATE_HISTORY_FIELD);
             if (historyExists) {
                 Map<String, Object> partialUpdate = new HashMap<>();
                 partialUpdate.put("add", h.toString());
