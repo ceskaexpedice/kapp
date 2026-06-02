@@ -12,13 +12,16 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
+import {provideNativeDateAdapter} from '@angular/material/core';
+import { MatDatepickerModule } from '@angular/material/datepicker';
 
 @Component({
   selector: 'app-facets',
   imports: [TranslateModule, FormsModule, MatFormFieldModule,
     MatExpansionModule, MatListModule, MatInputModule, MatButtonModule,
-    MatCheckboxModule, MatTooltipModule, MatIconModule
+    MatCheckboxModule, MatTooltipModule, MatIconModule, MatDatepickerModule
   ],
+  providers: [provideNativeDateAdapter()],
   templateUrl: './facets.component.html',
   styleUrl: './facets.component.scss'
 })
