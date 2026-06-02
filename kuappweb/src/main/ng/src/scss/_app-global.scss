@@ -243,14 +243,14 @@ table {
     width: 100%;
     border-width: 1px 0 0 1px;
     border-style: solid;
-    border-color: var(--app-table-color-border);
+    border-color: var(--app-border-color-default);
     background-color: rgb(var(--app-color-lightnes));
 
     tr {
       td, th {
         border-width: 0 1px 1px 0;
         border-style: solid;
-        border-color: var(--app-table-color-border);
+        border-color: var(--app-border-color-default);
         padding: 4px 8px;
         vertical-align: top;
         text-align: left;

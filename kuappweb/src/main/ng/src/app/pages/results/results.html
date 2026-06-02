@@ -1,8 +1,8 @@
 @if(loading()){<mat-progress-bar mode="indeterminate"></mat-progress-bar>}
 <div class="app-container-fluid app-h-100">
-  <div class="app-fxLayout app-row app-fill app-gap-8">
+  <div class="app-fxLayout app-row app-fill app-gap-4">
     @if(solrResponse?.facets) {
-    <div class="app-left">
+    <div class="app-left app-facets-wrapper">
       <app-facets [fields]="[
           'date_issued_year',
           'labels', 
@@ -20,7 +20,7 @@
     </div>
     }
     <div class="app-fxFlex app-right app-oh app-mt-n2">
-      <div class="app-fxLayout app-row app-gap-4 app-toolbar app-pt-2">
+      <div class="app-fxLayout app-row app-gap-4 app-toolbar">
         <div class="app-fxFlex">
           <mat-form-field appearance="outline" class="app-view-search">
             <mat-label>{{ 'action.search' | translate }}</mat-label>
