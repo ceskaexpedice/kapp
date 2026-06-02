@@ -26,6 +26,8 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
+import static cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields.LAST_AUTHOR_EXCEL_FIELD;
+
 //TODO: Refactor !!
 public class TsvToSolrIndexer {
 
@@ -291,7 +293,7 @@ public class TsvToSolrIndexer {
                                                 else {
                                                     List<String> out = LastAuthorExcelParser.parse(value);
                                                     if (!out.isEmpty()) {
-                                                        doc.setField("last_author_excel",out);
+                                                        doc.setField(LAST_AUTHOR_EXCEL_FIELD,out);
                                                         //System.out.println("AUTHORS: " + out.toString());
                                                     }
                                                     else {

@@ -24,9 +24,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import static cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields.LAST_AUTHOR_EXCEL_FIELD;
+
 public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
     private static final Logger LOGGER = Logger.getLogger(LastAuthorUpdaterImpl.class.getName());
-    private static final String LAST_AUTHOR_EXCEL_FIELD = "last_author_excel";
     private static final String USER = "LastAuthorUpdater";
 
     private SolrClient solrClient;

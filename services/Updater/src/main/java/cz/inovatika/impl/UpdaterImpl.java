@@ -46,6 +46,7 @@ public class UpdaterImpl implements Updater {
             System.out.println("Current year:"+currentYear);
             System.out.println("Public earliest year:"+threshold);
             System.out.println("Private latest year:"+applicationConfig.workflow().calculateOnsiteYear());
+            System.out.println("Author dead year: "+applicationConfig.workflow().calculateAuthorDeadYear());
 
             while (!done) {
                 ModifiableSolrParams params = new ModifiableSolrParams();
@@ -64,7 +65,7 @@ public class UpdaterImpl implements Updater {
                                 AppComputedFields.LAST_YEAR_DEATH + ":{* TO "+ applicationConfig.workflow().calculateAuthorDeadYear()+"}" +
                                 ")"
                 );
-                params.add("fq", AppComputedFields.DATE_ISSUED_YEAR+":{ * TO "+threshold+"}");
+                //params.add("fq", AppComputedFields.DATE_ISSUED_YEAR+":{ * TO "+threshold+"}");
 
                 QueryResponse response = solrClient.query(TITLES_COLLECTION, params);
 
