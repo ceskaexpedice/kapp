@@ -90,16 +90,7 @@ public class AuthorData {
         return termsOfAddress;
     }
 
-    public void setTermsOfAddress(String termsOfAddress) {
-        this.termsOfAddress = termsOfAddress;
-    }
 
-    public boolean isLast() {
-        return isLast;
-    }
-    public void setLast(boolean last) {
-        isLast = last;
-    }
 
     public static AuthorData create(Element nameElm) {
         AuthorData authorData = new AuthorData();

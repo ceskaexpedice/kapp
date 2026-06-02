@@ -1,20 +1,13 @@
 package cz.inovatika.impl;
 
+import cz.inovatika.Constants;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.text.Normalizer;
 import java.time.Year;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Comparator;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.regex.Pattern;
 
 //TODO: ADD labels for error states
@@ -23,6 +16,7 @@ public class LastAuthorMatcher {
     private static final Pattern DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
     private static final Pattern DATE_QUALIFIER_WITHOUT_DOT = Pattern.compile("(?i)\\b(?:ca|asi)\\s+");
     private static final Pattern YEAR_RANGE = Pattern.compile("\\b\\d{3,4}\\s*\\p{Pd}\\s*\\d{0,4}");
+    private static final Pattern YEAR_RANGE_VALUE = Pattern.compile("\\b(\\d{3,4})\\s*\\p{Pd}\\s*(?:(\\d{3,4})|[?x])?");
     private static final Pattern YEAR = Pattern.compile("\\b\\d{3,4}\\b");
     private static final Pattern NON_LETTER = Pattern.compile("[^\\p{L}]+");
     private static final double NAME_SIMILARITY_THRESHOLD = 0.82;
@@ -32,90 +26,121 @@ public class LastAuthorMatcher {
             List<String> lastAuthorsExcel,
             JSONArray authorsKapp,
             JSONArray authorsKramerius,
-            Integer currentLastYearDeath
+            JSONArray authorsCollection
     ) {
-        List<String> normalizedExcelAuthors = lastAuthorsExcel.stream()
-                .map(LastAuthorMatcher::excelAuthorName)
-                .map(LastAuthorMatcher::normalizeExcelAuthorName)
-                .filter(value -> !value.isBlank())
-                .distinct()
-                .toList();
+        List<ExcelAuthor> excelAuthors = parseExcelAuthors(lastAuthorsExcel);
 
-        if (normalizedExcelAuthors.isEmpty()) {
+        if (excelAuthors.isEmpty()) {
             return UpdatePlan.noMatch("No usable last_author_excel value");
         }
 
-        List<AuthorCandidate> candidates = mergeCandidates(authorsKapp, authorsKramerius);
+        List<AuthorCandidate> candidates = mergeCandidates(authorsKapp, authorsKramerius, authorsCollection);
+        List<Match> matches = new ArrayList<>();
+        List<AuthorCandidate> createdCandidates = new ArrayList<>();
+        List<AuthorCandidate> additionalKappCandidates = new ArrayList<>();
+        for (ExcelAuthor excelAuthor : excelAuthors) {
+            Optional<Match> match = bestMatch(excelAuthor.normalizedName(), candidates);
+            if (match.isPresent()) {
+                if (!match.get().candidate().titleAuthor()) {
+                    addCandidateDistinct(additionalKappCandidates, match.get().candidate());
+                }
+                matches.add(match.get());
+                continue;
+            }
+
+            if (hasAmbiguousMatch(excelAuthor.normalizedName(), candidates)) {
+                return UpdatePlan.noMatch("Ambiguous author matched last_author_excel: " + excelAuthor.name());
+            }
+
+            Optional<AuthorCandidate> createdCandidate = createCandidateFromExcel(excelAuthor);
+            if (createdCandidate.isEmpty()) {
+                return UpdatePlan.noMatch(
+                        "No author matched last_author_excel and it cannot create a usable author: " + excelAuthor.name()
+                );
+            }
+
+            AuthorCandidate candidate = createdCandidate.get();
+            candidates.add(candidate);
+            createdCandidates.add(candidate);
+            addCandidateDistinct(additionalKappCandidates, candidate);
+            matches.add(new Match(excelAuthor.normalizedName(), candidate, 1.0, "created from last_author_excel"));
+        }
 
         if (candidates.isEmpty()) {
-            return UpdatePlan.noMatch("No authors found in authors_kapp or authors_kramerius");
-        }
-
-        if (candidates.stream().anyMatch(candidate -> candidate.yearDeath() == null)) {
-            return UpdatePlan.noMatch("At least one author has no usable year_death");
-        }
-
-        List<Match> matches = new ArrayList<>();
-        for (String excelAuthor : normalizedExcelAuthors) {
-            Optional<Match> match = bestMatch(excelAuthor, candidates);
-            if (match.isEmpty()) {
-                return UpdatePlan.noMatch("No author matched last_author_excel: " + excelAuthor);
-            }
-            matches.add(match.get());
+            return UpdatePlan.noMatch("No authors found in authors_kapp, authors_kramerius or last_author_excel");
         }
 
         AuthorCandidate selectedCandidate = latestDeathCandidate(candidates).orElse(null);
-        if (selectedCandidate == null) {
-            return UpdatePlan.noMatch("No unique latest author death year");
+        if (selectedCandidate == null && additionalKappCandidates.isEmpty()) {
+            return UpdatePlan.noMatch("No unique latest author death year and no title author additions are needed");
         }
 
-        Match selectedMatch = matches.stream()
-                .filter(match -> sameAuthor(match.candidate().author(), selectedCandidate.author()))
-                .findFirst()
-                .orElse(new Match("", selectedCandidate, 1.0, "latest year_death among all authors"));
+        Match selectedMatch;
+        if (selectedCandidate != null) {
+            selectedMatch = matches.stream()
+                    .filter(match -> sameAuthor(match.candidate().author(), selectedCandidate.author()))
+                    .findFirst()
+                    .orElse(new Match("", selectedCandidate, 1.0, "latest year_death among all authors"));
+        } else {
+            selectedMatch = matches.getFirst();
+        }
 
-        JSONArray updatedAuthorsKapp = buildUpdatedAuthorsKapp(authorsKapp, selectedCandidate);
+        JSONArray updatedAuthorsKapp = buildUpdatedAuthorsKapp(authorsKapp, selectedCandidate, additionalKappCandidates);
         TitleAuthorFields titleAuthorFields = buildTitleAuthorFields(
                 updatedAuthorsKapp,
-                authorsKramerius,
-                selectedCandidate.author().optString("old_id", null)
+                authorsKramerius
         );
         return new UpdatePlan(
                 true,
                 true,
                 selectedMatch.matchedAuthor(),
-                selectedCandidate.author(),
+                selectedMatch.candidate().author(),
                 updatedAuthorsKapp,
                 titleAuthorFields,
-                selectedCandidate.yearDeath(),
+                selectedCandidate == null ? null : selectedCandidate.yearDeath(),
+                createdCandidates.stream()
+                        .map(AuthorCandidate::author)
+                        .map(LastAuthorMatcher::copyObject)
+                        .toList(),
                 selectedMatch.reason()
         );
     }
 
     private static Optional<AuthorCandidate> latestDeathCandidate(List<AuthorCandidate> candidates) {
-        int latestYearDeath = candidates.stream()
+        if(candidates.stream().map(AuthorCandidate::yearDeath).anyMatch(Objects::isNull))return Optional.empty();
+
+        Optional<Integer> latestYearDeath = candidates.stream()
                 .map(AuthorCandidate::yearDeath)
-                .max(Integer::compareTo)
-                .orElseThrow();
+                .max(Integer::compareTo);
+        if (latestYearDeath.isEmpty()) {
+            return Optional.empty();
+        }
+
+        int latestYearDeathValue = latestYearDeath.get();
         List<AuthorCandidate> latestCandidates = candidates.stream()
-                .filter(candidate -> latestYearDeath == candidate.yearDeath())
+                .filter(candidate -> {
+                    Integer yearDeath = candidate.yearDeath();
+                    return yearDeath != null && latestYearDeathValue == yearDeath;
+                })
                 .toList();
-        if (latestCandidates.size() != 1) {
+        if (latestCandidates.isEmpty()) {
             return Optional.empty();
         }
         return Optional.of(latestCandidates.getFirst());
     }
 
-    private static TitleAuthorFields buildTitleAuthorFields(JSONArray authorsKapp, JSONArray authorsKramerius, String selectedOldId) {
+    private static TitleAuthorFields buildTitleAuthorFields(JSONArray authorsKapp, JSONArray authorsKramerius) {
         List<String> ids = new ArrayList<>();
         List<String> nameIdentifiers = new ArrayList<>();
         List<String> names = new ArrayList<>();
+        Set<String> oldIds = new HashSet<>();
 
         for (int i = 0; i < authorsKapp.length(); i++) {
             JSONObject author = authorsKapp.getJSONObject(i);
             addDistinct(ids, author.optString("id", null));
             addDistinct(nameIdentifiers, author.optString("nameIdentifier", null));
             addDistinct(names, author.optString("full", null));
+            addKey(oldIds, author.optString("old_id", null));
         }
 
         Set<String> kappIds = new HashSet<>(ids);
@@ -127,7 +152,7 @@ public class LastAuthorMatcher {
             String nameIdentifier = author.optString("nameIdentifier", null);
             String full = author.optString("full", null);
 
-            if (isPresent(id) && !kappIds.contains(id) && !id.equals(selectedOldId)) {
+            if (isPresent(id) && !kappIds.contains(id) && !oldIds.contains(id)) {
                 addDistinct(ids, id);
             }
             if (isPresent(nameIdentifier) && !kappNameIdentifiers.contains(nameIdentifier)) {
@@ -152,11 +177,7 @@ public class LastAuthorMatcher {
     }
 
     private static Optional<Match> bestMatch(String excelAuthor, List<AuthorCandidate> candidates) {
-        List<Match> matches = candidates.stream()
-                .map(candidate -> match(excelAuthor, candidate))
-                .filter(match -> match.score() >= NAME_SIMILARITY_THRESHOLD)
-                .sorted(Comparator.comparingDouble(Match::score).reversed())
-                .toList();
+        List<Match> matches = rankedMatches(excelAuthor, candidates);
 
         if (matches.isEmpty()) {
             return Optional.empty();
@@ -168,6 +189,19 @@ public class LastAuthorMatcher {
         }
 
         return Optional.of(best);
+    }
+
+    private static boolean hasAmbiguousMatch(String excelAuthor, List<AuthorCandidate> candidates) {
+        List<Match> matches = rankedMatches(excelAuthor, candidates);
+        return matches.size() > 1 && matches.getFirst().score() - matches.get(1).score() <= AMBIGUOUS_MATCH_DELTA;
+    }
+
+    private static List<Match> rankedMatches(String excelAuthor, List<AuthorCandidate> candidates) {
+        return candidates.stream()
+                .map(candidate -> match(excelAuthor, candidate))
+                .filter(match -> match.score() >= NAME_SIMILARITY_THRESHOLD)
+                .sorted(Comparator.comparingDouble(Match::score).reversed())
+                .toList();
     }
 
     private static Match match(String excelAuthor, AuthorCandidate candidate) {
@@ -214,38 +248,251 @@ public class LastAuthorMatcher {
         return new Match(excelAuthor, candidate, bestScore, reason);
     }
 
-    private static JSONArray buildUpdatedAuthorsKapp(JSONArray authorsKapp, AuthorCandidate selected) {
+    private static void addCandidateDistinct(List<AuthorCandidate> candidates, AuthorCandidate author) {
+        if (candidates.stream().noneMatch(candidate -> sameAuthor(candidate.author(), author.author()))) {
+            candidates.add(author);
+        }
+    }
+
+    private static JSONArray buildUpdatedAuthorsKapp(
+            JSONArray authorsKapp,
+            AuthorCandidate selected,
+            List<AuthorCandidate> additionalKappCandidates
+    ) {
         JSONArray updated = copyArray(authorsKapp);
-        for (int i = 0; i < updated.length(); i++) {
-            updated.getJSONObject(i).put("isLast", false);
+        if (selected != null) {
+            for (int i = 0; i < updated.length(); i++) {
+                updated.getJSONObject(i).put("isLast", false);
+            }
         }
 
-        if (selected.kappIndex() >= 0) {
-            updated.getJSONObject(selected.kappIndex()).put("isLast", true);
-            return updated;
+        for (AuthorCandidate additionalCandidate : additionalKappCandidates) {
+            upsertAuthor(updated, additionalCandidate.author(), false);
         }
 
-        JSONObject author = copyObject(selected.author());
-        author.put("isLast", true);
-        int duplicateIndex = findSameAuthor(updated, author);
-        if (duplicateIndex >= 0) {
-            updated.put(duplicateIndex, author);
-        } else {
-            updated.put(author);
+        if (selected != null) {
+            upsertAuthor(updated, selected.author(), true);
         }
         return updated;
     }
 
-    private static List<AuthorCandidate> mergeCandidates(JSONArray authorsKapp, JSONArray authorsKramerius) {
+    private static void upsertAuthor(JSONArray authors, JSONObject authorToUpsert, boolean isLast) {
+        JSONObject author = copyObject(authorToUpsert);
+        author.put("isLast", isLast);
+        int duplicateIndex = findSameAuthor(authors, author);
+        if (duplicateIndex >= 0) {
+            authors.put(duplicateIndex, author);
+        } else {
+            authors.put(author);
+        }
+    }
+
+    private static Optional<AuthorCandidate> createCandidateFromExcel(ExcelAuthor excelAuthor) {
+        if (excelAuthor.name().isBlank()) {
+            return Optional.empty();
+        }
+
+        JSONObject author = buildAuthorFromExcel(excelAuthor);
+        return Optional.of(new AuthorCandidate(author, -1, false));
+    }
+
+    private static JSONObject buildAuthorFromExcel(ExcelAuthor excelAuthor) {
+        NameSplit name = NameSplit.from(excelAuthor.name());
+        JSONObject author = new JSONObject();
+        String date = buildDate(excelAuthor.birthYear(), excelAuthor.deathYear());
+        String id = normalizeId(name.family() + name.given() + date);
+
+        author.put("id", id);
+        author.put("full", name.full());
+        author.put("family", name.family());
+        author.put("given", name.given());
+        author.put("date", date);
+        author.put("role", new JSONArray());
+        author.put("labels", new JSONArray().put(Constants.TitlesCollectionFields.Labels.AUTHOR_MODIFIED));
+        author.put("confirmed_start_year", excelAuthor.birthYear() != null);
+        author.put("confirmed_end_year", excelAuthor.deathYear() != null);
+        if (excelAuthor.birthYear() != null) {
+            author.put("year_birth", excelAuthor.birthYear());
+        }
+        if (excelAuthor.deathYear() != null) {
+            author.put("year_death", excelAuthor.deathYear());
+        }
+        author.put("isLast", false);
+        return author;
+    }
+
+    private static String buildDate(Integer birthYear, Integer deathYear) {
+        if (birthYear == null && deathYear == null) {
+            return "";
+        }
+        return (birthYear == null ? "" : birthYear) + "-" + (deathYear == null ? "" : deathYear);
+    }
+
+    private static boolean isUsableDeathYear(int yearDeath) {
+        return yearDeath > 0 && yearDeath < 9999 && yearDeath <= Year.now().getValue();
+    }
+
+    private static String normalizeId(String value) {
+        String normalized = Normalizer.normalize(value == null ? "" : value, Normalizer.Form.NFD);
+        normalized = DIACRITICS.matcher(normalized).replaceAll("");
+        return normalized.toLowerCase(Locale.ROOT).replaceAll("[^a-z0-9]", "");
+    }
+
+    public static List<ExcelAuthor> parseExcelAuthors(List<String> lastAuthorsExcel) {
+        List<ExcelAuthor> authors = new ArrayList<>();
+        Set<String> seen = new HashSet<>();
+        for (String value : lastAuthorsExcel) {
+            ExcelAuthor author = ExcelAuthor.parse(value);
+            if (author.normalizedName().isBlank()) {
+                continue;
+            }
+            String key = author.normalizedName() + "|" + author.birthYear() + "|" + author.deathYear();
+            if (seen.add(key)) {
+                authors.add(author);
+            }
+        }
+        return authors;
+    }
+
+    public record ExcelAuthor(String name, String normalizedName, Integer birthYear, Integer deathYear) {
+
+        static ExcelAuthor parse(String value) {
+            if (value == null) {
+                return new ExcelAuthor("", "", null, null);
+            }
+
+            String text = value.trim();
+            if (text.startsWith("{")) {
+                try {
+                    JSONObject json = new JSONObject(text);
+                    String name = json.optString("name", "");
+                    return new ExcelAuthor(
+                            name,
+                            normalizeExcelAuthorName(name),
+                            asInteger(json.opt("birthyear")),
+                            asInteger(json.opt("deathyear"))
+                    );
+                } catch (JSONException e) {
+                    YearPair years = extractYearPair(text);
+                    String name = cleanExcelAuthorName(text);
+                    return new ExcelAuthor(name, normalizeExcelAuthorName(name), years.birthYear(), years.deathYear());
+                }
+            }
+
+            YearPair years = extractYearPair(text);
+            String name = cleanExcelAuthorName(text);
+            return new ExcelAuthor(name, normalizeExcelAuthorName(name), years.birthYear(), years.deathYear());
+        }
+    }
+
+    private record YearPair(Integer birthYear, Integer deathYear) {
+    }
+
+    private static YearPair extractYearPair(String value) {
+        if (value == null) {
+            return new YearPair(null, null);
+        }
+        java.util.regex.Matcher matcher = YEAR_RANGE_VALUE.matcher(value);
+        if (!matcher.find()) {
+            return new YearPair(null, null);
+        }
+        return new YearPair(asInteger(matcher.group(1)), asInteger(matcher.group(2)));
+    }
+
+    private static String cleanExcelAuthorName(String value) {
+        if (value == null) {
+            return "";
+        }
+        String result = value.replace("ca.", " ")
+                .replace("Ca.", " ")
+                .replace("CA.", " ")
+                .replace("[", " ")
+                .replace("]", " ")
+                .replace("?", " ");
+        result = DATE_QUALIFIER_WITHOUT_DOT.matcher(result).replaceAll(" ");
+        result = YEAR_RANGE.matcher(result).replaceAll(" ");
+        result = YEAR.matcher(result).replaceAll(" ");
+        result = result.replaceAll("(?i)\\b(?:překlad|překl\\.?|překladatel(?:ka)?|autor(?:ka)?|editor(?:ka)?|sestavovatel)\\b", " ");
+        result = result.replaceAll("[()]", " ");
+        result = result.replaceAll("\\s+", " ");
+        result = result.replaceAll("\\s*,\\s*", ", ");
+        result = result.replaceAll("^[,\\s]+|[,\\s]+$", "");
+        return result.trim();
+    }
+
+    private record NameSplit(String full, String family, String given) {
+
+        static NameSplit from(String value) {
+            String name = value == null ? "" : value.trim().replaceAll("\\s+", " ");
+            if (name.isBlank()) {
+                return new NameSplit("", "", "");
+            }
+
+            if (name.contains(",")) {
+                String[] parts = name.split(",", 2);
+                String family = parts[0].trim();
+                String given = parts.length > 1 ? parts[1].trim() : "";
+                return new NameSplit(formatFull(family, given), family, given);
+            }
+
+            String[] tokens = name.split("\\s+");
+            if (tokens.length == 1) {
+                return new NameSplit(tokens[0], tokens[0], "");
+            }
+
+            String family = tokens[tokens.length - 1];
+            String given = String.join(" ", List.of(tokens).subList(0, tokens.length - 1));
+            return new NameSplit(formatFull(family, given), family, given);
+        }
+
+        private static String formatFull(String family, String given) {
+            if (family.isBlank()) {
+                return given;
+            }
+            if (given.isBlank()) {
+                return family;
+            }
+            return family + ", " + given;
+        }
+    }
+
+    private static List<AuthorCandidate> mergeCandidates(
+            JSONArray authorsKapp,
+            JSONArray authorsKramerius,
+            JSONArray authorsCollection
+    ) {
+        authorsKapp = authorsKapp == null ? new JSONArray() : authorsKapp;
+        authorsKramerius = authorsKramerius == null ? new JSONArray() : authorsKramerius;
+        authorsCollection = authorsCollection == null ? new JSONArray() : authorsCollection;
+
         List<AuthorCandidate> candidates = new ArrayList<>();
         for (int i = 0; i < authorsKapp.length(); i++) {
-            candidates.add(new AuthorCandidate(copyObject(authorsKapp.getJSONObject(i)), i));
+            candidates.add(new AuthorCandidate(copyObject(authorsKapp.getJSONObject(i)), i, true));
         }
 
         for (int i = 0; i < authorsKramerius.length(); i++) {
             JSONObject author = authorsKramerius.getJSONObject(i);
             if (candidates.stream().noneMatch(candidate -> sameAuthor(candidate.author(), author))) {
-                candidates.add(new AuthorCandidate(copyObject(author), -1));
+                candidates.add(new AuthorCandidate(copyObject(author), -1, true));
+            }
+        }
+
+        for (int i = 0; i < authorsCollection.length(); i++) {
+            JSONObject author = copyObject(authorsCollection.getJSONObject(i));
+            Optional<AuthorCandidate> sameTitleAuthor = candidates.stream()
+                    .filter(AuthorCandidate::titleAuthor)
+                    .filter(candidate -> sameAuthorName(candidate.author(), author))
+                    .findFirst();
+
+            if (sameTitleAuthor.isPresent() && isPresent(author.optString("nameIdentifier", null))) {
+                String oldId = sameTitleAuthor.get().author().optString("id", null);
+                if (isPresent(oldId) && !author.has("old_id")) {
+                    author.put("old_id", oldId);
+                }
+                candidates.removeIf(candidate -> candidate.titleAuthor() && sameAuthorName(candidate.author(), author));
+                candidates.add(new AuthorCandidate(author, -1, false));
+            } else if (candidates.stream().noneMatch(candidate -> sameAuthor(candidate.author(), author))) {
+                candidates.add(new AuthorCandidate(author, -1, false));
             }
         }
 
@@ -268,6 +515,38 @@ public class LastAuthorMatcher {
         return !firstKeys.isEmpty();
     }
 
+    private static boolean sameAuthorName(JSONObject first, JSONObject second) {
+        Set<String> firstNames = authorNameKeys(first);
+        Set<String> secondNames = authorNameKeys(second);
+        firstNames.retainAll(secondNames);
+        return !firstNames.isEmpty();
+    }
+
+    private static Set<String> authorNameKeys(JSONObject author) {
+        Set<String> keys = new HashSet<>();
+        addNameKey(keys, author.optString("full", null));
+        addNameKey(keys, joinNameParts(author.optString("given", null), author.optString("family", null)));
+        addNameKey(keys, joinNameParts(author.optString("family", null), author.optString("given", null)));
+        return keys;
+    }
+
+    private static void addNameKey(Set<String> keys, String value) {
+        String normalized = normalizeName(value);
+        if (!normalized.isBlank() && normalized.split("\\s+").length >= 2) {
+            keys.add(normalized);
+        }
+    }
+
+    private static String joinNameParts(String first, String second) {
+        if (first == null || first.isBlank()) {
+            return second;
+        }
+        if (second == null || second.isBlank()) {
+            return first;
+        }
+        return first + " " + second;
+    }
+
     private static Set<String> authorIdentityKeys(JSONObject author) {
         Set<String> keys = new HashSet<>();
         addKey(keys, author.optString("id", null));
@@ -284,23 +563,6 @@ public class LastAuthorMatcher {
 
     private static String normalizeExcelAuthorName(String value) {
         return normalizeName(stripDateParts(value));
-    }
-
-    private static String excelAuthorName(String value) {
-        if (value == null) {
-            return "";
-        }
-
-        String text = value.trim();
-        if (!text.startsWith("{")) {
-            return text;
-        }
-
-        try {
-            return new JSONObject(text).optString("name", "");
-        } catch (JSONException e) {
-            return text;
-        }
     }
 
     private static String stripDateParts(String value) {
@@ -467,7 +729,7 @@ public class LastAuthorMatcher {
         }
     }
 
-    private record AuthorCandidate(JSONObject author, int kappIndex) {
+    private record AuthorCandidate(JSONObject author, int kappIndex, boolean titleAuthor) {
 
         Integer yearDeath() {
             Integer yearDeath = asInteger(author.opt("year_death"));
@@ -517,12 +779,23 @@ public class LastAuthorMatcher {
             JSONObject matchedAuthor,
             JSONArray updatedAuthorsKapp,
             TitleAuthorFields titleAuthorFields,
-            int lastYearDeath,
+            Integer lastYearDeath,
+            List<JSONObject> createdAuthors,
             String reason
             ) {
 
         static UpdatePlan noMatch(String reason) {
-            return new UpdatePlan(false, false, "", new JSONObject(), new JSONArray(), TitleAuthorFields.empty(), 0, reason);
+            return new UpdatePlan(
+                    false,
+                    false,
+                    "",
+                    new JSONObject(),
+                    new JSONArray(),
+                    TitleAuthorFields.empty(),
+                    null,
+                    List.of(),
+                    reason
+            );
         }
     }
 
