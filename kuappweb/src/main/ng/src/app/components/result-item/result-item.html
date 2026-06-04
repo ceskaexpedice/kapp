@@ -27,7 +27,142 @@
 		</mat-card-title>
 	</mat-card-header>
 	<mat-card-content>
-		@if (!doc()['is_hierarchical']) {
+		<div class="app-grid-table app-mt-4">
+			<div>{{ (doc().model === 'periodicalvolume' ? 'Periodical' : 'Monograph') | translate }}:</div>
+			<div><a (click)="gotoPid(doc()['root_pid'])" [title]="'gotoParent' | translate">{{ doc()['root_title']}} </a></div>
+
+			<div>{{ 'field.authors' | translate }}:</div>
+			<div>
+				@for(a of mergedAuthors; track $index) {
+					<div>
+						<a (click)="infoAuthor(a)">
+							<span [class.app-removed]="a.removed" [class.app-last-author]="a.isLast">{{ a.full }} {{ a.date }} ({{ a.role }})</span>
+						</a>
+					</div>
+				}
+				<a (click)="addAuthor()" [title]="'action.add_author' | translate" class="app-value">
+					<strong>Pridat autora</strong>
+				</a>
+			</div>
+
+			<div>{{ 'field.last_author' | translate }}:</div>
+			<div>{{ lastAuthor }}</div>
+
+			<div>{{ 'field.last_year_death' | translate }}:</div>
+			<div class="app-fxLayout app-row app-center-v app-gap-2">
+				@if (editingDate()) {
+					<input [(ngModel)]="lastYearDeath" />
+					<button matIconButton (click)="saveLastYearDeath()"><mat-icon>save</mat-icon></button>
+					<button matIconButton (click)="closeEditingDate()"><mat-icon>cancel</mat-icon></button>
+				} @else {
+					<!-- <span>{{ doc()['last_year_death']}}</span> -->
+					<input [(ngModel)]="lastYearDeath" disabled />
+					@if (state.user()) {
+						<button matIconButton (click)="editLastYearDeath()"><mat-icon>edit</mat-icon></button>
+					}
+				}
+			</div>
+
+			<div>{{ 'Díla' | translate }}:</div>
+			<div class="app-fxLayout app-row app-center-v app-gap-2">
+				@if (editingDilo()) {
+					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
+					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
+					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
+					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</mat-checkbox>
+				} @else {
+					<span [class.app-removed]="!is_anonymous">{{ 'field.is_anonymous' | translate }}</span> &#160;
+					<span [class.app-removed]="!is_collective">{{ 'field.is_collective' | translate }}</span> &#160;
+					<span [class.app-removed]="!is_official">{{ 'field.is_official' | translate }}</span> &#160;
+					<span [class.app-removed]="!is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</span> &#160;
+				}
+				@if (state.user()) {
+					@if (editingDilo()) {
+						<button matIconButton (click)="saveTypDila()" class="app-ml-4"><mat-icon>save</mat-icon></button>
+						<button matIconButton (click)="closeEditingDilo()"><mat-icon>cancel</mat-icon></button>
+					} @else {
+						<button matIconButton (click)="editTypDila()"><mat-icon>edit</mat-icon></button>
+					}
+				}
+			</div>
+
+			<div>{{ 'field.pid' | translate }}:</div>
+			<div>
+				@if (doc()['physical_locations']?.[0] === 'ABA001') {
+					<a target="_blank" [href]="'https://ndk.cz/view/'+doc()['pid']" class="app-link-icon">
+						<span>{{doc()['pid']}}</span>
+						<mat-icon>open_in_new</mat-icon>
+					</a>
+				} @else {
+					<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+doc()['pid']" class="app-link-icon">
+						<span>{{doc()['pid']}}</span>
+						<mat-icon>open_in_new</mat-icon>
+					</a>
+				}
+			</div>
+
+			<div>{{ 'field.physical_locations' | translate }}:</div>
+			<div>{{ doc()['physical_locations'] }}</div>
+
+			<div>{{ 'field.archiver_location' | translate }}:</div>
+			<div>{{ doc()['archiver_location'] }}</div>
+
+			@if(doc()['public_since']) {
+				<div>{{ 'field.public_since' | translate }}:</div>
+				<div>{{ doc()['public_since'] }}</div>
+			}
+
+			<div>{{ 'field.date_issued' | translate }}:</div>
+			<div>{{ doc()['date_issued_str']}}</div>
+
+			<div>{{ 'field.indextime' | translate }}:</div>
+			<div>{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}</div>
+			
+			<div>{{ 'field.assigned_licenses' | translate }}:</div>
+			<div>{{ doc()['assigned_licenses']}}</div>
+
+			<div>{{ 'field.digitalni_knihovny' | translate }}:</div>
+			<div>{{ doc()['digital_library']}}</div>
+
+			<div>{{ 'field.id_urnnbn' | translate }}:</div>
+			<div>{{ doc()['id_urnnbn']}}</div>
+
+			<div>{{ 'field.id_ccnb' | translate }}:</div>
+			<div>{{ doc()['id_ccnb']}}</div>
+
+			<div>{{ 'field.id_sysno' | translate }}:</div>
+			<div>{{ doc()['id_sysno']}}</div>
+
+			<div>{{ 'field.id_isbn' | translate }}:</div>
+			<div>{{ doc()['id_isbn']}}</div>
+
+			<div>{{ 'field.id_barCode' | translate }}:</div>
+			<div>{{ doc()['id_barCode']}}</div>
+
+			<div>{{ 'field.licenses' | translate }}:</div>
+			<div>{{ doc()['licenses']}}</div>
+
+			<div>{{ 'field.note' | translate }}:</div>
+			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
+				<textarea [disabled]="!editingNote()" [(ngModel)]="note" matInput [rows]="1" [style.width]="noteWidth"></textarea>
+				@if (editingNote()) {
+					<button matIconButton (click)="saveNote()"><mat-icon>save</mat-icon></button>
+					<button matIconButton (click)="closeEditingNote()"><mat-icon>cancel</mat-icon></button>
+				} @else {
+    			<button matIconButton  (click)="editNote()" class="app-value"><mat-icon>edit</mat-icon></button>
+				}
+			</div>
+
+			<div>{{ 'field.release_date' | translate }}:</div>
+			<div>{{ doc()['release_date']}}</div>
+		</div>
+
+
+
+
+	
+
+		<!-- @if (!doc()['is_hierarchical']) {
 		<div class="app-metadata-row">
 			<span class="app-label">{{ (doc().model === 'periodicalvolume' ? 'periodical' : 'monograph') | translate }}:</span>
 			<a (click)="gotoPid(doc()['root_pid'])" class="app-value" [title]="'gotoParent' | translate">{{ doc()['root_title']}} </a>
@@ -125,7 +260,7 @@
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.date_issued' | translate }}:</span>
 			<span class="app-value">{{ doc()['date_issued_str']}}</span>
-		</div>	
+		</div>
 		<div class="app-metadata-row">
 			<span class="app-label">{{ 'field.indextime' | translate }}:</span>
 			<span class="app-value">{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}</span>
@@ -193,7 +328,7 @@
 			<div class="app-value">
 				<span>{{ doc()['release_date']}}</span>
 			</div>
-		</div>
+		</div>-->
 
 
 		@if (hasCollapsed) {

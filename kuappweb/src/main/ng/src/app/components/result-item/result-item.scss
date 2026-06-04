@@ -54,3 +54,71 @@ button[mat-stroked-button]:not(.state-ke-kontrole):not(.state-nekontrolovano) {
 .app-last-author {
   font-weight: bold;
 }
+
+
+
+
+
+
+
+.table {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  padding: 4px 8px;
+}
+
+/* liché řádky */
+.row:nth-child(odd) {
+  background-color: #f5f5f5;
+}
+
+.cell-label {
+  flex: 0 0 auto;      /* šířka dle obsahu */
+  white-space: nowrap; /* nerozbíjet text */
+  font-weight: 600;
+  margin-right: 16px;
+}
+
+.cell-value {
+  flex: 1;
+}
+
+
+
+
+
+.app-grid-table {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+
+  & > div {
+    padding: 8px 12px;
+    //min-height: 50px;
+    .app-link-icon {
+      display: flex;
+      flex-direction: row;
+      align-items: center;
+
+      .mat-icon {
+        $app-size: 16px;
+        font-size: $app-size;
+        width: $app-size;
+        height: $app-size;
+        margin-left: 4px;
+      }
+    }
+
+    &:nth-child(4n + 1),
+    &:nth-child(4n + 2) {
+      background: #f5f5f5;
+    }
+
+    &:nth-child(odd) {
+      font-weight: 600;
+    }
+  }
+}

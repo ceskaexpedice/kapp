@@ -55,6 +55,7 @@ $alerts: (
 @mixin setCheckBoxDensity($val: null) {
   @if ($val != null) {
     .mat-mdc-checkbox {
+      --mat-checkbox-state-layer-size: 20px;
       .mdc-checkbox__background {
         width: calc(18px - #{$val}px);
         height: calc(18px - #{$val}px);
@@ -197,7 +198,8 @@ $alerts: (
       }
 
       .mat-mdc-card-content {
-        line-height: 20px;
+        //line-height: 20px;
+        font-size: 13px;
       }
     }
   }
@@ -279,6 +281,7 @@ $alerts: (
   }
   .mat-mdc-form-field {
     .mat-mdc-form-field-icon-suffix {
+      display: inline-flex;
       margin-right: 4px;
       @include mat.icon-button-overrides((
         state-layer-size: 30px,
@@ -314,7 +317,7 @@ $alerts: (
   }
   .mat-mdc-table {
     @include mat.icon-button-overrides((
-      state-layer-size: 24px
+      state-layer-size: 20px
     ));
     .mdc-icon-button {
       display: flex;
@@ -492,6 +495,9 @@ $alerts: (
         align-items: start;
       }
     }
+  }
+  .app-grid-table {
+    @include setCheckBoxDensity(5);
   }
 
 

@@ -23,12 +23,13 @@ import { AuthorTitleDialog, AuthorTitleDialogData } from '../author-title-dialog
 import { MatListModule } from "@angular/material/list";
 import { isIndexSignatureDeclaration } from 'typescript';
 import { MatCheckbox } from "@angular/material/checkbox";
+import { MatInputModule } from '@angular/material/input';
 
 @Component({
   selector: 'app-result-item',
   imports: [RouterModule, TranslateModule, FormsModule, DatePipe,
     MatCardModule, MatButtonModule, MatMenuModule,
-    MatIconModule, MatChipsModule, MatFormFieldModule, MatListModule, MatCheckbox],
+    MatIconModule, MatChipsModule, MatFormFieldModule, MatListModule, MatCheckbox, MatInputModule],
   templateUrl: './result-item.html',
   styleUrl: './result-item.scss'
 })
