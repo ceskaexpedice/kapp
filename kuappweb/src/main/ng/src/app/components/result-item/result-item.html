@@ -27,10 +27,54 @@
 		</mat-card-title>
 	</mat-card-header>
 	<mat-card-content>
-		<div class="app-grid-table app-mt-4">
-			<div>{{ (doc().model === 'periodicalvolume' ? 'Periodical' : 'Monograph') | translate }}:</div>
-			<div><a (click)="gotoPid(doc()['root_pid'])" [title]="'gotoParent' | translate">{{ doc()['root_title']}} </a></div>
+		<div class="app-grid-table app-mt-4 app-mb-4">
+			@if (!doc()['is_hierarchical']) {
+				<div>{{ (doc().model === 'periodicalvolume' ? 'Periodical' : 'Monograph') | translate }}:</div>
+				<div><a (click)="gotoPid(doc()['root_pid'])" [title]="'gotoParent' | translate">{{ doc()['root_title']}} </a></div>
+			}
 
+			<div>{{ 'Díla' | translate }}:</div>
+			<div class="app-fxLayout app-row app-center-v app-gap-2">
+				<!-- @if (editingDilo()) {
+					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
+					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
+					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
+					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</mat-checkbox>
+				} @else {
+					<span [class.app-removed]="!is_anonymous">{{ 'field.is_anonymous' | translate }}</span> &#160;
+					<span [class.app-removed]="!is_collective">{{ 'field.is_collective' | translate }}</span> &#160;
+					<span [class.app-removed]="!is_official">{{ 'field.is_official' | translate }}</span> &#160;
+					<span [class.app-removed]="!is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</span> &#160;
+				} -->
+				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
+				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
+				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
+				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</mat-checkbox>
+				@if (state.user()) {
+					@if (editingDilo()) {
+						<button matIconButton (click)="saveTypDila()" class="app-ml-4"><mat-icon>save</mat-icon></button>
+						<button matIconButton (click)="closeEditingDilo()"><mat-icon>cancel</mat-icon></button>
+					} @else {
+						<button matIconButton (click)="editTypDila()"><mat-icon>edit</mat-icon></button>
+					}
+				}
+			</div>
+
+
+			<div>{{ 'field.archiver_location' | translate }}:</div>
+			<div>{{ doc()['archiver_location'] }}</div>
+
+			@if(doc()['public_since']) {
+				<div>{{ 'field.public_since' | translate }}:</div>
+				<div>{{ doc()['public_since'] }}</div>
+			}
+
+			<div>{{ 'field.indextime' | translate }}:</div>
+			<div>{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}</div>
+		</div>
+
+
+		<div class="app-grid-table app-mb-4">
 			<div>{{ 'field.authors' | translate }}:</div>
 			<div>
 				@for(a of mergedAuthors; track $index) {
@@ -63,28 +107,8 @@
 				}
 			</div>
 
-			<div>{{ 'Díla' | translate }}:</div>
-			<div class="app-fxLayout app-row app-center-v app-gap-2">
-				@if (editingDilo()) {
-					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
-					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
-					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
-					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</mat-checkbox>
-				} @else {
-					<span [class.app-removed]="!is_anonymous">{{ 'field.is_anonymous' | translate }}</span> &#160;
-					<span [class.app-removed]="!is_collective">{{ 'field.is_collective' | translate }}</span> &#160;
-					<span [class.app-removed]="!is_official">{{ 'field.is_official' | translate }}</span> &#160;
-					<span [class.app-removed]="!is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</span> &#160;
-				}
-				@if (state.user()) {
-					@if (editingDilo()) {
-						<button matIconButton (click)="saveTypDila()" class="app-ml-4"><mat-icon>save</mat-icon></button>
-						<button matIconButton (click)="closeEditingDilo()"><mat-icon>cancel</mat-icon></button>
-					} @else {
-						<button matIconButton (click)="editTypDila()"><mat-icon>edit</mat-icon></button>
-					}
-				}
-			</div>
+			<div>{{ 'field.date_issued' | translate }}:</div>
+			<div>{{ doc()['date_issued_str']}}</div>
 
 			<div>{{ 'field.pid' | translate }}:</div>
 			<div>
@@ -104,26 +128,6 @@
 			<div>{{ 'field.physical_locations' | translate }}:</div>
 			<div>{{ doc()['physical_locations'] }}</div>
 
-			<div>{{ 'field.archiver_location' | translate }}:</div>
-			<div>{{ doc()['archiver_location'] }}</div>
-
-			@if(doc()['public_since']) {
-				<div>{{ 'field.public_since' | translate }}:</div>
-				<div>{{ doc()['public_since'] }}</div>
-			}
-
-			<div>{{ 'field.date_issued' | translate }}:</div>
-			<div>{{ doc()['date_issued_str']}}</div>
-
-			<div>{{ 'field.indextime' | translate }}:</div>
-			<div>{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}</div>
-			
-			<div>{{ 'field.assigned_licenses' | translate }}:</div>
-			<div>{{ doc()['assigned_licenses']}}</div>
-
-			<div>{{ 'field.digitalni_knihovny' | translate }}:</div>
-			<div>{{ doc()['digital_library']}}</div>
-
 			<div>{{ 'field.id_urnnbn' | translate }}:</div>
 			<div>{{ doc()['id_urnnbn']}}</div>
 
@@ -138,6 +142,20 @@
 
 			<div>{{ 'field.id_barCode' | translate }}:</div>
 			<div>{{ doc()['id_barCode']}}</div>
+		</div>
+
+
+		<div class="app-grid-table app-mb-2">
+			<div>{{ 'field.assigned_licenses' | translate }}:</div>
+			<div>{{ doc()['assigned_licenses']}}</div>
+
+			<div>{{ 'field.digitalni_knihovny' | translate }}:</div>
+			<div>
+				<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+doc()['pid']" class="app-link-icon">
+					{{ doc()['digital_library']}}
+					<mat-icon>open_in_new</mat-icon>
+				</a>
+			</div>
 
 			<div>{{ 'field.licenses' | translate }}:</div>
 			<div>{{ doc()['licenses']}}</div>
@@ -332,7 +350,7 @@
 
 
 		@if (hasCollapsed) {
-			<table class="app-table app-mt-1">
+			<table class="app-table app-mt-4 app-mb-2">
 				<thead>
 					<tr>
 						<th colspan="5">{{ 'Části' | translate }}</th>

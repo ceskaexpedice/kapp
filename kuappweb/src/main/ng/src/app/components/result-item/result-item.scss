@@ -88,16 +88,16 @@ button[mat-stroked-button]:not(.state-ke-kontrole):not(.state-nekontrolovano) {
 }
 
 
-
-
-
 .app-grid-table {
   display: grid;
   grid-template-columns: max-content 1fr;
+  border: 1px solid;
+  border-color: var(--app-border-color-default);
+  color: rgb(var(--app-color-darknes));
 
   & > div {
     padding: 8px 12px;
-    //min-height: 50px;
+
     .app-link-icon {
       display: flex;
       flex-direction: row;
