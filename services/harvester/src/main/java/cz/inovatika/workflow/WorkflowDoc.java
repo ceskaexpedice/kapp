@@ -5,7 +5,9 @@ import org.json.JSONObject;
 
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static cz.inovatika.Constants.TitlesCollectionFields.*;
@@ -48,7 +50,10 @@ public record WorkflowDoc(
                 idoc.getDocument().setField(AppComputedFields.ASSIGNED_LICENSES, operation);
             }
             case NONE -> {
-                //TODO
+                //TODO?
+                Map<String, Object> operation = new HashMap<>();
+                operation.put("remove", List.of("onsite","public"));
+                idoc.getDocument().setField(AppComputedFields.ASSIGNED_LICENSES, operation);
             }
             case LOCAL -> {
                 //TODO 2

@@ -306,7 +306,10 @@ public class TsvToSolrIndexer {
 
 
                                     }
-                                    case "title","authors","id_ccnb"->{
+                                    case "title"->{
+                                        doc.setField("title",value);//This may change the title that came from kramerius, but it is not going to appear in kramerius anyway, and there are books that are in Excel only that need title
+                                    }
+                                    case "authors","id_ccnb"->{
                                         //skip
                                     }
                                     case "physical_locations"->{

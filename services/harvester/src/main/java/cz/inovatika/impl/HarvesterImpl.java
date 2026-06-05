@@ -420,8 +420,7 @@ public class HarvesterImpl implements Harvester {
             }
 
             String pid = ctx.item().getPid();
-            boolean exists = ctx.touchStore().exists(pid);
-            if (exists) {
+            if (ctx.touchStore().exists(pid)) {
                 SolrInputDocumentWrapper wrapper = getSolrInputDocumentWrapper(ctx,SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
 
                 wrapper.addField(AppComputedFields.DIGITAL_LIBRARY, ctx.config().getAcronym(), SolrInputDocumentWrapper.TypeOfOperation.ATOMIC_ADD_DISTINCT);

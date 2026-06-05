@@ -1,5 +1,6 @@
 package cz.inovatika.impl;
 
+import cz.inovatika.Constants;
 import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
 import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import cz.inovatika.Updater;
@@ -54,7 +55,7 @@ public class UpdaterImpl implements Updater {
                 params.set("rows", IN_BATCHSIZE);
                 params.set("cursorMark", cursorMark);
                 params.set("sort", "pid asc");
-                params.add("fq", AppComputedFields.ASSIGNED_LICENSES+":onsite");
+                //params.add("fq", "-"+AppComputedFields.ASSIGNED_LICENSES+":public");
                 params.add(
                         "fq",
                         "(" +
@@ -76,16 +77,27 @@ public class UpdaterImpl implements Updater {
                     String pid = (String) doc.getFieldValue(AppDataFields.PID_FIELD);
                     Object dateIssuedObj = doc.getFieldValue(AppDataFields.DATE_ISSUED_YEAR_FIELD);
                     Object lastYearDeathObj = doc.getFieldValue(AppComputedFields.LAST_YEAR_DEATH);
+                    Object statevalue = doc.getFieldValue(AppComputedFields.STATE_FIELD);
+                    States state = (statevalue ==null) ? States.IMPORTED : States.valueOf(statevalue.toString());
+
+                    Object modelvalue = doc.getFieldValue(AppDataFields.MODEL_FIELD);
+                    String model = modelvalue ==null ? Constants.TitlesCollectionFields.ModelFields.MONOGRAPHUNIT : modelvalue.toString();
+
+                    Object hierarchical_value = doc.getFieldValue(AppComputedFields.IS_HIERARCHICAL_FIELD);
+                    boolean hierarchical = hierarchical_value != null && Boolean.parseBoolean(hierarchical_value.toString());
+
                     WorkflowDoc workflowDoc = new WorkflowDoc(
                             dateIssuedObj!=null? Integer.parseInt(dateIssuedObj.toString()):null,
                             lastYearDeathObj!=null?Integer.parseInt(lastYearDeathObj.toString()):null,
-                            States.valueOf(doc.getFieldValue(AppComputedFields.STATE_FIELD).toString()),
+                            state,
                             USER,
-                            doc.getFieldValue(AppDataFields.MODEL_FIELD).toString(),
-                            Boolean.getBoolean(doc.getFieldValue(AppComputedFields.IS_HIERARCHICAL_FIELD).toString())//,state.getLicensesAssignation()
+                            model,
+                            hierarchical//,state.getLicensesAssignation()
                     );
                     StringWrapper reason = new StringWrapper("unspecified") ;
-                    States newState = workflowDoc.state().calculateNextState(doc.getFieldValue(AppDataFields.ROOT_PID_FIELD).toString(),solrClient,applicationConfig,workflowDoc,reason);
+                    Object root_pid_value = doc.getFieldValue(AppDataFields.ROOT_PID_FIELD);
+                    String root_pid = root_pid_value == null ? pid : root_pid_value.toString();
+                    States newState = workflowDoc.state().calculateNextState(root_pid,solrClient,applicationConfig,workflowDoc,reason);
                     if (newState==null)continue;
                     if (newState != workflowDoc.state())
                         System.out.println(
