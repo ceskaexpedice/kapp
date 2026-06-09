@@ -42,8 +42,9 @@ public class Constants {
             public static final String BIBLIO_MODS_MD_5_FIELD = "biblio_mods_md5";
             public static final String DATE_ISSUED_STR = "date_issued_str";
             public static final String DATE_ISSUED_YEAR_FIELD = "date_issued_year";
-            public static final String DATE_ISSUED_START_YEAR_FIELD = "date_issued_start_year";
-            public static final String DATE_ISSUED_END_YEAR_FIELD = "date_issued_end_year";
+            public static final String DATE_ISSUED_YEAR_KAPP_FIELD = "date_issued_year_kapp";
+            //public static final String DATE_ISSUED_START_YEAR_FIELD = "date_issued_start_year";
+            //public static final String DATE_ISSUED_END_YEAR_FIELD = "date_issued_end_year";
 
 
             public static final String PHYSICAL_LOCATIONS_FACET_FIELD = "physical_locations";

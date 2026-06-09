@@ -908,22 +908,6 @@ public class LastAuthorMatcher {
             String reason
             ) {
 
-        static UpdatePlan noMatch(String reason) {
-            return new UpdatePlan(
-                    false,
-                    false,
-                    false,
-                    "",
-                    new JSONObject(),
-                    new JSONArray(),
-                    TitleAuthorFields.empty(),
-                    null,
-                    List.of(),
-                    List.of(),
-                    reason
-            );
-        }
-
         static UpdatePlan noAuthorUpdate(String reason, Integer lastYearDeath, List<String> labels) {
             return new UpdatePlan(
                     false,

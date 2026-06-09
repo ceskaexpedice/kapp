@@ -75,7 +75,8 @@ public class UpdaterImpl implements Updater {
                 List<SolrInputDocument> batch = new ArrayList<>();
                 for (SolrDocument doc : response.getResults()) {
                     String pid = (String) doc.getFieldValue(AppDataFields.PID_FIELD);
-                    Object dateIssuedObj = doc.getFieldValue(AppDataFields.DATE_ISSUED_YEAR_FIELD);
+                    Object dateIssuedObj = doc.getFieldValue(AppDataFields.DATE_ISSUED_YEAR_KAPP_FIELD);
+                    if (dateIssuedObj==null) dateIssuedObj = doc.getFieldValue(AppDataFields.DATE_ISSUED_YEAR_FIELD);
                     Object lastYearDeathObj = doc.getFieldValue(AppComputedFields.LAST_YEAR_DEATH);
                     Object statevalue = doc.getFieldValue(AppComputedFields.STATE_FIELD);
                     States state = (statevalue ==null) ? States.IMPORTED : States.valueOf(statevalue.toString());
