@@ -57,7 +57,7 @@ export class ResultItem {
   is_pseudonymous: boolean;
   note: string;
   noteRows = 3;
-  noteWidth = 200;
+  noteWidth = '90%';
 
   mergedAuthors: AuthorTitle[] = [];
   lastAuthor: string;

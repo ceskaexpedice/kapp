@@ -35,17 +35,7 @@
 
 			<div>{{ 'Díla' | translate }}:</div>
 			<div class="app-fxLayout app-row app-center-v app-gap-2">
-				<!-- @if (editingDilo()) {
-					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
-					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
-					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
-					<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</mat-checkbox>
-				} @else {
-					<span [class.app-removed]="!is_anonymous">{{ 'field.is_anonymous' | translate }}</span> &#160;
-					<span [class.app-removed]="!is_collective">{{ 'field.is_collective' | translate }}</span> &#160;
-					<span [class.app-removed]="!is_official">{{ 'field.is_official' | translate }}</span> &#160;
-					<span [class.app-removed]="!is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</span> &#160;
-				} -->
+				
 				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
 				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
 				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
@@ -163,7 +153,7 @@
 @if (state.user()) {
 			<div>{{ 'field.note' | translate }}:</div>
 			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
-				<textarea [disabled]="!editingNote()" [(ngModel)]="note" matInput [rows]="1" [style.width]="noteWidth"></textarea>
+				<textarea [disabled]="!editingNote()" [(ngModel)]="note" matInput [rows]="noteRows" [style.width]="noteWidth"></textarea>
 				@if (editingNote()) {
 					<button matIconButton (click)="saveNote()"><mat-icon>save</mat-icon></button>
 					<button matIconButton (click)="closeEditingNote()"><mat-icon>cancel</mat-icon></button>
@@ -176,179 +166,6 @@
 			<div>{{ 'field.release_date' | translate }}:</div>
 			<div>{{ doc()['release_date']}}</div>
 		</div>
-
-
-
-	
-
-		<!-- @if (!doc()['is_hierarchical']) {
-		<div class="app-metadata-row">
-			<span class="app-label">{{ (doc().model === 'periodicalvolume' ? 'periodical' : 'monograph') | translate }}:</span>
-			<a (click)="gotoPid(doc()['root_pid'])" class="app-value" [title]="'gotoParent' | translate">{{ doc()['root_title']}} </a>
-		</div>
-		}
-		<div class="app-metadata-row app-multiple">
-			<span class="app-label">{{ 'field.authors' | translate }}:</span>
-			<mat-list>
-				@for(a of mergedAuthors; track $index) {
-						<mat-list-item>
-							<a (click)="infoAuthor(a)" class="app-value">
-								<span [class.app-removed]="a.removed" [class.app-last-author]="a.isLast">{{ a.full }} {{ a.date }} ({{ a.role }})</span>
-							</a>
-						</mat-list-item>
-					}
-					<mat-list-item>
-							<a (click)="addAuthor()" [title]="'action.add_author' | translate" class="app-value">
-								<mat-icon>person_add</mat-icon>
-							</a>
-				</mat-list-item>
-			</mat-list>
-			
-		</div>
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.last_author' | translate }}:</span>
-			<span class="app-value">{{ lastAuthor }}</span>
-		</div>
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.last_year_death' | translate }}:</span>
-			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
-				@if (editingDate()) {
-					<input [(ngModel)]="lastYearDeath" matInput />
-					<a (click)="saveLastYearDeath()" class="app-value"><mat-icon>save</mat-icon></a>
-					<a (click)="closeEditingDate()" class="app-value"><mat-icon>cancel</mat-icon></a>
-				} @else {
-					<div class="app-value">
-						<span>{{ doc()['last_year_death']}}</span>
-						
-    				@if (state.user()) {
-						<a (click)="editLastYearDeath()" class="app-value"><mat-icon>edit</mat-icon></a>
-					}
-					</div>	
-				}
-			</div>
-		</div>
-		<div class="app-metadata-row">
-			@if (editingDilo()) {
-				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
-				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
-				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
-				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</mat-checkbox>
-			} @else {
-				<span [class.app-removed]="!is_anonymous">{{ 'field.is_anonymous' | translate }}</span> &#160;
-				<span [class.app-removed]="!is_collective">{{ 'field.is_collective' | translate }}</span> &#160;
-				<span [class.app-removed]="!is_official">{{ 'field.is_official' | translate }}</span> &#160;
-				<span [class.app-removed]="!is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</span> &#160;
-			}
-			@if (state.user()) {
-				@if (editingDilo()) {
-					<a (click)="saveTypDila()" class="app-value"><mat-icon>save</mat-icon></a>
-					<a (click)="closeEditingDilo()" class="app-value"><mat-icon>cancel</mat-icon></a>
-				} @else {
-					<a (click)="editTypDila()" class="app-value"><mat-icon>edit</mat-icon></a>
-				}
-			}
-		</div>
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.pid' | translate }}:</span>
-			@if (doc()['physical_locations']?.[0] === 'ABA001') {
-				<a target="_blank" [href]="'https://ndk.cz/view/'+doc()['pid']" class="app-value">
-					<span>{{doc()['pid']}}</span>
-					<mat-icon>open_in_new</mat-icon>
-				</a>
-			} @else {
-				<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+doc()['pid']" class="app-value">
-					<span>{{doc()['pid']}}</span>
-					<mat-icon>open_in_new</mat-icon>
-				</a>
-			}
-		</div>
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.physical_locations' | translate }}:</span>
-			<span class="app-value">{{ doc()['physical_locations'] }}</span>
-		</div>
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.archiver_location' | translate }}:</span>
-			<span class="app-value">{{ doc()['archiver_location'] }}</span>
-		</div>
-		@if(doc()['public_since']) {
-			<div class="app-metadata-row">
-				<span class="app-label">{{ 'field.public_since' | translate }}:</span>
-				<span class="app-value">{{ doc()['public_since'] }}</span>
-			</div>
-		}
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.date_issued' | translate }}:</span>
-			<span class="app-value">{{ doc()['date_issued_str']}}</span>
-		</div>
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.indextime' | translate }}:</span>
-			<span class="app-value">{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}</span>
-		</div>
-
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.assigned_licenses' | translate }}:</span>
-			<span class="app-value"><b>{{ doc()['assigned_licenses']}}</b></span>
-		</div>
-
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.digitalni_knihovny' | translate }}:</span>
-			<span class="app-value"><b>{{ doc()['digital_library']}}</b></span>
-		</div>
-
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.id_urnnbn' | translate }}:</span>
-			<span class="app-value"><b>{{ doc()['id_urnnbn']}}</b></span>
-		</div>
-
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.id_ccnb' | translate }}:</span>
-			<span class="app-value"><b>{{ doc()['id_ccnb']}}</b></span>
-		</div>
-
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.id_sysno' | translate }}:</span>
-			<span class="app-value"><b>{{ doc()['id_sysno']}}</b></span>
-		</div>
-
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.id_isbn' | translate }}:</span>
-			<span class="app-value"><b>{{ doc()['id_isbn']}}</b></span>
-		</div>
-
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.id_barCode' | translate }}:</span>
-			<span class="app-value"><b>{{ doc()['id_barCode']}}</b></span>
-		</div>
-
-
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.licenses' | translate }}:</span>
-			<span class="app-value">{{ doc()['licenses']}}</span>
-		</div>
-
-
-    @if (state.user()) {
-		<div class="app-metadata-row" style="align-items: baseline;">
-			<span class="app-label">{{ 'field.note' | translate }}:</span>
-			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
-				<textarea [disabled]="!editingNote()" [(ngModel)]="note" matInput [rows]="noteRows" [style.width]="noteWidth"></textarea>
-				@if (editingNote()) {
-					<a (click)="saveNote()" class="app-value"><mat-icon>save</mat-icon></a>
-					<a (click)="closeEditingNote()" class="app-value"><mat-icon>cancel</mat-icon></a>
-				} @else {
-    			<a (click)="editNote()" class="app-value"><mat-icon>edit</mat-icon></a>
-				}
-			</div>
-		</div>
-	}
-		
-		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.release_date' | translate }}:</span>
-			<div class="app-value">
-				<span>{{ doc()['release_date']}}</span>
-			</div>
-		</div>-->
-
 
 		@if (hasCollapsed) {
 			<table class="app-table app-mt-4 app-mb-2">
