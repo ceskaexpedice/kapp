@@ -45,28 +45,29 @@
 </div>
 }
 
-<!-- Datum zmany - ready for Alberto -->
+
 <div class="app-facet app-facet-date-change">
   <mat-expansion-panel [expanded]="true">
     <mat-expansion-panel-header>
-      <mat-panel-title> {{ 'Datum změny' | translate}} </mat-panel-title>
+      <mat-panel-title> {{ 'field.state_date' | translate}} </mat-panel-title>
     </mat-expansion-panel-header>
-    <div class="app-fxLayout app-row app-pl-4 app-pr-4 app-pb-1">
+    <div class="app-fxLayout app-row app-pl-4 app-pr-4 app-pb-1 app-gap-2">
       <mat-form-field class="app-fxFlex" appearance="outline">
-        <mat-label>Enter a date range</mat-label>
+        <mat-label>{{ 'Datum změny' | translate}}</mat-label>
         <mat-date-range-input [rangePicker]="picker">
-          <input matStartDate placeholder="Start date">
-          <input matEndDate placeholder="End date">
+          <input matStartDate [placeholder]="'from' | translate" [(ngModel)]="dateChangedFrom">
+          <input matEndDate [placeholder]="'to' | translate" [(ngModel)]="dateChangedTo">
         </mat-date-range-input>
         <!-- <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint> -->
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-date-range-picker #picker></mat-date-range-picker>
       </mat-form-field>
+      <button matIconButton (click)="filterStateDate()"><mat-icon>search</mat-icon></button>
     </div>
   </mat-expansion-panel>
 </div>
 
-<!-- datum zmeny -->
+
 @for(f of fields(); track $index; let idx = $index) {
   @if(f==='date_issued_year') {
     <div class="app-facet app-facet-date-issue">

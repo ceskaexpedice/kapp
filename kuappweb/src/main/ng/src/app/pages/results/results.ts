@@ -127,6 +127,7 @@ export class Results {
     p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
     p.authors_ids = usedFacets.filter(k => k.field === 'authors_ids').map(k => k.value);
     p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
+    p.state_date = usedFacets.filter(k => k.field === 'state_date').map(k => k.value);
     p.modified_by_user = usedFacets.filter(k => k.field === 'modified_by_user').map(k => k.value);
     p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
     p.batch = usedFacets.filter(k => k.field === 'batch').map(k => k.value);

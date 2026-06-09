@@ -87,6 +87,7 @@ public class SolrIndexer {
 
             addAtomicField(doc, "set", js.getJSONArray("labels"), "labels");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
             solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
@@ -133,6 +134,7 @@ public class SolrIndexer {
                 doc.setField("pid", pids.getString(i));
                 addAtomicField(doc, "set", js.getString("batch"), "batch");
                 addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
                 solr.add("titles", doc);
             }
 
@@ -186,6 +188,7 @@ public class SolrIndexer {
             addAtomicField(doc, "set", js.getJSONArray("authors").toString(), "authors_kapp");
             
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
             solr.add("titles", doc);
             solr.commit("titles");
@@ -210,6 +213,7 @@ public class SolrIndexer {
             addAtomicField(doc, "set", js.optBoolean("is_official"), "is_official");
             addAtomicField(doc, "set", js.optBoolean("is_pseudonymous"), "is_pseudonymous");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
             solr.add("titles", doc);
             solr.commit("titles");
@@ -231,6 +235,7 @@ public class SolrIndexer {
 
             addAtomicField(doc, "set", js.getString("note"), "note");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
             solr.add("titles", doc);
             solr.commit("titles");
@@ -295,6 +300,7 @@ public class SolrIndexer {
             adoc.setField("confirmed_end_year", js.optBoolean("confirmed_end_year"));
             
             adoc.setField("modified_by_user", user);
+            adoc.setField("last_modified_date", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
             
             // addAtomicField(doc, "add-distinct", user, "modified_by_user");
             
@@ -404,6 +410,7 @@ public class SolrIndexer {
         JSONArray labels = new_author.optJSONArray("labels", new JSONArray());
         addAtomicField(tdoc, "add-distinct", labels.toList(), "labels");
         addAtomicField(tdoc, "add-distinct", user, "modified_by_user");
+        addAtomicField(tdoc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
         return tdoc;
 
@@ -423,6 +430,7 @@ public class SolrIndexer {
             addAtomicField(doc, "add-distinct", "author_modified", "labels");
             
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
             solr.add("titles", doc);
             solr.commit("titles");
@@ -462,6 +470,7 @@ public class SolrIndexer {
 
             addAtomicField(doc, "set", batch, "batch");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
             solr.add("titles", doc);
             solr.commit("titles");
             ret.put("msg", "saved");
@@ -594,6 +603,7 @@ public class SolrIndexer {
         addAtomicField(doc, "set", user, "state_user");
         addAtomicField(doc, "set", reason, "state_reason");
         addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
         String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 

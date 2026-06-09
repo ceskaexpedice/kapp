@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, output } from '@angular/core';
+import { Component, effect, inject, input, output, signal } from '@angular/core';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
 import { TranslateModule } from '@ngx-translate/core';
@@ -12,8 +12,9 @@ import { FormsModule } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { MatButtonModule } from '@angular/material/button';
-import {provideNativeDateAdapter} from '@angular/material/core';
-import { MatDatepickerModule } from '@angular/material/datepicker';
+import {DateAdapter, MAT_DATE_LOCALE, provideNativeDateAdapter} from '@angular/material/core';
+import { MatDatepickerIntl, MatDatepickerModule } from '@angular/material/datepicker';
+import { DatePipe } from '@angular/common';
 
 @Component({
   selector: 'app-facets',
@@ -21,13 +22,20 @@ import { MatDatepickerModule } from '@angular/material/datepicker';
     MatExpansionModule, MatListModule, MatInputModule, MatButtonModule,
     MatCheckboxModule, MatTooltipModule, MatIconModule, MatDatepickerModule
   ],
-  providers: [provideNativeDateAdapter()],
+  providers: [
+    provideNativeDateAdapter(),
+    {provide: MAT_DATE_LOCALE, useValue: 'cs-CZ '}
+  ],
   templateUrl: './facets.component.html',
   styleUrl: './facets.component.scss'
 })
 export class FacetsComponent {
 
   private router = inject(Router);
+  private datePipe = inject(DatePipe);
+  private readonly _adapter = inject<DateAdapter<unknown, unknown>>(DateAdapter);
+  private readonly _intl = inject(MatDatepickerIntl);
+  private readonly _locale = signal(inject<unknown>(MAT_DATE_LOCALE));
 
   facets = input<FacetFields>();
   fields = input<string[]>([]);
@@ -43,7 +51,13 @@ export class FacetsComponent {
   yearFrom: number;
   yearTo: number;
 
+  dateChangedFrom: Date;
+  dateChangedTo: Date;
+
+
   constructor(public state: AppState) {
+    this._locale.set('cs');
+    this._adapter.setLocale(this._locale());
     effect(() => {
       this.usedFacets = this.state.usedFacets();
       this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
@@ -82,6 +96,17 @@ export class FacetsComponent {
     this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
   }
 
+  filterStateDate() {
+    const uf = this.usedFacets.find(f => f.field === 'state_date');
+      const value = this.datePipe.transform(this.dateChangedFrom, 'yyyy-MM-dd') + ',' + this.datePipe.transform(this.dateChangedTo, 'yyyy-MM-dd') ;
+      this.usedFacets = this.usedFacets.filter(f => !(f.field === 'state_date'));
+      this.usedFacets.push({field: 'state_date', value});
+      this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
+      this.state.usedFacets.update(f => [...this.usedFacets]);
+      //console.log(this.usedFacets)
+      this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+  }
+
   filterYear() {
     const uf = this.usedFacets.find(f => f.field === 'date_issued_year');
       const value = this.yearFrom + ',' + this.yearTo;
@@ -89,7 +114,6 @@ export class FacetsComponent {
       this.usedFacets.push({field: 'date_issued_year', value});
       this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
       this.state.usedFacets.update(f => [...this.usedFacets]);
-      this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
       this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
   }
   

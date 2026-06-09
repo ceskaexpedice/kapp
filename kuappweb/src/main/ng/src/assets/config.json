@@ -61,7 +61,7 @@
         {"field": "model", "selected": true},
         {"field": "date_issued_year", "selected": true},
         {"field": "last_year_death", "selected": true},
-        {"field": "release_date", "selected": true},
+        {"field": "release_year", "selected": true},
         {"field": "indextime", "selected": true},
         {"field": "assigned_licenses", "selected": false},
         {"field": "licenses", "selected": false},

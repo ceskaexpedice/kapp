@@ -209,9 +209,9 @@
               <td mat-cell *matCellDef="let doc">{{ doc.last_year_death }}</td>
             </ng-container>
 
-            <ng-container matColumnDef="release_date">
-              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'release_date')" [style.width]="columnSizes['release_date'] + 'px'"><span mat-sort-header>{{ 'field.release_date' | translate}}</span></th>
-              <td mat-cell *matCellDef="let doc">{{ doc.release_date }}</td>
+            <ng-container matColumnDef="release_year">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'release_year')" [style.width]="columnSizes['release_year'] + 'px'"><span mat-sort-header>{{ 'field.release_year' | translate}}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc.release_year }}</td>
             </ng-container>
 
             <ng-container matColumnDef="action" [stickyEnd]="true" >

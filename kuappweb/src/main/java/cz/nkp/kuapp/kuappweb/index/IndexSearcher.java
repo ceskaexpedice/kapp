@@ -60,7 +60,7 @@ public class IndexSearcher {
         return ret;
     }
             
-    final static String release_date = "if(exists(last_year_death),sum(last_year_death, 71),sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101)))";
+    //final static String release_date = "if(exists(last_year_death),sum(last_year_death, 71),sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101)))";
     public static JSONObject searchTitles(HttpServletRequest request) {
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
@@ -78,20 +78,16 @@ public class IndexSearcher {
                 offset = Integer.parseInt(request.getParameter("offset"));
             }
             
-            String fl = "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:" + release_date;
+            String fl = "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_year";
             if (request.getParameter("fl") != null) {
                 fl = String.join(",",request.getParameterValues("fl"));
-                fl = fl.replace("release_date", "release_date:" + release_date);
                 fl = fl.replace("action", "");
             }
 
 
             String sort = "indextime desc";
             if (request.getParameter("sort") != null) {
-                sort = request.getParameter("sort");
-                if (sort.contains("release_date")) {
-                    sort = sort.replace("release_date", release_date);
-                }
+                sort = request.getParameter("sort"); 
             }
             String q = "*";
             if (request.getParameter("q") != null) {
@@ -109,6 +105,10 @@ public class IndexSearcher {
                     .withParam("expand", true)
                     .withParam("expand.rows", 100)
                     .withParam("modelboost", "model:monograph")
+                    
+                    .withFacet("state_date", new QueryFacetMap("state_date:[1000-01-01T00:00:00Z TO 2100-12-01T00:00:00Z]")
+                            .withStatSubFacet("state_date", "min(state_date)")
+                            .withStatSubFacet("state_date", "max(state_date)"))
                     
                     .withFacet("date_issued_year", new QueryFacetMap("date_issued_year:[1000 TO 2100]")
                             .withStatSubFacet("date_issued_year_min", "min(date_issued_year)")
@@ -219,6 +219,13 @@ public class IndexSearcher {
                 String from = parts[0].isBlank() ? "*" : parts[0];
                 String to = parts[1].isBlank() ? "*" : parts[1];
                 jrequest = jrequest.withFilter("date_issued_year:[" + from + " TO " + to + "]");
+            }
+
+            if (request.getParameter("state_date") != null) {
+                String[] parts = request.getParameter("state_date").split(",");
+                String from = parts[0].isBlank() ? "*" : parts[0];
+                String to = parts[1].isBlank() ? "*" : parts[1];
+                jrequest = jrequest.withFilter("state_date:[" + from + "T00:00:00Z TO " + to + "T23:59:59Z]");
             }
             if (request.getParameter("authors_ids") != null) {
                 jrequest = jrequest.withFilter("authors_ids:" + request.getParameter("authors_ids"));
@@ -351,7 +358,7 @@ public class IndexSearcher {
                     .withParam("fq", "{!collapse field=root_pid}")
                     .setOffset(offset)
                     .setSort(sort)
-                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:" + release_date)
+                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_year")
                     .setLimit(rows);
 
             if (request.getParameter("contract") != null) {
@@ -390,7 +397,7 @@ public class IndexSearcher {
                 sort = request.getParameter("sort");
             }
             String q = "*";
-            String fl = "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:" + release_date;
+            String fl = "*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_year";
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withParam("fq", "{!join from=ccnb fromIndex=contracts to=id_ccnb}filename:\"" + request.getParameter("contract") + "\"")
@@ -574,7 +581,7 @@ public class IndexSearcher {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery("pid:\"" + pid + "\"")
-                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_date:" + release_date)
+                    .returnFields("*,authors_kramerius:[json],authors_kapp:[json],state_history:[json],release_year")
                     .setLimit(1);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
