@@ -8,7 +8,6 @@ import org.json.JSONObject;
 import java.text.Normalizer;
 import java.time.Year;
 import java.util.*;
-import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
 public class LastAuthorMatcher {

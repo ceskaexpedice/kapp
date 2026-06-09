@@ -87,19 +87,6 @@ public class HarvesterImpl implements Harvester {
         }
         return fq.toString();
     }
-    /*
-    public String physicalLocationToFQ(List<String> physicalLocations) {
-        String header = "physical_locations.facet:(";
-        StringBuilder fq = new StringBuilder();
-        fq.append(header);//TODO: this might break with k5 - add to APIVersion later
-        for (String physicalLocation : physicalLocations) {
-            if (!fq.toString().equals(header)) {
-                fq.append(" OR ");
-            }
-            fq.append(physicalLocation);
-        }
-        return fq.append(")").toString();
-    }*/
 
     @Override
     public void harvest(ApplicationConfig applicationConfig, Instance config, Consumer<HarvesterContext> consumer) {
@@ -400,12 +387,12 @@ public class HarvesterImpl implements Harvester {
             LOGGER.log(Level.INFO, "No documents to be indexed.");
         }
     }
-
+/*
     private static Map<String, Object> createSetOperation(Object value) {
         Map<String, Object> updateMap = new HashMap<>();
         updateMap.put("set", value);
         return updateMap;
-    }
+    }*/
 
     private void processHarvest(final Instance config,
                                 final HarvesterContext ctx,
