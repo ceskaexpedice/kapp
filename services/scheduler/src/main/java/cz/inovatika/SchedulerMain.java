@@ -7,28 +7,38 @@ import org.quartz.impl.StdSchedulerFactory;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.InputStream;
+import java.util.Arrays;
+import java.util.Locale;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public class SchedulerMain {
     public static Scheduler scheduler;
-    final static String HARVESTERGROUP = "group1";
-    final static String UPDATERGROUP = "group2";
+    private static final Logger LOGGER = Logger.getLogger(SchedulerMain.class.getName());
+    private static final String HARVESTERGROUP = "group1";
+    private static final String UPDATERGROUP = "group2";
+
     public static void main(String[] args) throws SchedulerException {
-
-
+        ScheduledService service = ScheduledService.fromArgs(args);
 
         scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
-        initHarvestJob(scheduler);
-        //initUpdateJob(scheduler);
 
+        switch (service) {
+            case HARVESTER -> initHarvestJob(scheduler);
+            case UPDATER -> initUpdateJob(scheduler);
+            case ALL -> {
+                initHarvestJob(scheduler);
+                initUpdateJob(scheduler);
+            }
+        }
 
+        LOGGER.log(Level.INFO, "Started scheduled service: {0}", service.serviceName);
     }
+
     static void initUpdateJob(Scheduler scheduler) throws SchedulerException {
         // Parameterize the interval (in hours)
         final int hoursInterval = 365*24;
-        System.out.println("XXX");
         // Define the job and tie it to our Job class
         JobDetail job = JobBuilder.newJob(UpdaterJob.class)
                 .withIdentity(UpdaterJob.class.getName(), UPDATERGROUP)
@@ -98,6 +108,7 @@ public class SchedulerMain {
         scheduler.triggerJob(jobKey, onDemandParams);
 
     }
+
     static ApplicationConfig LoadConfiguration(Logger logger) {
         InputStream resourceAsStream;
         try {
@@ -108,5 +119,49 @@ public class SchedulerMain {
             throw new RuntimeException(e);
         }
         return ApplicationConfig.loadFromStream(resourceAsStream);
+    }
+
+    enum ScheduledService {
+        HARVESTER("harvester"),
+        UPDATER("updater"),
+        ALL("all");
+
+        private final String serviceName;
+
+        ScheduledService(String serviceName) {
+            this.serviceName = serviceName;
+        }
+
+        static ScheduledService fromArgs(String[] args) {
+            if (args.length != 1) {
+                throw new IllegalArgumentException(
+                        "Expected exactly one scheduler service argument: "
+                                + serviceNames()
+                                + ". Received: "
+                                + Arrays.toString(args)
+                );
+            }
+
+            String serviceName = args[0].trim().toLowerCase(Locale.ROOT);
+            for (ScheduledService service : values()) {
+                if (service.serviceName.equals(serviceName)) {
+                    return service;
+                }
+            }
+
+            throw new IllegalArgumentException(
+                    "Unsupported scheduler service: "
+                            + args[0]
+                            + ". Expected one of: "
+                            + serviceNames()
+            );
+        }
+
+        private static String serviceNames() {
+            return Arrays.stream(values())
+                    .map(service -> service.serviceName)
+                    .reduce((left, right) -> left + ", " + right)
+                    .orElse("");
+        }
     }
 }
