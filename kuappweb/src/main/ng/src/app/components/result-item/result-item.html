@@ -160,6 +160,7 @@
 			<div>{{ 'field.licenses' | translate }}:</div>
 			<div>{{ doc()['licenses']}}</div>
 
+@if (state.user()) {
 			<div>{{ 'field.note' | translate }}:</div>
 			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
 				<textarea [disabled]="!editingNote()" [(ngModel)]="note" matInput [rows]="1" [style.width]="noteWidth"></textarea>
@@ -170,11 +171,11 @@
     			<button matIconButton  (click)="editNote()" class="app-value"><mat-icon>edit</mat-icon></button>
 				}
 			</div>
+}
 
 			<div>{{ 'field.release_date' | translate }}:</div>
 			<div>{{ doc()['release_date']}}</div>
 		</div>
-
 
 
 

@@ -187,7 +187,6 @@ export class Results {
     } else {
       this.docs.set([]);
     }
-    console.log(p)
     this.addFilters(p, this.state.usedFacets());
     let s: Observable<any>;
     if (this.view() === 'titles') {
