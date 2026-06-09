@@ -449,7 +449,7 @@ public class HarvesterImpl implements Harvester {
                                     States newState = Workflow.calculateAutomaticTransition(ctx, workflowDoc,reason);
                                     String message = String.format("Imported from '%s'"+" + "+reason, config.getUrl());
                                     if (oldState != null && !oldState.equals(newState.name())) {
-                                        Workflow.executeTransition( workflowDoc, user, message, wrapper,newState);
+                                        Workflow.executeTransition( workflowDoc, user, message, wrapper,newState,ctx.applicationConfig().workflow());
                                     }
                                 }
                             } catch (ParserConfigurationException | SAXException e) {
@@ -486,7 +486,8 @@ public class HarvesterImpl implements Harvester {
                             user,
                             String.format("Imported from '%s'" + " + "+reason, config.getUrl()),
                             doc,
-                            newState
+                            newState,
+                            ctx.applicationConfig().workflow()
                     );
 
                     addToBufferAndSend(createBuffer, authorsBuffer, doc);

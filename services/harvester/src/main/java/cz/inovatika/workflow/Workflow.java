@@ -1,6 +1,7 @@
 package cz.inovatika.workflow;
 
 import cz.inovatika.Constants.TitlesCollectionFields.ModelFields;
+import cz.inovatika.conf.WorkflowConfig;
 import cz.inovatika.model.HarvesterContext;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import org.apache.solr.client.solrj.SolrClient;
@@ -31,7 +32,8 @@ public class Workflow {
             String user,
             String message,
             SolrInputDocumentWrapper idoc,
-            States newState
+            States newState,
+            WorkflowConfig workflowConfig
     ) {
         // PARENT_TO_CONTROL
         //States newState = calculateAutomaticTransition(ctx, currentDoc);
@@ -43,7 +45,7 @@ public class Workflow {
                 user,
                 currentDoc.model(),
                 currentDoc.isHierarchical()//, newState.getLicensesAssignation()
-        ).mapToSolrDocument(idoc, message);
+        ).mapToSolrDocument(idoc, message, workflowConfig);
     }
 
 

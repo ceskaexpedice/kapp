@@ -397,7 +397,7 @@ public class TsvToSolrIndexer {
                                 States new_state = Workflow.calculateCuratorTransition(rootPid, solrClient, wfdoc, desiredState);
                                 //System.out.println("NewState: " + new_state.toString());
                                 if(new_state != null)
-                                    Workflow.executeTransition(wfdoc, wfdoc.user(), "importing from excel", doc, new_state);
+                                    Workflow.executeTransition(wfdoc, wfdoc.user(), "importing from excel", doc, new_state, applicationConfig.workflow());
                             }
                         } catch (Exception e) {
                             System.err.println("Caught exception in " + tsvFile.getName() +" of type: "+e.getClass()+ ": " + e.getMessage());

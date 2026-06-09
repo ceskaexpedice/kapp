@@ -1,6 +1,7 @@
 package cz.inovatika.workflow;
 
 import cz.inovatika.solr.SolrInputDocumentWrapper;
+import cz.inovatika.conf.WorkflowConfig;
 import org.json.JSONObject;
 
 import java.time.LocalDateTime;
@@ -28,13 +29,19 @@ public record WorkflowDoc(
     public static final String REASON_JSON_KEY = "reason";
 
 
-    public void mapToSolrDocument(SolrInputDocumentWrapper idoc, String message) {
+    public void mapToSolrDocument(SolrInputDocumentWrapper idoc, String message, WorkflowConfig workflowConfig) {
         String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
         idoc.setField(AppComputedFields.STATE_FIELD, this.state.name());
         idoc.setField(AppComputedFields.STATE_DATE_FIELD, d);
         idoc.setField(AppComputedFields.STATE_USER_FIELD, this.user);
         idoc.setField(AppComputedFields.STATE_REASON_FIELD,  message);
         idoc.addField(AppComputedFields.STATE_HISTORY_FIELD, historyItem(d, message).toString());
+        Integer releaseYear = workflowConfig != null
+                ? workflowConfig.calculateReleaseYear(this.dateIssuedYear, this.last_year_death)
+                : null;
+        if (releaseYear != null) {
+            idoc.setField(AppComputedFields.RELEASE_YEAR, releaseYear);
+        }
         switch (state.getLicensesAssignation()) {
             case PUBLIC -> {
                 Map<String, Object> operation = new HashMap<>();

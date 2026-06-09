@@ -107,7 +107,7 @@ public class UpdaterImpl implements Updater {
 
                     SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(pid, SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
                     updateDoc.getDocument().setField(AppDataFields.PID_FIELD, pid);
-                    Workflow.executeTransition(workflowDoc,USER,reason.value,updateDoc,newState);
+                    Workflow.executeTransition(workflowDoc,USER,reason.value,updateDoc,newState,applicationConfig.workflow());
 
 
                     batch.add(updateDoc.getDocument());

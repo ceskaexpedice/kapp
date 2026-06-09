@@ -54,4 +54,25 @@ public class WorkflowConfig {
     public boolean isPublishableYear(Integer year_died,Integer year_published) {
         return (year_published!=null && isPublicYear(year_published)) || (year_died !=null && isAuthorDeadEnoughYear(year_died,year_published));
     }
+
+    public Integer calculateReleaseYear(Integer dateIssuedYear, Integer lastAuthorDeathYear) {
+        Integer issuedReleaseYear = dateIssuedYear != null ? dateIssuedYear + publicYear : null;
+        Integer authorReleaseYear = null;
+        if (dateIssuedYear != null && lastAuthorDeathYear != null) {//Everything is known calculate release year based on both
+            authorReleaseYear = Math.max(
+                    dateIssuedYear + onsiteYear,
+                    lastAuthorDeathYear + authorDeadEnoughYear
+            );
+        } else if (lastAuthorDeathYear != null) {
+            authorReleaseYear = lastAuthorDeathYear + authorDeadEnoughYear;//Issued year not known assume authorDeadEnoughYear from death year only
+        }
+
+        if (issuedReleaseYear == null) {//Issued year not known assume public year from death year only if possible
+            return authorReleaseYear;
+        }
+        if (authorReleaseYear == null) {//Author death year not known assume public year from issued year only
+            return issuedReleaseYear;
+        }
+        return Math.min(issuedReleaseYear, authorReleaseYear);
+    }
 }
