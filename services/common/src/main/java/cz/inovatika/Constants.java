@@ -92,6 +92,8 @@ public class Constants {
             public static final String UNEXPECTED_DATE_FORMAT = "excel_unexpected date format";
             public static final String IMPRECISE_DATE_ISSUED = "Nepřesné datum vydání";
             public static final String AUTHOR_MODIFIED = "author_modified";
+            public static final String DIFFERING_AUTHOR_DEATH_YEAR = "Differing author death year";
+            public static final String LAST_AUTHOR_PARSING_ISSUE = "Last author parsing issue";
         }
         public static class ModelFields {
             public static final String MONOGRAPH = "monograph";

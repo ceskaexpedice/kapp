@@ -80,7 +80,8 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
                             lastAuthorsExcel,
                             authorsKapp,
                             authorsKramerius,
-                            authorsCollection
+                            authorsCollection,
+                            LastAuthorMatcher.asInteger(doc.getFieldValue(AppComputedFields.LAST_YEAR_DEATH))
                     );
 
                     if (updatePlan.matched()) {
@@ -144,7 +145,6 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
     private static ModifiableSolrParams queryParams(String cursorMark, int rows) {
         ModifiableSolrParams params = new ModifiableSolrParams();
         params.set("q", LAST_AUTHOR_EXCEL_FIELD + ":*");
-        params.set("fq", "-" + AppComputedFields.LAST_YEAR_DEATH + ":*");
         params.set("rows", rows);
         params.set("cursorMark", cursorMark);
         params.set("sort", AppDataFields.PID_FIELD + " asc");
@@ -166,14 +166,24 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
         SolrInputDocument doc = new SolrInputDocument();
         LastAuthorMatcher.TitleAuthorFields titleAuthorFields = updatePlan.titleAuthorFields();
         doc.setField(AppDataFields.PID_FIELD, pid);
-        addAtomicField(doc, "set", updatePlan.updatedAuthorsKapp().toString(), AppDataFields.AUTHORS_KAPP_FIELD);
+        if (updatePlan.updateAuthors()) {
+            addAtomicField(doc, "set", updatePlan.updatedAuthorsKapp().toString(), AppDataFields.AUTHORS_KAPP_FIELD);
+        }
         if (updatePlan.lastYearDeath() != null) {
             addAtomicField(doc, "set", updatePlan.lastYearDeath(), AppComputedFields.LAST_YEAR_DEATH);
         }
-        addAtomicField(doc, "set", titleAuthorFields.ids(), AppDataFields.AUTHORS_IDS);
-        addAtomicField(doc, "set", titleAuthorFields.nameIdentifiers(), AppDataFields.NAME_IDENTIFIER_FIELD);
-        addAtomicField(doc, "set", titleAuthorFields.names(), AppDataFields.AUTHORS_FIELD);
-        addAtomicField(doc, "add-distinct", Constants.TitlesCollectionFields.Labels.AUTHOR_MODIFIED, AppComputedFields.LABELS_FIELD);
+        if (updatePlan.updateAuthors()) {
+            addAtomicField(doc, "set", titleAuthorFields.ids(), AppDataFields.AUTHORS_IDS);
+            addAtomicField(doc, "set", titleAuthorFields.nameIdentifiers(), AppDataFields.NAME_IDENTIFIER_FIELD);
+            addAtomicField(doc, "set", titleAuthorFields.names(), AppDataFields.AUTHORS_FIELD);
+        }
+        List<String> labels = new ArrayList<>(updatePlan.labels());
+        if (updatePlan.updateAuthors() || updatePlan.lastYearDeath() != null) {
+            addDistinctString(labels, Constants.TitlesCollectionFields.Labels.AUTHOR_MODIFIED);
+        }
+        if (!labels.isEmpty()) {
+            addAtomicField(doc, "add-distinct", labels, AppComputedFields.LABELS_FIELD);
+        }
         addAtomicField(doc, "add-distinct", USER, "modified_by_user");
         return doc;
     }
@@ -385,8 +395,9 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
         if (!author.has("year_birth") && excelAuthor.birthYear() != null) {
             author.put("year_birth", excelAuthor.birthYear());
         }
-        if (!author.has("year_death") && excelAuthor.deathYear() != null) {
+        if (excelAuthor.deathYear() != null) {
             author.put("year_death", excelAuthor.deathYear());
+            author.put("confirmed_end_year", true);
         }
         if (!author.has("confirmed_start_year")) {
             author.put("confirmed_start_year", author.has("year_birth"));

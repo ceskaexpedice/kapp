@@ -8,9 +8,9 @@ import org.json.JSONObject;
 import java.text.Normalizer;
 import java.time.Year;
 import java.util.*;
+import java.util.logging.Logger;
 import java.util.regex.Pattern;
 
-//TODO: ADD labels for error states
 public class LastAuthorMatcher {
 
     private static final Pattern DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
@@ -26,53 +26,94 @@ public class LastAuthorMatcher {
             List<String> lastAuthorsExcel,
             JSONArray authorsKapp,
             JSONArray authorsKramerius,
-            JSONArray authorsCollection
+            JSONArray authorsCollection,
+            Integer currentLastYearDeath
     ) {
-        List<ExcelAuthor> excelAuthors = parseExcelAuthors(lastAuthorsExcel);
+        ParsedExcelAuthors parsedExcelAuthors = parseExcelAuthorValues(lastAuthorsExcel);
+        List<ExcelAuthor> excelAuthors = parsedExcelAuthors.authors();
+        List<String> labels = new ArrayList<>();
+        if (parsedExcelAuthors.parsingIssue()) {
+            addLabel(labels, Constants.TitlesCollectionFields.Labels.LAST_AUTHOR_PARSING_ISSUE);
+        }
+        Integer excelLastYearDeath = latestExcelDeathYear(excelAuthors);
 
         if (excelAuthors.isEmpty()) {
-            return UpdatePlan.noMatch("No usable last_author_excel value");
+            return UpdatePlan.noAuthorUpdate(
+                    "No usable last_author_excel value",
+                    lastYearDeathUpdate(currentLastYearDeath, excelLastYearDeath, null, labels),
+                    labels
+            );
         }
 
         List<AuthorCandidate> candidates = mergeCandidates(authorsKapp, authorsKramerius, authorsCollection);
         List<Match> matches = new ArrayList<>();
+        List<AuthorCandidate> matchedCandidates = new ArrayList<>();
         List<AuthorCandidate> createdCandidates = new ArrayList<>();
         List<AuthorCandidate> additionalKappCandidates = new ArrayList<>();
         for (ExcelAuthor excelAuthor : excelAuthors) {
             Optional<Match> match = bestMatch(excelAuthor.normalizedName(), candidates);
             if (match.isPresent()) {
-                if (!match.get().candidate().titleAuthor()) {
-                    addCandidateDistinct(additionalKappCandidates, match.get().candidate());
+                Match foundMatch = match.get();
+                if (applyExcelDeathYear(foundMatch.candidate(), excelAuthor)) {
+                    addLabel(labels, Constants.TitlesCollectionFields.Labels.DIFFERING_AUTHOR_DEATH_YEAR);
+                    System.out.println(Constants.TitlesCollectionFields.Labels.DIFFERING_AUTHOR_DEATH_YEAR + " - Candidate year death: " + foundMatch.candidate().yearDeath()+"; excel Author death year: " + excelAuthor.deathYear());
                 }
-                matches.add(match.get());
+                if (!foundMatch.candidate().titleAuthor()) {
+                    addCandidateDistinct(additionalKappCandidates, foundMatch.candidate());
+                }
+                addCandidateDistinct(matchedCandidates, foundMatch.candidate());
+                matches.add(foundMatch);
                 continue;
             }
 
             if (hasAmbiguousMatch(excelAuthor.normalizedName(), candidates)) {
-                return UpdatePlan.noMatch("Ambiguous author matched last_author_excel: " + excelAuthor.name());
+                return UpdatePlan.noAuthorUpdate(
+                        "Ambiguous author matched last_author_excel: " + excelAuthor.name(),
+                        lastYearDeathUpdate(currentLastYearDeath, excelLastYearDeath, null, labels),
+                        labels
+                );
             }
 
             Optional<AuthorCandidate> createdCandidate = createCandidateFromExcel(excelAuthor);
             if (createdCandidate.isEmpty()) {
-                return UpdatePlan.noMatch(
-                        "No author matched last_author_excel and it cannot create a usable author: " + excelAuthor.name()
+                return UpdatePlan.noAuthorUpdate(
+                        "No author matched last_author_excel and it cannot create a usable author: " + excelAuthor.name(),
+                        lastYearDeathUpdate(currentLastYearDeath, excelLastYearDeath, null, labels),
+                        labels
                 );
             }
 
             AuthorCandidate candidate = createdCandidate.get();
             candidates.add(candidate);
             createdCandidates.add(candidate);
+            addCandidateDistinct(matchedCandidates, candidate);
             addCandidateDistinct(additionalKappCandidates, candidate);
             matches.add(new Match(excelAuthor.normalizedName(), candidate, 1.0, "created from last_author_excel"));
         }
 
         if (candidates.isEmpty()) {
-            return UpdatePlan.noMatch("No authors found in authors_kapp, authors_kramerius or last_author_excel");
+            return UpdatePlan.noAuthorUpdate(
+                    "No authors found in authors_kapp, authors_kramerius or last_author_excel",
+                    lastYearDeathUpdate(currentLastYearDeath, excelLastYearDeath, null, labels),
+                    labels
+            );
         }
 
-        AuthorCandidate selectedCandidate = latestDeathCandidate(candidates).orElse(null);
+        AuthorCandidate selectedCandidate = latestDeathCandidate(matchedCandidates)
+                .or(() -> latestDeathCandidate(candidates))
+                .orElse(null);
+        Integer lastYearDeathUpdate = lastYearDeathUpdate(
+                currentLastYearDeath,
+                excelLastYearDeath,
+                selectedCandidate == null ? null : selectedCandidate.yearDeath(),
+                labels
+        );
         if (selectedCandidate == null && additionalKappCandidates.isEmpty()) {
-            return UpdatePlan.noMatch("No unique latest author death year and no title author additions are needed");
+            return UpdatePlan.noAuthorUpdate(
+                    "No unique latest author death year and no title author additions are needed",
+                    lastYearDeathUpdate,
+                    labels
+            );
         }
 
         Match selectedMatch;
@@ -93,17 +134,74 @@ public class LastAuthorMatcher {
         return new UpdatePlan(
                 true,
                 true,
+                true,
                 selectedMatch.matchedAuthor(),
                 selectedMatch.candidate().author(),
                 updatedAuthorsKapp,
                 titleAuthorFields,
-                selectedCandidate == null ? null : selectedCandidate.yearDeath(),
+                lastYearDeathUpdate,
                 createdCandidates.stream()
                         .map(AuthorCandidate::author)
                         .map(LastAuthorMatcher::copyObject)
                         .toList(),
+                List.copyOf(labels),
                 selectedMatch.reason()
         );
+    }
+
+    private static Integer latestExcelDeathYear(List<ExcelAuthor> excelAuthors) {
+        if (excelAuthors.isEmpty() || excelAuthors.stream().map(ExcelAuthor::deathYear).anyMatch(Objects::isNull)) {
+            return null;
+        }
+        return excelAuthors.stream()
+                .map(ExcelAuthor::deathYear)
+                .filter(LastAuthorMatcher::isUsableDeathYear)
+                .max(Integer::compareTo)
+                .orElse(null);
+    }
+
+    private static Integer lastYearDeathUpdate(
+            Integer currentLastYearDeath,
+            Integer excelLastYearDeath,
+            Integer selectedAuthorDeathYear,
+            List<String> labels
+    ) {
+        Integer desiredLastYearDeath = excelLastYearDeath != null ? excelLastYearDeath : selectedAuthorDeathYear;
+        if (desiredLastYearDeath == null || Objects.equals(currentLastYearDeath, desiredLastYearDeath)) {
+            return null;
+        }
+        if (currentLastYearDeath != null && excelLastYearDeath != null) {
+            addLabel(labels, Constants.TitlesCollectionFields.Labels.DIFFERING_AUTHOR_DEATH_YEAR);
+        }
+        if (currentLastYearDeath == null || excelLastYearDeath != null) {
+            return desiredLastYearDeath;
+        }
+        return null;
+    }
+
+    private static void addLabel(List<String> labels, String label) {
+        if (label != null && !label.isBlank() && !labels.contains(label)) {
+            labels.add(label);
+        }
+    }
+
+    private static boolean applyExcelDeathYear(AuthorCandidate candidate, ExcelAuthor excelAuthor) {
+        if (excelAuthor.deathYear() == null || !isUsableDeathYear(excelAuthor.deathYear())) {
+            return false;
+        }
+
+        JSONObject author = candidate.author();
+        Integer existingDeathYear = asInteger(author.opt("year_death"));
+        if (Objects.equals(existingDeathYear, excelAuthor.deathYear())) {
+            if (!author.has("confirmed_end_year")) {
+                author.put("confirmed_end_year", true);
+            }
+            return false;
+        }
+
+        author.put("year_death", excelAuthor.deathYear());
+        author.put("confirmed_end_year", true);
+        return existingDeathYear != null;
     }
 
     private static Optional<AuthorCandidate> latestDeathCandidate(List<AuthorCandidate> candidates) {
@@ -339,10 +437,16 @@ public class LastAuthorMatcher {
     }
 
     public static List<ExcelAuthor> parseExcelAuthors(List<String> lastAuthorsExcel) {
+        return parseExcelAuthorValues(lastAuthorsExcel).authors();
+    }
+
+    private static ParsedExcelAuthors parseExcelAuthorValues(List<String> lastAuthorsExcel) {
         List<ExcelAuthor> authors = new ArrayList<>();
         Set<String> seen = new HashSet<>();
+        boolean parsingIssue = false;
         for (String value : lastAuthorsExcel) {
             ExcelAuthor author = ExcelAuthor.parse(value);
+            parsingIssue = parsingIssue || author.parsingIssue();
             if (author.normalizedName().isBlank()) {
                 continue;
             }
@@ -351,38 +455,57 @@ public class LastAuthorMatcher {
                 authors.add(author);
             }
         }
-        return authors;
+        return new ParsedExcelAuthors(List.copyOf(authors), parsingIssue);
     }
 
-    public record ExcelAuthor(String name, String normalizedName, Integer birthYear, Integer deathYear) {
+    private record ParsedExcelAuthors(List<ExcelAuthor> authors, boolean parsingIssue) {
+    }
+
+    public record ExcelAuthor(String name, String normalizedName, Integer birthYear, Integer deathYear, boolean parsingIssue) {
 
         static ExcelAuthor parse(String value) {
             if (value == null) {
-                return new ExcelAuthor("", "", null, null);
+                return new ExcelAuthor("", "", null, null, false);
             }
 
             String text = value.trim();
+            if (text.isBlank()) {
+                return new ExcelAuthor("", "", null, null, false);
+            }
+
             if (text.startsWith("{")) {
                 try {
                     JSONObject json = new JSONObject(text);
                     String name = json.optString("name", "");
+                    Integer birthYear = asInteger(json.opt("birthyear"));
+                    Integer deathYear = asInteger(json.opt("deathyear"));
+                    boolean parsingIssue = normalizeExcelAuthorName(name).isBlank()
+                            || hasUnparseableInteger(json, "birthyear", birthYear)
+                            || hasUnparseableInteger(json, "deathyear", deathYear)
+                            || (deathYear != null && !isUsableDeathYear(deathYear));
                     return new ExcelAuthor(
                             name,
                             normalizeExcelAuthorName(name),
-                            asInteger(json.opt("birthyear")),
-                            asInteger(json.opt("deathyear"))
+                            birthYear,
+                            deathYear,
+                            parsingIssue
                     );
                 } catch (JSONException e) {
                     YearPair years = extractYearPair(text);
                     String name = cleanExcelAuthorName(text);
-                    return new ExcelAuthor(name, normalizeExcelAuthorName(name), years.birthYear(), years.deathYear());
+                    return new ExcelAuthor(name, normalizeExcelAuthorName(name), years.birthYear(), years.deathYear(), true);
                 }
             }
 
             YearPair years = extractYearPair(text);
             String name = cleanExcelAuthorName(text);
-            return new ExcelAuthor(name, normalizeExcelAuthorName(name), years.birthYear(), years.deathYear());
+            String normalizedName = normalizeExcelAuthorName(name);
+            return new ExcelAuthor(name, normalizedName, years.birthYear(), years.deathYear(), normalizedName.isBlank());
         }
+    }
+
+    private static boolean hasUnparseableInteger(JSONObject json, String fieldName, Integer parsedValue) {
+        return json.has(fieldName) && !json.isNull(fieldName) && parsedValue == null;
     }
 
     private record YearPair(Integer birthYear, Integer deathYear) {
@@ -775,17 +898,20 @@ public class LastAuthorMatcher {
     public record UpdatePlan(
             boolean matched,
             boolean shouldUpdate,
+            boolean updateAuthors,
             String matchedExcelAuthor,
             JSONObject matchedAuthor,
             JSONArray updatedAuthorsKapp,
             TitleAuthorFields titleAuthorFields,
             Integer lastYearDeath,
             List<JSONObject> createdAuthors,
+            List<String> labels,
             String reason
             ) {
 
         static UpdatePlan noMatch(String reason) {
             return new UpdatePlan(
+                    false,
                     false,
                     false,
                     "",
@@ -794,6 +920,23 @@ public class LastAuthorMatcher {
                     TitleAuthorFields.empty(),
                     null,
                     List.of(),
+                    List.of(),
+                    reason
+            );
+        }
+
+        static UpdatePlan noAuthorUpdate(String reason, Integer lastYearDeath, List<String> labels) {
+            return new UpdatePlan(
+                    false,
+                    lastYearDeath != null || !labels.isEmpty(),
+                    false,
+                    "",
+                    new JSONObject(),
+                    new JSONArray(),
+                    TitleAuthorFields.empty(),
+                    lastYearDeath,
+                    List.of(),
+                    List.copyOf(labels),
                     reason
             );
         }
