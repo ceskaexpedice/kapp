@@ -50,7 +50,7 @@ export class ResultItem {
   editingNote = signal(false);
   editingDate = signal(false);
   editingDilo = signal(false);
-  lastYearDeath: number;
+  lastYearDeath: number | null;
   is_anonymous: boolean;
   is_collective: boolean;
   is_official: boolean;
@@ -163,13 +163,17 @@ export class ResultItem {
   }
 
   infoAuthor(a: AuthorTitle) {
+    
+    const date_issued_year = this.doc().date_issued_year_kapp ? this.doc().date_issued_year_kapp : this.doc().date_issued_year;
     const data: AuthorTitleDialogData = {
       pid: this.doc().pid,
       authors_kapp: this.doc().authors_kapp,
       authors_kramerius: this.doc().authors_kramerius,
       id: a.id,
       ids: this.doc().authors_ids,
-      nameIdentifiers: this.doc().nameIdentifiers
+      nameIdentifiers: this.doc().nameIdentifiers,
+      date_issued_year
+
     }
     const dialogRef = this.dialog.open(AuthorTitleDialog, {
       data: data,
@@ -188,13 +192,16 @@ export class ResultItem {
   }
 
   addAuthor() {
+    
+    const issued = this.doc().date_issued_year_kapp ? this.doc().date_issued_year_kapp : this.doc().date_issued_year;
     const data: AuthorTitleDialogData = {
       pid: this.doc().pid,
       authors_kapp: this.doc().authors_kapp,
       authors_kramerius: this.doc().authors_kramerius,
       id: null,
       ids: this.doc().authors_ids,
-      nameIdentifiers: this.doc().nameIdentifiers
+      nameIdentifiers: this.doc().nameIdentifiers,
+      date_issued_year: issued
     }
     const dialogRef = this.dialog.open(AuthorTitleDialog, {
       data: data,
@@ -321,7 +328,8 @@ export class ResultItem {
   }
 
   saveLastYearDeath() {
-    this.service.saveLastYearDeath(this.doc().pid, this.lastYearDeath, this.doc().authors_kapp).subscribe((res: any) => {
+    const issued = this.doc().date_issued_year_kapp ? this.doc().date_issued_year_kapp : this.doc().date_issued_year;
+    this.service.saveLastYearDeath(this.doc().pid, this.lastYearDeath, this.doc().authors_kapp, issued).subscribe((res: any) => {
       console.log(res)
     })
   }

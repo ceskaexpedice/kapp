@@ -127,6 +127,7 @@
     "export": "Export",
     "overwrite": "Overwrite",
     "set_as_last": "Set as last",
+    "remove_as_last": "Unset as last",
     "set_state": "Set state",
     "check_author": "Search autor in AUT",
     "add_author": "Add author",

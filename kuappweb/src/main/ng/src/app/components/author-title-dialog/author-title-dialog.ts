@@ -24,7 +24,8 @@ export interface AuthorTitleDialogData {
     authors_kramerius: AuthorTitle[], 
     id: string,
     ids: string[], 
-    nameIdentifiers: string[]
+    nameIdentifiers: string[],
+    date_issued_year: number | null
   }
 
 @Component({
@@ -302,16 +303,16 @@ export class AuthorTitleDialog {
     })
   }
 
-  setAsLast() {
+  setAsLast(isLast: boolean) {
     if (this.author().year_death) {
-      this.author().isLast = true;
+      this.author().isLast = isLast;
       
       //ulozit vsechny autory. jen jeden je last this.author().id
       const authors = this.data.authors_kapp ? [...this.data.authors_kapp.filter(a => a.id !== this.author().id)] : [];
       authors.forEach(a => {a.isLast = false});
       authors.push(JSON.parse(JSON.stringify(this.author())));
 
-      this.service.saveLastYearDeath(this.data.pid, this.author().year_death, authors).subscribe((res: any) => {
+      this.service.saveLastYearDeath(this.data.pid, isLast ? this.author().year_death : null, authors, this.data.date_issued_year).subscribe((res: any) => {
         this.hasChanges = true;
         if (res.error) {
           this.ui.showErrorSnackBar('snackbar.record_changed.error');

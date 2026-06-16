@@ -288,30 +288,30 @@ export class Results {
   }
 
 
-  addAuthor(doc: any) {
+  // addAuthor(doc: any) {
 
-    const data: AuthorTitleDialogData = {
-      pid: doc.pid,
-      authors_kapp: doc.authors_kapp,
-      authors_kramerius: doc.authors_kramerius,
-      id: null,
-      ids: doc.authors_ids,
-      nameIdentifiers: doc.nameIdentifiers
-    }
-    const dialogRef = this.dialog.open(AuthorTitleDialog, {
-      data: data,
-    });
+  //   const data: AuthorTitleDialogData = {
+  //     pid: doc.pid,
+  //     authors_kapp: doc.authors_kapp,
+  //     authors_kramerius: doc.authors_kramerius,
+  //     id: null,
+  //     ids: doc.authors_ids,
+  //     nameIdentifiers: doc.nameIdentifiers
+  //   }
+  //   const dialogRef = this.dialog.open(AuthorTitleDialog, {
+  //     data: data,
+  //   });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.service.getDoc(doc.pid).subscribe((resp: any) => {
-          if (resp.response?.docs?.length > 0) {
-            //this.doc.set(resp.response.docs[0]);
-          }
-        });
-      }
-    });
-  }
+  //   dialogRef.afterClosed().subscribe(result => {
+  //     if (result) {
+  //       this.service.getDoc(doc.pid).subscribe((resp: any) => {
+  //         if (resp.response?.docs?.length > 0) {
+  //           //this.doc.set(resp.response.docs[0]);
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 
   setState(doc: any) {
 

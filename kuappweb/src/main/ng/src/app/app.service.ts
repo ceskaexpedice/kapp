@@ -169,8 +169,8 @@ export class AppService {
     return this.post('index/save_author_labels', {pid,labels});
   }
 
-  saveLastYearDeath(pid: string, lastYearDeath: number, authors: AuthorTitle[]): Observable<any> {
-    return this.post('index/save_last_year_death', {pid,lastYearDeath,authors});
+  saveLastYearDeath(pid: string, lastYearDeath: number | null, authors: AuthorTitle[], dateIssuedYear: number | null): Observable<any> {
+    return this.post('index/save_last_year_death', {pid,lastYearDeath,authors,dateIssuedYear});
   }
 
   saveTypDila(pid: string, is_anonymous: boolean, is_collective: boolean, is_official: boolean, is_pseudonymous: boolean) {
