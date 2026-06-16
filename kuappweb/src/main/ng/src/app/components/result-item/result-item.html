@@ -90,7 +90,7 @@
 					<button matIconButton (click)="closeEditingDate()"><mat-icon>cancel</mat-icon></button>
 				} @else {
 					<!-- <span>{{ doc()['last_year_death']}}</span> -->
-					<input [(ngModel)]="lastYearDeath" disabled />
+					<input [value]="doc()['last_year_death']" disabled />
 					@if (state.user()) {
 						<button matIconButton (click)="editLastYearDeath()"><mat-icon>edit</mat-icon></button>
 					}

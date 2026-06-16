@@ -74,7 +74,7 @@ public class Options {
 
         if (f.exists() && f.canRead()) {
             String json = FileUtils.readFileToString(f, "UTF-8");
-            JSONObject customClientConf = new JSONObject(json).getJSONObject("client");
+            JSONObject customClientConf = new JSONObject(json).getJSONObject("client");  
             if (customClientConf != null) {
                 deepMerge(customClientConf, client_conf);
             }
@@ -83,6 +83,11 @@ public class Options {
                 deepMerge(customServerConf, server_conf);
             }
         }
+        
+        String app_path = InitServlet.CONFIG_DIR + File.separator + "app.conf";
+        File fapp = new File(app_path);
+        String json_app = FileUtils.readFileToString(fapp, "UTF-8");
+        server_conf.put("app", new JSONObject(json_app));
 
     }
 

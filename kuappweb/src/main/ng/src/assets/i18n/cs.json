@@ -127,6 +127,7 @@
     "export": "Export",
     "overwrite": "Přepsat",
     "set_as_last": "Nastavit jako poslední",
+    "remove_as_last": "Odnastavit jako poslední",
     "set_state": "Nastavit stav",
     "check_author": "Hledat autora v AUT",
     "add_author": "Přidat autora",

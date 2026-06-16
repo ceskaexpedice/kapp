@@ -134,7 +134,7 @@ public class SolrIndexer {
                 doc.setField("pid", pids.getString(i));
                 addAtomicField(doc, "set", js.getString("batch"), "batch");
                 addAtomicField(doc, "add-distinct", user, "modified_by_user");
-            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
+                addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
                 solr.add("titles", doc);
             }
 
@@ -177,6 +177,36 @@ public class SolrIndexer {
         return ret;
     }
 
+    public static Integer calculateReleaseYear(Integer dateIssuedYear, Integer lastAuthorDeathYear) {
+
+        int publicYear = Options.getInstance().getJSONObject("app")
+                .getJSONObject("workflow").getInt("publicYear");
+        int authorDeadEnoughYear = Options.getInstance().getJSONObject("app")
+                .getJSONObject("workflow").getInt("authorDeadEnoughYear");
+        int onsiteYear = Options.getInstance().getJSONObject("app")
+                .getJSONObject("workflow").getInt("onsiteYear");
+
+        Integer issuedReleaseYear = dateIssuedYear != null ? dateIssuedYear + publicYear : null;
+
+        Integer authorReleaseYear = null;
+        if (dateIssuedYear != null && lastAuthorDeathYear != null) {//Everything is known calculate release year based on both
+            authorReleaseYear = Math.max(
+                    dateIssuedYear + onsiteYear,
+                    lastAuthorDeathYear + authorDeadEnoughYear
+            );
+        } else if (lastAuthorDeathYear != null) {
+            authorReleaseYear = lastAuthorDeathYear + authorDeadEnoughYear;//Issued year not known assume authorDeadEnoughYear from death year only
+        }
+
+        if (issuedReleaseYear == null) {//Issued year not known assume public year from death year only if possible
+            return authorReleaseYear;
+        }
+        if (authorReleaseYear == null) {//Author death year not known assume public year from issued year only
+            return issuedReleaseYear;
+        }
+        return Math.min(issuedReleaseYear, authorReleaseYear);
+    }
+
     public static JSONObject saveLastYearDeath(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
@@ -184,9 +214,20 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
 
-            addAtomicField(doc, "set", js.getInt("lastYearDeath"), "last_year_death");            
+            Integer dateIssuedYear = js.optIntegerObject("dateIssuedYear", null);
+            if (js.has("lastYearDeath")) {
+
+                Integer year = js.optIntegerObject("lastYearDeath", null);
+
+                addAtomicField(doc, "set", year, "last_year_death");
+                addAtomicField(doc, "set", calculateReleaseYear(dateIssuedYear, year), "release_year");
+            } else {
+                addAtomicField(doc, "remove", null, "last_year_death");
+                addAtomicField(doc, "set", calculateReleaseYear(dateIssuedYear, null), "release_year");
+            }
+
             addAtomicField(doc, "set", js.getJSONArray("authors").toString(), "authors_kapp");
-            
+
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
             addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
@@ -208,8 +249,8 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
 
-            addAtomicField(doc, "set", js.optBoolean("is_anonymous"), "is_anonymous");    
-            addAtomicField(doc, "set", js.optBoolean("is_collective"), "is_collective");    
+            addAtomicField(doc, "set", js.optBoolean("is_anonymous"), "is_anonymous");
+            addAtomicField(doc, "set", js.optBoolean("is_collective"), "is_collective");
             addAtomicField(doc, "set", js.optBoolean("is_official"), "is_official");
             addAtomicField(doc, "set", js.optBoolean("is_pseudonymous"), "is_pseudonymous");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
@@ -298,12 +339,11 @@ public class SolrIndexer {
             }
             adoc.setField("confirmed_start_year", js.optBoolean("confirmed_start_year"));
             adoc.setField("confirmed_end_year", js.optBoolean("confirmed_end_year"));
-            
+
             adoc.setField("modified_by_user", user);
             adoc.setField("last_modified_date", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")));
-            
+
             // addAtomicField(doc, "add-distinct", user, "modified_by_user");
-            
             solr.add("authors", adoc);
 
             if (!onlyAuthors) {
@@ -428,7 +468,7 @@ public class SolrIndexer {
             addAtomicField(doc, "set", js.getJSONArray("nameIdentifiers"), "nameIdentifier");
             addAtomicField(doc, "set", js.getJSONArray("names"), "authors");
             addAtomicField(doc, "add-distinct", "author_modified", "labels");
-            
+
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
             addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
