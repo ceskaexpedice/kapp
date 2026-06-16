@@ -223,6 +223,13 @@
     "name_empty": "Název je prázdný!",
     "pid_not_found": "V aplikaci neni zadny zaznam s timto PIDem"
    },
-   
-    "excel_incorrect_license": "excel nespravna license"
+
+  "excel": "Importovaná kontrola",
+  "author_modified" : "Upravený autor",
+  "excel_incorrect_license":"Nesprávná licence",
+  "Excel has unexpected year of publication":"Neočekávaný rok vydání",
+  "excel_failed_to_parse_date":"Nezpracované datum vydání",
+  "excel_suspicious_year_range":"Podezřelý rozsah let",
+  "excel_unexpected date format":"Neočekávaný formát data"
+
 }
