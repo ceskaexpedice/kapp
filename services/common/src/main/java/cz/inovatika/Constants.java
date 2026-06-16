@@ -109,7 +109,7 @@ public class Constants {
             public static String NotYetIssued(int year){return "Was not yet "+(Year.now().getValue() - year)+" years from date issued";}
             public final static String INCONTRLOWINDOWISSUED = "Within the To_control window of Date issued";
             public static String SurpassedAuthorDeath(int year){
-                return "Surpassed "+year+" years from author death";
+                return "Surpassed "+(Year.now().getValue()-year)+" years from author death";
             }
         }
     }

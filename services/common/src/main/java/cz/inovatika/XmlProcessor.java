@@ -315,7 +315,7 @@ public class XmlProcessor {
             if (yearStart > yearEnd || yearEnd > Year.now().getValue()) {
                 labels.add( Constants.TitlesCollectionFields.Labels.EXCEL_SUSPICIOUS_YEAR_RANGE);
             }
-            doc.setField(Constants.TitlesCollectionFields.AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD, yearEnd);
+            doc.setField(Constants.TitlesCollectionFields.AppComputedFields.DATE_ISSUED_YEAR, yearEnd);
             //doc.setField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_END_YEAR_FIELD, yearEnd);
             //doc.setField(Constants.TitlesCollectionFields.AppDataFields.DATE_ISSUED_START_YEAR_FIELD, yearStart);
 
