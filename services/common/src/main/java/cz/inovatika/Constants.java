@@ -96,6 +96,8 @@ public class Constants {
             public static final String AUTHOR_MODIFIED = "author_modified";
             public static final String DIFFERING_AUTHOR_DEATH_YEAR = "Differing author death year";
             public static final String LAST_AUTHOR_PARSING_ISSUE = "Last author parsing issue";
+            public static final String UNKNOWN_ANONYMITY_COLLECTIVITY_OFFICIALITY_PSEUDONYMITY = "Nejistá anonymita/úřednost/kolektivnost";
+            public static final String UNEXPECTED_PUBLICATION = "Excel has unexpected year of publication";
         }
         public static class ModelFields {
             public static final String MONOGRAPH = "monograph";

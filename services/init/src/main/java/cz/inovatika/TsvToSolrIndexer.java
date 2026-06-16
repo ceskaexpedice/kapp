@@ -289,7 +289,7 @@ public class TsvToSolrIndexer {
                                                     if(val.contains("kolektivní")){doc.setField("is_collective",true);}
                                                     //if(value.toLowerCase().contains("pseudo")){doc.setField("is_pseudonymous",true);}
                                                     System.out.println("Labeled: " + value);
-                                                    labels.add("Nejistá anonymita/úřednost/kolektivnost");}
+                                                    labels.add(Labels.UNKNOWN_ANONYMITY_COLLECTIVITY_OFFICIALITY_PSEUDONYMITY);}
                                                 else {
                                                     List<String> out = LastAuthorExcelParser.parse(value);
                                                     if (!out.isEmpty()) {
@@ -297,7 +297,7 @@ public class TsvToSolrIndexer {
                                                         //System.out.println("AUTHORS: " + out.toString());
                                                     }
                                                     else {
-                                                        labels.add("Chyba v posledním autorovi");
+                                                        labels.add(Labels.LAST_AUTHOR_PARSING_ISSUE);
                                                         //System.out.println("Unknown: " + value);
                                                     }
                                                 }
@@ -336,13 +336,13 @@ public class TsvToSolrIndexer {
                                 int public_year_difference = year_of_death_last_author + applicationConfig.workflow().getAuthorDeadEnoughYear() - public_year;
                                 if (Math.abs(public_year_difference)>1 && public_year_difference!=applicationConfig.workflow().getAuthorDeadEnoughYear()){
                                     notes.add("Public year in excel: " + public_year);
-                                    labels.add("Excel has unexpected year of publication");
+                                    labels.add(Labels.UNEXPECTED_PUBLICATION);
                                 }
                             } else if(date_issued!=null){
                                 int public_year_difference = date_issued +applicationConfig.workflow().getAuthorDeadEnoughYear() - public_year;
                                 if (Math.abs(public_year_difference)>1 && public_year_difference!=applicationConfig.workflow().getAuthorDeadEnoughYear()){
                                     notes.add("Public year in excel: " + public_year);
-                                    labels.add("Excel has unexpected year of publication");
+                                    labels.add(Labels.UNEXPECTED_PUBLICATION);
                                 }
                             }
                         }
