@@ -234,6 +234,7 @@
   "Nepřesné datum vydání": "Nepřesné datum vydání",
   "Nejistá anonymita/úřednost/kolektivnost": "Nejistá anonymita/úřednost/kolektivnost/pseudonymita",
   "Chyba v posledním autorovi": "Chyba v posledním autorovi",
-  "Differing author death year": "Rozdílný rok úmrtí posledního autora"
+  "Differing author death year": "Rozdílný rok úmrtí posledního autora",
+  "Last author parsing issue": "Chyba v posledním autorovi"
 
 }

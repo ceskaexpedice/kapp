@@ -233,5 +233,6 @@
   "Nepřesné datum vydání": "Imprecise date of publication",
   "Nejistá anonymita/úřednost/kolektivnost": "Uncertain anonymity/officialness/collectivity/pseudonymity",
   "Chyba v posledním autorovi": "Unable to assign/parse last author",
-  "Differing author death year": "Differing author death year"
+  "Differing author death year": "Differing author death year",
+  "Last author parsing issue": "Last author parsing issue"
 }
