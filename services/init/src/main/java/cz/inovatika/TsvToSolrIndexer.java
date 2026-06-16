@@ -224,9 +224,9 @@ public class TsvToSolrIndexer {
                                         }
                                     }
                                     case "date_issued_str" -> {
-                                        doc.setField(AppComputedFields.DATE_ISSUED_STRING, value);
+                                        doc.setField(AppDataFields.DATE_ISSUED_STR, value);
                                         ParseDates(doc, value, recordNumber, show_comma_info,labels,notes);
-                                        Object strobj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
+                                        Object strobj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD);
                                         if (strobj != null) {
                                         String cleanedString = strobj.toString();
                                         cleanedString = cleanedString.replaceAll("[^0-9]", "");

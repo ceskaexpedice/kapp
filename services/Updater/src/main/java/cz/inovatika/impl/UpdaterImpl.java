@@ -56,15 +56,21 @@ public class UpdaterImpl implements Updater {
                 params.set("cursorMark", cursorMark);
                 params.set("sort", "pid asc");
                 //params.add("fq", "-"+AppComputedFields.ASSIGNED_LICENSES+":public");
-                params.add(
+                params.add(//TODO: Check if this works
                         "fq",
-                        "(" +
-                                AppComputedFields.DATE_ISSUED_YEAR + ":{* TO " + threshold + "}" +
+                        "((" +
+                                    AppComputedFields.DATE_ISSUED_YEAR + ":{* TO " + threshold + "}" +
+                                    ") OR (" +
+                                    AppComputedFields.DATE_ISSUED_YEAR + ":{* TO "+ applicationConfig.workflow().calculateOnsiteYear()+"}" +
+                                    " AND " +
+                                    AppComputedFields.LAST_YEAR_DEATH + ":{* TO "+ applicationConfig.workflow().calculateAuthorDeadYear()+"}" +
                                 ") OR (" +
-                                AppComputedFields.DATE_ISSUED_YEAR + ":{* TO "+ applicationConfig.workflow().calculateOnsiteYear()+"}" +
-                                " AND " +
-                                AppComputedFields.LAST_YEAR_DEATH + ":{* TO "+ applicationConfig.workflow().calculateAuthorDeadYear()+"}" +
-                                ")"
+                                    AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD + ":{* TO " + threshold + "}" +
+                                    ") OR (" +
+                                    AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD + ":{* TO "+ applicationConfig.workflow().calculateOnsiteYear()+"}" +
+                                    " AND " +
+                                    AppComputedFields.LAST_YEAR_DEATH + ":{* TO "+ applicationConfig.workflow().calculateAuthorDeadYear()+"}" +
+                                "))"
                 );
                 //params.add("fq", AppComputedFields.DATE_ISSUED_YEAR+":{ * TO "+threshold+"}");
 
@@ -75,8 +81,8 @@ public class UpdaterImpl implements Updater {
                 List<SolrInputDocument> batch = new ArrayList<>();
                 for (SolrDocument doc : response.getResults()) {
                     String pid = (String) doc.getFieldValue(AppDataFields.PID_FIELD);
-                    Object dateIssuedObj = doc.getFieldValue(AppDataFields.DATE_ISSUED_YEAR_KAPP_FIELD);
-                    if (dateIssuedObj==null) dateIssuedObj = doc.getFieldValue(AppDataFields.DATE_ISSUED_YEAR_FIELD);
+                    Object dateIssuedObj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD);
+                    if (dateIssuedObj==null) dateIssuedObj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
                     Object lastYearDeathObj = doc.getFieldValue(AppComputedFields.LAST_YEAR_DEATH);
                     Object statevalue = doc.getFieldValue(AppComputedFields.STATE_FIELD);
                     States state = (statevalue ==null) ? States.IMPORTED : States.valueOf(statevalue.toString());
