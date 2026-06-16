@@ -603,7 +603,7 @@ public class SolrIndexer {
         addAtomicField(doc, "set", user, "state_user");
         addAtomicField(doc, "set", reason, "state_reason");
         addAtomicField(doc, "add-distinct", user, "modified_by_user");
-            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
+        addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
         String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
 

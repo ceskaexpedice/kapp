@@ -49,6 +49,7 @@
     "batch": "Batch",
     "state": "State",
     "state_date": "State changed date",
+    "last_modified_date": "Last modified in app",
     "state_date_from": "State changed date - from",
     "state_date_to": "State changed date - to",
     "date": "Date",
@@ -219,5 +220,7 @@
     "remove_author_desc": "Are you sure you want to remove the author from this title?",
     "name_empty": "Název je prázdný!",
     "pid_not_found": "V aplikaci neni zadny zaznam s timto PIDem"
-   }
+   },
+   
+    "excel_incorrect_license": "excel incorrect license"
 }

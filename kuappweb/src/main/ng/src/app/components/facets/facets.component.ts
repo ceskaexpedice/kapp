@@ -1,4 +1,4 @@
-import { Component, effect, inject, input, output, signal } from '@angular/core';
+import { Component, computed, effect, inject, input, output, signal } from '@angular/core';
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
 import { TranslateModule } from '@ngx-translate/core';
@@ -54,6 +54,17 @@ export class FacetsComponent {
   dateChangedFrom: Date;
   dateChangedTo: Date;
 
+  modifiedChangedFrom: Date;
+  modifiedChangedTo: Date;
+
+  labelsNote = computed(() => {
+    const ret: {[val: string]: string} = {};
+    this.state.labels().forEach(l => {
+      ret[l.name] = l.note;
+    });
+    return ret;
+  });
+
 
   constructor(public state: AppState) {
     this._locale.set('cs');
@@ -97,10 +108,20 @@ export class FacetsComponent {
   }
 
   filterStateDate() {
-    const uf = this.usedFacets.find(f => f.field === 'state_date');
+    //const uf = this.usedFacets.find(f => f.field === 'state_date');
       const value = this.datePipe.transform(this.dateChangedFrom, 'yyyy-MM-dd') + ',' + this.datePipe.transform(this.dateChangedTo, 'yyyy-MM-dd') ;
       this.usedFacets = this.usedFacets.filter(f => !(f.field === 'state_date'));
       this.usedFacets.push({field: 'state_date', value});
+      this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
+      this.state.usedFacets.update(f => [...this.usedFacets]);
+      //console.log(this.usedFacets)
+      this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+  }
+
+  filterModifiedDate() {
+      const value = this.datePipe.transform(this.modifiedChangedFrom, 'yyyy-MM-dd') + ',' + this.datePipe.transform(this.modifiedChangedTo, 'yyyy-MM-dd') ;
+      this.usedFacets = this.usedFacets.filter(f => !(f.field === 'last_modified_date'));
+      this.usedFacets.push({field: 'last_modified_date', value});
       this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
       this.state.usedFacets.update(f => [...this.usedFacets]);
       //console.log(this.usedFacets)

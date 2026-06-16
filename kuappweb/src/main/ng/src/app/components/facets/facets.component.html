@@ -53,16 +53,35 @@
     </mat-expansion-panel-header>
     <div class="app-fxLayout app-row app-pl-4 app-pr-4 app-pb-1 app-gap-2">
       <mat-form-field class="app-fxFlex" appearance="outline">
-        <mat-label>{{ 'Datum změny' | translate}}</mat-label>
+        <mat-label>{{ 'Datum změny stavu' | translate}}</mat-label>
         <mat-date-range-input [rangePicker]="picker">
           <input matStartDate [placeholder]="'from' | translate" [(ngModel)]="dateChangedFrom">
           <input matEndDate [placeholder]="'to' | translate" [(ngModel)]="dateChangedTo">
         </mat-date-range-input>
-        <!-- <mat-hint>MM/DD/YYYY – MM/DD/YYYY</mat-hint> -->
         <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
         <mat-date-range-picker #picker></mat-date-range-picker>
       </mat-form-field>
       <button matIconButton (click)="filterStateDate()"><mat-icon>search</mat-icon></button>
+    </div>
+  </mat-expansion-panel>
+</div>
+
+<div class="app-facet app-facet-date-change">
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title> {{ 'field.last_modified_date' | translate}} </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="app-fxLayout app-row app-pl-4 app-pr-4 app-pb-1 app-gap-2">
+      <mat-form-field class="app-fxFlex" appearance="outline">
+        <mat-label>{{ 'Datum změny' | translate}}</mat-label>
+        <mat-date-range-input [rangePicker]="picker2">
+          <input matStartDate [placeholder]="'from' | translate" [(ngModel)]="modifiedChangedFrom">
+          <input matEndDate [placeholder]="'to' | translate" [(ngModel)]="modifiedChangedTo">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker2></mat-date-range-picker>
+      </mat-form-field>
+      <button matIconButton (click)="filterModifiedDate()"><mat-icon>search</mat-icon></button>
     </div>
   </mat-expansion-panel>
 </div>
@@ -96,10 +115,15 @@
           </mat-expansion-panel-header>
           <mat-list class="app-facet">
             @for(k of facets()[f].buckets; track $index; let idx = $index){
-              <mat-list-item (click)="filter(f, k.val)" title="{{ k.val}} ({{k.count}})" (mouseover)="fireMouserOver(f, k.val)" (mouseout)="fireMouseOut(f, k.val)">
+              <mat-list-item (click)="filter(f, k.val)" (mouseover)="fireMouserOver(f, k.val)" (mouseout)="fireMouseOut(f, k.val)">
                 @if (f === 'state') {
                   <mat-checkbox [checked]="isUsed(f, k.val)">
                     <span class="app-text" [matTooltip]="'state.' + k.val | translate">{{ 'state.' + k.val | translate }}</span>
+                    <span class="app-count">({{k.count}})</span>
+                  </mat-checkbox>
+                } @else if (f === 'labels') {
+                  <mat-checkbox [checked]="isUsed(f, k.val)">
+                    <span class="app-text" [matTooltip]="labelsNote()[k.val]">{{ k.val | translate }}</span>
                     <span class="app-count">({{k.count}})</span>
                   </mat-checkbox>
                 } @else {

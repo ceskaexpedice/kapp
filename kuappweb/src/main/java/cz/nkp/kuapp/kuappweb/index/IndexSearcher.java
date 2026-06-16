@@ -110,6 +110,10 @@ public class IndexSearcher {
                             .withStatSubFacet("state_date", "min(state_date)")
                             .withStatSubFacet("state_date", "max(state_date)"))
                     
+                    .withFacet("last_modified_date", new QueryFacetMap("last_modified_date:[1000-01-01T00:00:00Z TO 2100-12-01T00:00:00Z]")
+                            .withStatSubFacet("last_modified_date", "min(last_modified_date)")
+                            .withStatSubFacet("last_modified_date", "max(last_modified_date)"))
+                    
                     .withFacet("date_issued_year", new QueryFacetMap("date_issued_year:[1000 TO 2100]")
                             .withStatSubFacet("date_issued_year_min", "min(date_issued_year)")
                             .withStatSubFacet("date_issued_year_max", "max(date_issued_year)"))
@@ -226,6 +230,13 @@ public class IndexSearcher {
                 String from = parts[0].isBlank() ? "*" : parts[0];
                 String to = parts[1].isBlank() ? "*" : parts[1];
                 jrequest = jrequest.withFilter("state_date:[" + from + "T00:00:00Z TO " + to + "T23:59:59Z]");
+            }
+
+            if (request.getParameter("last_modified_date") != null) {
+                String[] parts = request.getParameter("last_modified_date").split(",");
+                String from = parts[0].isBlank() ? "*" : parts[0];
+                String to = parts[1].isBlank() ? "*" : parts[1];
+                jrequest = jrequest.withFilter("last_modified_date:[" + from + "T00:00:00Z TO " + to + "T23:59:59Z]");
             }
             if (request.getParameter("authors_ids") != null) {
                 jrequest = jrequest.withFilter("authors_ids:" + request.getParameter("authors_ids"));

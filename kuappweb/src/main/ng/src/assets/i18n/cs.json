@@ -49,6 +49,7 @@
     "batch": "Dávky",
     "state": "Stav",
     "state_date": "Datum změny stavu",
+    "last_modified_date": "Posledni datum zmeny v aplikaci",
     "state_date_from": "Datum změny stavu - od",
     "state_date_to": "Datum změny stavu - do",
     "date": "Datum",
@@ -220,5 +221,7 @@
     "remove_author_desc": "Opravdu chcete odstranit autor z díla?",
     "name_empty": "Název je prázdný!",
     "pid_not_found": "V aplikaci neni zadny zaznam s timto PIDem"
-   }
+   },
+   
+    "excel_incorrect_license": "excel nespravna license"
 }
