@@ -41,7 +41,6 @@ import { SimpleDialogData } from '../../components/simple-dialog/simple-dialog';
 import { Contract } from '../../shared/contract';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthorTitle } from '../../shared/author';
-import { AuthorTitleDialog, AuthorTitleDialogData } from '../../components/author-title-dialog/author-title-dialog';
 
 @Component({
   selector: 'app-results',

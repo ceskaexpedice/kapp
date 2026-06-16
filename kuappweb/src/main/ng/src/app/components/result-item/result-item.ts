@@ -168,7 +168,7 @@ export class ResultItem {
     const data: AuthorTitleDialogData = {
       pid: this.doc().pid,
       authors_kapp: this.doc().authors_kapp,
-      authors_kramerius: this.doc().authors_kramerius,
+      authors_kramerius: this.doc().authors_kramerius ? this.doc().authors_kramerius: [],
       id: a.id,
       ids: this.doc().authors_ids,
       nameIdentifiers: this.doc().nameIdentifiers,
@@ -197,7 +197,7 @@ export class ResultItem {
     const data: AuthorTitleDialogData = {
       pid: this.doc().pid,
       authors_kapp: this.doc().authors_kapp,
-      authors_kramerius: this.doc().authors_kramerius,
+      authors_kramerius: this.doc().authors_kramerius ? this.doc().authors_kramerius: [],
       id: null,
       ids: this.doc().authors_ids,
       nameIdentifiers: this.doc().nameIdentifiers,
