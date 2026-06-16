@@ -221,6 +221,15 @@
     "name_empty": "Název je prázdný!",
     "pid_not_found": "V aplikaci neni zadny zaznam s timto PIDem"
    },
-   
-    "excel_incorrect_license": "excel incorrect license"
+
+  "excel": "Imported from excel",
+  "author_modified" : "Modified author",
+  "excel_incorrect_license":"Incorrect license",
+  "Excel has unexpected year of publication":"Excel has unexpected year of publication",
+  "excel_failed_to_parse_date":"Failed to parse date",
+  "excel_suspicious_year_range":"Suspicious year range",
+  "excel_unexpected date format":"Unexpected date format",
+  "Nepřesné datum vydání": "Imprecise date of publication",
+  "Nejistá anonymita/úřednost/kolektivnost": "Uncertain anonymity/officialness/collectivity/pseudonymity",
+  "Chyba v posledním autorovi": "Unable to assign/parse last author"
 }
