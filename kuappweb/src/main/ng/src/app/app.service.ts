@@ -181,6 +181,10 @@ export class AppService {
     return this.post('index/save_title_note', {pid,note});
   }
 
+  saveDateIssued(pid: string, date_issued_year_kapp: number | null): Observable<any> {
+    return this.post('index/save_date_issued', {pid,date_issued_year_kapp});
+  }
+
   createBatchFromLabel(label: string): Observable<any> {
     return this.post('index/create_batch_from_label', {label});
   }

@@ -75,6 +75,8 @@
     "last_year_death": "Last author death",
     "release_year": "Release date",
     "date_issued": "Date issued",
+    "date_issued_kramerius": "Date issued (Kramerius)",
+    "date_issued_kapp": "Date issued (KAPP)",
     "date_issued_year": "Year issued",
     "sigla": "Sigla",
     "indextime": "Index time",

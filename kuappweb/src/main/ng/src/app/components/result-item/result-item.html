@@ -96,9 +96,25 @@
 					}
 				}
 			</div>
-
-			<div>{{ 'field.date_issued' | translate }}:</div>
+			<div>{{ 'field.date_issued_kramerius' | translate }}:</div>
 			<div>{{ doc()['date_issued_str']}}</div>
+
+			<div>{{ 'field.date_issued_kapp' | translate }}:</div>
+			<div class="app-fxLayout app-row app-center-v app-gap-2">
+				@if (editingDateIssued()) {
+					<input [(ngModel)]="date_issued_year_kapp" />
+					<button matIconButton (click)="saveDateIssued()"><mat-icon>save</mat-icon></button>
+					<button matIconButton (click)="closeEditingDateIssued()"><mat-icon>cancel</mat-icon></button>
+				} @else {
+					<input [value]="doc()['date_issued_year_kapp']" disabled />
+					@if (state.user()) {
+						<button matIconButton (click)="editDateIssued()"><mat-icon>edit</mat-icon></button>
+					}
+				}
+			</div>
+
+			
+
 
 			<div>{{ 'field.pid' | translate }}:</div>
 			<div>

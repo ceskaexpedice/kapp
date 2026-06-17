@@ -75,6 +75,8 @@
     "last_year_death": "Rok úmrtí posledního autora",
     "release_year": "Datum uvolnění",
     "date_issued": "Datum vydání",
+    "date_issued_kramerius": "Datum vydání (Kramerius)",
+    "date_issued_kapp": "Datum vydání v aplikaci",
     "date_issued_year": "Rok vydání",
     "sigla": "Sigla",
     "indextime": "Datum importu",
