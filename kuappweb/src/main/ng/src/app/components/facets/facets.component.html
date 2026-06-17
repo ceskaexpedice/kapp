@@ -13,6 +13,8 @@
           <strong>{{ 'field.' + k.field | translate}}: </strong>
           @if (k.field === 'state') {
           {{ 'state.' + k.value | translate}}
+          } @else if (k.field === 'labels') {
+          {{ k.value | translate}}
           } @else {
           {{ k.value }}
           }

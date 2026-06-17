@@ -75,8 +75,8 @@ export class FacetsComponent {
 
       if (this.facets()['date_issued_year']) {
         const diy: any = this.facets()['date_issued_year'];
-        this.yearFrom = diy.date_issued_year_min;
-        this.yearTo = diy.date_issued_year_max;
+        // this.yearFrom = diy.date_issued_year_min;
+        // this.yearTo = diy.date_issued_year_max;
       }
     })
   }
