@@ -49,6 +49,7 @@ export class ResultItem {
 
   editingNote = signal(false);
   editingDate = signal(false);
+  editingDateIssued = signal(false);
   editingDilo = signal(false);
   lastYearDeath: number | null;
   is_anonymous: boolean;
@@ -56,6 +57,7 @@ export class ResultItem {
   is_official: boolean;
   is_pseudonymous: boolean;
   note: string;
+  date_issued_year_kapp: number | null;
   noteRows = 3;
   noteWidth = '90%';
 
@@ -310,8 +312,26 @@ export class ResultItem {
   }
 
   saveNote() {
-
     this.service.saveTitleNote(this.doc().pid, this.note).subscribe((res: any) => {
+      console.log(res)
+    })
+  }
+
+  editDateIssued() {
+    if (this.doc()['date_issued_year_kapp']) {
+      this.date_issued_year_kapp = this.doc()['date_issued_year_kapp'];
+    } else if (this.doc()['date_issued_year']) {
+      this.date_issued_year_kapp = this.doc()['date_issued_year'];
+    }
+    this.editingDateIssued.set(true)
+  }
+
+  closeEditingDateIssued() {
+    this.editingDateIssued.set(false)
+  }
+
+  saveDateIssued() {
+    this.service.saveDateIssued(this.doc().pid, this.date_issued_year_kapp).subscribe((res: any) => {
       console.log(res)
     })
   }

@@ -20,7 +20,7 @@ import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
 import org.json.JSONArray;
-import org.json.JSONObject;
+import org.json.JSONObject; 
 
 /**
  *
@@ -275,6 +275,28 @@ public class SolrIndexer {
             doc.setField("pid", js.getString("pid"));
 
             addAtomicField(doc, "set", js.getString("note"), "note");
+            addAtomicField(doc, "add-distinct", user, "modified_by_user");
+            addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
+
+            solr.add("titles", doc);
+            solr.commit("titles");
+            ret.put("msg", "saved");
+
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
+        return ret;
+    }
+
+    public static JSONObject saveDateIssued(JSONObject js, String user) {
+
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField("pid", js.getString("pid"));
+
+            addAtomicField(doc, "set", js.getString("date_issued_year_kapp"), "date_issued_year_kapp");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
             addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 

@@ -101,7 +101,7 @@ public class IndexSearcher {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery(q)
                     .withParam("df", "full_text")
-                    .withParam("fq", "{!collapse field=root_pid}")
+                    .withParam("fq", "{!collapse field=root_pid nullPolicy=expand}")
                     .withParam("expand", true)
                     .withParam("expand.rows", 100)
                     .withParam("modelboost", "model:monograph")
