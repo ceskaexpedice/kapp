@@ -37,4 +37,8 @@ public class UpdaterJob implements Job {
             throw new RuntimeException(e);
         }
     }
+    public static void main(String[] args){
+        UpdaterJob job = new UpdaterJob();
+        job.execute(null);
+    }
 }
