@@ -39,8 +39,8 @@ public class WorkflowConfig {
         return calculateYear(onsiteYear);
     }
 
-    public boolean isPublicYear(int year_published) {
-        return year_published <= calculatePublicYear();
+    public boolean isPublicYear(Integer year_published) {
+        return year_published!=null && year_published <= calculatePublicYear();
     }
 
     public boolean isOnsiteYear(int year_published) {
