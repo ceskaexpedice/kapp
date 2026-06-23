@@ -1,7 +1,11 @@
 package cz.inovatika.solr;
 
+import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
+import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import org.apache.solr.common.SolrInputDocument;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -27,6 +31,10 @@ public record SolrInputDocumentWrapper(String idKey,SolrInputDocument document, 
         return updateMap;
     }
 
+    public static String currentSolrDate() {
+        return Instant.now().truncatedTo(ChronoUnit.MILLIS).toString();
+    }
+
     public void addField(String name, Object value) {
         changeField(name, value, TypeOfOperation.ATOMIC_ADD_DISTINCT);
     }
@@ -41,6 +49,14 @@ public record SolrInputDocumentWrapper(String idKey,SolrInputDocument document, 
 
     public void removeField(String name,Object value) {
         changeField(name, value, TypeOfOperation.ATOMIC_REMOVE);
+    }
+
+    public void markModified() {
+        setLastModifiedDate(currentSolrDate());
+    }
+
+    public void markModified(String modifiedDate) {
+        setLastModifiedDate(modifiedDate);
     }
 
     public Object getFieldValue(String name) {
@@ -105,6 +121,25 @@ public record SolrInputDocumentWrapper(String idKey,SolrInputDocument document, 
                     }
                 }
             }
+        }
+        markModifiedAfterChange(name);
+    }
+
+    private void markModifiedAfterChange(String changedFieldName) {
+        if (!AppDataFields.PID_FIELD.equals(idKey)
+                || AppComputedFields.LAST_MODIFIED_DATE.equals(changedFieldName)) {
+            return;
+        }
+        markModified();
+    }
+
+    private void setLastModifiedDate(String modifiedDate) {
+        switch (typeOfChange) {
+            case SIMPLE -> document.setField(AppComputedFields.LAST_MODIFIED_DATE, modifiedDate);
+            case ATOMIC_CHANGE -> document.setField(
+                    AppComputedFields.LAST_MODIFIED_DATE,
+                    atomicOperation("set", modifiedDate)
+            );
         }
     }
 
