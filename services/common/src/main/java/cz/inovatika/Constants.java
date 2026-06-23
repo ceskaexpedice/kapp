@@ -67,6 +67,10 @@ public class Constants {
 
             // application fields
             public static final String IS_HIERARCHICAL_FIELD = "is_hierarchical";
+            public static final String IS_PSEUDONYMOUS_FIELD = "is_pseudonymous";
+            public static final String IS_ANONYMOUS_FIELD = "is_anonymous";
+            public static final String IS_COLLECTIVE_FIELD = "is_collective";
+            public static final String IS_OFFICIAL_FIELD = "is_official";
             public static final String STATE_FIELD = "state";
             public static final String STATE_DATE_FIELD = "state_date";
             public static final String STATE_USER_FIELD = "state_user";

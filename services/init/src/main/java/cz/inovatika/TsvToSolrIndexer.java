@@ -257,36 +257,36 @@ public class TsvToSolrIndexer {
                                                 .replace(" - zeměměřičský úřad čechy a morava","")
                                                 .replace(" dílo","").trim()){
                                             case "kolektivní","vypracoval kolektiv","řada autorů"->
-                                                    doc.setField("is_collective",true);
+                                                    doc.setField(AppComputedFields.IS_COLLECTIVE_FIELD,true);
                                             case "anonzm","anonym","anonymní"->
-                                                    doc.setField("is_anonymous",true);
+                                                    doc.setField(AppComputedFields.IS_ANONYMOUS_FIELD,true);
                                             case "úřední","úřední dokument"->
-                                                    doc.setField("is_official",true);
+                                                    doc.setField(AppComputedFields.IS_OFFICIAL_FIELD,true);
                                             case "pseudonymní"->{
-                                                doc.setField("is_pseudonymous",true);
+                                                doc.setField(AppComputedFields.IS_PSEUDONYMOUS_FIELD,true);
                                             }
                                             case "kolektivní-anonymní","anonymní, kolektivní","anonymní/kolektivní","kolektivní/anonymní","kolektivní/anonymni","kolektivní/anonymní edice","anonymní (kolektivní)"->{
-                                                doc.setField("is_anonymous",true);
-                                                doc.setField("is_collective",true);
+                                                doc.setField(AppComputedFields.IS_ANONYMOUS_FIELD,true);
+                                                doc.setField(AppComputedFields.IS_COLLECTIVE_FIELD,true);
                                             }
                                             case "úúřední dokument/anonym","úřední + anonymní sestavovatel","úřední, anonym","úřední/anonym","anonym/úřední"->{
-                                                doc.setField("is_anonymous",true);
-                                                doc.setField("is_official",true);
+                                                doc.setField(AppComputedFields.IS_ANONYMOUS_FIELD,true);
+                                                doc.setField(AppComputedFields.IS_OFFICIAL_FIELD,true);
                                             }
                                             case "úřední/kolektivní"->{
-                                                doc.setField("is_official",true);
-                                                doc.setField("is_collective",true);
+                                                doc.setField(AppComputedFields.IS_OFFICIAL_FIELD,true);
+                                                doc.setField(AppComputedFields.IS_COLLECTIVE_FIELD,true);
                                             }
                                             case "anonymní/pseudonymní"->{
-                                                doc.setField("is_anonymous",true);
-                                                doc.setField("is_pseudonymous",true);
+                                                doc.setField(AppComputedFields.IS_ANONYMOUS_FIELD,true);
+                                                doc.setField(AppComputedFields.IS_PSEUDONYMOUS_FIELD,true);
                                             }
                                             default ->{
                                                 String val = value.toLowerCase();
                                                 if (val.contains("anonym")||val.contains("pseudo")||val.contains("kolektivní")||val.contains("úřední")){
-                                                    if (val.contains("anonymní dílo")){doc.setField("is_anonymous",true);}
-                                                    if(val.contains("úřední")){doc.setField("is_official",true);}
-                                                    if(val.contains("kolektivní")){doc.setField("is_collective",true);}
+                                                    if (val.contains("anonymní dílo")){doc.setField(AppComputedFields.IS_ANONYMOUS_FIELD,true);}
+                                                    if(val.contains("úřední")){doc.setField(AppComputedFields.IS_OFFICIAL_FIELD,true);}
+                                                    if(val.contains("kolektivní")){doc.setField(AppComputedFields.IS_COLLECTIVE_FIELD,true);}
                                                     //if(value.toLowerCase().contains("pseudo")){doc.setField("is_pseudonymous",true);}
                                                     System.out.println("Labeled: " + value);
                                                     labels.add(Labels.UNKNOWN_ANONYMITY_COLLECTIVITY_OFFICIALITY_PSEUDONYMITY);}

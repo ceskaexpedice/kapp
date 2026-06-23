@@ -40,9 +40,9 @@ public record WorkflowDoc(
         Integer releaseYear = workflowConfig != null
                 ? workflowConfig.calculateReleaseYear(this.dateIssuedYear, this.last_year_death)
                 : null;
-        Object pseudo= idoc.getFieldValue("is_pseudonymous");
-        Object anon= idoc.getFieldValue("is_anonymous");
-        Object collective= idoc.getFieldValue("is_collective");
+        Object pseudo= idoc.getFieldValue(AppComputedFields.IS_PSEUDONYMOUS_FIELD);
+        Object anon= idoc.getFieldValue(AppComputedFields.IS_ANONYMOUS_FIELD);
+        Object collective= idoc.getFieldValue(AppComputedFields.IS_COLLECTIVE_FIELD);
         if(
                 (pseudo instanceof Boolean && ((Boolean) pseudo)) ||
                 (anon instanceof Boolean && ((Boolean) anon)) ||
@@ -54,7 +54,7 @@ public record WorkflowDoc(
             }
         }
 
-        Object officiality = idoc.getFieldValue("is_official");
+        Object officiality = idoc.getFieldValue(AppComputedFields.IS_OFFICIAL_FIELD);
         if(officiality instanceof Boolean && ((Boolean) officiality)){
             releaseYear = this.dateIssuedYear;
             System.out.println("Book is official");
