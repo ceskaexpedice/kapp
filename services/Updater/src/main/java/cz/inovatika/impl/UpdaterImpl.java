@@ -5,6 +5,7 @@ import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
 import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import cz.inovatika.Updater;
 import cz.inovatika.conf.ApplicationConfig;
+import cz.inovatika.conf.WorkflowConfig;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import cz.inovatika.workflow.States;
 import cz.inovatika.workflow.StringWrapper;
@@ -42,12 +43,13 @@ public class UpdaterImpl implements Updater {
         try {
             String cursorMark = "*";
             boolean done = false;
+            WorkflowConfig workflowConfig = applicationConfig.workflow();
             int currentYear = Year.now().getValue();
             int threshold =  applicationConfig.workflow().calculatePublicYear();
             System.out.println("Current year:"+currentYear);
             System.out.println("Public earliest year:"+threshold);
-            System.out.println("Private latest year:"+applicationConfig.workflow().calculateOnsiteYear());
-            System.out.println("Author dead year: "+applicationConfig.workflow().calculateAuthorDeadYear());
+            System.out.println("Private latest year:"+workflowConfig.calculateOnsiteYear());
+            System.out.println("Author dead year: "+workflowConfig.calculateAuthorDeadYear());
 
             while (!done) {
                 ModifiableSolrParams params = new ModifiableSolrParams();
