@@ -7,15 +7,11 @@ import java.util.List;
 import java.util.Locale;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-//import java.util.logging.Level;
 import java.util.logging.Logger;
 
-//import cz.inovatika.authors.AuthorData;
 import cz.inovatika.solr.SolrInputDocumentWrapper;
 import org.apache.commons.lang3.math.NumberUtils;
-import org.apache.commons.text.similarity.LevenshteinDistance;
 
-//TODO: Rewrite !!
 public class XmlProcessor {
 
     public static final Logger LOGGER = Logger.getLogger(XmlProcessor.class.getName());
@@ -374,14 +370,6 @@ public class XmlProcessor {
             LOGGER.log(Level.SEVERE, e.getMessage(),e);
         }
     }*/
-
-    private static boolean similarityMatch(String catalogNormalizedTitle, String distriNormalizedTitle, double shoda) {
-        LevenshteinDistance dist = LevenshteinDistance.getDefaultInstance();
-        Integer calculatedDistance = dist.apply(catalogNormalizedTitle, distriNormalizedTitle);
-        double maxDistance = Math.round((1 - shoda) * ((double) distriNormalizedTitle.length()));
-
-        return maxDistance >= calculatedDistance;
-    }
 
     public static String replaceWordsWithQMarks(String value, String where, String Originalvalue,List<String> labels,List<String> notes) {
         if (value.contains("asi")) {
