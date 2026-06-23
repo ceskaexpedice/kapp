@@ -35,11 +35,13 @@ public class LastAuthorMatcher {
             addLabel(labels, Constants.TitlesCollectionFields.Labels.LAST_AUTHOR_PARSING_ISSUE);
         }
         Integer excelLastYearDeath = latestExcelDeathYear(excelAuthors);
+        boolean incompleteExcelDeathYears = !excelAuthors.isEmpty()
+                && excelAuthors.stream().map(ExcelAuthor::deathYear).anyMatch(Objects::isNull);
 
         if (excelAuthors.isEmpty()) {
             return UpdatePlan.noAuthorUpdate(
                     "No usable last_author_excel value",
-                    lastYearDeathUpdate(currentLastYearDeath, excelLastYearDeath, null, labels),
+                    lastYearDeathChange(currentLastYearDeath, excelLastYearDeath, null, false, labels),
                     labels
             );
         }
@@ -68,7 +70,7 @@ public class LastAuthorMatcher {
             if (hasAmbiguousMatch(excelAuthor.normalizedName(), candidates)) {
                 return UpdatePlan.noAuthorUpdate(
                         "Ambiguous author matched last_author_excel: " + excelAuthor.name(),
-                        lastYearDeathUpdate(currentLastYearDeath, excelLastYearDeath, null, labels),
+                        lastYearDeathChange(currentLastYearDeath, excelLastYearDeath, null, false, labels),
                         labels
                 );
             }
@@ -77,7 +79,7 @@ public class LastAuthorMatcher {
             if (createdCandidate.isEmpty()) {
                 return UpdatePlan.noAuthorUpdate(
                         "No author matched last_author_excel and it cannot create a usable author: " + excelAuthor.name(),
-                        lastYearDeathUpdate(currentLastYearDeath, excelLastYearDeath, null, labels),
+                        lastYearDeathChange(currentLastYearDeath, excelLastYearDeath, null, false, labels),
                         labels
                 );
             }
@@ -93,7 +95,7 @@ public class LastAuthorMatcher {
         if (candidates.isEmpty()) {
             return UpdatePlan.noAuthorUpdate(
                     "No authors found in authors_kapp, authors_kramerius or last_author_excel",
-                    lastYearDeathUpdate(currentLastYearDeath, excelLastYearDeath, null, labels),
+                    lastYearDeathChange(currentLastYearDeath, excelLastYearDeath, null, false, labels),
                     labels
             );
         }
@@ -101,16 +103,17 @@ public class LastAuthorMatcher {
         AuthorCandidate selectedCandidate = latestDeathCandidate(matchedCandidates)
                 .or(() -> latestDeathCandidate(candidates))
                 .orElse(null);
-        Integer lastYearDeathUpdate = lastYearDeathUpdate(
+        LastYearDeathChange lastYearDeathChange = lastYearDeathChange(
                 currentLastYearDeath,
                 excelLastYearDeath,
                 selectedCandidate == null ? null : selectedCandidate.yearDeath(),
+                incompleteExcelDeathYears && selectedCandidate == null,
                 labels
         );
         if (selectedCandidate == null && additionalKappCandidates.isEmpty()) {
             return UpdatePlan.noAuthorUpdate(
                     "No unique latest author death year and no title author additions are needed",
-                    lastYearDeathUpdate,
+                    lastYearDeathChange,
                     labels
             );
         }
@@ -138,7 +141,8 @@ public class LastAuthorMatcher {
                 selectedMatch.candidate().author(),
                 updatedAuthorsKapp,
                 titleAuthorFields,
-                lastYearDeathUpdate,
+                lastYearDeathChange.value(),
+                lastYearDeathChange.clear(),
                 createdCandidates.stream()
                         .map(AuthorCandidate::author)
                         .map(LastAuthorMatcher::copyObject)
@@ -159,23 +163,38 @@ public class LastAuthorMatcher {
                 .orElse(null);
     }
 
-    private static Integer lastYearDeathUpdate(
+    private static LastYearDeathChange lastYearDeathChange(
             Integer currentLastYearDeath,
             Integer excelLastYearDeath,
             Integer selectedAuthorDeathYear,
+            boolean clearWhenMissingDeathYear,
             List<String> labels
     ) {
         Integer desiredLastYearDeath = excelLastYearDeath != null ? excelLastYearDeath : selectedAuthorDeathYear;
         if (desiredLastYearDeath == null || Objects.equals(currentLastYearDeath, desiredLastYearDeath)) {
-            return null;
+            boolean shouldClear = desiredLastYearDeath == null
+                    && clearWhenMissingDeathYear
+                    && currentLastYearDeath != null;
+            return new LastYearDeathChange(null, shouldClear);
         }
         if (currentLastYearDeath != null && excelLastYearDeath != null) {
             addLabel(labels, Constants.TitlesCollectionFields.Labels.DIFFERING_AUTHOR_DEATH_YEAR);
         }
         if (currentLastYearDeath == null || excelLastYearDeath != null) {
-            return desiredLastYearDeath;
+            return new LastYearDeathChange(desiredLastYearDeath, false);
         }
-        return null;
+        return LastYearDeathChange.none();
+    }
+
+    private record LastYearDeathChange(Integer value, boolean clear) {
+
+        static LastYearDeathChange none() {
+            return new LastYearDeathChange(null, false);
+        }
+
+        boolean shouldUpdate() {
+            return value != null || clear;
+        }
     }
 
     private static void addLabel(List<String> labels, String label) {
@@ -903,21 +922,23 @@ public class LastAuthorMatcher {
             JSONArray updatedAuthorsKapp,
             TitleAuthorFields titleAuthorFields,
             Integer lastYearDeath,
+            boolean clearLastYearDeath,
             List<JSONObject> createdAuthors,
             List<String> labels,
             String reason
             ) {
 
-        static UpdatePlan noAuthorUpdate(String reason, Integer lastYearDeath, List<String> labels) {
+        static UpdatePlan noAuthorUpdate(String reason, LastYearDeathChange lastYearDeathChange, List<String> labels) {
             return new UpdatePlan(
                     false,
-                    lastYearDeath != null || !labels.isEmpty(),
+                    lastYearDeathChange.shouldUpdate() || !labels.isEmpty(),
                     false,
                     "",
                     new JSONObject(),
                     new JSONArray(),
                     TitleAuthorFields.empty(),
-                    lastYearDeath,
+                    lastYearDeathChange.value(),
+                    lastYearDeathChange.clear(),
                     List.of(),
                     List.copyOf(labels),
                     reason

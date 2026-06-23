@@ -170,7 +170,9 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
         if (updatePlan.updateAuthors()) {
             addAtomicField(doc, "set", updatePlan.updatedAuthorsKapp().toString(), AppDataFields.AUTHORS_KAPP_FIELD);
         }
-        if (updatePlan.lastYearDeath() != null) {
+        if (updatePlan.clearLastYearDeath()) {
+            addAtomicField(doc, "set", null, AppComputedFields.LAST_YEAR_DEATH);
+        } else if (updatePlan.lastYearDeath() != null) {
             addAtomicField(doc, "set", updatePlan.lastYearDeath(), AppComputedFields.LAST_YEAR_DEATH);
         }
         if (updatePlan.updateAuthors()) {
@@ -179,7 +181,7 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
             addAtomicField(doc, "set", titleAuthorFields.names(), AppDataFields.AUTHORS_FIELD);
         }
         List<String> labels = new ArrayList<>(updatePlan.labels());
-        if (updatePlan.updateAuthors() || updatePlan.lastYearDeath() != null) {
+        if (updatePlan.updateAuthors() || updatePlan.lastYearDeath() != null || updatePlan.clearLastYearDeath()) {
             addDistinctString(labels, Constants.TitlesCollectionFields.Labels.AUTHOR_MODIFIED);
         }
         if (!labels.isEmpty()) {
