@@ -78,6 +78,7 @@ public class SchedulerMain {
         scheduler.scheduleJob(job, trigger);
 
     }
+    /*
     static void fullHarvest() throws SchedulerException {
         if(scheduler==null){
             throw new SchedulerException("Scheduler is null (main did not run to set things up)");
@@ -93,6 +94,7 @@ public class SchedulerMain {
         scheduler.triggerJob(jobKey, onDemandParams);
 
     }
+    
     static void incrementalHarvest() throws SchedulerException {
         if(scheduler==null){
             throw new SchedulerException("Scheduler is null (main did not run to set things up)");
@@ -107,7 +109,7 @@ public class SchedulerMain {
 
         scheduler.triggerJob(jobKey, onDemandParams);
 
-    }
+    }*/
 
     static ApplicationConfig LoadConfiguration(Logger logger) {
         InputStream resourceAsStream;

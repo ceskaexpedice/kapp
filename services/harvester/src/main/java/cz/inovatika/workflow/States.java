@@ -14,7 +14,6 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import java.io.IOException;
-import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;

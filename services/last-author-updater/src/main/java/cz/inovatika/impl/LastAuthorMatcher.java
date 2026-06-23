@@ -425,8 +425,8 @@ public class LastAuthorMatcher {
         return (birthYear == null ? "" : birthYear) + "-" + (deathYear == null ? "" : deathYear);
     }
 
-    private static boolean isUsableDeathYear(int yearDeath) {
-        return yearDeath > 0 && yearDeath < 9999 && yearDeath <= Year.now().getValue();
+    private static boolean isUsableDeathYear(Integer yearDeath) {
+        return yearDeath != null && yearDeath > 0 && yearDeath < 9999 && yearDeath <= Year.now().getValue();
     }
 
     private static String normalizeId(String value) {
