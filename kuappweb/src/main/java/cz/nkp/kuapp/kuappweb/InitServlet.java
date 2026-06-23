@@ -1,7 +1,10 @@
 package cz.nkp.kuapp.kuappweb;
 
+import cz.nkp.kuapp.kuappweb.index.AUTIndexer;
 import java.io.File;
 import java.io.IOException;
+import java.util.Timer;
+import java.util.TimerTask;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -14,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
  * @author alberto
  */
 public class InitServlet extends HttpServlet {
+
   public static final Logger LOGGER = Logger.getLogger(InitServlet.class.getName());
 
   //Directory where cant override configuration  
@@ -28,7 +32,6 @@ public class InitServlet extends HttpServlet {
   //Default config directory in webapp
   public static String DEFAULT_I18N_DIR = "/assets/i18n";
 
-
   /**
    * Processes requests for both HTTP <code>GET</code> and <code>POST</code>
    * methods.
@@ -40,7 +43,7 @@ public class InitServlet extends HttpServlet {
    */
   protected void processRequest(HttpServletRequest request, HttpServletResponse response)
           throws ServletException, IOException {
-    
+
   }
 
   @Override
@@ -48,10 +51,10 @@ public class InitServlet extends HttpServlet {
     if (getServletContext().getInitParameter("def_config_dir") != null) {
       DEFAULT_CONFIG_DIR = getServletContext().getInitParameter("def_config_dir");
     }
-    
+
     DEFAULT_CONFIG_FILE = getServletContext().getRealPath(DEFAULT_CONFIG_DIR) + File.separator + DEFAULT_CONFIG_FILE;
     DEFAULT_I18N_DIR = getServletContext().getRealPath(DEFAULT_I18N_DIR);
-    
+
     if (System.getProperty("kapp_app_dir") != null) {
       CONFIG_DIR = System.getProperty("kapp_app_dir");
     } else if (getServletContext().getInitParameter("app_dir") != null) {
@@ -60,19 +63,29 @@ public class InitServlet extends HttpServlet {
       CONFIG_DIR = System.getProperty("user.home") + File.separator + CONFIG_DIR;
     }
 
-    
     LOGGER.log(Level.INFO, "CONFIG_DIR is -> {0}", CONFIG_DIR);
+
+    Timer timer = new Timer();
+    long delay = 1000L;
+    long period = 1000L * 60L * 60L * 24L;  // every day 
+    timer.schedule(new TimerTask() {
+      @Override
+      public void run() {
+        AUTIndexer fh = new AUTIndexer();
+        fh.update();
+      }
+    }, delay, period);
+
   }
-  
+
   @Override
   public void destroy() {
-      
+
 //      try {
 //          Indexer.closeClient();
 //      } catch (IOException ex) {
 //          LOGGER.log(Level.SEVERE, null, ex);
 //      }
-      
   }
 
   // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">
