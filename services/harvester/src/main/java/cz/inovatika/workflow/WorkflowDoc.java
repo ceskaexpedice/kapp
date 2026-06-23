@@ -36,9 +36,30 @@ public record WorkflowDoc(
         idoc.setField(AppComputedFields.STATE_USER_FIELD, this.user);
         idoc.setField(AppComputedFields.STATE_REASON_FIELD,  message);
         idoc.addField(AppComputedFields.STATE_HISTORY_FIELD, historyItem(d, message).toString());
+
         Integer releaseYear = workflowConfig != null
                 ? workflowConfig.calculateReleaseYear(this.dateIssuedYear, this.last_year_death)
                 : null;
+        Object pseudo= idoc.getFieldValue("is_pseudonymous");
+        Object anon= idoc.getFieldValue("is_anonymous");
+        Object collective= idoc.getFieldValue("is_collective");
+        if(
+                (pseudo instanceof Boolean && ((Boolean) pseudo)) ||
+                (anon instanceof Boolean && ((Boolean) anon)) ||
+                (collective instanceof Boolean && ((Boolean) collective))
+        ) {
+            if(this.dateIssuedYear!=null && workflowConfig != null){
+                releaseYear = this.dateIssuedYear+workflowConfig.getOnsiteYear();
+                System.out.println("Book is pseudo/anonymous/collective");
+            }
+        }
+
+        Object officiality = idoc.getFieldValue("is_official");
+        if(officiality instanceof Boolean && ((Boolean) officiality)){
+            releaseYear = this.dateIssuedYear;
+            System.out.println("Book is official");
+        }
+
         if (releaseYear != null) {
             idoc.setField(AppComputedFields.RELEASE_YEAR, releaseYear);
         }
