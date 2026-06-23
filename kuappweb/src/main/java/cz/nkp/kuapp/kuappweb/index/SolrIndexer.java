@@ -199,12 +199,13 @@ public class SolrIndexer {
         int onsiteYear = Options.getInstance().getJSONObject("app")
                 .getJSONObject("workflow").getInt("onsiteYear");
 
-        if (isAnonymous || isCollective || isPseudonymous) {
-            return dateIssuedYear != null ? dateIssuedYear + onsiteYear : null;
-        }
         if (isOfficial) {
             return dateIssuedYear;
         }
+        if (isAnonymous || isCollective || isPseudonymous) {
+            return dateIssuedYear != null ? dateIssuedYear + authorDeadEnoughYear : null;
+        }
+
 
         Integer issuedReleaseYear = dateIssuedYear != null ? dateIssuedYear + publicYear : null;
 
