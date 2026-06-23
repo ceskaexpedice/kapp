@@ -89,6 +89,7 @@ public record WorkflowDoc(
                 //no license assigned
             }
         }
+        idoc.markModified(d);
         
     }
 

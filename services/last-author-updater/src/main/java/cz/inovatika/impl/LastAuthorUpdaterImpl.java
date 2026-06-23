@@ -5,6 +5,7 @@ import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
 import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import cz.inovatika.LastAuthorUpdater;
 import cz.inovatika.conf.ApplicationConfig;
+import cz.inovatika.solr.SolrInputDocumentWrapper;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
@@ -185,6 +186,7 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
             addAtomicField(doc, "add-distinct", labels, AppComputedFields.LABELS_FIELD);
         }
         addAtomicField(doc, "add-distinct", USER, "modified_by_user");
+        addAtomicField(doc, "set", SolrInputDocumentWrapper.currentSolrDate(), AppComputedFields.LAST_MODIFIED_DATE);
         return doc;
     }
 

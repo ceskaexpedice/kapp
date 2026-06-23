@@ -355,9 +355,11 @@ public class TsvToSolrIndexer {
                         }*/
                         labelsUpdateMap.put("add-distinct", labels);
                         doc.getDocument().addField(AppComputedFields.LABELS_FIELD,labelsUpdateMap);
+                        doc.markModified();
                         Map<String,Object> notesUpdateMap = new HashMap<>();
                         notesUpdateMap.put("add-distinct", notes);
                         doc.getDocument().addField("note",notesUpdateMap);
+                        doc.markModified();
 
 
                         //if (desiredState == States.CONTROLLED_UNKNOWN) desiredState = setState(doc,pid);
@@ -446,6 +448,7 @@ public class TsvToSolrIndexer {
                         userUpdateMap.put("add-distinct",users );
                         doc.getDocument().setField("state_user",(users.isEmpty())?"Excel without curator":"Excel");//userUpdateMap);
                         doc.getDocument().addField("modified_by_user", userUpdateMap);
+                        doc.markModified();
 
                         docerr = doc.getDocument();
                         solrClient.add(Collection.TITLES_COLLECTION, doc.getDocument());
