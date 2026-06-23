@@ -74,7 +74,7 @@ public class UpdaterImpl implements Updater {
                 params.set("cursorMark", cursorMark);
                 params.set("sort", "pid asc");
                 //params.add("fq", "-"+AppComputedFields.ASSIGNED_LICENSES+":public");
-                params.add("fq", candidateFilterQuery);
+                //params.add("fq", candidateFilterQuery);
                 //params.add("fq", AppComputedFields.DATE_ISSUED_YEAR+":{ * TO "+threshold+"}");
 
                 QueryResponse response = solrClient.query(TITLES_COLLECTION, params);
