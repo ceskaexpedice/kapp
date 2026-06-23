@@ -96,13 +96,22 @@ public class UpdaterImpl implements Updater {
                     Object hierarchical_value = doc.getFieldValue(AppComputedFields.IS_HIERARCHICAL_FIELD);
                     boolean hierarchical = hierarchical_value != null && Boolean.parseBoolean(hierarchical_value.toString());
 
+                    boolean isPseudonymous = isTrue(doc.getFieldValue(AppComputedFields.IS_PSEUDONYMOUS_FIELD));
+                    boolean isAnonymous = isTrue(doc.getFieldValue(AppComputedFields.IS_ANONYMOUS_FIELD));
+                    boolean isCollective = isTrue(doc.getFieldValue(AppComputedFields.IS_COLLECTIVE_FIELD));
+                    boolean isOfficial = isTrue(doc.getFieldValue(AppComputedFields.IS_OFFICIAL_FIELD));
+
                     WorkflowDoc workflowDoc = new WorkflowDoc(
                             dateIssuedObj!=null? Integer.parseInt(dateIssuedObj.toString()):null,
                             lastYearDeathObj!=null?Integer.parseInt(lastYearDeathObj.toString()):null,
                             state,
                             USER,
                             model,
-                            hierarchical//,state.getLicensesAssignation()
+                            hierarchical,
+                            isPseudonymous,
+                            isAnonymous,
+                            isCollective,
+                            isOfficial//,state.getLicensesAssignation()
                     );
                     StringWrapper reason = new StringWrapper("unspecified") ;
                     Object root_pid_value = doc.getFieldValue(AppDataFields.ROOT_PID_FIELD);

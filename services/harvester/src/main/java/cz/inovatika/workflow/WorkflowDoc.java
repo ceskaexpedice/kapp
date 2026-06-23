@@ -18,7 +18,11 @@ public record WorkflowDoc(
         States state,
         String user,
         String model,
-        boolean isHierarchical//,
+        boolean isHierarchical,
+        boolean isPseudonymous,
+        boolean isAnonymous,
+        boolean isCollective,
+        boolean isOfficial//,
         //LicensesAssignation assignation
 ){
 
@@ -28,6 +32,16 @@ public record WorkflowDoc(
     public static final String USER_JSON_KEY = "user";
     public static final String REASON_JSON_KEY = "reason";
 
+    public WorkflowDoc(
+            Integer dateIssuedYear,
+            Integer last_year_death,
+            States state,
+            String user,
+            String model,
+            boolean isHierarchical
+    ) {
+        this(dateIssuedYear, last_year_death, state, user, model, isHierarchical, false, false, false, false);
+    }
 
     public void mapToSolrDocument(SolrInputDocumentWrapper idoc, String message, WorkflowConfig workflowConfig) {
         String d = LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'"));
@@ -37,30 +51,9 @@ public record WorkflowDoc(
         idoc.setField(AppComputedFields.STATE_REASON_FIELD,  message);
         idoc.addField(AppComputedFields.STATE_HISTORY_FIELD, historyItem(d, message).toString());
 
-        Integer releaseYear = workflowConfig != null
-                ? workflowConfig.calculateReleaseYear(this.dateIssuedYear, this.last_year_death)
-                : null;
-        Object pseudo= idoc.getFieldValue(AppComputedFields.IS_PSEUDONYMOUS_FIELD);
-        Object anon= idoc.getFieldValue(AppComputedFields.IS_ANONYMOUS_FIELD);
-        Object collective= idoc.getFieldValue(AppComputedFields.IS_COLLECTIVE_FIELD);
-        if(
-                (pseudo instanceof Boolean && ((Boolean) pseudo)) ||
-                (anon instanceof Boolean && ((Boolean) anon)) ||
-                (collective instanceof Boolean && ((Boolean) collective))
-        ) {
-            if(this.dateIssuedYear!=null && workflowConfig != null){
-                releaseYear = this.dateIssuedYear+workflowConfig.getOnsiteYear();
-                System.out.println("Book is pseudo/anonymous/collective");
-            }
-        }
+        Integer releaseYear = releaseYear(workflowConfig);
 
-        Object officiality = idoc.getFieldValue(AppComputedFields.IS_OFFICIAL_FIELD);
-        if(officiality instanceof Boolean && ((Boolean) officiality)){
-            releaseYear = this.dateIssuedYear;
-            System.out.println("Book is official");
-        }
-
-        if (releaseYear != null) {
+        if (releaseYear != null || idoc.getTypeOfChange() == SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE) {
             idoc.setField(AppComputedFields.RELEASE_YEAR, releaseYear);
         }
         switch (state.getLicensesAssignation()) {
@@ -91,6 +84,38 @@ public record WorkflowDoc(
         }
         idoc.markModified(d);
         
+    }
+
+    public Integer releaseYear(WorkflowConfig workflowConfig) {
+        if (workflowConfig == null) {
+            return null;
+        }
+        Integer priorityReleaseYear = priorityReleaseYear(workflowConfig);
+        if (hasPriorityReleaseRule()) {
+            return priorityReleaseYear;
+        }
+        return workflowConfig.calculateReleaseYear(this.dateIssuedYear, this.last_year_death);
+    }
+
+    public Integer priorityReleaseYear(WorkflowConfig workflowConfig) {
+        if (workflowConfig == null || this.dateIssuedYear == null) {
+            return null;
+        }
+        if (hasSpecialAuthorshipRule()) {
+            return this.dateIssuedYear + workflowConfig.getAuthorDeadEnoughYear();
+        }
+        if (this.isOfficial) {
+            return this.dateIssuedYear;
+        }
+        return null;
+    }
+
+    public boolean hasSpecialAuthorshipRule() {
+        return this.isPseudonymous || this.isAnonymous || this.isCollective;
+    }
+
+    public boolean hasPriorityReleaseRule() {
+        return hasSpecialAuthorshipRule() || this.isOfficial;
     }
 
     private JSONObject historyItem(String d, String message) {

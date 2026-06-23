@@ -392,7 +392,11 @@ public class TsvToSolrIndexer {
                                         old_state,
                                         "excelImporter",
                                         model,
-                                        false//,//irrelevant
+                                        false,
+                                        isTrue(doc.getFieldValue(AppComputedFields.IS_PSEUDONYMOUS_FIELD)),
+                                        isTrue(doc.getFieldValue(AppComputedFields.IS_ANONYMOUS_FIELD)),
+                                        isTrue(doc.getFieldValue(AppComputedFields.IS_COLLECTIVE_FIELD)),
+                                        isTrue(doc.getFieldValue(AppComputedFields.IS_OFFICIAL_FIELD))//,//irrelevant
                                         //old_state.getLicensesAssignation()
                                 );
                                 States new_state = Workflow.calculateCuratorTransition(rootPid, solrClient, wfdoc, desiredState);
@@ -617,6 +621,13 @@ public class TsvToSolrIndexer {
             System.err.println(e.getMessage());
             return null;
         }
+    }
+
+    private static boolean isTrue(Object value) {
+        if (value instanceof Boolean booleanValue) {
+            return booleanValue;
+        }
+        return value != null && Boolean.parseBoolean(value.toString());
     }
 /*
     private static Document getXml(DocumentBuilder builder, HttpResponse<String> response) throws IOException {

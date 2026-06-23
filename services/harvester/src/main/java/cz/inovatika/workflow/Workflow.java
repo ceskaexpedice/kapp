@@ -44,7 +44,11 @@ public class Workflow {
                 newState,
                 user,
                 currentDoc.model(),
-                currentDoc.isHierarchical()//, newState.getLicensesAssignation()
+                currentDoc.isHierarchical(),
+                currentDoc.isPseudonymous(),
+                currentDoc.isAnonymous(),
+                currentDoc.isCollective(),
+                currentDoc.isOfficial()//, newState.getLicensesAssignation()
         ).mapToSolrDocument(idoc, message, workflowConfig);
     }
 
