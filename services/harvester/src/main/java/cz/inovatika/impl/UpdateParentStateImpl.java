@@ -9,6 +9,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
+import org.apache.solr.common.util.NamedList;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -67,27 +68,21 @@ public class UpdateParentStateImpl implements UpdateParentState {
 
 
     private void processBatchResponse(QueryResponse response) {
-        Map<Object, Object> responseMap = (Map<Object, Object>) response.getResponse().get("facets");
-        if (responseMap == null || !responseMap.containsKey("parents")) {
+        Object parentsFacet = getFacetValue(response.getResponse().get("facets"), "parents");
+        if (parentsFacet == null) {
             return;
         }
 
-        Map<Object, Object> parentsFacet = (Map<Object, Object>) responseMap.get("parents");
-        List<Map<Object, Object>> buckets = (List<Map<Object, Object>>) parentsFacet.get("buckets");
-
         List<SolrInputDocument> updates = new ArrayList<>();
 
-        for (Map<Object, Object> bucket : buckets) {
-            String rootPid = bucket.get("val").toString();
-
-            Map<Object, Object> stavyFacet = (Map<Object, Object>) bucket.get("stavy");
-            List<Map<Object, Object>> stavBuckets = (List<Map<Object, Object>>) stavyFacet.get("buckets");
-
-            List<String> childStates = new ArrayList<>();
-            for (Map<Object, Object> sb : stavBuckets) {
-                childStates.add(sb.get("val").toString());
+        for (Object bucket : getBuckets(parentsFacet)) {
+            Object rootPidValue = getFacetValue(bucket, "val");
+            if (rootPidValue == null) {
+                continue;
             }
 
+            String rootPid = rootPidValue.toString();
+            List<String> childStates = getBucketValues(getFacetValue(bucket, "stavy"));
             States parentState = childStates.isEmpty() || childStates.contains(States.TO_CONTROL.name()) ?  States.PARENT_OPEN : States.PARENT_CLOSED;
             SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
                     Constants.TitlesCollectionFields.AppDataFields.PID_FIELD,
@@ -126,30 +121,40 @@ public class UpdateParentStateImpl implements UpdateParentState {
 
         QueryResponse response = this.solrClient.query("titles", params);
 
-        Map<Object, Object> responseMap = (Map<Object, Object>) response.getResponse().get("facets");
-
-        if (responseMap != null && responseMap.containsKey("all_ids")) {
-            Map<Object, Object> idFacet = (Map<Object, Object>) responseMap.get("all_ids");
-            List<Map<Object, Object>> buckets = (List<Map<Object, Object>>) idFacet.get("buckets");
-
-            if (buckets != null) {
-                for (Map<Object, Object> bucket : buckets) {
-                    Object val = bucket.get("val");
-                    if (val != null) {
-                        results.add(val.toString());
-                    }
-                }
+        Object idFacet = getFacetValue(response.getResponse().get("facets"), "all_ids");
+        for (Object bucket : getBuckets(idFacet)) {
+            Object val = getFacetValue(bucket, "val");
+            if (val != null) {
+                results.add(val.toString());
             }
         }
         return results;
     }
 
-//    private static Http2SolrClient buildSolrClient(String url) {
-//        return new Http2SolrClient.Builder(url)
-//                .withConnectionTimeout(200, TimeUnit.SECONDS)
-//                .withIdleTimeout(5, TimeUnit.MINUTES)
-//                .withRequestTimeout(5, TimeUnit.MINUTES).useHttp1_1(true)
-//                .build();
-//    }
+    private static List<?> getBuckets(Object facet) {
+        Object buckets = getFacetValue(facet, "buckets");
+        return buckets instanceof List<?> bucketList ? bucketList : List.of();
+    }
+
+    private static List<String> getBucketValues(Object facet) {
+        List<String> values = new ArrayList<>();
+        for (Object bucket : getBuckets(facet)) {
+            Object value = getFacetValue(bucket, "val");
+            if (value != null) {
+                values.add(value.toString());
+            }
+        }
+        return values;
+    }
+
+    private static Object getFacetValue(Object facet, String key) {
+        if (facet instanceof NamedList<?> namedList) {
+            return namedList.get(key);
+        }
+        if (facet instanceof Map<?, ?> map) {
+            return map.get(key);
+        }
+        return null;
+    }
 
 }
