@@ -114,7 +114,7 @@ public class UpdaterImpl implements Updater {
                                 "Found book with pid: "+pid
                                         +"\n\t that had state: "+workflowDoc.state()+" that got changed to: "+newState);
 
-                    SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(pid, SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
+                    SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(AppDataFields.PID_FIELD, SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
                     updateDoc.setField(AppDataFields.PID_FIELD, pid);
                     copyTrueFlags(doc, updateDoc, RELEASE_RULE_FLAG_FIELDS);
                     Workflow.executeTransition(workflowDoc,USER,reason.value,updateDoc,newState,applicationConfig.workflow());
