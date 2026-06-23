@@ -101,11 +101,11 @@ public record WorkflowDoc(
         if (workflowConfig == null || this.dateIssuedYear == null) {
             return null;
         }
-        if (hasSpecialAuthorshipRule()) {
-            return this.dateIssuedYear + workflowConfig.getAuthorDeadEnoughYear();
-        }
         if (this.isOfficial) {
             return this.dateIssuedYear;
+        }
+        if (hasSpecialAuthorshipRule()) {
+            return this.dateIssuedYear + workflowConfig.getAuthorDeadEnoughYear();
         }
         return null;
     }
