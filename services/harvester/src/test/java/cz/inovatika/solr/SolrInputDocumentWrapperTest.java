@@ -19,6 +19,7 @@ class SolrInputDocumentWrapperTest {
         wrapper.setField(AppDataFields.PID_FIELD, "uuid:test");
         wrapper.setField(AppDataFields.TITLE_FIELD, "Changed title");
 
+        Assertions.assertEquals("uuid:test", wrapper.getDocument().getFieldValue(AppDataFields.PID_FIELD));
         Object value = wrapper.getDocument().getFieldValue(AppComputedFields.LAST_MODIFIED_DATE);
         Assertions.assertInstanceOf(Map.class, value);
         Assertions.assertNotNull(((Map<?, ?>) value).get("set"));
