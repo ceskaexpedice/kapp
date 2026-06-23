@@ -1,5 +1,9 @@
 {
-    "solr": "http://solr-kappScheduler:8983/solr", 
+    "solr": "http://solr-kappScheduler:8983/solr",
+    "alephOaiBase": "https://aleph.nkp.cz/OAI",
+    "alephProxy": "",
+    "alephConnectTimeoutSeconds": 30,
+    "alephRequestTimeoutSeconds": 120,
     "gemini": {
         "api_key": "",
         "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=",
