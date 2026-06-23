@@ -23,6 +23,7 @@ import java.io.IOException;
 import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
@@ -117,17 +118,24 @@ public class UpdaterImpl implements Updater {
                     Object root_pid_value = doc.getFieldValue(AppDataFields.ROOT_PID_FIELD);
                     String root_pid = root_pid_value == null ? pid : root_pid_value.toString();
                     States newState = workflowDoc.state().calculateNextState(root_pid,solrClient,applicationConfig,workflowDoc,reason);
-                    if (newState==null)continue;
-                    if (newState != workflowDoc.state())
-                        System.out.println(
-                                "Found book with pid: "+pid
-                                        +"\n\t that had state: "+workflowDoc.state()+" that got changed to: "+newState);
-
                     SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(AppDataFields.PID_FIELD, SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
                     updateDoc.setField(AppDataFields.PID_FIELD, pid);
-                    copyTrueFlags(doc, updateDoc, RELEASE_RULE_FLAG_FIELDS);
-                    Workflow.executeTransition(workflowDoc,USER,reason.value,updateDoc,newState,applicationConfig.workflow());
+                    boolean shouldWrite = false;
 
+                    if (newState != null) {
+                        if (newState != workflowDoc.state())
+                            System.out.println(
+                                    "Found book with pid: "+pid
+                                            +"\n\t that had state: "+workflowDoc.state()+" that got changed to: "+newState);
+
+                        copyTrueFlags(doc, updateDoc, RELEASE_RULE_FLAG_FIELDS);
+                        Workflow.executeTransition(workflowDoc,USER,reason.value,updateDoc,newState,applicationConfig.workflow());
+                        shouldWrite = true;
+                    } else {
+                        shouldWrite = updateReleaseYearIfNeeded(doc, updateDoc, workflowDoc, workflowConfig);
+                    }
+
+                    if (!shouldWrite) continue;
 
                     batch.add(updateDoc.getDocument());
 
@@ -152,6 +160,21 @@ public class UpdaterImpl implements Updater {
         } catch (SolrServerException | IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    static boolean updateReleaseYearIfNeeded(
+            SolrDocument source,
+            SolrInputDocumentWrapper target,
+            WorkflowDoc workflowDoc,
+            WorkflowConfig workflowConfig
+    ) {
+        Integer currentReleaseYear = asInteger(source.getFieldValue(AppComputedFields.RELEASE_YEAR));
+        Integer desiredReleaseYear = workflowDoc.releaseYear(workflowConfig);
+        if (Objects.equals(currentReleaseYear, desiredReleaseYear)) {
+            return false;
+        }
+        target.setField(AppComputedFields.RELEASE_YEAR, desiredReleaseYear);
+        return true;
     }
 
     static String buildCandidateFilterQuery(WorkflowConfig workflowConfig, int currentYear) {
@@ -204,6 +227,20 @@ public class UpdaterImpl implements Updater {
             return booleanValue;
         }
         return value != null && Boolean.parseBoolean(value.toString());
+    }
+
+    private static Integer asInteger(Object value) {
+        if (value == null) {
+            return null;
+        }
+        if (value instanceof Number number) {
+            return number.intValue();
+        }
+        try {
+            return Integer.valueOf(value.toString());
+        } catch (NumberFormatException e) {
+            return null;
+        }
     }
 
     private static Http2SolrClient buildSolrClient(ApplicationConfig applicationConfig) {
