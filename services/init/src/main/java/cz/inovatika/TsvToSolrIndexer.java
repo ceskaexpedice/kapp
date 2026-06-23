@@ -28,7 +28,6 @@ import java.util.concurrent.TimeUnit;
 
 import static cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields.LAST_AUTHOR_EXCEL_FIELD;
 
-//TODO: Refactor !!
 public class TsvToSolrIndexer {
 
     private static final String SOLR_URL = "http://localhost:8983/solr";//"http://solr-kappScheduler:8983/solr";//
