@@ -34,6 +34,21 @@ public class UpdaterImpl implements Updater {
     final int IN_BATCHSIZE = 100;
     final int OUT_BATCHSIZE = 200;
     final String USER = "Updater";
+    private static final List<String> DATE_ISSUED_YEAR_FIELDS = List.of(
+            AppComputedFields.DATE_ISSUED_YEAR,
+            AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD
+    );
+    private static final List<String> SPECIAL_AUTHORSHIP_FIELDS = List.of(
+            AppComputedFields.IS_PSEUDONYMOUS_FIELD,
+            AppComputedFields.IS_ANONYMOUS_FIELD,
+            AppComputedFields.IS_COLLECTIVE_FIELD
+    );
+    private static final List<String> RELEASE_RULE_FLAG_FIELDS = List.of(
+            AppComputedFields.IS_PSEUDONYMOUS_FIELD,
+            AppComputedFields.IS_ANONYMOUS_FIELD,
+            AppComputedFields.IS_COLLECTIVE_FIELD,
+            AppComputedFields.IS_OFFICIAL_FIELD
+    );
 
     @Override
     public void start(ApplicationConfig applicationConfig) {
@@ -45,7 +60,8 @@ public class UpdaterImpl implements Updater {
             boolean done = false;
             WorkflowConfig workflowConfig = applicationConfig.workflow();
             int currentYear = Year.now().getValue();
-            int threshold =  applicationConfig.workflow().calculatePublicYear();
+            int threshold =  workflowConfig.calculatePublicYear();
+            String candidateFilterQuery = buildCandidateFilterQuery(workflowConfig, currentYear);
             System.out.println("Current year:"+currentYear);
             System.out.println("Public earliest year:"+threshold);
             System.out.println("Private latest year:"+workflowConfig.calculateOnsiteYear());
@@ -58,22 +74,7 @@ public class UpdaterImpl implements Updater {
                 params.set("cursorMark", cursorMark);
                 params.set("sort", "pid asc");
                 //params.add("fq", "-"+AppComputedFields.ASSIGNED_LICENSES+":public");
-                params.add(//TODO: Check if this works
-                        "fq",
-                        "((" +
-                                    AppComputedFields.DATE_ISSUED_YEAR + ":{* TO " + threshold + "}" +
-                                    ") OR (" +
-                                    AppComputedFields.DATE_ISSUED_YEAR + ":{* TO "+ applicationConfig.workflow().calculateOnsiteYear()+"}" +
-                                    " AND " +
-                                    AppComputedFields.LAST_YEAR_DEATH + ":{* TO "+ applicationConfig.workflow().calculateAuthorDeadYear()+"}" +
-                                ") OR (" +
-                                    AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD + ":{* TO " + threshold + "}" +
-                                    ") OR (" +
-                                    AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD + ":{* TO "+ applicationConfig.workflow().calculateOnsiteYear()+"}" +
-                                    " AND " +
-                                    AppComputedFields.LAST_YEAR_DEATH + ":{* TO "+ applicationConfig.workflow().calculateAuthorDeadYear()+"}" +
-                                "))"
-                );
+                params.add("fq", candidateFilterQuery);
                 //params.add("fq", AppComputedFields.DATE_ISSUED_YEAR+":{ * TO "+threshold+"}");
 
                 QueryResponse response = solrClient.query(TITLES_COLLECTION, params);
@@ -114,7 +115,8 @@ public class UpdaterImpl implements Updater {
                                         +"\n\t that had state: "+workflowDoc.state()+" that got changed to: "+newState);
 
                     SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(pid, SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
-                    updateDoc.getDocument().setField(AppDataFields.PID_FIELD, pid);
+                    updateDoc.setField(AppDataFields.PID_FIELD, pid);
+                    copyTrueFlags(doc, updateDoc, RELEASE_RULE_FLAG_FIELDS);
                     Workflow.executeTransition(workflowDoc,USER,reason.value,updateDoc,newState,applicationConfig.workflow());
 
 
@@ -142,11 +144,95 @@ public class UpdaterImpl implements Updater {
             throw new RuntimeException(e);
         }
     }
+
+    static String buildCandidateFilterQuery(WorkflowConfig workflowConfig, int currentYear) {
+        String publicByIssuedYear = issuedYearTo(workflowConfig.calculatePublicYear());
+        String publicByAuthorDeath = FilterQuery.and(
+                issuedYearTo(workflowConfig.calculateOnsiteYear()),
+                FilterQuery.rangeTo(AppComputedFields.LAST_YEAR_DEATH, workflowConfig.calculateAuthorDeadYear())
+        );
+        String publicByConfiguredReleaseYear = FilterQuery.rangeTo(AppComputedFields.RELEASE_YEAR, currentYear);
+        String publicBySpecialAuthorship = FilterQuery.and(
+                FilterQuery.anyTrue(SPECIAL_AUTHORSHIP_FIELDS),
+                issuedYearTo(workflowConfig.calculateOnsiteYear())
+        );
+        String publicByOfficiality = FilterQuery.and(
+                FilterQuery.isTrue(AppComputedFields.IS_OFFICIAL_FIELD),
+                issuedYearTo(currentYear)
+        );
+
+        return FilterQuery.or(
+                publicByConfiguredReleaseYear,
+                publicByIssuedYear,
+                publicByAuthorDeath,
+                publicBySpecialAuthorship,
+                publicByOfficiality
+        );
+    }
+
+    private static String issuedYearTo(int year) {
+        return FilterQuery.or(
+                DATE_ISSUED_YEAR_FIELDS.stream()
+                        .map(field -> FilterQuery.rangeTo(field, year))
+                        .toArray(String[]::new)
+        );
+    }
+
+    private static void copyTrueFlags(
+            SolrDocument source,
+            SolrInputDocumentWrapper target,
+            List<String> fields
+    ) {
+        for (String field : fields) {
+            if (isTrue(source.getFieldValue(field))) {
+                target.setField(field, true);
+            }
+        }
+    }
+
+    private static boolean isTrue(Object value) {
+        if (value instanceof Boolean booleanValue) {
+            return booleanValue;
+        }
+        return value != null && Boolean.parseBoolean(value.toString());
+    }
+
     private static Http2SolrClient buildSolrClient(ApplicationConfig applicationConfig) {
         return new Http2SolrClient.Builder(applicationConfig.solr().getUrl())
                 .withConnectionTimeout(200, TimeUnit.SECONDS)
                 .withIdleTimeout(5, TimeUnit.MINUTES)
                 .withRequestTimeout(5, TimeUnit.MINUTES).useHttp1_1(true)
                 .build();
+    }
+
+    private static final class FilterQuery {
+        private FilterQuery() {
+        }
+
+        private static String and(String... clauses) {
+            return group(" AND ", clauses);
+        }
+
+        private static String or(String... clauses) {
+            return group(" OR ", clauses);
+        }
+
+        private static String rangeTo(String field, int year) {
+            return field + ":{* TO " + year + "}";
+        }
+
+        private static String anyTrue(List<String> fields) {
+            return or(fields.stream()
+                    .map(FilterQuery::isTrue)
+                    .toArray(String[]::new));
+        }
+
+        private static String isTrue(String field) {
+            return field + ":true";
+        }
+
+        private static String group(String operator, String... clauses) {
+            return "(" + String.join(operator, clauses) + ")";
+        }
     }
 }
