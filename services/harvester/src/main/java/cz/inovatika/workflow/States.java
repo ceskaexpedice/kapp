@@ -14,6 +14,7 @@ import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrDocumentList;
 
 import java.io.IOException;
+import java.time.Year;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.logging.Level;
@@ -69,6 +70,10 @@ public enum States {
             if (currentDoc.model().equals(ModelFields.PERIODICALVOLUME)){
                 return  wConfig.isPublicYear(currentDoc.dateIssuedYear())? NONCONTROLLED_PUBLIC :NONCONTROLLED_PRIVATE;
             }
+            RuleDecision priorityRuleDecision = priorityReleaseRuleState(currentDoc, wConfig, TO_CONTROL, null, reason);
+            if (priorityRuleDecision.applicable()) {
+                return priorityRuleDecision.state();
+            }
             if (currentDoc.last_year_death() != null) {
                 int year = currentDoc.last_year_death();
                 if (wConfig.isAuthorDeadEnoughYear(year,currentDoc.dateIssuedYear())){//it has been OnsiteYear years from the death of last author
@@ -100,6 +105,14 @@ public enum States {
     NONCONTROLLED_PUBLIC("noncontrolled_public", LicensesAssignation.PUBLIC, false) {
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
+            WorkflowConfig wConfig = config.workflow();
+            if (wConfig==null)return null;
+            if (!currentDoc.model().equals(ModelFields.PERIODICALVOLUME)) {
+                RuleDecision priorityRuleDecision = priorityReleaseRuleState(currentDoc, wConfig, null, NONCONTROLLED_PRIVATE, reason);
+                if (priorityRuleDecision.applicable()) {
+                    return priorityRuleDecision.state();
+                }
+            }
             return null;
         }
     },
@@ -122,6 +135,10 @@ public enum States {
                 return  wConfig.isPublicYear(currentDoc.dateIssuedYear())? NONCONTROLLED_PUBLIC :NONCONTROLLED_PRIVATE;
             }
             else{
+                RuleDecision priorityRuleDecision = priorityReleaseRuleState(currentDoc, wConfig, NONCONTROLLED_PUBLIC, NONCONTROLLED_PRIVATE, reason);
+                if (priorityRuleDecision.applicable()) {
+                    return priorityRuleDecision.state();
+                }
                 if (currentDoc.last_year_death() != null) {
                     int year = currentDoc.last_year_death();
                     if (wConfig.isAuthorDeadEnoughYear(year,currentDoc.dateIssuedYear())){
@@ -162,6 +179,10 @@ public enum States {
             if (currentDoc.model().equals(ModelFields.PERIODICALVOLUME)){
                 return  wConfig.isPublicYear(currentDoc.dateIssuedYear())? NONCONTROLLED_PUBLIC :NONCONTROLLED_PRIVATE;
             }
+            RuleDecision priorityRuleDecision = priorityReleaseRuleState(currentDoc, wConfig, FOR_REVIEW, null, reason);
+            if (priorityRuleDecision.applicable()) {
+                return priorityRuleDecision.state();
+            }
             if (currentDoc.last_year_death() != null) {
                 int year = currentDoc.last_year_death();
                 if (wConfig.isAuthorDeadEnoughYear(year,currentDoc.dateIssuedYear())){//it has been OnsiteYear years from the death of last author
@@ -191,6 +212,10 @@ public enum States {
             if (wConfig==null)return null;
             if (currentDoc.model().equals(ModelFields.PERIODICALVOLUME)){
                 return  wConfig.isPublicYear(currentDoc.dateIssuedYear())? NONCONTROLLED_PUBLIC :NONCONTROLLED_PRIVATE;
+            }
+            RuleDecision priorityRuleDecision = priorityReleaseRuleState(currentDoc, wConfig, FOR_REVIEW, NONCONTROLLED_PRIVATE, reason);
+            if (priorityRuleDecision.applicable()) {
+                return priorityRuleDecision.state();
             }
             if (currentDoc.last_year_death() != null) {
                 //We have new information and the authors are not sufficiently dead yet
@@ -289,6 +314,44 @@ public enum States {
             return PARENT_CLOSED;
         }
     }
+
+    private static RuleDecision priorityReleaseRuleState(
+            WorkflowDoc currentDoc,
+            WorkflowConfig workflowConfig,
+            States releasedState,
+            States unreleasedState,
+            StringWrapper reason
+    ) {
+        if (!currentDoc.hasPriorityReleaseRule()) {
+            return RuleDecision.notApplicable();
+        }
+
+        Integer releaseYear = currentDoc.priorityReleaseYear(workflowConfig);
+        if (releaseYear == null) {
+            reason.value = "Priority release rule cannot be evaluated without date issued";
+            return RuleDecision.applicable(null);
+        }
+
+        if (releaseYear <= Year.now().getValue()) {
+            reason.value = "Surpassed release year " + releaseYear;
+            return RuleDecision.applicable(releasedState);
+        }
+
+        reason.value = "Was not yet release year " + releaseYear;
+        return RuleDecision.applicable(unreleasedState);
+    }
+
+    private record RuleDecision(boolean applicable, States state) {
+
+        static RuleDecision notApplicable() {
+            return new RuleDecision(false, null);
+        }
+
+        static RuleDecision applicable(States state) {
+            return new RuleDecision(true, state);
+        }
+    }
+
     final String value;
     final boolean automaticSwitch;
     final LicensesAssignation licensesAssignation;
