@@ -53,7 +53,7 @@ public class AUTIndexer {
         Date end = new Date();
         String ellapsed = FormatUtils.formatInterval(end.getTime() - start.getTime());
         ret.put("ellapsed time", ellapsed);
-        LOGGER.log(Level.INFO, "Indexing {0} FINISHED. indexed {1}. Time: {2}", new Object[]{"AUT", ret.getInt("aut"), ellapsed});
+        LOGGER.log(Level.INFO, "Indexing {0} FINISHED. indexed {1}. Time: {2}", new Object[]{"AUT", ret.opt("aut"), ellapsed});
         return ret;
     }
 
@@ -89,7 +89,7 @@ public class AUTIndexer {
         Date end = new Date();
         String ellapsed = FormatUtils.formatInterval(end.getTime() - start.getTime());
         ret.put("ellapsed time", ellapsed);
-        LOGGER.log(Level.INFO, "Indexing {0} FINISHED. indexed {1}. Time: {2}", new Object[]{"AUT", ret.getInt("aut"), ellapsed});
+        LOGGER.log(Level.INFO, "Indexing {0} FINISHED. indexed {1}. Time: {2}", new Object[]{"AUT", ret.opt("aut"), ellapsed});
         return ret;
 
     }
@@ -105,13 +105,14 @@ public class AUTIndexer {
         Date end = new Date();
         String ellapsed = FormatUtils.formatInterval(end.getTime() - start.getTime());
         ret.put("ellapsed time", ellapsed);
-        LOGGER.log(Level.INFO, "Indexing {0} FINISHED. indexed {1}. Time: {2}", new Object[]{"AUT", ret.getInt("aut"), ellapsed});
+        LOGGER.log(Level.INFO, "Indexing {0} FINISHED. indexed {1}. Time: {2}", new Object[]{"AUT", ret.opt("aut"), ellapsed});
         return ret;
     }
 
     private JSONObject fromURL(String url) {
         JSONObject ret = new JSONObject();
-        try (SolrClient solr = new HttpJdkSolrClient.Builder("http://localhost:8983/solr").build()) {
+        ret.put("aut", 0);
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             LOGGER.log(Level.INFO, "Retreiving {0}", url);
             String xml = request(url);
             JSONObject json = XML.toJSONObject(xml, XMLParserConfiguration.ORIGINAL);
@@ -134,7 +135,7 @@ public class AUTIndexer {
             }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
-            ret.put("aut", "error: " + ex);
+            ret.put("error", ex.toString());
         }
         return ret;
     }
@@ -209,7 +210,7 @@ public class AUTIndexer {
         JSONArray records = verb.optJSONArray("record");
         List<SolrInputDocument> docs = new ArrayList<>();
 
-        if (records.isEmpty()) {
+        if (records == null) {
             // Jenom jeden
             JSONObject record = verb.getJSONObject("record");
             SolrInputDocument idoc = doSolrInputDocument(record);
@@ -219,17 +220,19 @@ public class AUTIndexer {
         }
 
         //int i = 0;
-        for (int i = 0; i < records.length(); i++) {
-            JSONObject record = records.getJSONObject(i);
-            SolrInputDocument idoc = doSolrInputDocument(record);
-            if (idoc != null) {
-                docs.add(idoc);
+        if (records != null) {
+            for (int i = 0; i < records.length(); i++) {
+                JSONObject record = records.getJSONObject(i);
+                SolrInputDocument idoc = doSolrInputDocument(record);
+                if (idoc != null) {
+                    docs.add(idoc);
+                }
             }
         }
 
         if (!docs.isEmpty()) {
             solr.add("aut", docs);
-            ret.put("aut", docs.size() + "");
+            ret.put("aut", ret.optInt("aut", 0) + docs.size());
         }
         solr.commit("aut");
 
