@@ -76,6 +76,7 @@ public class Constants {
             public static final String STATE_USER_FIELD = "state_user";
             public static final String STATE_REASON_FIELD = "state_reason";
             public static final String STATE_HISTORY_FIELD = "state_history";
+            public static final String LAST_MODIFIED_DATE = "last_modified_date";
             public static final String LAST_AUTHOR_EXCEL_FIELD = "last_author_excel";
             public static final String RELEASE_YEAR = "release_year";
 
