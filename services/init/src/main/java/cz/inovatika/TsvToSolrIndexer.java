@@ -223,7 +223,7 @@ public class TsvToSolrIndexer {
                                         }
                                     }
                                     case "date_issued_str" -> {
-                                        doc.setField(AppDataFields.DATE_ISSUED_STR, value);
+                                        doc.setField(AppDataFields.DATE_ISSUED_STR, value);//TODO: This should maybe not be set since that is Kramerius only value
                                         ParseDates(doc, value, recordNumber, show_comma_info,labels,notes);
                                         Object strobj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD);
                                         if (strobj != null) {
@@ -370,7 +370,7 @@ public class TsvToSolrIndexer {
                             States old_state;
                             SolrDocumentList results = solrClient.query(Collection.TITLES_COLLECTION, q).getResults();
                             if (results.getNumFound()==0){
-                                old_state = States.TO_CONTROL;
+                                old_state = States.IMPORTED;
                             }
                             else {
                                 SolrDocument SolrDoc = results.getFirst();
