@@ -3,14 +3,11 @@ package cz.nkp.kuapp.kuappweb.index;
 import cz.nkp.kuapp.kuappweb.FormatUtils;
 import cz.nkp.kuapp.kuappweb.Options;
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.ProxySelector;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
-import java.time.Duration;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.Date;
@@ -37,86 +34,22 @@ public class AUTIndexer {
 
     static final Logger LOGGER = Logger.getLogger(AUTIndexer.class.getName());
     static XMLInputFactory _xmlFactory = XMLInputFactory.newFactory();
-    private static final String DEFAULT_OAI_BASE = "https://aleph.nkp.cz/OAI";
-    private static final int DEFAULT_CONNECT_TIMEOUT_SECONDS = 30;
-    private static final int DEFAULT_REQUEST_TIMEOUT_SECONDS = 120;
-
-    private final String oaiBase = Options.getInstance().getString("alephOaiBase", DEFAULT_OAI_BASE);
-    private final HttpClient client = buildHttpClient();
+    final String OAI_Base = "https://aleph.nkp.cz/OAI";
 
     public String request(String url) throws URISyntaxException, IOException, InterruptedException {
+        HttpClient client = HttpClient.newHttpClient();
         HttpRequest request = HttpRequest.newBuilder()
                 .GET()
                 .uri(new URI(url))
-                .timeout(Duration.ofSeconds(Options.getInstance().getInt("alephRequestTimeoutSeconds", DEFAULT_REQUEST_TIMEOUT_SECONDS)))
-                .header("User-Agent", "kuratorska-aplikace-web")
                 .build();
         HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-        if (response.statusCode() < 200 || response.statusCode() >= 300) {
-            throw new IOException("Aleph OAI request failed with HTTP " + response.statusCode() + ": " + shorten(response.body()));
-        }
         return response.body();
-    }
-
-    private HttpClient buildHttpClient() {
-        HttpClient.Builder builder = HttpClient.newBuilder()
-                .followRedirects(HttpClient.Redirect.NORMAL)
-                .connectTimeout(Duration.ofSeconds(Options.getInstance().getInt("alephConnectTimeoutSeconds", DEFAULT_CONNECT_TIMEOUT_SECONDS)));
-        ProxySelector proxySelector = alephProxySelector();
-        if (proxySelector != null) {
-            builder.proxy(proxySelector);
-        }
-        return builder.build();
-    }
-
-    private ProxySelector alephProxySelector() {
-        String proxy = Options.getInstance().getString("alephProxy", "");
-        if (proxy.isBlank()) {
-            proxy = firstNonBlankEnv("HTTPS_PROXY", "https_proxy", "HTTP_PROXY", "http_proxy");
-        }
-        if (proxy == null || proxy.isBlank()) {
-            return null;
-        }
-        try {
-            URI proxyUri = new URI(proxy.contains("://") ? proxy : "http://" + proxy);
-            String host = proxyUri.getHost();
-            int port = proxyUri.getPort();
-            if (port < 0) {
-                port = "https".equalsIgnoreCase(proxyUri.getScheme()) ? 443 : 80;
-            }
-            if (host == null || host.isBlank()) {
-                LOGGER.log(Level.WARNING, "Ignoring invalid Aleph proxy setting");
-                return null;
-            }
-            LOGGER.log(Level.INFO, "Using Aleph proxy {0}:{1}", new Object[]{host, port});
-            return ProxySelector.of(new InetSocketAddress(host, port));
-        } catch (URISyntaxException ex) {
-            LOGGER.log(Level.WARNING, "Ignoring invalid Aleph proxy setting", ex);
-            return null;
-        }
-    }
-
-    private String firstNonBlankEnv(String... names) {
-        for (String name : names) {
-            String value = System.getenv(name);
-            if (value != null && !value.isBlank()) {
-                return value;
-            }
-        }
-        return "";
-    }
-
-    private String shorten(String body) {
-        if (body == null) {
-            return "";
-        }
-        return body.length() > 500 ? body.substring(0, 500) : body;
     }
 
     public JSONObject full() {
         JSONObject ret = new JSONObject();
         Date start = new Date();
-        ret = fromURL(oaiBase + "?verb=ListRecords&metadataPrefix=marc21&set=AUT");
+        ret = fromURL(OAI_Base + "?verb=ListRecords&metadataPrefix=marc21&set=AUT");
         Date end = new Date();
         String ellapsed = FormatUtils.formatInterval(end.getTime() - start.getTime());
         ret.put("ellapsed time", ellapsed);
@@ -148,7 +81,7 @@ public class AUTIndexer {
     public JSONObject update() {
         Date start = new Date();
         String from = getLastDateStamp();
-        String url = oaiBase + "?verb=ListRecords&metadataPrefix=marc21&set=AUT";
+        String url = OAI_Base + "?verb=ListRecords&metadataPrefix=marc21&set=AUT";
         if (from != null) {
             url += "&from=" + from;
         }
@@ -165,7 +98,7 @@ public class AUTIndexer {
 
         JSONObject ret = new JSONObject();
         Date start = new Date();
-        String url = oaiBase
+        String url = OAI_Base
                 + "?verb=ListRecords&resumptionToken="
                 + rt;
         ret = fromURL(url);
@@ -178,7 +111,7 @@ public class AUTIndexer {
 
     private JSONObject fromURL(String url) {
         JSONObject ret = new JSONObject();
-        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+        try (SolrClient solr = new HttpJdkSolrClient.Builder("http://localhost:8983/solr").build()) {
             LOGGER.log(Level.INFO, "Retreiving {0}", url);
             String xml = request(url);
             JSONObject json = XML.toJSONObject(xml, XMLParserConfiguration.ORIGINAL);
@@ -186,7 +119,7 @@ public class AUTIndexer {
             boolean hasResumption = json.getJSONObject("OAI-PMH").getJSONObject("ListRecords").optString("resumptionToken", null) != null;
 
             while (hasResumption) {
-                url = oaiBase
+                url = OAI_Base
                         + "?verb=ListRecords&resumptionToken="
                         + json.getJSONObject("OAI-PMH").getJSONObject("ListRecords").getString("resumptionToken");
 
