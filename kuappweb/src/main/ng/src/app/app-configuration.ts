@@ -60,7 +60,7 @@ import { AuthService } from './auth-service';
 
     public load() {
         console.log('Loading config...')
-        return this.http.get('assets/config.json').pipe(
+        return this.http.get('api/config').pipe(
             switchMap((cfg: any) => {
                 this.config = cfg as Configuration;
                 return this.http.get('api/index/config').pipe(tap((resp: any) => {
