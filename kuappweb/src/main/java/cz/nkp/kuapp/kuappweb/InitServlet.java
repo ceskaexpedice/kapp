@@ -53,14 +53,14 @@ public class InitServlet extends HttpServlet {
     }
 
     DEFAULT_CONFIG_FILE = getServletContext().getRealPath(DEFAULT_CONFIG_DIR) + File.separator + DEFAULT_CONFIG_FILE;
-    DEFAULT_I18N_DIR = getServletContext().getRealPath(DEFAULT_I18N_DIR);
+    DEFAULT_I18N_DIR = getServletContext().getRealPath(DEFAULT_I18N_DIR); 
 
     if (System.getProperty("kapp_app_dir") != null) {
       CONFIG_DIR = System.getProperty("kapp_app_dir");
     } else if (getServletContext().getInitParameter("app_dir") != null) {
       CONFIG_DIR = getServletContext().getInitParameter("app_dir");
     } else {
-      CONFIG_DIR = System.getProperty("user.home") + File.separator + CONFIG_DIR;
+      CONFIG_DIR = System.getProperty("user.home") + CONFIG_DIR;
     }
 
     LOGGER.log(Level.INFO, "CONFIG_DIR is -> {0}", CONFIG_DIR);
