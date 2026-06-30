@@ -60,7 +60,7 @@ public class InitServlet extends HttpServlet {
     } else if (getServletContext().getInitParameter("app_dir") != null) {
       CONFIG_DIR = getServletContext().getInitParameter("app_dir");
     } else {
-      CONFIG_DIR = System.getProperty("user.home") + CONFIG_DIR;
+      CONFIG_DIR = System.getProperty("user.home") + File.separator + CONFIG_DIR;
     }
 
     LOGGER.log(Level.INFO, "CONFIG_DIR is -> {0}", CONFIG_DIR);
