@@ -26,8 +26,6 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-import static cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields.LAST_AUTHOR_EXCEL_FIELD;
-
 public class TsvToSolrIndexer {
 
     private static final String SOLR_URL = "http://localhost:8983/solr";//"http://solr-kappScheduler:8983/solr";//
@@ -164,7 +162,7 @@ public class TsvToSolrIndexer {
                                         }
 
                                         doc.setField(header, pid);
-                                        //doc.setField(KramFields.ROOT_PID_FIELD, rootPid);
+                                        doc.setField(AppDataFields.ROOT_PID_FIELD, rootPid);
                                         /*
                                         // NDK. K5
                                         Document xml = getBiblioMods(client, builder, pid, "https://ndk.cz/search/api/v5.0/item/" + pid + "/streams/BIBLIO_MODS");
@@ -292,7 +290,7 @@ public class TsvToSolrIndexer {
                                                 else {
                                                     List<String> out = LastAuthorExcelParser.parse(value);
                                                     if (!out.isEmpty()) {
-                                                        doc.setField(LAST_AUTHOR_EXCEL_FIELD,out);
+                                                        doc.setField(AppComputedFields.LAST_AUTHOR_EXCEL_FIELD,out);
                                                         //System.out.println("AUTHORS: " + out.toString());
                                                     }
                                                     else {

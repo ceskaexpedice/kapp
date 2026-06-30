@@ -132,6 +132,7 @@ public enum States {
             WorkflowConfig wConfig = config.workflow();
             if (wConfig==null)return null;
             if (currentDoc.model().equals(ModelFields.PERIODICALVOLUME)){
+                reason.value="is periodical";
                 return  wConfig.isPublicYear(currentDoc.dateIssuedYear())? NONCONTROLLED_PUBLIC :NONCONTROLLED_PRIVATE;
             }
             else{
@@ -145,7 +146,10 @@ public enum States {
                         reason.value = StateChangeReasons.SurpassedAuthorDeath(year);//"it has been OnsiteYear years from the death of last author";
                         return NONCONTROLLED_PUBLIC;
                     }
-                    else return null;
+                    else {
+                        reason.value = "Author death known but is not dead long enough or book was issued too recently";
+                        return null;
+                    }
                 }
                 else if (currentDoc.dateIssuedYear() != null) {
                     int year = currentDoc.dateIssuedYear();
@@ -157,7 +161,10 @@ public enum States {
                         reason.value = StateChangeReasons.NotYetIssued(year);
                         return NONCONTROLLED_PRIVATE;
                     }
-                    else return null;//in the TO_CONTROL window
+                    else {
+                        reason.value = StateChangeReasons.INCONTRLOWINDOWISSUED;
+                        return null;
+                    }
                 }
                 LOGGER.log(Level.INFO,"State was prompted to change, but there is no info to go of off");
                 return null;

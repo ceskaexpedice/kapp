@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.logging.Logger;
 
 import static cz.inovatika.Constants.Collection.TITLES_COLLECTION;
+import static cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields.LABELS_FIELD;
 
 public class UpdaterImpl implements Updater {
     public static final Logger LOGGER = Logger.getLogger(UpdaterImpl.class.getName());
@@ -120,6 +121,7 @@ public class UpdaterImpl implements Updater {
                     States newState = workflowDoc.state().calculateNextState(root_pid,solrClient,applicationConfig,workflowDoc,reason);
                     SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(AppDataFields.PID_FIELD, SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
                     updateDoc.setField(AppDataFields.PID_FIELD, pid);
+                    if (doc.getFieldValue("root_title")==null) updateDoc.addField(LABELS_FIELD,"Kniha není z krameria, nebo má podezřelá data");
                     boolean shouldWrite = false;
 
                     if (newState != null) {
