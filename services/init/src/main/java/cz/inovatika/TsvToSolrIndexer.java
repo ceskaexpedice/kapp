@@ -143,7 +143,7 @@ public class TsvToSolrIndexer {
                                         }
                                     }*/
                                     case "pid" -> {
-                                        String[] parts = value.trim().replaceAll("\\|", " ").split("\\s+");
+                                        String[] parts = value.trim().replaceAll(";", " ").replaceAll("\\|", " ").split("\\s+");
                                         for (int i = 0; i < parts.length; i++) {
                                             if (!parts[i].startsWith("uuid:")) {
                                                 parts[i] = "uuid:" + parts[i];
