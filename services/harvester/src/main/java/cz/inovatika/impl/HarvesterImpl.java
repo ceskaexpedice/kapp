@@ -367,9 +367,9 @@ public class HarvesterImpl implements Harvester {
                 try {
                     UpdateResponse response = updateRequest.process(this.solrClient, collection);
                     if (response.getStatus() != 0)
-                        LOGGER.log(Level.WARNING, "Solr update returned non-zero status: {0}, QTime: {1}",
+                        LOGGER.log(Level.WARNING, "Solr update of {"+collection+"} returned non-zero status: {0}, QTime: {1}",
                                 new Object[]{response.getStatus(), response.getQTime()});
-                    LOGGER.log(Level.INFO, "Indexed batch of {0} documents.", docs.size());
+                    LOGGER.log(Level.INFO, "Indexed batch of {0} documents into: "+collection+".", docs.size());
 
                     break;
                 } catch (IOException | SolrServerException e) {
@@ -615,7 +615,7 @@ public class HarvesterImpl implements Harvester {
             }
         }
         if (authorsBuffer.size() >= BATCH_SIZE) { // BATCH_SIZE
-            sendBatch("authors", authorsBuffer);
+            sendBatch(Constants.Collection.AUTHORS_COLLECTION, authorsBuffer);
             authorsBuffer.clear();
         }
     }
