@@ -353,16 +353,21 @@ public class HarvesterImpl implements Harvester {
             authorBuffer.clear();
         }
 
+        commitCollection(Constants.Collection.TITLES_COLLECTION);
+        commitCollection(Constants.Collection.AUTHORS_COLLECTION);
+
         LOGGER.log(Level.INFO, "Updating state");
         UpdateParentState updateParentState = new UpdateParentStateImpl(this.solrClient);
         updateParentState.updateParentState();
+        commitCollection(Constants.Collection.TITLES_COLLECTION);
 
     }
 
     private void sendBatch(String collection, final List<SolrInputDocument> docs) {
-        UpdateRequest updateRequest = new UpdateRequest();
-        updateRequest.add(docs);
         if (!docs.isEmpty()) {
+            UpdateRequest updateRequest = new UpdateRequest();
+            updateRequest.add(docs);
+            Exception lastException = null;
             for (int attempt = 0; attempt < 10; attempt++) {
                 try {
                     UpdateResponse response = updateRequest.process(this.solrClient, collection);
@@ -373,7 +378,8 @@ public class HarvesterImpl implements Harvester {
 
                     break;
                 } catch (IOException | SolrServerException e) {
-                    LOGGER.log(Level.WARNING, "Failed to send batch. Retrying: {0}/10 times.", attempt+1);
+                    lastException = e;
+                    LOGGER.log(Level.WARNING, String.format("Failed to send batch to %s. Retrying: %d/10 times.", collection, attempt + 1), e);
                 } catch(Exception e) {
                     LOGGER.log(Level.SEVERE, e.getMessage(),e);
                     //for (SolrInputDocument doc : docs) { LOGGER.log(Level.SEVERE, "DOC: {0}", doc.get("pid")); }
@@ -386,6 +392,11 @@ public class HarvesterImpl implements Harvester {
         } else {
             LOGGER.log(Level.INFO, "No documents to be indexed.");
         }
+    }
+
+    private void commitCollection(String collection) throws SolrServerException, IOException {
+        LOGGER.log(Level.INFO, "Committing collection: {0}", collection);
+        this.solrClient.commit(collection);
     }
 /*
     private static Map<String, Object> createSetOperation(Object value) {
