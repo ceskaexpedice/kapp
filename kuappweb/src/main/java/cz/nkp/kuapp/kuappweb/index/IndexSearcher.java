@@ -7,6 +7,8 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.Arrays;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -58,6 +60,16 @@ public class IndexSearcher {
             ret.put("error", ex);
         }
         return ret;
+    }
+    
+    public static Object[] intersection(String[] a, String[] b) {
+      if (a == null || b == null) {
+        return new Object[]{};
+      }
+      return Arrays.stream(a)
+                     .distinct()
+                     .filter(x -> Arrays.stream(b).anyMatch(y -> y.equals(x)))
+                     .toArray();
     }
             
     //final static String release_date = "if(exists(last_year_death),sum(last_year_death, 71),sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101)))";
@@ -174,7 +186,12 @@ public class IndexSearcher {
                 jrequest = jrequest.withFilter("model:" + request.getParameter("model"));
             } else {
                 if (request.getParameter("q") == null) {
+                  String[] labels = request.getParameterValues("labels");
+                  String[] error_labels = Options.getInstance().getStrings("error_labels");
+                  if (intersection(labels, error_labels).length == 0) {
                     jrequest = jrequest.withFilter("model:(monograph OR periodical)");
+                  }
+                    
                 }
             }
 
