@@ -102,6 +102,7 @@ public class Constants {
             public static final String LAST_AUTHOR_PARSING_ISSUE = "Last author parsing issue";
             public static final String UNKNOWN_ANONYMITY_COLLECTIVITY_OFFICIALITY_PSEUDONYMITY = "Nejistá anonymita/úřednost/kolektivnost";
             public static final String UNEXPECTED_PUBLICATION = "Excel has unexpected year of publication";
+            public static final String MISSING_ROOT_TITLE = "Kniha není z krameria, nebo má podezřelá data";
         }
         public static class ModelFields {
             public static final String MONOGRAPH = "monograph";
