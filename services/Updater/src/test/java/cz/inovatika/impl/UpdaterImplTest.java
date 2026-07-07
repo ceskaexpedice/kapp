@@ -57,8 +57,9 @@ class UpdaterImplTest {
     @Test
     void updatesReleaseYearWhenPriorityRuleChangesItWithoutStateTransition() {
         WorkflowConfig config = workflowConfig();
+        int priorityReleaseYear = 1930 + config.getAuthorDeadEnoughYear();
         SolrDocument source = new SolrDocument();
-        source.setField(AppComputedFields.RELEASE_YEAR, 2000);
+        source.setField(AppComputedFields.RELEASE_YEAR, 1930 + config.getOnsiteYear());
         SolrInputDocumentWrapper target = atomicDocument("uuid:test");
         WorkflowDoc workflowDoc = new WorkflowDoc(
                 1930,
@@ -76,7 +77,7 @@ class UpdaterImplTest {
         boolean changed = UpdaterImpl.updateReleaseYearIfNeeded(source, target, workflowDoc, config);
 
         Assertions.assertTrue(changed);
-        Assertions.assertEquals(1930 + config.getOnsiteYear(), atomicSetValue(target, AppComputedFields.RELEASE_YEAR));
+        Assertions.assertEquals(priorityReleaseYear, atomicSetValue(target, AppComputedFields.RELEASE_YEAR));
     }
 
     @Test
@@ -106,8 +107,9 @@ class UpdaterImplTest {
     @Test
     void skipsReleaseYearWhenAlreadyCorrect() {
         WorkflowConfig config = workflowConfig();
+        int priorityReleaseYear = 1930 + config.getAuthorDeadEnoughYear();
         SolrDocument source = new SolrDocument();
-        source.setField(AppComputedFields.RELEASE_YEAR, 1930 + config.getOnsiteYear());
+        source.setField(AppComputedFields.RELEASE_YEAR, priorityReleaseYear);
         SolrInputDocumentWrapper target = atomicDocument("uuid:test");
         WorkflowDoc workflowDoc = new WorkflowDoc(
                 1930,
