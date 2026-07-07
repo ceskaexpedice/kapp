@@ -367,7 +367,7 @@ public class HarvesterImpl implements Harvester {
         if (!docs.isEmpty()) {
             UpdateRequest updateRequest = new UpdateRequest();
             updateRequest.add(docs);
-            Exception lastException = null;
+            //Exception lastException = null;
             for (int attempt = 0; attempt < 10; attempt++) {
                 try {
                     UpdateResponse response = updateRequest.process(this.solrClient, collection);
@@ -378,7 +378,7 @@ public class HarvesterImpl implements Harvester {
 
                     break;
                 } catch (IOException | SolrServerException e) {
-                    lastException = e;
+                    //lastException = e;
                     LOGGER.log(Level.WARNING, String.format("Failed to send batch to %s. Retrying: %d/10 times.", collection, attempt + 1), e);
                 } catch(Exception e) {
                     LOGGER.log(Level.SEVERE, e.getMessage(),e);
