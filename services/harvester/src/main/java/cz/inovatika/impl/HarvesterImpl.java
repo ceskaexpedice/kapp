@@ -458,7 +458,7 @@ public class HarvesterImpl implements Harvester {
                                     String oldState = oldDoc.getString("state");
                                     StringWrapper reason = new StringWrapper("unspecified");
                                     States newState = Workflow.calculateAutomaticTransition(ctx, workflowDoc,reason);
-                                    String message = String.format("Imported from '%s'"+" + "+reason, config.getUrl());
+                                    String message = String.format("Imported from '%s'"+" + "+reason.value, config.getUrl());
                                     if (oldState != null && !oldState.equals(newState.name())) {
                                         Workflow.executeTransition( workflowDoc, user, message, wrapper,newState,ctx.applicationConfig().workflow());
                                     }
