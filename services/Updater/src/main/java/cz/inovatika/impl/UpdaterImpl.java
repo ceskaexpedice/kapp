@@ -121,8 +121,7 @@ public class UpdaterImpl implements Updater {
                     States newState = workflowDoc.state().calculateNextState(root_pid,solrClient,applicationConfig,workflowDoc,reason);
                     SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(AppDataFields.PID_FIELD, SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
                     updateDoc.setField(AppDataFields.PID_FIELD, pid);
-                    if (doc.getFieldValue(AppDataFields.ROOT_TITLE_FIELD)==null) updateDoc.addField(AppComputedFields.LABELS_FIELD, Constants.TitlesCollectionFields.Labels.MISSING_ROOT_TITLE);
-                    boolean shouldWrite = false;
+                    boolean shouldWrite = labelMissingRootTitleIfNeeded(doc, updateDoc);
 
                     if (newState != null) {
                         if (newState != workflowDoc.state())
@@ -134,7 +133,7 @@ public class UpdaterImpl implements Updater {
                         Workflow.executeTransition(workflowDoc,USER,reason.value,updateDoc,newState,applicationConfig.workflow());
                         shouldWrite = true;
                     } else {
-                        shouldWrite = updateReleaseYearIfNeeded(doc, updateDoc, workflowDoc, workflowConfig);
+                        shouldWrite |= updateReleaseYearIfNeeded(doc, updateDoc, workflowDoc, workflowConfig);
                     }
 
                     if (!shouldWrite) continue;
@@ -162,6 +161,18 @@ public class UpdaterImpl implements Updater {
         } catch (SolrServerException | IOException e) {
             throw new RuntimeException(e);
         }
+    }
+
+    static boolean labelMissingRootTitleIfNeeded(
+            SolrDocument source,
+            SolrInputDocumentWrapper target
+    ) {
+        Object rootTitle = source.getFieldValue(AppDataFields.ROOT_TITLE_FIELD);
+        if (rootTitle != null && !rootTitle.toString().isBlank()) {
+            return false;
+        }
+        target.addField(AppComputedFields.LABELS_FIELD, Constants.TitlesCollectionFields.Labels.MISSING_ROOT_TITLE);
+        return true;
     }
 
     static boolean updateReleaseYearIfNeeded(

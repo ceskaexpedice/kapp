@@ -2,6 +2,7 @@ package cz.inovatika.impl;
 
 import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
 import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
+import cz.inovatika.Constants.TitlesCollectionFields.Labels;
 import cz.inovatika.Constants.TitlesCollectionFields.ModelFields;
 import cz.inovatika.conf.ApplicationConfig;
 import cz.inovatika.conf.WorkflowConfig;
@@ -17,6 +18,41 @@ import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
 class UpdaterImplTest {
+
+    @Test
+    void labelsDocumentAndRequestsWriteWhenRootTitleIsMissing() {
+        SolrDocument source = new SolrDocument();
+        SolrInputDocumentWrapper target = atomicDocument("uuid:test");
+
+        boolean changed = UpdaterImpl.labelMissingRootTitleIfNeeded(source, target);
+
+        Assertions.assertTrue(changed);
+        Assertions.assertEquals(Labels.MISSING_ROOT_TITLE, atomicAddDistinctValue(target, AppComputedFields.LABELS_FIELD));
+    }
+
+    @Test
+    void labelsDocumentAndRequestsWriteWhenRootTitleIsBlank() {
+        SolrDocument source = new SolrDocument();
+        source.setField(AppDataFields.ROOT_TITLE_FIELD, " ");
+        SolrInputDocumentWrapper target = atomicDocument("uuid:test");
+
+        boolean changed = UpdaterImpl.labelMissingRootTitleIfNeeded(source, target);
+
+        Assertions.assertTrue(changed);
+        Assertions.assertEquals(Labels.MISSING_ROOT_TITLE, atomicAddDistinctValue(target, AppComputedFields.LABELS_FIELD));
+    }
+
+    @Test
+    void skipsMissingRootTitleLabelWhenRootTitleIsPresent() {
+        SolrDocument source = new SolrDocument();
+        source.setField(AppDataFields.ROOT_TITLE_FIELD, "Existing root title");
+        SolrInputDocumentWrapper target = atomicDocument("uuid:test");
+
+        boolean changed = UpdaterImpl.labelMissingRootTitleIfNeeded(source, target);
+
+        Assertions.assertFalse(changed);
+        Assertions.assertFalse(target.getDocument().getFieldNames().contains(AppComputedFields.LABELS_FIELD));
+    }
 
     @Test
     void updatesReleaseYearWhenPriorityRuleChangesItWithoutStateTransition() {
@@ -105,6 +141,12 @@ class UpdaterImplTest {
         Object value = wrapper.getDocument().getFieldValue(field);
         Assertions.assertInstanceOf(Map.class, value);
         return ((Map<?, ?>) value).get("set");
+    }
+
+    private static Object atomicAddDistinctValue(SolrInputDocumentWrapper wrapper, String field) {
+        Object value = wrapper.getDocument().getFieldValue(field);
+        Assertions.assertInstanceOf(Map.class, value);
+        return ((Map<?, ?>) value).get("add-distinct");
     }
 
     private static WorkflowConfig workflowConfig() {
