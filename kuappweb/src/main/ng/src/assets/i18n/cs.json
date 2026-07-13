@@ -193,7 +193,9 @@
   "footer": {
     "kap": "Kurátorská aplikace",
     "development": "Vývoj probíhá pod licencí",
-    "info": "Projekt byl financován Evropskou unií - NextGenerationEU v rámci Národního plánu obnovy České republiky"
+    "info": "Projekt byl financován Evropskou unií - NextGenerationEU v rámci Národního plánu obnovy České republiky",
+    "npo": "Národní plán obnovy",
+    "ngeu": "Financováno Evropskou unií - NextGenerationEU"
   },
   "snackbar": {
     "record_saved": {

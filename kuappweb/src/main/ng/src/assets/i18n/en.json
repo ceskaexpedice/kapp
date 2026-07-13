@@ -193,7 +193,9 @@
   "footer": {
     "kap": "Curator application",
     "development": "Development is under license",
-    "info": "The project was funded by the European Union - NextGenerationEU within the framework of the National Recovery Plan of the Czech Republic"
+    "info": "The project was funded by the European Union - NextGenerationEU within the framework of the National Recovery Plan of the Czech Republic",
+    "npo": "National Recovery Plan",
+    "ngeu": "Funded by the European Union - NextGenerationEU"
   },
   "snackbar": {
     "record_saved": {
