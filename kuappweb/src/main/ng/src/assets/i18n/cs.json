@@ -190,6 +190,11 @@
     "login": "Login",
     "contracts": "Evidence smluv"
   },
+  "footer": {
+    "kap": "Kurátorská aplikace",
+    "development": "Vývoj probíhá pod licencí",
+    "info": "Projekt byl financován Evropskou unií - NextGenerationEU v rámci Národního plánu obnovy České republiky"
+  },
   "snackbar": {
     "record_saved": {
       "success": "Záznam byl úspěšně uložen",
@@ -214,18 +219,17 @@
   "alert": {
     "warn_contract": "Opravdu chcete přiřadit dílo ke smlouvě?",
     "batch_exist": "Tato dávka již existuje!",
-    "saving_author_back": "Ulozit autora?",
-    "saving_author_back_desc": "Autor uz byl editovan. Chtete pouzit starou verzi z Krameria?",
-    "saving_author_differs": "Prepsat autora?",
-    "saving_author_differs_desc": "Autor jiz existuje a ma rozdily?",
+    "saving_author_back": "Uložit autora?",
+    "saving_author_back_desc": "Autor už byl editován. Chtete použít starou verzi z Krameria?",
+    "saving_author_differs": "Přepsat autora?",
+    "saving_author_differs_desc": "Autor již existuje a má rozdíly?",
     "saving_author_exists": "Autor existuje?",
-    "saving_author_exists_desc": "Autor s timto ID jiz existuje. Opravdu chcete uložit?",
+    "saving_author_exists_desc": "Autor s tímto ID již existuje. Opravdu chcete uložit?",
     "remove_author": "Odstranit autora?",
-    "remove_author_desc": "Opravdu chcete odstranit autor z díla?",
+    "remove_author_desc": "Opravdu chcete odstranit autora z díla?",
     "name_empty": "Název je prázdný!",
-    "pid_not_found": "V aplikaci neni zadny zaznam s timto PIDem"
+    "pid_not_found": "V aplikaci není žádný záznam s tímto PIDem"
    },
-
   "excel": "Importovaná kontrola",
   "author_modified" : "Upravený autor",
   "excel_incorrect_license":"Nesprávná licence",
@@ -238,5 +242,4 @@
   "Chyba v posledním autorovi": "Chyba v posledním autorovi",
   "Differing author death year": "Rozdílný rok úmrtí posledního autora",
   "Last author parsing issue": "Chyba v posledním autorovi"
-
 }

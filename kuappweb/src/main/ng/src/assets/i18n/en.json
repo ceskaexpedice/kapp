@@ -32,8 +32,8 @@
   "home": {
     "titles": "Titles",
     "authors": "Authors",
-    "authors_conflict": "Authors with conflict",
-    "authors_conflict_desc": "List of authors with differences between AUT and Kuratorske app",
+    "authors_modified": "Authors edited in KAPP",
+    "authors_modified_desc": "List of authors for whom there is a difference between Kramerius and KAPP",
     "titles_to_control": "Non revised titles",
     "titles_to_control_desc": "List of titles to control by Kurator",
     "contracts": "Contract repository",
@@ -190,6 +190,11 @@
     "login": "Login",
     "contracts": "Contracts"
   },
+  "footer": {
+    "kap": "Curator application",
+    "development": "Development is under license",
+    "info": "The project was funded by the European Union - NextGenerationEU within the framework of the National Recovery Plan of the Czech Republic"
+  },
   "snackbar": {
     "record_saved": {
       "success": "The record was saved successfully",
@@ -214,17 +219,17 @@
   "alert": {
     "warn_contract": "Are you sure you want to assign the work to the contract?",
     "batch_exist": "This batche already exists!",
-    "name_empy": "The name is empty!",
-    "saving_author_differs": "Prepsat autora?",
-    "saving_author_differs_desc": "Autor jiz existuje a ma rozdily?",
-    "saving_author_exists": "Autor existuje?",
-    "saving_author_exists_desc": "Autor s timto ID jiz existuje. Opravdu chcete uložit?",
+    "saving_author_back": "Save author?",
+    "saving_author_back_desc": "The author has already been edited. Do you want to use the old version from Kramerium?",
+    "saving_author_differs": "Overwrite author?",
+    "saving_author_differs_desc": "Does the author already exist and have differences?",
+    "saving_author_exists": "Does the author exist?",
+    "saving_author_exists_desc": "An author with this ID already exists. Are you sure you want to save it?",
     "remove_author": "Remove author?",
     "remove_author_desc": "Are you sure you want to remove the author from this title?",
-    "name_empty": "Název je prázdný!",
-    "pid_not_found": "V aplikaci neni zadny zaznam s timto PIDem"
+    "name_empty": "The name is empty!",
+    "pid_not_found": "There is no record with this PID in the application."
    },
-
   "excel": "Imported from excel",
   "author_modified" : "Modified author",
   "excel_incorrect_license":"Incorrect license",
