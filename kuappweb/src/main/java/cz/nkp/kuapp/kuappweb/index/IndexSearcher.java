@@ -212,7 +212,9 @@ public class IndexSearcher {
             }
 
             if (request.getParameter("labels") != null) {
-                jrequest = jrequest.withFilter("labels:\"" + request.getParameter("labels") + "\"");
+                for (String label : request.getParameterValues("labels")) {
+                    jrequest = jrequest.withFilter("labels:\"" + label + "\"");
+                }
             }
 
             if (request.getParameter("contracts") != null) {
@@ -500,7 +502,9 @@ public class IndexSearcher {
             }
 
             if (request.getParameter("labels") != null) {
-                jrequest = jrequest.withFilter("labels:" + request.getParameter("labels"));
+                for (String label : request.getParameterValues("labels")) {
+                    jrequest = jrequest.withFilter("labels:\"" + label + "\"");
+                }
             }
 
             if (request.getParameter("no_nameIdentifier") != null) {
