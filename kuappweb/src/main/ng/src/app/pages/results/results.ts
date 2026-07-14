@@ -42,6 +42,7 @@ import { Contract } from '../../shared/contract';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthorTitle } from '../../shared/author';
 import { UsedFacet } from '../../shared/facet';
+import { ReleaseYearDisplayPipe } from '../../shared/release-year-display.pipe';
 
 @Component({
   selector: 'app-results',
@@ -53,7 +54,7 @@ import { UsedFacet } from '../../shared/facet';
     MatFormFieldModule, MatIconModule, MatInputModule, MatButtonToggleModule,
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem, AuthorItem, MatMenuModule, LowerCasePipe,
-    NgClass
+    NgClass, ReleaseYearDisplayPipe
   ],
   templateUrl: './results.html',
   styleUrl: './results.scss'

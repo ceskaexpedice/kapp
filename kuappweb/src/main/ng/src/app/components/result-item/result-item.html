@@ -180,7 +180,7 @@
 }
 
 			<div>{{ 'field.release_year' | translate }}:</div>
-			<div>{{ doc()['release_year']}}</div>
+			<div>{{ doc()['release_year'] | releaseYearDisplay }}</div>
 		</div>
 
 		@if (hasCollapsed) {

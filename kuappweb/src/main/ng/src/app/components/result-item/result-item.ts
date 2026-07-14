@@ -24,12 +24,14 @@ import { MatListModule } from "@angular/material/list";
 import { isIndexSignatureDeclaration } from 'typescript';
 import { MatCheckbox } from "@angular/material/checkbox";
 import { MatInputModule } from '@angular/material/input';
+import { ReleaseYearDisplayPipe } from '../../shared/release-year-display.pipe';
 
 @Component({
   selector: 'app-result-item',
   imports: [RouterModule, TranslateModule, FormsModule, DatePipe,
     MatCardModule, MatButtonModule, MatMenuModule,
-    MatIconModule, MatChipsModule, MatFormFieldModule, MatListModule, MatCheckbox, MatInputModule],
+    MatIconModule, MatChipsModule, MatFormFieldModule, MatListModule, MatCheckbox, MatInputModule,
+    ReleaseYearDisplayPipe],
   templateUrl: './result-item.html',
   styleUrl: './result-item.scss'
 })
