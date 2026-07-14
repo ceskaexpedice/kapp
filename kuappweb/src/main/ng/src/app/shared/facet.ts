@@ -22,3 +22,9 @@ export interface FacetCounts {
   facet_fields: FacetFields,
   facet_ranges: {[key: string]: FacetRange}
 }
+
+export interface UsedFacet {
+  field: string;
+  value: string;
+  negated?: boolean;
+}

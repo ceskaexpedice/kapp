@@ -1,4 +1,22 @@
 .app-facet {
+  .app-tickable-filter {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .app-facet-negative-mark {
+    position: absolute;
+    left: 20px;
+    top: 50%;
+    z-index: 1;
+    color: var(--mat-sys-error, #ba1a1a);
+    font-size: 22px;
+    font-weight: 700;
+    line-height: 18px;
+    pointer-events: none;
+    transform: translateY(-50%);
+  }
+
   &.app-facet-used {
     .mat-mdc-list {
       .mat-mdc-list-item {

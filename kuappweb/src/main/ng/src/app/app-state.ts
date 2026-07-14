@@ -2,6 +2,7 @@ import { Injectable, signal } from "@angular/core";
 import { Label } from "./shared/label";
 import { Batch } from "./shared/batch";
 import { User } from "./shared/user";
+import { UsedFacet } from "./shared/facet";
 
 @Injectable({
     providedIn: 'root'
@@ -9,7 +10,7 @@ import { User } from "./shared/user";
 
     public showInfo = signal<boolean>(false);
     public q: string = '';
-    usedFacets = signal<{ field: string, value: string }[]>([]);
+    usedFacets = signal<UsedFacet[]>([]);
 
     public digitalni_knihovny = signal<string[]>([]);
     public licenses = signal<string[]>([]);

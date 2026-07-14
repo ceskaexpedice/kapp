@@ -2,7 +2,7 @@ import { Component, computed, effect, inject, input, output, signal } from '@ang
 import { MatExpansionModule } from '@angular/material/expansion';
 import { MatListModule } from '@angular/material/list';
 import { TranslateModule } from '@ngx-translate/core';
-import { FacetFields, JSONFacet } from '../../shared/facet';
+import { FacetFields, JSONFacet, UsedFacet } from '../../shared/facet';
 import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { MatIconModule } from '@angular/material/icon';
@@ -41,12 +41,12 @@ export class FacetsComponent {
   fields = input<string[]>([]);
   hard_facets = input<string[]>([]);
   
-  onFiltersChanged = output<{field: string, value: string}[]>();
+  onFiltersChanged = output<UsedFacet[]>();
   onMouserOver = output<{field: string, value: string}>();
   onMouseOut = output<{field: string, value: string}>();
 
   hasUsedFacets: boolean;
-  usedFacets: {field: string, value: string}[] = [];
+  usedFacets: UsedFacet[] = [];
 
   yearFrom: number;
   yearTo: number;
@@ -82,12 +82,19 @@ export class FacetsComponent {
   }
 
   isHardUsed(field: string) {
-    return this.usedFacets.findIndex(f => f.field === field) > -1;
+    return this.usedFacets.some(f => f.field === field && !f.negated);
   }
 
-  filterHard(field: string, value: any) {
-    if (value.checked) {
+  isHardNegated(field: string) {
+    return this.usedFacets.some(f => f.field === field && f.negated);
+  }
+
+  filterHard(field: string) {
+    const facet = this.usedFacets.find(f => f.field === field);
+    if (!facet) {
       this.usedFacets.push({field, value: 'true'});
+    } else if (!facet.negated) {
+      facet.negated = true;
     } else {
       this.usedFacets = this.usedFacets.filter(f => !(f.field === field));
     }
@@ -97,7 +104,19 @@ export class FacetsComponent {
   }
 
   isUsed(field: string, value: string) {
-    return this.usedFacets.findIndex(f => f.field === field && f.value === value) > -1;
+    return this.usedFacets.some(f => f.field === field && f.value === value && !f.negated);
+  }
+
+  isNegated(field: string, value: string) {
+    return this.usedFacets.some(f => f.field === field && f.value === value && f.negated);
+  }
+
+  facetBuckets(field: string): JSONFacet[] {
+    const buckets = this.facets()[field]?.buckets ?? [];
+    const missingNegated = this.usedFacets
+      .filter(f => f.field === field && f.negated && !buckets.some(b => b.val === f.value))
+      .map(f => ({val: f.value, count: 0}));
+    return [...missingNegated, ...buckets];
   }
 
   clearYear() {
@@ -140,10 +159,12 @@ export class FacetsComponent {
   
   filter(field: string, value: string) {
     const uf = this.usedFacets.find(f => f.field === field && f.value === value);
-    if (uf) {
-      this.usedFacets = this.usedFacets.filter(f => !(f.field === field && f.value === value));
-    } else {
+    if (!uf) {
       this.usedFacets.push({field, value});
+    } else if (!uf.negated) {
+      uf.negated = true;
+    } else {
+      this.usedFacets = this.usedFacets.filter(f => !(f.field === field && f.value === value));
     }
     this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
     this.state.usedFacets.update(f => [...this.usedFacets]);

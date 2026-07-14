@@ -41,6 +41,7 @@ import { SimpleDialogData } from '../../components/simple-dialog/simple-dialog';
 import { Contract } from '../../shared/contract';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthorTitle } from '../../shared/author';
+import { UsedFacet } from '../../shared/facet';
 
 @Component({
   selector: 'app-results',
@@ -122,25 +123,13 @@ export class Results {
     this.getData();
   }
 
-  addFilters(p: any, usedFacets: { field: string, value: string }[]) {
-    p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
-    p.authors_ids = usedFacets.filter(k => k.field === 'authors_ids').map(k => k.value);
-    p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
-    p.state_date = usedFacets.filter(k => k.field === 'state_date').map(k => k.value);
-    p.last_modified_date = usedFacets.filter(k => k.field === 'last_modified_date').map(k => k.value);
-    p.modified_by_user = usedFacets.filter(k => k.field === 'modified_by_user').map(k => k.value);
-    p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
-    p.batch = usedFacets.filter(k => k.field === 'batch').map(k => k.value);
-    p.contracts = usedFacets.filter(k => k.field === 'contracts').map(k => k.value);
-    p.physical_locations = usedFacets.filter(k => k.field === 'physical_locations').map(k => k.value);
-    p.assigned_licenses = usedFacets.filter(k => k.field === 'assigned_licenses').map(k => k.value);
-    p.licenses = usedFacets.filter(k => k.field === 'licenses').map(k => k.value);
-    p.digital_library = usedFacets.filter(k => k.field === 'digital_library').map(k => k.value);
-    p.model = usedFacets.filter(k => k.field === 'model').map(k => k.value);
-    p.date_issued_year = usedFacets.filter(k => k.field === 'date_issued_year').map(k => k.value);
-    p.no_nameIdentifier = usedFacets.filter(k => k.field === 'no_nameIdentifier').map(k => k.value);
-    p.no_year_death = usedFacets.filter(k => k.field === 'no_year_death').map(k => k.value);
-
+  addFilters(p: any, usedFacets: UsedFacet[]) {
+    usedFacets.forEach(facet => {
+      const field = facet.field === 'authors' ? 'author' : facet.field;
+      const parameter = facet.negated ? `${field}_not` : field;
+      p[parameter] ??= [];
+      p[parameter].push(facet.value);
+    });
   }
 
   clearQ() {

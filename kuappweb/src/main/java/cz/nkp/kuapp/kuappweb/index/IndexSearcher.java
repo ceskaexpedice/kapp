@@ -71,6 +71,17 @@ public class IndexSearcher {
                      .filter(x -> Arrays.stream(b).anyMatch(y -> y.equals(x)))
                      .toArray();
     }
+
+    private static JsonQueryRequest addNegatedFilters(HttpServletRequest request,
+            JsonQueryRequest query, String parameter, String field) {
+        if (request.getParameter(parameter) == null) {
+            return query;
+        }
+        for (String value : request.getParameterValues(parameter)) {
+            query = query.withFilter("-" + field + ":\"" + ClientUtils.escapeQueryChars(value) + "\"");
+        }
+        return query;
+    }
             
     //final static String release_date = "if(exists(last_year_death),sum(last_year_death, 71),sum(date_issued_year, if(or(eq (model,'monograph'),eq (model,'monographunit')),71,101)))";
     public static JSONObject searchTitles(HttpServletRequest request) {
@@ -260,6 +271,19 @@ public class IndexSearcher {
             if (request.getParameter("authors_ids") != null) {
                 jrequest = jrequest.withFilter("authors_ids:" + request.getParameter("authors_ids"));
             }
+
+            jrequest = addNegatedFilters(request, jrequest, "model_not", "model");
+            jrequest = addNegatedFilters(request, jrequest, "author_not", "authors");
+            jrequest = addNegatedFilters(request, jrequest, "batch_not", "batch");
+            jrequest = addNegatedFilters(request, jrequest, "state_not", "state");
+            jrequest = addNegatedFilters(request, jrequest, "modified_by_user_not", "modified_by_user");
+            jrequest = addNegatedFilters(request, jrequest, "labels_not", "labels");
+            jrequest = addNegatedFilters(request, jrequest, "contracts_not", "contracts");
+            jrequest = addNegatedFilters(request, jrequest, "licenses_not", "licenses");
+            jrequest = addNegatedFilters(request, jrequest, "digital_library_not", "digital_library");
+            jrequest = addNegatedFilters(request, jrequest, "assigned_licenses_not", "assigned_licenses");
+            jrequest = addNegatedFilters(request, jrequest, "physical_locations_not", "physical_locations");
+            jrequest = addNegatedFilters(request, jrequest, "authors_ids_not", "authors_ids");
 
             if (request.getParameter("export") != null) {
                 jrequest.setResponseParser(new InputStreamResponseParser("csv"));
@@ -513,6 +537,15 @@ public class IndexSearcher {
 
             if (request.getParameter("no_year_death") != null) {
                 jrequest = jrequest.withFilter("-year_death:*");
+            }
+
+            jrequest = addNegatedFilters(request, jrequest, "state_not", "state");
+            jrequest = addNegatedFilters(request, jrequest, "labels_not", "labels");
+            if (request.getParameter("no_nameIdentifier_not") != null) {
+                jrequest = jrequest.withFilter("nameIdentifier:*");
+            }
+            if (request.getParameter("no_year_death_not") != null) {
+                jrequest = jrequest.withFilter("year_death:*");
             }
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
