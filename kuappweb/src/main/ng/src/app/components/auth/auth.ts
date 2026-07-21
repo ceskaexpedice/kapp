@@ -18,6 +18,12 @@ export class Auth {
 
   ngOnInit() {
     const params = this.route.snapshot.queryParamMap;
+
+    if (params.get('reauth') === '1') {
+      this.auth.continueLoginAfterLogout();
+      return;
+    }
+
     const code = params.get('code');
     const storedTarget = localStorage.getItem('loginUrl') || '/';
     const target = storedTarget.startsWith('/') && !storedTarget.startsWith('/keycloak')

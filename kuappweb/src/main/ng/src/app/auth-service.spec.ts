@@ -55,8 +55,23 @@ describe('AuthService', () => {
     localStorage.clear();
   });
 
-  it('starts login with a single encoded callback and stores a safe target', () => {
+  it('ends a stale Keycloak session before starting login', () => {
     service.login();
+
+    expect(appService.logout).toHaveBeenCalled();
+    const logoutUrl = new URL(navigation.assign.calls.mostRecent().args[0]);
+    expect(logoutUrl.pathname.endsWith('/logout')).toBeTrue();
+    expect(logoutUrl.searchParams.get('client_id')).toBe('kapp');
+    expect(logoutUrl.searchParams.get('post_logout_redirect_uri')).toBe(
+      `${window.location.origin}/keycloak?reauth=1`
+    );
+    expect(localStorage.getItem('loginUrl')).toBe('/titles');
+  });
+
+  it('starts login after Keycloak logout with a single encoded callback', () => {
+    localStorage.setItem('loginUrl', '/titles');
+
+    service.continueLoginAfterLogout();
 
     const loginUrl = new URL(navigation.assign.calls.mostRecent().args[0]);
     expect(loginUrl.pathname.endsWith('/auth')).toBeTrue();

@@ -63,10 +63,18 @@ export class AuthService {
   login() {
     const currentUrl = this.router.url;
     const target = currentUrl.startsWith('/keycloak') ? '/' : currentUrl;
+    localStorage.setItem('loginUrl', target);
+
+    this.service.logout().subscribe({
+      next: () => this.restartKeycloakLogin(),
+      error: () => this.restartKeycloakLogin()
+    });
+  }
+
+  continueLoginAfterLogout(): void {
     const redirectUri = new URL('keycloak', this.baseUrl()).toString();
     const loginUrl = new URL(`${this.settings.keycloakUrl}/auth`);
 
-    localStorage.setItem('loginUrl', target);
     localStorage.setItem('redirectUri', redirectUri);
     loginUrl.searchParams.set('client_id', this.settings.keycloak.clientId);
     loginUrl.searchParams.set('redirect_uri', redirectUri);
@@ -74,6 +82,12 @@ export class AuthService {
     loginUrl.searchParams.set('scope', 'openid');
 
     this.navigation.assign(loginUrl.toString());
+  }
+
+  private restartKeycloakLogin(): void {
+    this.clearLocalSession(true);
+    const reauthenticationUri = new URL('keycloak?reauth=1', this.baseUrl()).toString();
+    this.redirectToKeycloakLogout(reauthenticationUri);
   }
 
   logout(suffix: string = "") {
@@ -84,6 +98,14 @@ export class AuthService {
   }
 
   private finishLogout(suffix: string): void {
+    this.clearLocalSession(false);
+
+    const postLogoutPath = suffix && suffix.startsWith('/') ? suffix.substring(1) : '';
+    const postLogoutRedirectUri = new URL(postLogoutPath, this.baseUrl()).toString();
+    this.redirectToKeycloakLogout(postLogoutRedirectUri);
+  }
+
+  private clearLocalSession(preserveLoginTarget: boolean): void {
     AuthService.token = null;
     AuthService.tokenTime = null;
     AuthService.tokenDeadline = null;
@@ -91,14 +113,17 @@ export class AuthService {
 
     localStorage.removeItem('account.token');
     localStorage.removeItem('account.token.time');
-    localStorage.removeItem('loginUrl');
+    if (!preserveLoginTarget) {
+      localStorage.removeItem('loginUrl');
+    }
     localStorage.removeItem('redirectUri');
     this.state.code = null;
     this.state.session_state = null;
     this.state.user.set(null);
 
-    const postLogoutPath = suffix && suffix.startsWith('/') ? suffix.substring(1) : '';
-    const postLogoutRedirectUri = new URL(postLogoutPath, this.baseUrl()).toString();
+  }
+
+  private redirectToKeycloakLogout(postLogoutRedirectUri: string): void {
     const configuredLogoutUrl = this.settings.keycloak?.logoutUrl;
     const logoutUrl = new URL(configuredLogoutUrl || `${this.settings.keycloakUrl}/logout`);
     logoutUrl.searchParams.set('client_id', this.settings.keycloak.clientId);
