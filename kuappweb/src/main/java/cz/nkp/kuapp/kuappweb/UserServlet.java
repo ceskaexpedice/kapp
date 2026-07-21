@@ -21,6 +21,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.representations.idm.authorization.AuthorizationRequest;
@@ -136,6 +137,44 @@ public class UserServlet extends HttpServlet {
 //            return u;
             return null;
         }
+    }
+
+    public static boolean hasRole(HttpServletRequest req, String role) {
+        JSONObject user = getUser(req);
+        if (user == null) {
+            return false;
+        }
+
+        if (containsRole(user.optJSONArray("roles"), role)
+                || containsRole(user.optJSONObject("realm_access"), role)) {
+            return true;
+        }
+
+        JSONObject resourceAccess = user.optJSONObject("resource_access");
+        if (resourceAccess != null) {
+            for (String resource : resourceAccess.keySet()) {
+                if (containsRole(resourceAccess.optJSONObject(resource), role)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private static boolean containsRole(JSONObject container, String role) {
+        return container != null && containsRole(container.optJSONArray("roles"), role);
+    }
+
+    private static boolean containsRole(JSONArray roles, String role) {
+        if (roles == null) {
+            return false;
+        }
+        for (int i = 0; i < roles.length(); i++) {
+            if (role.equals(roles.optString(i))) {
+                return true;
+            }
+        }
+        return false;
     }
 
     enum Actions {

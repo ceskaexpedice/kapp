@@ -7,6 +7,8 @@ import { Batches } from './pages/batches/batches';
 import { Auth } from './components/auth/auth';
 import { Contracts } from './pages/contracts/contracts';
 import { AuthGuard } from './auth.guard';
+import { KappAdminGuard } from './kapp-admin.guard';
+import { LibraryRights } from './pages/library-rights/library-rights';
 
 export const routes: Routes = [
     { path: '', component: Home},
@@ -14,6 +16,7 @@ export const routes: Routes = [
     { path: 'keycloak', component: Auth },
     { path: 'home', component: Home},
     { path: 'admin', component: Admin, canActivate: [AuthGuard] },
+    { path: 'library-rights', component: LibraryRights, canActivate: [AuthGuard, KappAdminGuard] },
     { path: 'batches', component: Batches, canActivate: [AuthGuard] },
     { path: 'titles', component: Results},
     { path: 'authors', component: Results},

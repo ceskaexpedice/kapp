@@ -1,0 +1,33 @@
+<div class="app-container-fluid app-h-100">
+  <mat-card appearance="outlined">
+    <mat-card-header class="app-mb-4">
+      <mat-card-title>{{ 'admin.dk_administration' | translate }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content class="app-fxLayout app-column">
+      @for (library of libraries; track library; let index = $index) {
+        <mat-form-field appearance="outline">
+          <mat-label>{{ 'admin.dk' | translate }}</mat-label>
+          <input matInput [value]="library" disabled />
+          @if (library !== 'MZK') {
+            <button matIconButton matSuffix (click)="removeLibrary(index)"
+                    class="app-btn-remove" [matTooltip]="'remove_this_record' | translate">
+              <mat-icon>close</mat-icon>
+            </button>
+          }
+        </mat-form-field>
+      }
+      <div class="app-fxLayout app-row app-gap-2">
+        <mat-form-field appearance="outline" class="app-fxFlex">
+          <mat-label>{{ 'admin.new_dk' | translate }}</mat-label>
+          <input matInput [(ngModel)]="newLibrary" />
+        </mat-form-field>
+        <button matButton="outlined" (click)="addLibrary()" class="app-btn-add" [disabled]="!newLibrary.trim()">
+          <mat-icon>add_circle</mat-icon>{{ 'action.add' | translate }}
+        </button>
+      </div>
+    </mat-card-content>
+    <mat-card-actions class="app-mat-card-actions">
+      <button matButton="filled" (click)="save()">{{ 'action.save' | translate }}</button>
+    </mat-card-actions>
+  </mat-card>
+</div>

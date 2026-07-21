@@ -175,15 +175,16 @@
   "admin": {
     "labels": "Administrace štítků",
     "licenses": "Administrace licencí",
-    "dk_administration": "Administrace digitalních knihoven",
+    "dk_administration": "Administrace digitálních knihoven",
     "new_label_name": "Nový štítek",
     "new_label_color": "Barva",
     "new_license": "Nová licence",
-    "new_dk": "Nová digitalní knihovna",
-    "dk": "Digitalní knihovna"
+    "new_dk": "Nová digitální knihovna",
+    "dk": "Digitální knihovna"
   },
   "navbar": {
     "admin": "Administrace",
+    "library_rights": "Práva knihoven",
     "titles": "Díla",
     "authors": "Autoři",
     "batches": "Dávky",

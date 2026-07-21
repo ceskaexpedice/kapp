@@ -1,5 +1,4 @@
 import { Component, inject, signal } from '@angular/core';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
 import { UIService } from '../../ui.service';
@@ -9,18 +8,16 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBar } from '@angular/material/progress-bar';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatCardModule } from '@angular/material/card';
 import { Label } from '../../shared/label';
-import { AppConfiguration } from '../../app-configuration';
-import { MatTooltip, MatTooltipModule } from "@angular/material/tooltip";
+import { MatTooltipModule } from "@angular/material/tooltip";
 
 @Component({
   selector: 'app-admin',
   imports: [
     TranslateModule, FormsModule,
-    MatDialogModule, MatIconModule, MatButtonModule, MatCardModule,
+    MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
     MatTooltipModule
 ],
@@ -38,14 +35,10 @@ export class Admin {
   licenses:string[] = [];
   new_license: string;
 
-  dk:string[] = [];
-  new_dk: string;
-
   ngOnInit() {
     const p: any = {};
     this.labels = this.state.labels();
     this.licenses = [...this.state.licenses()];
-    this.dk = [...this.state.digitalni_knihovny()];
   }
 
   addLabel(l: Label) {
@@ -103,32 +96,4 @@ export class Admin {
     });
   }
 
-  addDK() {
-    if (!this.licenses.find(l => l === this.new_license)) {
-      this.licenses.push(this.new_license);
-      this.new_license = null;
-      //this.saveDK();
-    }
-  }
-
-  saveDK() {
-    this.state.digitalni_knihovny.set(this.dk);
-    this.service.saveDK(this.state.digitalni_knihovny()).subscribe(resp => {
-      if (resp.error) {
-        this.ui.showErrorSnackBar('snackbar.record_saved.error');
-        console.log(resp);
-      } else {
-        this.ui.showInfoSnackBar('snackbar.record_saved.success');
-        console.log(resp);
-      }
-    });
-  }
-
-  removeDK() {
-    // todo
-    // success
-    this.ui.showInfoSnackBar('snackbar.record_removed.success');
-    // error
-    //this.ui.showErrorSnackBar('snackbar.record_removed.error');
-  }
 }

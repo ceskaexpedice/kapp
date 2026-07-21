@@ -184,6 +184,7 @@
   },
   "navbar": {
     "admin": "Administration",
+    "library_rights": "Library rights",
     "titles": "Titles",
     "authors": "Authors",
     "batches": "Batches",

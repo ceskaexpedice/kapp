@@ -32,6 +32,17 @@ import { UsedFacet } from "./shared/facet";
         return this.user.set(user);
     }
 
+    hasRole(role: string): boolean {
+        const user: any = this.user();
+        const roles = [
+            ...(user?.roles || []),
+            ...(user?.realm_access?.roles || []),
+            ...Object.values(user?.resource_access || {})
+                .flatMap((resource: any) => resource?.roles || [])
+        ];
+        return roles.includes(role);
+    }
+
     encodeState() {
         const obj = { q: this.q, f: this.usedFacets() };
         return btoa(encodeURIComponent(JSON.stringify(obj)));

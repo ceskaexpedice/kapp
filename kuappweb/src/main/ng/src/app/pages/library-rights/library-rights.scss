@@ -1,0 +1,9 @@
+.app-btn-add {
+  &:not(:disabled) {
+    color: rgb(var(--app-color-darknes)) !important;
+  }
+}
+
+mat-card {
+  max-width: 640px;
+}

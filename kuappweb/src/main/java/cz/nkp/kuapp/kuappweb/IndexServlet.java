@@ -62,6 +62,11 @@ public class IndexServlet extends HttpServlet {
                     response.setStatus(HttpServletResponse.SC_FORBIDDEN);
                     return;
                 }
+                String requiredRole = requiredRole(actionToDo);
+                if (requiredRole != null && !UserServlet.hasRole(request, requiredRole)) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 JSONObject json = actionToDo.doPerform(request, response);
                 if (json != null) {
                     if (request.getParameter("export") != null) {
@@ -100,6 +105,10 @@ public class IndexServlet extends HttpServlet {
                     GET_AUTHOR_BY_ID, GET_AUT_BY_ID, GET_LINKS -> false;
             default -> true;
         };
+    }
+
+    static String requiredRole(Actions action) {
+        return action == Actions.SAVE_DK ? "kappAdmin" : null;
     }
 
     

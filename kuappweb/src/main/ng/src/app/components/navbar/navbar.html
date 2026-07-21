@@ -20,6 +20,9 @@
         <button mat-menu-item (click)="logout()">Logout</button>
       </mat-menu>
       <a [routerLink]="['admin']" routerLinkActive="app-active-link" matButton>{{ 'navbar.admin' | translate}}</a>
+      @if(state.hasRole('kappAdmin')) {
+        <a [routerLink]="['library-rights']" routerLinkActive="app-active-link" matButton>{{ 'navbar.library_rights' | translate}}</a>
+      }
     } @else {
      <a matButton (click)="goToKeycloakLogin()">{{ 'navbar.login' | translate}}</a>
     }
