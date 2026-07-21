@@ -128,7 +128,8 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("pid", js.getString("pid"));
 
-            addAtomicField(doc, "set", js.getJSONArray("labels"), "labels");
+            String modifier = js.getBoolean("selected") ? "add-distinct" : "remove";
+            addAtomicField(doc, modifier, js.getString("label"), "labels");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
             addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
             solr.add("titles", doc);
@@ -149,7 +150,8 @@ public class SolrIndexer {
             SolrInputDocument doc = new SolrInputDocument();
             doc.setField("id", js.getString("id"));
 
-            addAtomicField(doc, "set", js.getJSONArray("labels"), "labels");
+            String modifier = js.getBoolean("selected") ? "add-distinct" : "remove";
+            addAtomicField(doc, modifier, js.getString("label"), "labels");
             solr.add("authors", doc);
             solr.commit("authors");
             ret.put("msg", "saved");

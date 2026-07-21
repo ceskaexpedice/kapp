@@ -86,8 +86,9 @@ import { LibraryPhysicalLocations } from "./shared/library-rights";
         const visible: Label[] = [];
         const names = new Set<string>();
         Object.values(sets).forEach(scopedLabels => scopedLabels.forEach(label => {
-            if (!names.has(label.name)) {
-                names.add(label.name);
+            const storageName = label.storageName || label.name;
+            if (!names.has(storageName)) {
+                names.add(storageName);
                 visible.push(label);
             }
         }));

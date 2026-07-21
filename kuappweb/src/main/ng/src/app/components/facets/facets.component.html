@@ -134,7 +134,7 @@
                 } @else if (f === 'labels') {
                   <mat-checkbox (click)="filter(f, k.val); $event.preventDefault(); $event.stopPropagation()"
                     [checked]="isUsed(f, k.val)" [class.app-negated]="isNegated(f, k.val)">
-                    <span class="app-text" [matTooltip]="labelsNote()[k.val]">{{ k.val | translate }}</span>
+                    <span class="app-text" [matTooltip]="labelsByStorageName().get(k.val)?.note">{{ labelsByStorageName().get(k.val)?.name || k.val | translate }}</span>
                     <span class="app-count">({{k.count}})</span>
                   </mat-checkbox>
                 } @else {

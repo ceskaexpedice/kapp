@@ -97,4 +97,11 @@ describe('AppState roles', () => {
 
     expect(state.labels()).toEqual([{name: 'shared', color: '#111111'}]);
   });
+
+  it('keeps scoped labels with the same display name when their storage names differ', () => {
+    state.setLabelSet('labels_jane', [{name: 'review', storageName: 'review_jane'}]);
+    state.setLabelSet('labels_MZK', [{name: 'review', storageName: 'review_MZK'}]);
+
+    expect(state.labels().map(label => label.storageName)).toEqual(['review_jane', 'review_MZK']);
+  });
 });

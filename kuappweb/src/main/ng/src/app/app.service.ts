@@ -146,8 +146,8 @@ export class AppService {
     return this.post('index/save_labels', {labels, visibility, library});
   }
 
-  saveDocLabels(pid: string, labels: string[]): Observable<any> {
-    return this.post('index/save_doc_labels', {pid,labels});
+  saveDocLabel(pid: string, label: string, selected: boolean): Observable<any> {
+    return this.post('index/save_doc_labels', {pid, label, selected});
   }
 
   saveBatches(batches: Batch[]): Observable<any> {
@@ -174,8 +174,8 @@ export class AppService {
     return this.post('index/save_authors_in_title', {pid, authors, author, ids, nameIdentifiers, names});
   }
 
-  saveAuthorLabels(pid: string, labels: string[]): Observable<any> {
-    return this.post('index/save_author_labels', {pid,labels});
+  saveAuthorLabel(pid: string, label: string, selected: boolean): Observable<any> {
+    return this.post('index/save_author_labels', {id: pid, label, selected});
   }
 
   saveLastYearDeath(pid: string, lastYearDeath: number | null, authors: AuthorTitle[], dateIssuedYear: number | null): Observable<any> {

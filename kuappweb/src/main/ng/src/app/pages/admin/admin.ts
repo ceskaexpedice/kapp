@@ -18,6 +18,7 @@ interface LabelScopeOption {
   id: string;
   visibility: 'everyone' | 'private' | 'library';
   library?: string;
+  owner?: string;
 }
 
 @Component({
@@ -49,7 +50,7 @@ export class Admin {
     this.labelScopes = [{id: 'labels', visibility: 'everyone'}];
     const username = this.state.user()?.preferred_username;
     if (username) {
-      this.labelScopes.push({id: `labels_${username}`, visibility: 'private'});
+      this.labelScopes.push({id: `labels_${username}`, visibility: 'private', owner: username});
     }
     const roles = new Set(this.state.roles());
     this.state.digitalni_knihovny()
@@ -57,7 +58,8 @@ export class Admin {
       .forEach(library => this.labelScopes.push({
         id: `labels_${library}`,
         visibility: 'library',
-        library
+        library,
+        owner: library
       }));
     this.selectLabelScope();
     this.licenses = [...this.state.licenses()];
@@ -76,11 +78,15 @@ export class Admin {
     if (!scope) {
       return;
     }
-    this.service.saveLabels(this.labels, scope.visibility, scope.library).subscribe(resp => {
+    const labelsToSave = this.labels.map(({storageName, ...label}) => label);
+    this.service.saveLabels(labelsToSave, scope.visibility, scope.library).subscribe(resp => {
       if (resp.error) {
         this.ui.showErrorSnackBar('snackbar.record_saved.error');
       } else {
-        this.state.setLabelSet(scope.id, [...this.labels]);
+        this.state.setLabelSet(scope.id, this.labels.map(label => ({
+          ...label,
+          storageName: scope.visibility === 'everyone' ? label.name : `${label.name}_${scope.owner}`
+        })));
         this.ui.showInfoSnackBar('snackbar.record_saved.success');
         console.log(resp);
       }

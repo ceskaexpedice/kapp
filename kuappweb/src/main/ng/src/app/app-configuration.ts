@@ -125,13 +125,18 @@ import { LibraryPhysicalLocations } from './shared/library-rights';
                     resp.config
                         .filter((item: any) => item.id === 'labels' || item.id?.startsWith('labels_'))
                         .forEach((item: any) => {
-                            labelSets[item.id] = (item.value || []).map((label: Label) => this.withTextColor({...label}));
+                            const visibility = item.label_visibility || (item.id === 'labels' ? 'everyone' : 'scoped');
+                            const owner = item.label_owner || (item.id === 'labels' ? '' : item.id.substring('labels_'.length));
+                            labelSets[item.id] = (item.value || []).map((label: Label) => this.withTextColor({
+                                ...label,
+                                storageName: visibility === 'everyone' || !owner ? label.name : `${label.name}_${owner}`
+                            }));
                         });
                     const globalLabels = labelSets['labels'] || [];
                     const globalNames = new Set(globalLabels.map(label => label.name));
                     this.config.labels.forEach(label => {
                         if (!globalNames.has(label.name)) {
-                            globalLabels.unshift({...label});
+                            globalLabels.unshift({...label, storageName: label.name});
                         }
                     });
                     labelSets['labels'] = globalLabels;

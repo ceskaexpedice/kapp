@@ -65,6 +65,10 @@ export class FacetsComponent {
     return ret;
   });
 
+  labelsByStorageName = computed(() => new Map(
+    this.state.labels().map(label => [label.storageName || label.name, label])
+  ));
+
 
   constructor(public state: AppState) {
     this._locale.set('cs');
@@ -114,7 +118,7 @@ export class FacetsComponent {
   facetBuckets(field: string): JSONFacet[] {
     let buckets = this.facets()[field]?.buckets ?? [];
     if (field === 'labels') {
-      const visibleLabels = new Set(this.state.labels().map(label => label.name));
+      const visibleLabels = new Set(this.state.labels().map(label => label.storageName || label.name));
       buckets = buckets.filter(bucket => visibleLabels.has(bucket.val));
     }
     const missingNegated = this.usedFacets

@@ -66,9 +66,9 @@ export class AuthorItem {
       this.labels = [];
       if (this.author['labels']) {
         this.author['labels'].forEach((name: string) => {
-          const l = this.state.labels().find(la => la.name === name);
+          const l = this.state.labels().find(la => (la.storageName || la.name) === name);
           if (l) {
-            this.labels.push({ name: name, color: l.color, text_color: l.text_color });
+            this.labels.push({...l});
           } 
 
         });
@@ -103,9 +103,9 @@ export class AuthorItem {
     if (!this.state.hasLibraryRole()) {
       return;
     }
-    if (!this.labels.find(la => la.name === l.name)) {
+    if (!this.labels.find(la => (la.storageName || la.name) === (l.storageName || l.name))) {
       this.labels.push(l);
-      this.saveLabels();
+      this.saveLabel(l, true);
     }
   }
 
@@ -116,15 +116,15 @@ export class AuthorItem {
     const index = this.labels.indexOf(l);
     if (index > -1) {
       this.labels.splice(index, 1);
-      this.saveLabels();
+      this.saveLabel(l, false);
     }
   }
 
-  saveLabels() {
+  saveLabel(label: Label, selected: boolean) {
     if (!this.state.hasLibraryRole()) {
       return;
     }
-    this.service.saveAuthorLabels(this.author['id'], this.labels.map(l => l.name)).subscribe((res: any) => {
+    this.service.saveAuthorLabel(this.author['id'], label.storageName || label.name, selected).subscribe((res: any) => {
       console.log(res)
     })
 

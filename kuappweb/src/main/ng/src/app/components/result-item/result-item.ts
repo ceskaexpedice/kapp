@@ -92,9 +92,9 @@ export class ResultItem {
       //this.hasCollapsed = this.doc()['is_hierarchical'];
       if (this.doc()['labels']) {
         this.doc()['labels'].forEach((name: string) => {
-          const l = this.state.labels().find(la => la.name === name);
+          const l = this.state.labels().find(la => (la.storageName || la.name) === name);
           if (l) {
-            this.labels.push({ name: name, color: l.color, text_color: l.text_color });
+            this.labels.push({...l});
           }
 
         });
@@ -233,9 +233,9 @@ export class ResultItem {
     if (!this.state.canEditTitle(this.doc())) {
       return;
     }
-    if (!this.labels.find(la => la.name === l.name)) {
+    if (!this.labels.find(la => (la.storageName || la.name) === (l.storageName || l.name))) {
       this.labels.push(l);
-      this.saveLabels();
+      this.saveLabel(l, true);
     }
   }
 
@@ -246,7 +246,7 @@ export class ResultItem {
     const index = this.labels.indexOf(l);
     if (index > -1) {
       this.labels.splice(index, 1);
-      this.saveLabels();
+      this.saveLabel(l, false);
     }
 
     // if (!this.labels.find(la => la.name === l.name)) {
@@ -255,8 +255,8 @@ export class ResultItem {
     // }
   }
 
-  saveLabels() {
-    this.service.saveDocLabels(this.doc()['pid'], this.labels.map(l => l.name)).subscribe((res: any) => {
+  saveLabel(label: Label, selected: boolean) {
+    this.service.saveDocLabel(this.doc()['pid'], label.storageName || label.name, selected).subscribe((res: any) => {
       console.log(res)
     })
 

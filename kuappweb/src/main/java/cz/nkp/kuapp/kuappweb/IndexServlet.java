@@ -385,6 +385,10 @@ public class IndexServlet extends HttpServlet {
                     if (!requireTitleAccess(req, resp, js.getString("pid"))) {
                         return null;
                     }
+                    if (!IndexSearcher.getVisibleLabelStorageNames(req).contains(js.getString("label"))) {
+                        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        return null;
+                    }
                     json = SolrIndexer.indexDocLabels(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -503,6 +507,10 @@ public class IndexServlet extends HttpServlet {
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
                     if (!TitleAuthorization.hasLibraryRole(req)) {
+                        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        return null;
+                    }
+                    if (!IndexSearcher.getVisibleLabelStorageNames(req).contains(js.getString("label"))) {
                         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                         return null;
                     }

@@ -833,6 +833,39 @@ public class IndexSearcher {
         return libraries;
     }
 
+    public static Set<String> getVisibleLabelStorageNames(HttpServletRequest request) {
+        Set<String> names = new HashSet<>();
+        JSONArray docs = getConfig(request).optJSONArray("config");
+        if (docs == null) {
+            return names;
+        }
+        for (int i = 0; i < docs.length(); i++) {
+            JSONObject doc = docs.getJSONObject(i);
+            String id = doc.optString("id");
+            if (!isLabelConfigId(id)) {
+                continue;
+            }
+            String visibility = doc.optString("label_visibility", "labels".equals(id) ? "everyone" : "");
+            String owner = doc.optString("label_owner", "");
+            if (owner.isBlank() && !"labels".equals(id)) {
+                owner = id.substring("labels_".length());
+            }
+            JSONArray labels = doc.optJSONArray("value");
+            if (labels == null) {
+                continue;
+            }
+            for (int j = 0; j < labels.length(); j++) {
+                JSONObject label = labels.optJSONObject(j);
+                if (label == null || label.optString("name").isBlank()) {
+                    continue;
+                }
+                String name = label.getString("name");
+                names.add("everyone".equals(visibility) || owner.isBlank() ? name : name + "_" + owner);
+            }
+        }
+        return names;
+    }
+
     private static JSONArray filterLabelConfigs(HttpServletRequest request, JSONArray docs) {
         if (UserServlet.hasRole(request, "kappAdmin")) {
             return docs;
