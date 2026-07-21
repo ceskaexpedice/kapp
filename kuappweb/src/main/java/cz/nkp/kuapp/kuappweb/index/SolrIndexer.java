@@ -191,6 +191,9 @@ public class SolrIndexer {
                 if (js.optBoolean("withState")) {
                     String state = "KONTROLOVANE_NEVEREJNE_LICENCE";
                     fillState(doc, state, js.getJSONArray("licenses"), "Smlouva " + js.getString("contract"), user);
+                } else {
+                    addAtomicField(doc, "add-distinct", user, "modified_by_user");
+                    addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
                 }
 
                 solr.add("titles", doc);
