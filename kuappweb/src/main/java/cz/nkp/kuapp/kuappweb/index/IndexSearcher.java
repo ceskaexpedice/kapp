@@ -778,7 +778,7 @@ public class IndexSearcher {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
                     .setQuery("*")
-                    .returnFields("id,value:[json]")
+                    .returnFields("id,value:[json],config_type,library,physical_locations")
                     .setLimit(100);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));

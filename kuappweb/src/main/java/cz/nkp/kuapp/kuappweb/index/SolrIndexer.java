@@ -63,8 +63,28 @@ public class SolrIndexer {
     }
 
     public static JSONObject indexLibraryRights(JSONArray js) {
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            solr.deleteByQuery("configuration", "config_type:library_physical_locations");
+            solr.deleteById("configuration", "library_physical_locations");
 
-        JSONObject ret = saveConfig(js, "library_physical_locations");
+            for (int i = 0; i < js.length(); i++) {
+                JSONObject mapping = js.getJSONObject(i);
+                String library = mapping.getString("library");
+                SolrInputDocument doc = new SolrInputDocument();
+                doc.setField("id", "library_physical_locations:" + library);
+                doc.setField("config_type", "library_physical_locations");
+                doc.setField("library", library);
+                doc.setField("physical_locations", mapping.getJSONArray("physicalLocations").toList());
+                solr.add("configuration", doc);
+            }
+
+            solr.commit("configuration");
+            ret.put("msg", "saved");
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
         return ret;
     }
 

@@ -159,8 +159,17 @@ import { LibraryPhysicalLocations } from './shared/library-rights';
                         this.state.digitalni_knihovny.set([...this.config.digitalni_knihovny]);
                     }
 
-                    const libraryPhysicalLocations: LibraryPhysicalLocations[] = resp.config
-                        .find((a: any) => a.id === 'library_physical_locations')?.value || [];
+                    const structuredMappings: LibraryPhysicalLocations[] = resp.config
+                        .filter((item: any) => item.config_type === 'library_physical_locations')
+                        .map((item: any) => ({
+                            library: item.library,
+                            physicalLocations: item.physical_locations || []
+                        }));
+                    const legacyMappings: LibraryPhysicalLocations[] = resp.config
+                        .find((item: any) => item.id === 'library_physical_locations')?.value || [];
+                    const libraryPhysicalLocations = structuredMappings.length > 0
+                        ? structuredMappings
+                        : legacyMappings;
                     this.state.libraryPhysicalLocations.set(libraryPhysicalLocations);
 
                 }));
