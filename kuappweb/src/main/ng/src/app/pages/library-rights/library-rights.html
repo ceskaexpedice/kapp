@@ -14,10 +14,8 @@
                       (click)="selectLibrary(library)">
                 <span>{{ library }}</span>
                 <span class="app-count">{{ mappings[index].physicalLocations.length }}</span>
-                @if (library !== 'MZK') {
-                  <mat-icon (click)="removeLibrary(index); $event.stopPropagation()"
-                            [matTooltip]="'remove_this_record' | translate">close</mat-icon>
-                }
+                <mat-icon (click)="removeLibrary(index); $event.stopPropagation()"
+                          [matTooltip]="'remove_this_record' | translate">close</mat-icon>
               </button>
             }
           </div>

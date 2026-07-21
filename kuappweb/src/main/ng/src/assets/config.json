@@ -19,10 +19,7 @@
       "year_death": "-year_birth:*",
       "nameIdentifier": "-nameIdentifier:*"
     },
-    "digitalni_knihovny": [
-        "NKP",
-        "MZK"
-    ],
+    "digitalni_knihovny": [],
     "labels": [
         {"name": "author_modified", "color": "#920707", "text_color": "#fff", "inconfig": true},
         {"name": "excel", "color": "#0b5928", "text_color": "#fff", "inconfig": true},
