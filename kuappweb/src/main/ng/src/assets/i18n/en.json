@@ -180,7 +180,12 @@
     "new_label_color": "Color",
     "new_license": "New license",
     "new_dk": "New digital library",
-    "dk": "Digital library"
+    "dk": "Digital library",
+    "libraries": "Libraries",
+    "physical_locations": "Physical locations",
+    "physical_locations_help": "Select the title physical locations that belong to this library.",
+    "no_physical_locations": "No physical locations were found.",
+    "select_library": "Select a library or add a new one."
   },
   "navbar": {
     "admin": "Administration",

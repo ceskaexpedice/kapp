@@ -3,6 +3,7 @@ import { Label } from "./shared/label";
 import { Batch } from "./shared/batch";
 import { User } from "./shared/user";
 import { UsedFacet } from "./shared/facet";
+import { LibraryPhysicalLocations } from "./shared/library-rights";
 
 @Injectable({
     providedIn: 'root'
@@ -13,6 +14,7 @@ import { UsedFacet } from "./shared/facet";
     usedFacets = signal<UsedFacet[]>([]);
 
     public digitalni_knihovny = signal<string[]>([]);
+    public libraryPhysicalLocations = signal<LibraryPhysicalLocations[]>([]);
     public licenses = signal<string[]>([]);
     public labels = signal<Label[]>([]);
     public batches = signal<Batch[]>([]);

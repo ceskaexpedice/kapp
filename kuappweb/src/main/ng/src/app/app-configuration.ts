@@ -5,6 +5,7 @@ import { AppState } from './app-state';
 import { Configuration } from './shared/config';
 import { Label } from './shared/label';
 import { AuthService } from './auth-service';
+import { LibraryPhysicalLocations } from './shared/library-rights';
 
 @Injectable({
     providedIn: 'root'
@@ -157,6 +158,10 @@ import { AuthService } from './auth-service';
                     } else {
                         this.state.digitalni_knihovny.set([...this.config.digitalni_knihovny]);
                     }
+
+                    const libraryPhysicalLocations: LibraryPhysicalLocations[] = resp.config
+                        .find((a: any) => a.id === 'library_physical_locations')?.value || [];
+                    this.state.libraryPhysicalLocations.set(libraryPhysicalLocations);
 
                 }));
             }),

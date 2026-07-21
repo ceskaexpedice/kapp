@@ -1,9 +1,88 @@
-.app-btn-add {
-  &:not(:disabled) {
-    color: rgb(var(--app-color-darknes)) !important;
+.app-library-rights-layout {
+  display: grid;
+  grid-template-columns: minmax(260px, 1fr) minmax(360px, 2fr);
+  gap: 24px;
+}
+
+.app-libraries {
+  border-right: 1px solid var(--mat-sys-outline-variant);
+  padding-right: 24px;
+}
+
+.app-library-list,
+.app-location-list {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.app-library-row {
+  align-items: center;
+  background: transparent;
+  border: 0;
+  border-radius: 8px;
+  cursor: pointer;
+  display: grid;
+  font: inherit;
+  grid-template-columns: 1fr auto auto;
+  min-height: 44px;
+  padding: 8px 12px;
+  text-align: left;
+
+  &:hover,
+  &.app-selected {
+    background: var(--mat-sys-secondary-container);
   }
 }
 
-mat-card {
-  max-width: 640px;
+.app-location-heading {
+  align-items: start;
+  display: flex;
+  justify-content: space-between;
+
+  h3 {
+    margin-bottom: 4px;
+  }
+
+  p {
+    color: var(--mat-sys-on-surface-variant);
+    margin-top: 0;
+  }
+}
+
+.app-location-list {
+  max-height: 520px;
+  overflow: auto;
+
+  mat-checkbox {
+    padding: 2px 8px;
+  }
+}
+
+.app-count {
+  color: var(--mat-sys-on-surface-variant);
+  margin-left: 8px;
+}
+
+.app-empty {
+  color: var(--mat-sys-on-surface-variant);
+  padding: 24px;
+  text-align: center;
+}
+
+.app-btn-add:not(:disabled) {
+  color: rgb(var(--app-color-darknes)) !important;
+}
+
+@media (max-width: 800px) {
+  .app-library-rights-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .app-libraries {
+    border-bottom: 1px solid var(--mat-sys-outline-variant);
+    border-right: 0;
+    padding-bottom: 24px;
+    padding-right: 0;
+  }
 }

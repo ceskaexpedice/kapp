@@ -58,7 +58,13 @@ public class SolrIndexer {
 
     public static JSONObject indexDK(JSONArray js) {
 
-        JSONObject ret = saveConfig(js, "digitalni_knihovna");
+        JSONObject ret = saveConfig(js, "digitalni_knihovny");
+        return ret;
+    }
+
+    public static JSONObject indexLibraryRights(JSONArray js) {
+
+        JSONObject ret = saveConfig(js, "library_physical_locations");
         return ret;
     }
 

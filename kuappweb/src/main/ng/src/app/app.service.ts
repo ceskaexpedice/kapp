@@ -5,6 +5,7 @@ import { Label } from './shared/label';
 import { Batch } from './shared/batch';
 import { Author, AuthorTitle } from './shared/author';
 import { Contract } from './shared/contract';
+import { LibraryPhysicalLocations } from './shared/library-rights';
 
 @Injectable({
   providedIn: 'root'
@@ -127,6 +128,14 @@ export class AppService {
 
   saveDK(dk: string[]): Observable<any> {
     return this.post('index/save_dk', dk);
+  }
+
+  saveLibraryRights(mappings: LibraryPhysicalLocations[]): Observable<any> {
+    return this.post('index/save_library_rights', mappings);
+  }
+
+  getPhysicalLocations(): Observable<any> {
+    return this.get('data/physical_locations');
   }
 
   saveLicenses(licenses: string[]): Observable<any> {

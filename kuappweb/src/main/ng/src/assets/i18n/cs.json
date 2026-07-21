@@ -180,7 +180,12 @@
     "new_label_color": "Barva",
     "new_license": "Nová licence",
     "new_dk": "Nová digitální knihovna",
-    "dk": "Digitální knihovna"
+    "dk": "Digitální knihovna",
+    "libraries": "Knihovny",
+    "physical_locations": "Sigly / fyzická umístění",
+    "physical_locations_help": "Vyberte fyzická umístění titulů, která náleží této knihovně.",
+    "no_physical_locations": "Nebyla nalezena žádná fyzická umístění.",
+    "select_library": "Vyberte knihovnu nebo přidejte novou."
   },
   "navbar": {
     "admin": "Administrace",

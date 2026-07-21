@@ -108,7 +108,10 @@ public class IndexServlet extends HttpServlet {
     }
 
     static String requiredRole(Actions action) {
-        return action == Actions.SAVE_DK ? "kappAdmin" : null;
+        return switch (action) {
+            case SAVE_DK, SAVE_LIBRARY_RIGHTS -> "kappAdmin";
+            default -> null;
+        };
     }
 
     
@@ -268,6 +271,19 @@ public class IndexServlet extends HttpServlet {
                 try {
                     JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
                     json = SolrIndexer.indexDK(js);
+                } catch (JSONException ex) {
+                    json.put("error", ex.toString());
+                }
+                return json;
+            }
+        },
+        SAVE_LIBRARY_RIGHTS {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                JSONObject json = new JSONObject();
+                try {
+                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    json = SolrIndexer.indexLibraryRights(js);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }

@@ -196,6 +196,12 @@ public class DataServlet extends HttpServlet {
                 return json;
             }
         },
+        PHYSICAL_LOCATIONS {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                return IndexSearcher.getPhysicalLocations();
+            }
+        },
         GET_BATCH_DOCS {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
