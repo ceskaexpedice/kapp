@@ -5,10 +5,12 @@ import cz.nkp.kuapp.kuappweb.index.IndexSearcher;
 import cz.nkp.kuapp.kuappweb.index.SolrIndexer;
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.Base64;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -53,13 +55,13 @@ public class IndexServlet extends HttpServlet {
         response.setHeader("Pragma", "no-cache"); // HTTP 1.0
         response.setDateHeader("Expires", 0); // Proxies.
         try {
-            if (UserServlet.getUser(request) == null) {
-            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-            return;
-            }
             String actionNameParam = request.getPathInfo().substring(1);
             if (actionNameParam != null) {
                 Actions actionToDo = Actions.valueOf(actionNameParam.toUpperCase());
+                if (requiresAuthentication(actionToDo) && UserServlet.getUser(request) == null) {
+                    response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    return;
+                }
                 JSONObject json = actionToDo.doPerform(request, response);
                 if (json != null) {
                     if (request.getParameter("export") != null) {
@@ -87,6 +89,17 @@ public class IndexServlet extends HttpServlet {
             response.sendError(HttpServletResponse.SC_INTERNAL_SERVER_ERROR, e1.toString());
             response.getWriter().print(e1.toString());
         }
+    }
+
+    static boolean requiresAuthentication(Actions action) {
+        return switch (action) {
+            case USER, HOME, TITLES, TITLES_AUTHOR, TITLES_CONTRACT,
+                    TITLES_CONTRACT_FIND, GET_DOC, GET_RELATED, AUTHORS,
+                    LABELS, GET_BATCH_DOCS, GET_USED_BATCHES, CONTRACTS,
+                    GET_CONTRACT, CHECK_CONTRACT_EXISTS, CONFIG, CHECK_AUTHOR,
+                    GET_AUTHOR_BY_ID, GET_AUT_BY_ID, GET_LINKS -> false;
+            default -> true;
+        };
     }
 
     
@@ -552,15 +565,25 @@ public class IndexServlet extends HttpServlet {
         UPLOAD_CONTRACT {
             @Override
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                if (UserServlet.getUser(req) == null) {
+                    resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                    return null;
+                }
+
                 JSONObject ret = new JSONObject();
                 try {
                     //for (Part part : request.getParts()) {
                     Part part = req.getPart("file");
-                    String filename = part.getSubmittedFileName();
+                    String filename = sanitizeUploadedFilename(part.getSubmittedFileName());
                     byte[] pdfBytes = part.getInputStream().readAllBytes();
 
-                    try (// File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
-                    OutputStream outStream = new FileOutputStream(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename)) {
+                    Path contractsDirectory = Paths.get(InitServlet.CONFIG_DIR, "contracts").toAbsolutePath().normalize();
+                    Path targetFile = contractsDirectory.resolve(filename).normalize();
+                    if (!targetFile.startsWith(contractsDirectory)) {
+                        throw new SecurityException("Invalid contract filename");
+                    }
+
+                    try (OutputStream outStream = Files.newOutputStream(targetFile)) {
                         outStream.write(pdfBytes);
                     }
                     if (Boolean.parseBoolean(req.getParameter("analyze"))) {
@@ -711,6 +734,21 @@ public class IndexServlet extends HttpServlet {
         };
 
         abstract JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception;
+    }
+
+    static String sanitizeUploadedFilename(String submittedFilename) {
+        if (submittedFilename == null || submittedFilename.isBlank()) {
+            throw new IllegalArgumentException("Contract filename is missing");
+        }
+
+        String normalized = submittedFilename.replace('\\', '/');
+        String filename = normalized.substring(normalized.lastIndexOf('/') + 1)
+                .replaceAll("[^\\p{L}\\p{N}._ -]", "_");
+
+        if (filename.isBlank() || filename.equals(".") || filename.equals("..")) {
+            throw new IllegalArgumentException("Contract filename is invalid");
+        }
+        return filename;
     }
 
     // <editor-fold defaultstate="collapsed" desc="HttpServlet methods. Click on the + sign on the left to edit the code.">

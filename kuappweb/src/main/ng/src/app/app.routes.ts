@@ -13,7 +13,7 @@ export const routes: Routes = [
     { path: 'login', component: Login },
     { path: 'keycloak', component: Auth },
     { path: 'home', component: Home},
-    { path: 'admin', component: Admin},
+    { path: 'admin', component: Admin, canActivate: [AuthGuard] },
     { path: 'batches', component: Batches, canActivate: [AuthGuard] },
     { path: 'titles', component: Results},
     { path: 'authors', component: Results},
