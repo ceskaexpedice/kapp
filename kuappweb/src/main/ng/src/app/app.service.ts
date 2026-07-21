@@ -210,7 +210,7 @@ export class AppService {
   }
 
   logout(): Observable<any> {
-    return this.post('user/login', {});
+    return this.post('user/logout', {});
   }
 
   searchContracts(params: HttpParams): Observable<any> {
