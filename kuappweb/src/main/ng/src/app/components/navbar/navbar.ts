@@ -24,6 +24,7 @@ export class Navbar {
   ) { }
 
   ngOnInit(): void {
+    this.auth.resumeLoginAfterLogout();
     this.onLanguageChanged('cs');
   }
 

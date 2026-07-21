@@ -71,7 +71,12 @@ export class AuthService {
     });
   }
 
-  continueLoginAfterLogout(): void {
+  resumeLoginAfterLogout(): void {
+    if (localStorage.getItem('keycloak.reauthenticate') !== '1') {
+      return;
+    }
+    localStorage.removeItem('keycloak.reauthenticate');
+
     const redirectUri = new URL('keycloak', this.baseUrl()).toString();
     const loginUrl = new URL(`${this.settings.keycloakUrl}/auth`);
 
@@ -86,8 +91,8 @@ export class AuthService {
 
   private restartKeycloakLogin(): void {
     this.clearLocalSession(true);
-    const reauthenticationUri = new URL('keycloak?reauth=1', this.baseUrl()).toString();
-    this.redirectToKeycloakLogout(reauthenticationUri);
+    localStorage.setItem('keycloak.reauthenticate', '1');
+    this.redirectToKeycloakLogout(this.baseUrl());
   }
 
   logout(suffix: string = "") {
@@ -115,6 +120,7 @@ export class AuthService {
     localStorage.removeItem('account.token.time');
     if (!preserveLoginTarget) {
       localStorage.removeItem('loginUrl');
+      localStorage.removeItem('keycloak.reauthenticate');
     }
     localStorage.removeItem('redirectUri');
     this.state.code = null;
