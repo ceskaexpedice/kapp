@@ -9,7 +9,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatProgressBarModule } from '@angular/material/progress-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { TranslateModule } from '@ngx-translate/core';
-import { forkJoin } from 'rxjs';
+import { concatMap, map, of } from 'rxjs';
 
 import { AppService } from '../../app.service';
 import { AppState } from '../../app-state';
@@ -108,10 +108,16 @@ export class LibraryRights {
 
   save(): void {
     this.saving = true;
-    forkJoin({
-      libraries: this.service.saveDK(this.libraries),
-      mappings: this.service.saveLibraryRights(this.mappings)
-    }).subscribe({
+    this.service.saveDK(this.libraries).pipe(
+      concatMap(libraries => {
+        if (this.failed(libraries)) {
+          return of({libraries, mappings: null});
+        }
+        return this.service.saveLibraryRights(this.mappings).pipe(
+          map(mappings => ({libraries, mappings}))
+        );
+      })
+    ).subscribe({
       next: (response: any) => {
         this.saving = false;
         if (this.failed(response.libraries) || this.failed(response.mappings)) {
