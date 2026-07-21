@@ -10,6 +10,7 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.Map;
@@ -239,6 +240,7 @@ public class UserServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject user = new JSONObject();
                 try {
+                    req.getSession().removeAttribute("user");
                     JSONObject js = Options.getInstance().getJSONObject("keycloak");
 
                     ///  curl -s -X POST "https://eduid.inovatika.dev/realms/kapp/protocol/openid-connect/token" ^
@@ -257,13 +259,22 @@ public class UserServlet extends HttpServlet {
                     formData.put("code", req.getParameter("code"));
                     formData.put("redirect_uri", req.getParameter("redirect_uri"));
 
-                    HttpClient client = HttpClient.newHttpClient();
+                    HttpClient client = HttpClient.newBuilder()
+                            .connectTimeout(Duration.ofSeconds(10))
+                            .build();
                     HttpRequest request = HttpRequest.newBuilder()
                             .POST(HttpRequest.BodyPublishers.ofString(getFormDataAsString(formData)))
+                            .timeout(Duration.ofSeconds(20))
                             .setHeader("Content-Type", "application/x-www-form-urlencoded")
                             .uri(new URI(url))
                             .build();
                     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                        resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        return new JSONObject()
+                                .put("error", "Keycloak token exchange failed")
+                                .put("status", response.statusCode());
+                    }
                     String r = response.body();
 
                     JSONObject json = new JSONObject(r);
@@ -271,8 +282,8 @@ public class UserServlet extends HttpServlet {
                     String[] chunks = json.getString("access_token").split("\\.");
                     Base64.Decoder decoder = Base64.getUrlDecoder();
 
-                    String header = new String(decoder.decode(chunks[0]));
-                    String payload = new String(decoder.decode(chunks[1]));
+                    String header = new String(decoder.decode(chunks[0]), StandardCharsets.UTF_8);
+                    String payload = new String(decoder.decode(chunks[1]), StandardCharsets.UTF_8);
                     user = new JSONObject(payload);
                     req.getSession().setAttribute("user", user);
 

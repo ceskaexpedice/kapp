@@ -1,11 +1,12 @@
-import { HttpClient } from '@angular/common/http';
-import { Injectable, signal } from '@angular/core';
+import { HttpClient, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { map, Observable } from 'rxjs';
+import { map, Observable, throwError } from 'rxjs';
 import { User } from './shared/user';
 import { AppConfiguration } from './app-configuration';
 import { AppState } from './app-state';
 import { AppService } from './app.service';
+import { ExternalNavigationService } from './external-navigation.service';
 
 @Injectable({
   providedIn: 'root'
@@ -34,7 +35,8 @@ export class AuthService {
     private settings: AppConfiguration,
     private router: Router, 
     private service: AppService,
-    private state: AppState
+    private state: AppState,
+    private navigation: ExternalNavigationService
   ) {
     AuthService.token = localStorage.getItem('account.token');
     AuthService.tokenTime = new Date(localStorage.getItem('account.token.time'));
@@ -53,38 +55,56 @@ export class AuthService {
 
 
   baseUrl(): string {
-    return location.origin + this.settings.deployPath;
+    const deployPath = this.settings.deployPath || '/';
+    const basePath = deployPath.endsWith('/') ? deployPath : `${deployPath}/`;
+    return new URL(basePath, window.location.origin).toString();
   }
 
   login() {
-    const redircetUri = `${this.baseUrl()}/keycloak`;
-    let url = `${this.settings.clientApiBaseUrl}/user/auth/login?&redirect_uri=${redircetUri}`;
-    if (this.settings.keycloak && this.settings.keycloak['loginType']) {
-      url = url + "&type=" + this.settings.keycloak['loginType'];
-    }
-    window.open(url, '_top');
+    const currentUrl = this.router.url;
+    const target = currentUrl.startsWith('/keycloak') ? '/' : currentUrl;
+    const redirectUri = new URL('keycloak', this.baseUrl()).toString();
+    const loginUrl = new URL(`${this.settings.keycloakUrl}/auth`);
+
+    localStorage.setItem('loginUrl', target);
+    localStorage.setItem('redirectUri', redirectUri);
+    loginUrl.searchParams.set('client_id', this.settings.keycloak.clientId);
+    loginUrl.searchParams.set('redirect_uri', redirectUri);
+    loginUrl.searchParams.set('response_type', 'code');
+    loginUrl.searchParams.set('scope', 'openid');
+
+    this.navigation.assign(loginUrl.toString());
   }
 
   logout(suffix: string = "") {
+    this.service.logout().subscribe({
+      next: () => this.finishLogout(suffix),
+      error: () => this.finishLogout(suffix)
+    });
+  }
 
-    this.service.logout().subscribe(() => {
-      AuthService.token = null;
-      AuthService.tokenTime = null;
-      AuthService.tokenDeadline = null;
-      AuthService.tokenCounter = null;
+  private finishLogout(suffix: string): void {
+    AuthService.token = null;
+    AuthService.tokenTime = null;
+    AuthService.tokenDeadline = null;
+    AuthService.tokenCounter = null;
 
-      localStorage.removeItem('account.token');
-      localStorage.removeItem('account.token.time');
-      this.state.user.set(null);
-    })
+    localStorage.removeItem('account.token');
+    localStorage.removeItem('account.token.time');
+    localStorage.removeItem('loginUrl');
+    localStorage.removeItem('redirectUri');
+    this.state.code = null;
+    this.state.session_state = null;
+    this.state.user.set(null);
 
-    // const redircetUri = `${this.baseUrl()}${suffix}`;
-    // //let url = `${this.settings.clientApiBaseUrl}/user/auth/logout?&redirect_uri=${redircetUri}`;
-    // let url = `${this.settings.clientApiBaseUrl}/user/auth/logout?&redirect_uri=${redircetUri}`;
-    // if (this.settings.keycloak.logoutUrl) {
-    //   url = this.settings.keycloak.logoutUrl;
-    // }
-    // window.open(url, '_top');
+    const postLogoutPath = suffix && suffix.startsWith('/') ? suffix.substring(1) : '';
+    const postLogoutRedirectUri = new URL(postLogoutPath, this.baseUrl()).toString();
+    const configuredLogoutUrl = this.settings.keycloak?.logoutUrl;
+    const logoutUrl = new URL(configuredLogoutUrl || `${this.settings.keycloakUrl}/logout`);
+    logoutUrl.searchParams.set('client_id', this.settings.keycloak.clientId);
+    logoutUrl.searchParams.set('post_logout_redirect_uri', postLogoutRedirectUri);
+
+    this.navigation.assign(logoutUrl.toString());
   }
 
   isLoggedIn() {
@@ -123,15 +143,15 @@ export class AuthService {
   keycloakAuth(code: string, callback: (arg0: number) => void = null) {
     this.getUser(code).subscribe(
       (user: any) => {
-        if (!user) {
-          callback(AuthService.AUTH_NOT_LOGGED_IN);
+        if (!user || user.error) {
+          callback?.(AuthService.AUTH_NOT_LOGGED_IN);
         } else {
           this.state.user.set(user);
-          callback(AuthService.AUTH_AUTHORIZED);
+          callback?.(AuthService.AUTH_AUTHORIZED);
         }
       },
       (error) => {
-        callback(AuthService.AUTH_NOT_LOGGED_IN);
+        callback?.(AuthService.AUTH_NOT_LOGGED_IN);
       }
     );
   }
@@ -147,12 +167,14 @@ export class AuthService {
   }
 
   private getUser(code: string): Observable<string> {
-    // const redircetUri = `${this.baseUrl()}/keycloak`;
-    // const keycloakUrl = this.settings.keycloakUrl + '/token';
-    // let url = `${this.settings.clientApiBaseUrl}/user/auth/login?&redirect_uri=${redircetUri}`;
-    const redirect_uri = localStorage.getItem('redirectUri');
-    let url = `/api/user/token?code=${code}&redirect_uri=${redirect_uri}`;
-    return this.http.get(url).pipe(map((response: any) =>
+    const redirectUri = localStorage.getItem('redirectUri');
+    if (!code || !redirectUri) {
+      return throwError(() => new Error('Missing Keycloak authorization callback parameters'));
+    }
+    const params = new HttpParams()
+      .set('code', code)
+      .set('redirect_uri', redirectUri);
+    return this.http.get('/api/user/token', {params}).pipe(map((response: any) =>
       response)
     );
 

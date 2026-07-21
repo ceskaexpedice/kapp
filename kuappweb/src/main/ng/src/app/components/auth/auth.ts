@@ -17,22 +17,31 @@ export class Auth {
               public router: Router) { }
 
   ngOnInit() {
-    this.route.queryParamMap.subscribe(params => {
-      const sessionState = params.get('session_state');
-          this.state.session_state = params.get('session_state');
-      const code = params.get('code');
-          this.state.code = params.get('code');
-      const target =  localStorage.getItem('loginUrl') || '/';
-      localStorage.removeItem('login.url');
-      this.auth.keycloakAuth(code, (status: number) => {
-        if (status == AuthService.AUTH_AUTHORIZED) {
-          this.router.navigateByUrl(target);
-        } else if (status == AuthService.AUTH_NOT_AUTHORIZED) {
-          this.auth.logout('/login?failure=1');
-        } else {
-          this.router.navigateByUrl('/login?failure=2');
-        }
-      });
+    const params = this.route.snapshot.queryParamMap;
+    const code = params.get('code');
+    const storedTarget = localStorage.getItem('loginUrl') || '/';
+    const target = storedTarget.startsWith('/') && !storedTarget.startsWith('/keycloak')
+      ? storedTarget
+      : '/';
+
+    this.state.session_state = params.get('session_state');
+    this.state.code = code;
+    localStorage.removeItem('loginUrl');
+
+    if (!code || params.has('error')) {
+      localStorage.removeItem('redirectUri');
+      this.router.navigateByUrl('/login?failure=2', {replaceUrl: true});
+      return;
+    }
+
+    this.auth.keycloakAuth(code, (status: number) => {
+      localStorage.removeItem('redirectUri');
+      this.state.code = null;
+      if (status == AuthService.AUTH_AUTHORIZED) {
+        this.router.navigateByUrl(target, {replaceUrl: true});
+      } else {
+        this.router.navigateByUrl('/login?failure=2', {replaceUrl: true});
+      }
     });
   }
 }
