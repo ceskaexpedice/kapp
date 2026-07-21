@@ -82,4 +82,19 @@ describe('AppState roles', () => {
     state.setUser({realm_access: {roles: ['viewer']}});
     expect(state.hasLibraryRole()).toBeFalse();
   });
+
+  it('combines label sets visible to the user', () => {
+    state.setLabelSet('labels', [{name: 'global'}]);
+    state.setLabelSet('labels_jane', [{name: 'private'}]);
+    state.setLabelSet('labels_MZK', [{name: 'library'}]);
+
+    expect(state.labels().map(label => label.name)).toEqual(['global', 'private', 'library']);
+  });
+
+  it('does not duplicate a label name shared by multiple scopes', () => {
+    state.setLabelSet('labels', [{name: 'shared', color: '#111111'}]);
+    state.setLabelSet('labels_MZK', [{name: 'shared', color: '#ffffff'}]);
+
+    expect(state.labels()).toEqual([{name: 'shared', color: '#111111'}]);
+  });
 });

@@ -5,6 +5,22 @@
 				<mat-card-title> {{ 'admin.labels' | translate}} </mat-card-title>
 			</mat-card-header>
 			<mat-card-content>
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'admin.labels_visible_to' | translate }}</mat-label>
+					<mat-select [(ngModel)]="labelScope" (selectionChange)="selectLabelScope()">
+						@for(scope of labelScopes; track scope.id) {
+							<mat-option [value]="scope.id">
+								@if(scope.visibility === 'everyone') {
+									{{ 'admin.labels_everyone' | translate }}
+								} @else if(scope.visibility === 'private') {
+									{{ 'admin.labels_private' | translate }}
+								} @else {
+									{{ scope.library }}
+								}
+							</mat-option>
+						}
+					</mat-select>
+				</mat-form-field>
 				@for(l of labels; let idx = $index; track $index) {
 					<div class="app-fxLayout app-row app-baseline-v app-gap-2">
 						<mat-form-field appearance="outline">

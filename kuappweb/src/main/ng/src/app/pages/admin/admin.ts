@@ -12,6 +12,13 @@ import { TranslateModule } from '@ngx-translate/core';
 import { MatCardModule } from '@angular/material/card';
 import { Label } from '../../shared/label';
 import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatSelectModule } from '@angular/material/select';
+
+interface LabelScopeOption {
+  id: string;
+  visibility: 'everyone' | 'private' | 'library';
+  library?: string;
+}
 
 @Component({
   selector: 'app-admin',
@@ -19,7 +26,7 @@ import { MatTooltipModule } from "@angular/material/tooltip";
     TranslateModule, FormsModule,
     MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
-    MatTooltipModule
+    MatTooltipModule, MatSelectModule
 ],
   templateUrl: './admin.html',
   styleUrl: './admin.scss'
@@ -31,13 +38,28 @@ export class Admin {
   loading = signal<boolean>(false);
   labels: Label[];
   nl: Label = {name: ''};
+  labelScope = 'labels';
+  labelScopes: LabelScopeOption[] = [];
 
   licenses:string[] = [];
   new_license: string;
 
   ngOnInit() {
     const p: any = {};
-    this.labels = this.state.labels();
+    this.labelScopes = [{id: 'labels', visibility: 'everyone'}];
+    const username = this.state.user()?.preferred_username;
+    if (username) {
+      this.labelScopes.push({id: `labels_${username}`, visibility: 'private'});
+    }
+    const roles = new Set(this.state.roles());
+    this.state.digitalni_knihovny()
+      .filter(library => this.state.hasRole('kappAdmin') || roles.has(library))
+      .forEach(library => this.labelScopes.push({
+        id: `labels_${library}`,
+        visibility: 'library',
+        library
+      }));
+    this.selectLabelScope();
     this.licenses = [...this.state.licenses()];
   }
 
@@ -50,15 +72,23 @@ export class Admin {
   }
 
   saveLabels() {
-    this.state.labels.set(this.labels);
-    this.service.saveLabels(this.state.labels()).subscribe(resp => {
+    const scope = this.labelScopes.find(option => option.id === this.labelScope);
+    if (!scope) {
+      return;
+    }
+    this.service.saveLabels(this.labels, scope.visibility, scope.library).subscribe(resp => {
       if (resp.error) {
         this.ui.showErrorSnackBar('snackbar.record_saved.error');
       } else {
+        this.state.setLabelSet(scope.id, [...this.labels]);
         this.ui.showInfoSnackBar('snackbar.record_saved.success');
         console.log(resp);
       }
     });
+  }
+
+  selectLabelScope() {
+    this.labels = (this.state.labelSets()[this.labelScope] || []).map(label => ({...label}));
   }
 
   removeLabel(idx: number) {

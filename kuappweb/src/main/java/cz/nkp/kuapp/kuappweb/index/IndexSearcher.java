@@ -8,7 +8,9 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
@@ -751,19 +753,49 @@ public class IndexSearcher {
         return ret;
     }
 
-    public static JSONObject getLabels() {
+    public static JSONObject getLabels(HttpServletRequest request) {
+        JSONObject config = getConfig(request);
+        JSONArray docs = config.optJSONArray("config");
+        if (docs == null) {
+            return config;
+        }
+
+        JSONArray labels = new JSONArray();
+        Set<String> names = new HashSet<>();
+        for (int i = 0; i < docs.length(); i++) {
+            JSONObject doc = docs.getJSONObject(i);
+            if (!isLabelConfigId(doc.optString("id"))) {
+                continue;
+            }
+            JSONArray scopedLabels = doc.optJSONArray("value");
+            if (scopedLabels == null) {
+                continue;
+            }
+            for (int j = 0; j < scopedLabels.length(); j++) {
+                JSONObject label = scopedLabels.optJSONObject(j);
+                if (label != null && names.add(label.optString("name"))) {
+                    labels.put(label);
+                }
+            }
+        }
+        return new JSONObject().put("value", labels);
+    }
+
+    public static JSONObject getConfig(HttpServletRequest request) {
 
         JSONObject ret = new JSONObject();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
             JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("id:labels")
-                    .returnFields("value:[json]")
-                    .setLimit(1);
+                    .setQuery("*")
+                    .returnFields("id,value:[json],config_type,library,physical_locations,label_visibility,label_owner")
+                    .setLimit(1000);
 
             jrequest.setResponseParser(new InputStreamResponseParser("json"));
             NamedList<Object> resp = solr.request(jrequest, "configuration");
             InputStream is = (InputStream) resp.get("stream");
-            ret = new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs").getJSONObject(0);
+            JSONArray docs = new JSONObject(IOUtils.toString(is, "UTF-8"))
+                    .getJSONObject("response").getJSONArray("docs");
+            ret.put("config", filterLabelConfigs(request, docs));
 
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
@@ -772,25 +804,86 @@ public class IndexSearcher {
         return ret;
     }
 
-    public static JSONObject getConfig() {
-
-        JSONObject ret = new JSONObject();
+    public static Set<String> getDigitalLibraries() {
+        Set<String> libraries = new HashSet<>();
         try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
-            JsonQueryRequest jrequest = new JsonQueryRequest()
-                    .setQuery("*")
-                    .returnFields("id,value:[json],config_type,library,physical_locations")
-                    .setLimit(100);
-
-            jrequest.setResponseParser(new InputStreamResponseParser("json"));
-            NamedList<Object> resp = solr.request(jrequest, "configuration");
-            InputStream is = (InputStream) resp.get("stream");
-            ret.put("config", new JSONObject(IOUtils.toString(is, "UTF-8")).getJSONObject("response").getJSONArray("docs"));
-
+            JsonQueryRequest request = new JsonQueryRequest()
+                    .setQuery("id:digitalni_knihovny")
+                    .returnFields("value:[json]")
+                    .setLimit(1);
+            request.setResponseParser(new InputStreamResponseParser("json"));
+            NamedList<Object> response = solr.request(request, "configuration");
+            InputStream stream = (InputStream) response.get("stream");
+            JSONArray docs = new JSONObject(IOUtils.toString(stream, "UTF-8"))
+                    .getJSONObject("response").getJSONArray("docs");
+            if (docs.length() > 0) {
+                JSONArray values = docs.getJSONObject(0).optJSONArray("value");
+                if (values != null) {
+                    for (int i = 0; i < values.length(); i++) {
+                        String library = values.optString(i, null);
+                        if (library != null && !library.isBlank()) {
+                            libraries.add(library);
+                        }
+                    }
+                }
+            }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, null, ex);
-            ret.put("error", ex);
         }
-        return ret;
+        return libraries;
+    }
+
+    private static JSONArray filterLabelConfigs(HttpServletRequest request, JSONArray docs) {
+        if (UserServlet.hasRole(request, "kappAdmin")) {
+            return docs;
+        }
+
+        Set<String> visibleIds = new HashSet<>();
+        visibleIds.add("labels");
+        String username = UserServlet.getUserName(request);
+        if (username != null && !username.isBlank()) {
+            visibleIds.add("labels_" + username);
+        }
+        Set<String> roles = UserServlet.getRoles(request);
+        for (String library : getDigitalLibrariesFromDocs(docs)) {
+            if (roles.contains(library)) {
+                visibleIds.add("labels_" + library);
+            }
+        }
+
+        JSONArray filtered = new JSONArray();
+        for (int i = 0; i < docs.length(); i++) {
+            JSONObject doc = docs.getJSONObject(i);
+            String id = doc.optString("id");
+            if (!isLabelConfigId(id) || visibleIds.contains(id)) {
+                filtered.put(doc);
+            }
+        }
+        return filtered;
+    }
+
+    private static Set<String> getDigitalLibrariesFromDocs(JSONArray docs) {
+        Set<String> libraries = new HashSet<>();
+        for (int i = 0; i < docs.length(); i++) {
+            JSONObject doc = docs.getJSONObject(i);
+            if (!"digitalni_knihovny".equals(doc.optString("id"))) {
+                continue;
+            }
+            JSONArray values = doc.optJSONArray("value");
+            if (values != null) {
+                for (int j = 0; j < values.length(); j++) {
+                    String library = values.optString(j, null);
+                    if (library != null && !library.isBlank()) {
+                        libraries.add(library);
+                    }
+                }
+            }
+        }
+        return libraries;
+    }
+
+    private static boolean isLabelConfigId(String id) {
+        return "labels".equals(id) || id.startsWith("labels_");
     }
 
     public static JSONObject getPhysicalLocations() {

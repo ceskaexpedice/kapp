@@ -142,8 +142,8 @@ export class AppService {
     return this.post('index/save_licenses', licenses);
   }
 
-  saveLabels(labels: Label[]): Observable<any> {
-    return this.post('index/save_labels', labels);
+  saveLabels(labels: Label[], visibility: 'everyone' | 'private' | 'library' = 'everyone', library?: string): Observable<any> {
+    return this.post('index/save_labels', {labels, visibility, library});
   }
 
   saveDocLabels(pid: string, labels: string[]): Observable<any> {

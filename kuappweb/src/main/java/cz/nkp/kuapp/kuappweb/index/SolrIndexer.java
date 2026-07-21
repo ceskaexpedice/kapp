@@ -94,9 +94,24 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static JSONObject indexLabels(JSONArray js) {
-
-        JSONObject ret = saveConfig(js, "labels");
+    public static JSONObject indexLabels(JSONArray js, String configId, String visibility, String owner) {
+        JSONObject ret = new JSONObject();
+        try (SolrClient solr = new HttpJdkSolrClient.Builder(Options.getInstance().getString("solr")).build()) {
+            SolrInputDocument doc = new SolrInputDocument();
+            doc.setField("id", configId);
+            doc.setField("value", js.toString());
+            doc.setField("config_type", "labels");
+            doc.setField("label_visibility", visibility);
+            if (owner != null) {
+                doc.setField("label_owner", owner);
+            }
+            solr.add("configuration", doc);
+            solr.commit("configuration");
+            ret.put("msg", "saved");
+        } catch (Exception ex) {
+            LOGGER.log(Level.SEVERE, null, ex);
+            ret.put("error", ex);
+        }
         return ret;
     }
 

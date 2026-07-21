@@ -121,29 +121,22 @@ import { LibraryPhysicalLocations } from './shared/library-rights';
                     } 
                     this.state.contractTitleColumns.update(a => [...ctc1]);
 
-                    const labels: Label[] = [];
-                    const labelsJson: Label[] = [...this.config.labels];
-                    const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels')?.value;
-                    if (labelsC) {
-                        const names = labelsC.map(l => l.name);
-                        labelsJson.forEach(l => {
-                            if (!names.includes(l.name)) {
-                                labels.push(l);
-                            }
+                    const labelSets: Record<string, Label[]> = {};
+                    resp.config
+                        .filter((item: any) => item.id === 'labels' || item.id?.startsWith('labels_'))
+                        .forEach((item: any) => {
+                            labelSets[item.id] = (item.value || []).map((label: Label) => this.withTextColor({...label}));
                         });
-                        labelsC.forEach(l => {
-                            const r = parseInt(l.color.substring(1,3), 16);
-                            const g = parseInt(l.color.substring(3,5), 16);
-                            const b = parseInt(l.color.substring(5,7), 16);
-                            // const c = parseInt(l.color.substring(1), 16);
-                            const c = r+g+b;
-                            l.text_color = c > 500 ? '#000' : '#fff';
-                            labels.push(l);
-                        });
-                        this.state.labels.set([...labels]);
-                    } else {
-                        this.state.labels.set([...this.config.labels]);
-                    }
+                    const globalLabels = labelSets['labels'] || [];
+                    const globalNames = new Set(globalLabels.map(label => label.name));
+                    this.config.labels.forEach(label => {
+                        if (!globalNames.has(label.name)) {
+                            globalLabels.unshift({...label});
+                        }
+                    });
+                    labelSets['labels'] = globalLabels;
+                    this.state.labelSets.set({});
+                    Object.entries(labelSets).forEach(([id, labels]) => this.state.setLabelSet(id, labels));
                     
                     const licenses: string[] = resp.config.find((a: any) => a.id === 'licenses')?.value;
                     if (licenses) {
@@ -179,6 +172,17 @@ import { LibraryPhysicalLocations } from './shared/library-rights';
                 return of(err);
             })
         );
+    }
+
+    private withTextColor(label: Label): Label {
+        if (!label.color || !/^#[0-9a-fA-F]{6}$/.test(label.color)) {
+            return label;
+        }
+        const red = parseInt(label.color.substring(1, 3), 16);
+        const green = parseInt(label.color.substring(3, 5), 16);
+        const blue = parseInt(label.color.substring(5, 7), 16);
+        label.text_color = red + green + blue > 500 ? '#000' : '#fff';
+        return label;
     }
 
 }

@@ -112,7 +112,11 @@ export class FacetsComponent {
   }
 
   facetBuckets(field: string): JSONFacet[] {
-    const buckets = this.facets()[field]?.buckets ?? [];
+    let buckets = this.facets()[field]?.buckets ?? [];
+    if (field === 'labels') {
+      const visibleLabels = new Set(this.state.labels().map(label => label.name));
+      buckets = buckets.filter(bucket => visibleLabels.has(bucket.val));
+    }
     const missingNegated = this.usedFacets
       .filter(f => f.field === field && f.negated && !buckets.some(b => b.val === f.value))
       .map(f => ({val: f.value, count: 0}));

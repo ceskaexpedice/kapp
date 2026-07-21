@@ -17,6 +17,7 @@ import { LibraryPhysicalLocations } from "./shared/library-rights";
     public libraryPhysicalLocations = signal<LibraryPhysicalLocations[]>([]);
     public licenses = signal<string[]>([]);
     public labels = signal<Label[]>([]);
+    public labelSets = signal<Record<string, Label[]>>({});
     public batches = signal<Batch[]>([]);
     public titleColumns = signal<{ field: string, selected: boolean, width: number }[]>([]);
     public contractColumns = signal<{ field: string, selected: boolean, width: number }[]>([]);
@@ -77,6 +78,20 @@ import { LibraryPhysicalLocations } from "./shared/library-rights";
 
     canEditTitles(titles: any[]): boolean {
         return titles.length > 0 && titles.every(title => this.canEditTitle(title));
+    }
+
+    setLabelSet(id: string, labels: Label[]): void {
+        const sets = {...this.labelSets(), [id]: labels};
+        this.labelSets.set(sets);
+        const visible: Label[] = [];
+        const names = new Set<string>();
+        Object.values(sets).forEach(scopedLabels => scopedLabels.forEach(label => {
+            if (!names.has(label.name)) {
+                names.add(label.name);
+                visible.push(label);
+            }
+        }));
+        this.labels.set(visible);
     }
 
     private asArray(value: string | string[] | null | undefined): string[] {

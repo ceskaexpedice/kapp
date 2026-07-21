@@ -330,7 +330,7 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getLabels();
+                    json = IndexSearcher.getLabels(req);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -342,8 +342,34 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    JSONArray js = new JSONArray(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    json = SolrIndexer.indexLabels(js);
+                    JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    JSONArray labels = js.getJSONArray("labels");
+                    String visibility = js.getString("visibility");
+                    String configId;
+                    String owner = null;
+                    switch (visibility) {
+                        case "everyone" -> configId = "labels";
+                        case "private" -> {
+                            String username = UserServlet.getUserName(req);
+                            if (username == null || username.isBlank()) {
+                                throw new SecurityException("Keycloak username is missing");
+                            }
+                            configId = "labels_" + username;
+                            owner = username;
+                        }
+                        case "library" -> {
+                            String library = js.getString("library");
+                            if (!IndexSearcher.getDigitalLibraries().contains(library)
+                                    || (!UserServlet.hasRole(req, "kappAdmin") && !UserServlet.hasRole(req, library))) {
+                                resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                                return null;
+                            }
+                            configId = "labels_" + library;
+                            owner = library;
+                        }
+                        default -> throw new SecurityException("Unsupported label visibility");
+                    }
+                    json = SolrIndexer.indexLabels(labels, configId, visibility, owner);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -801,7 +827,7 @@ public class IndexServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getConfig();
+                    json = IndexSearcher.getConfig(req);
                     json.put("user", UserServlet.getUser(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());

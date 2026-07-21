@@ -189,7 +189,7 @@ public class DataServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getLabels();
+                    json = IndexSearcher.getLabels(req);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
@@ -273,7 +273,7 @@ public class DataServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getConfig();
+                    json = IndexSearcher.getConfig(req);
                     json.put("user", UserServlet.getUser(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
