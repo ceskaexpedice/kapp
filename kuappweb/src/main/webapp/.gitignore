@@ -9,3 +9,5 @@ tinymce/
 *.svg
 *.txt
 index.html
+*.map
+*.ico
