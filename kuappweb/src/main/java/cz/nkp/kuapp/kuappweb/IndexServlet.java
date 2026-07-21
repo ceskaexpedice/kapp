@@ -53,10 +53,10 @@ public class IndexServlet extends HttpServlet {
         response.setHeader("Pragma", "no-cache"); // HTTP 1.0
         response.setDateHeader("Expires", 0); // Proxies.
         try {
-//            if (UserServlet.getUser(request) == null) {
-//            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-//            return;
-//            }
+            if (UserServlet.getUser(request) == null) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return;
+            }
             String actionNameParam = request.getPathInfo().substring(1);
             if (actionNameParam != null) {
                 Actions actionToDo = Actions.valueOf(actionNameParam.toUpperCase());
@@ -559,10 +559,10 @@ public class IndexServlet extends HttpServlet {
                     String filename = part.getSubmittedFileName();
                     byte[] pdfBytes = part.getInputStream().readAllBytes();
 
-                    // File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
-                    OutputStream outStream = new FileOutputStream(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
-                    outStream.write(pdfBytes);
-
+                    try (// File targetFile = new File(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename);
+                    OutputStream outStream = new FileOutputStream(InitServlet.CONFIG_DIR + File.separator + "contracts" + File.separator + filename)) {
+                        outStream.write(pdfBytes);
+                    }
                     if (Boolean.parseBoolean(req.getParameter("analyze"))) {
                         String base64Pdf = Base64.getEncoder().encodeToString(pdfBytes);
                         JSONObject gemini = GeminiAnalyzer.analyze(base64Pdf);
