@@ -167,6 +167,9 @@ export class ResultItem {
   }
 
   infoAuthor(a: AuthorTitle) {
+    if (!this.state.canEditTitle(this.doc())) {
+      return;
+    }
     
     const date_issued_year = this.doc().date_issued_year_kapp ? this.doc().date_issued_year_kapp : this.doc().date_issued_year;
     const data: AuthorTitleDialogData = {
@@ -196,7 +199,7 @@ export class ResultItem {
   }
 
   addAuthor() {
-    if (!this.state.user()) {
+    if (!this.state.canEditTitle(this.doc())) {
       return;
     }
     
@@ -227,7 +230,7 @@ export class ResultItem {
   }
 
   addLabel(l: Label) {
-    if (!this.state.user()) {
+    if (!this.state.canEditTitle(this.doc())) {
       return;
     }
     if (!this.labels.find(la => la.name === l.name)) {
@@ -237,7 +240,7 @@ export class ResultItem {
   }
 
   removeLabel(l: Label) {
-    if (!this.state.user()) {
+    if (!this.state.canEditTitle(this.doc())) {
       return;
     }
     const index = this.labels.indexOf(l);
@@ -264,11 +267,14 @@ export class ResultItem {
   }
 
   addToBatch(b: Batch) {
+    if (!this.state.canEditTitle(this.doc())) {
+      return;
+    }
     this.saveDocBatch(b.name);
   }
 
   saveDocBatch(bs: string) {
-    this.service.saveDocBatch(this.doc()['pid'], bs).subscribe((res: any) => {
+    this.service.saveDocBatch([this.doc()['pid']], bs).subscribe((res: any) => {
       console.log(res)
     })
 
@@ -284,6 +290,9 @@ export class ResultItem {
   }
 
   setState() {
+    if (!this.state.canEditTitle(this.doc())) {
+      return;
+    }
 
     const dialogRef = this.dialog.open(StateDialog, {
       data: { isBatch: false, doc: this.doc() },
@@ -307,6 +316,9 @@ export class ResultItem {
   }
 
   editNote() {
+    if (!this.state.canEditTitle(this.doc())) {
+      return;
+    }
     if (this.doc()['note']) {
       this.note = this.doc()['note'].join("\n");
     }
@@ -329,6 +341,9 @@ export class ResultItem {
   }
 
   editDateIssued() {
+    if (!this.state.canEditTitle(this.doc())) {
+      return;
+    }
     if (this.doc()['date_issued_year_kapp']) {
       this.date_issued_year_kapp = this.doc()['date_issued_year_kapp'];
     } else if (this.doc()['date_issued_year']) {
@@ -348,6 +363,9 @@ export class ResultItem {
   }
 
   editLastYearDeath() {
+    if (!this.state.canEditTitle(this.doc())) {
+      return;
+    }
     if (this.doc()['last_year_death']) {
       this.lastYearDeath = this.doc()['last_year_death'];
     }
@@ -368,6 +386,9 @@ export class ResultItem {
 
 
   editTypDila() {
+    if (!this.state.canEditTitle(this.doc())) {
+      return;
+    }
     this.editingDilo.set(true)
   }
 

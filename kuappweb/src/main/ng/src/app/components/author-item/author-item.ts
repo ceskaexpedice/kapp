@@ -80,6 +80,9 @@ export class AuthorItem {
   
 
   toggleEdit() {
+    if (!this.state.hasLibraryRole()) {
+      return;
+    }
     this.editing.set(!this.editing());
   }
 
@@ -97,6 +100,9 @@ export class AuthorItem {
   }
 
   addLabel(l: Label) {
+    if (!this.state.hasLibraryRole()) {
+      return;
+    }
     if (!this.labels.find(la => la.name === l.name)) {
       this.labels.push(l);
       this.saveLabels();
@@ -104,6 +110,9 @@ export class AuthorItem {
   }
 
   removeLabel(l: Label) {
+    if (!this.state.hasLibraryRole()) {
+      return;
+    }
     const index = this.labels.indexOf(l);
     if (index > -1) {
       this.labels.splice(index, 1);
@@ -112,6 +121,9 @@ export class AuthorItem {
   }
 
   saveLabels() {
+    if (!this.state.hasLibraryRole()) {
+      return;
+    }
     this.service.saveAuthorLabels(this.author['id'], this.labels.map(l => l.name)).subscribe((res: any) => {
       console.log(res)
     })
@@ -206,6 +218,9 @@ export class AuthorItem {
     }
 
   onSave() {
+    if (!this.state.hasLibraryRole()) {
+      return;
+    }
     if (this.author.id !== this.inputAuthor().id) {
       this.checkEditedAuthor();
     } else {
@@ -214,6 +229,9 @@ export class AuthorItem {
   }
 
   save() {
+    if (!this.state.hasLibraryRole()) {
+      return;
+    }
     this.loading.set(true);
     if (this.author.id !== this.inputAuthor().id) {
       this.author.old_id = this.inputAuthor().id;

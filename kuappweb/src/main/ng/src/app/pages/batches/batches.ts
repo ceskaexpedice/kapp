@@ -218,6 +218,9 @@ export class Batches {
   }
 
   setState() {
+    if (!this.state.canEditTitles(this.docs())) {
+      return;
+    }
 
     const dialogRef = this.dialog.open(StateDialog, {
       data: { isBatch: true, batch: this.selectedBatch().name, states: this.states() },
@@ -231,6 +234,10 @@ export class Batches {
   }
 
   removeFromBatch(pid: string) {
+    const doc = this.docs().find(item => item.pid === pid);
+    if (!this.state.canEditTitle(doc)) {
+      return;
+    }
     this.service.saveDocBatch([pid], '').subscribe((res: any) => {
       this.loadBatch();
       if (res.error) {

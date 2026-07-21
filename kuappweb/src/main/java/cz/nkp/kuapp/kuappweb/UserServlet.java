@@ -12,8 +12,10 @@ import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -141,41 +143,44 @@ public class UserServlet extends HttpServlet {
     }
 
     public static boolean hasRole(HttpServletRequest req, String role) {
+        return getRoles(req).contains(role);
+    }
+
+    public static Set<String> getRoles(HttpServletRequest req) {
+        Set<String> roles = new HashSet<>();
         JSONObject user = getUser(req);
         if (user == null) {
-            return false;
+            return roles;
         }
 
-        if (containsRole(user.optJSONArray("roles"), role)
-                || containsRole(user.optJSONObject("realm_access"), role)) {
-            return true;
+        addRoles(roles, user.optJSONArray("roles"));
+        JSONObject realmAccess = user.optJSONObject("realm_access");
+        if (realmAccess != null) {
+            addRoles(roles, realmAccess.optJSONArray("roles"));
         }
 
         JSONObject resourceAccess = user.optJSONObject("resource_access");
         if (resourceAccess != null) {
             for (String resource : resourceAccess.keySet()) {
-                if (containsRole(resourceAccess.optJSONObject(resource), role)) {
-                    return true;
+                JSONObject clientAccess = resourceAccess.optJSONObject(resource);
+                if (clientAccess != null) {
+                    addRoles(roles, clientAccess.optJSONArray("roles"));
                 }
             }
         }
-        return false;
+        return roles;
     }
 
-    private static boolean containsRole(JSONObject container, String role) {
-        return container != null && containsRole(container.optJSONArray("roles"), role);
-    }
-
-    private static boolean containsRole(JSONArray roles, String role) {
+    private static void addRoles(Set<String> target, JSONArray roles) {
         if (roles == null) {
-            return false;
+            return;
         }
         for (int i = 0; i < roles.length(); i++) {
-            if (role.equals(roles.optString(i))) {
-                return true;
+            String role = roles.optString(i, null);
+            if (role != null && !role.isBlank()) {
+                target.add(role);
             }
         }
-        return false;
     }
 
     enum Actions {

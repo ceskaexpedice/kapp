@@ -35,14 +35,55 @@ import { LibraryPhysicalLocations } from "./shared/library-rights";
     }
 
     hasRole(role: string): boolean {
+        return this.roles().includes(role);
+    }
+
+    roles(): string[] {
         const user: any = this.user();
-        const roles = [
+        return [...new Set<string>([
             ...(user?.roles || []),
             ...(user?.realm_access?.roles || []),
             ...Object.values(user?.resource_access || {})
                 .flatMap((resource: any) => resource?.roles || [])
-        ];
-        return roles.includes(role);
+        ])];
+    }
+
+    canEditTitle(title: any): boolean {
+        if (!this.user()) {
+            return false;
+        }
+        if (this.hasRole('kappAdmin')) {
+            return true;
+        }
+
+        const roles = new Set(this.roles());
+        const titleLocations = new Set<string>(this.asArray(title?.physical_locations));
+        return this.libraryPhysicalLocations().some(mapping =>
+            roles.has(mapping.library)
+            && this.asArray(mapping.physicalLocations).some(location => titleLocations.has(location))
+        );
+    }
+
+    hasLibraryRole(): boolean {
+        if (!this.user()) {
+            return false;
+        }
+        if (this.hasRole('kappAdmin')) {
+            return true;
+        }
+        const roles = new Set(this.roles());
+        return this.libraryPhysicalLocations().some(mapping => roles.has(mapping.library));
+    }
+
+    canEditTitles(titles: any[]): boolean {
+        return titles.length > 0 && titles.every(title => this.canEditTitle(title));
+    }
+
+    private asArray(value: string | string[] | null | undefined): string[] {
+        if (Array.isArray(value)) {
+            return value;
+        }
+        return value ? [value] : [];
     }
 
     encodeState() {

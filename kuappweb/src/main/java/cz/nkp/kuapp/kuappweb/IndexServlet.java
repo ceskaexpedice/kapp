@@ -12,6 +12,8 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Base64;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -112,6 +114,26 @@ public class IndexServlet extends HttpServlet {
             case SAVE_DK, SAVE_LIBRARY_RIGHTS -> "kappAdmin";
             default -> null;
         };
+    }
+
+    private static boolean requireTitleAccess(HttpServletRequest request, HttpServletResponse response, String pid) {
+        return requireTitleAccess(request, response, List.of(pid));
+    }
+
+    private static boolean requireTitleAccess(HttpServletRequest request, HttpServletResponse response, JSONArray pids) {
+        List<String> values = new ArrayList<>();
+        for (int i = 0; i < pids.length(); i++) {
+            values.add(pids.optString(i, null));
+        }
+        return requireTitleAccess(request, response, values);
+    }
+
+    private static boolean requireTitleAccess(HttpServletRequest request, HttpServletResponse response, List<String> pids) {
+        if (TitleAuthorization.canEditTitles(request, pids)) {
+            return true;
+        }
+        response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+        return false;
     }
 
     
@@ -334,6 +356,9 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    if (!requireTitleAccess(req, resp, js.getString("pid"))) {
+                        return null;
+                    }
                     json = SolrIndexer.indexDocLabels(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -360,6 +385,15 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    JSONArray docs = IndexSearcher.getLabelDocs(js.getString("label"))
+                            .getJSONObject("response").getJSONArray("docs");
+                    JSONArray pids = new JSONArray();
+                    for (int i = 0; i < docs.length(); i++) {
+                        pids.put(docs.getJSONObject(i).getString("pid"));
+                    }
+                    if (!requireTitleAccess(req, resp, pids)) {
+                        return null;
+                    }
                     json = SolrIndexer.createBatchFromLabel(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -387,6 +421,9 @@ public class IndexServlet extends HttpServlet {
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
                     JSONArray pids = js.getJSONArray("pids");
+                    if (!requireTitleAccess(req, resp, pids)) {
+                        return null;
+                    }
                     // Koukneme na prvni
                     JSONObject t = IndexSearcher.getTitleByPid(pids.getString(0)).getJSONObject("response");
                     if (t.getInt("numFound") > 0) {
@@ -406,6 +443,9 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    if (!requireTitleAccess(req, resp, js.getJSONArray("pids"))) {
+                        return null;
+                    }
                     json = SolrIndexer.indexDocContracts(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -419,6 +459,10 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    if (!TitleAuthorization.hasLibraryRole(req)) {
+                        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        return null;
+                    }
                     json = SolrIndexer.saveAuthor(js, false, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -432,6 +476,10 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    if (!TitleAuthorization.hasLibraryRole(req)) {
+                        resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
+                        return null;
+                    }
                     json = SolrIndexer.indexAuthorLabels(js);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -445,6 +493,9 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    if (!requireTitleAccess(req, resp, js.getString("pid"))) {
+                        return null;
+                    }
                     json = SolrIndexer.saveAuthorsInTitle(js, UserServlet.getUserName(req)); 
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -458,6 +509,9 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    if (!requireTitleAccess(req, resp, js.getString("pid"))) {
+                        return null;
+                    }
                     json = SolrIndexer.saveLastYearDeath(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -471,6 +525,9 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    if (!requireTitleAccess(req, resp, js.getString("pid"))) {
+                        return null;
+                    }
                     json = SolrIndexer.saveTypDila(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -484,6 +541,9 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    if (!requireTitleAccess(req, resp, js.getString("pid"))) {
+                        return null;
+                    }
                     json = SolrIndexer.saveTitleNote(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -497,6 +557,9 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    if (!requireTitleAccess(req, resp, js.getString("pid"))) {
+                        return null;
+                    }
                     json = SolrIndexer.saveDateIssued(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -538,9 +601,20 @@ public class IndexServlet extends HttpServlet {
                 String batch = req.getParameter("name");
                 // String contents = IOUtils.toString(part.getInputStream(), StandardCharsets.UTF_8.name());
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(part.getInputStream()));
-                while (reader.ready()) {
-                    ret = SolrIndexer.addDocToBatch(reader.readLine(), batch, UserServlet.getUserName(req));
+                List<String> pids = new ArrayList<>();
+                try (BufferedReader reader = new BufferedReader(new InputStreamReader(part.getInputStream()))) {
+                    String pid;
+                    while ((pid = reader.readLine()) != null) {
+                        if (!pid.isBlank()) {
+                            pids.add(pid.trim());
+                        }
+                    }
+                }
+                if (!requireTitleAccess(req, resp, pids)) {
+                    return null;
+                }
+                for (String pid : pids) {
+                    ret = SolrIndexer.addDocToBatch(pid, batch, UserServlet.getUserName(req));
                 }
                 return ret;
             }
@@ -676,6 +750,23 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    List<String> pids = new ArrayList<>();
+                    pids.add(js.getString("pid"));
+                    String model = js.optString("model", "");
+                    if (model.equals("periodicalvolume") || model.equals("monographunit")) {
+                        JSONObject titleResponse = IndexSearcher.getTitleByPid(js.getString("pid"))
+                                .getJSONObject("response");
+                        if (titleResponse.getInt("numFound") > 0) {
+                            String rootPid = titleResponse.getJSONArray("docs").getJSONObject(0)
+                                    .optString("root_pid", null);
+                            if (rootPid != null) {
+                                pids.add(rootPid);
+                            }
+                        }
+                    }
+                    if (!requireTitleAccess(req, resp, pids)) {
+                        return null;
+                    }
                     json = SolrIndexer.changeState(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
@@ -689,6 +780,15 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
+                    JSONArray docs = IndexSearcher.getBatchDocs(js.getString("batch"), true)
+                            .getJSONObject("response").getJSONArray("docs");
+                    JSONArray pids = new JSONArray();
+                    for (int i = 0; i < docs.length(); i++) {
+                        pids.put(docs.getJSONObject(i).getString("pid"));
+                    }
+                    if (!requireTitleAccess(req, resp, pids)) {
+                        return null;
+                    }
                     json = SolrIndexer.changeStateInBatch(js, UserServlet.getUserName(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());

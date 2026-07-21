@@ -304,7 +304,7 @@ export class Results {
 
   setState(doc: any) {
 
-    if (doc.is_hierarchical || !this.state.user()) {
+    if (doc.is_hierarchical || !this.state.canEditTitle(doc)) {
       return;
     }
 
@@ -342,6 +342,9 @@ export class Results {
   }
 
   saveDocBatch(bs: string, docs: any[]) {
+    if (!this.state.canEditTitles(docs)) {
+      return;
+    }
     this.service.saveDocBatch(docs.map(d => d.pid), bs).subscribe((res: any) => {
       if (res.error) {
         this.ui.showErrorSnackBar('snackbar.record_added.error');
@@ -357,6 +360,9 @@ export class Results {
   }
 
   addToContract(contract: Contract, docs: any[]) {
+    if (!this.state.canEditTitles(docs)) {
+      return;
+    }
     const checkboxes = [{
       label: String(this.translator.instant('change_licenses_at_same_time')),
       checked: true
@@ -419,11 +425,15 @@ export class Results {
   }
 
   selectAll(e: any) {
-    this.docs().forEach((d: any) => d['selected']=e.target.checked);
+    this.docs().forEach((d: any) => d['selected'] = this.state.canEditTitle(d) && e.target.checked);
   }
 
   numSelected() {
     return this.docs().filter(d => d.selected).length;
+  }
+
+  canEditAnyTitle(): boolean {
+    return this.docs().some(doc => this.state.canEditTitle(doc));
   }
 
 }

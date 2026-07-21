@@ -27,4 +27,59 @@ describe('AppState roles', () => {
 
     expect(state.hasRole('kappAdmin')).toBeFalse();
   });
+
+  it('allows a title when any physical location matches any library role', () => {
+    state.setUser({realm_access: {roles: ['MZK', 'NKP']}});
+    state.libraryPhysicalLocations.set([
+      {library: 'MZK', physicalLocations: ['MZK01']},
+      {library: 'NKP', physicalLocations: ['ABA001']}
+    ]);
+
+    expect(state.canEditTitle({physical_locations: ['OTHER', 'ABA001']})).toBeTrue();
+    expect(state.canEditTitle({physical_locations: ['MZK01']})).toBeTrue();
+    expect(state.canEditTitle({physical_locations: ['OTHER']})).toBeFalse();
+  });
+
+  it('does not grant access from a mapping when the user lacks its role', () => {
+    state.setUser({realm_access: {roles: ['MZK']}});
+    state.libraryPhysicalLocations.set([
+      {library: 'NKP', physicalLocations: ['ABA001']}
+    ]);
+
+    expect(state.canEditTitle({physical_locations: ['ABA001']})).toBeFalse();
+  });
+
+  it('allows kappAdmin to edit every title', () => {
+    state.setUser({realm_access: {roles: ['kappAdmin']}});
+
+    expect(state.canEditTitle({physical_locations: []})).toBeTrue();
+  });
+
+  it('requires access to every title in a bulk edit', () => {
+    state.setUser({realm_access: {roles: ['MZK']}});
+    state.libraryPhysicalLocations.set([
+      {library: 'MZK', physicalLocations: ['MZK01']}
+    ]);
+
+    expect(state.canEditTitles([
+      {physical_locations: ['MZK01']},
+      {physical_locations: ['MZK01', 'OTHER']}
+    ])).toBeTrue();
+    expect(state.canEditTitles([
+      {physical_locations: ['MZK01']},
+      {physical_locations: ['ABA001']}
+    ])).toBeFalse();
+  });
+
+  it('recognizes any configured library role for global author editing', () => {
+    state.setUser({realm_access: {roles: ['MZK']}});
+    state.libraryPhysicalLocations.set([
+      {library: 'MZK', physicalLocations: []}
+    ]);
+
+    expect(state.hasLibraryRole()).toBeTrue();
+
+    state.setUser({realm_access: {roles: ['viewer']}});
+    expect(state.hasLibraryRole()).toBeFalse();
+  });
 });

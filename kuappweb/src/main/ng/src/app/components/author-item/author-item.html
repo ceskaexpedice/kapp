@@ -13,19 +13,23 @@
 					<mat-chip [style.background-color]="l.color" style="--mat-chip-label-text-color: {{l.text_color}};"
 						(removed)="removeLabel(l)">
 						{{ l.name }}
-						<button matChipRemove [attr.aria-label]="'remove ' + l.name">
-							<mat-icon>cancel</mat-icon>
-						</button>
+						@if (state.hasLibraryRole()) {
+							<button matChipRemove [attr.aria-label]="'remove ' + l.name">
+								<mat-icon>cancel</mat-icon>
+							</button>
+						}
 					</mat-chip>
 					}
-					<mat-chip [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
-						{{ 'Přidat štítek' | translate }}
-						<mat-menu #labelsMenu="matMenu">
-							@for(a of state.labels(); track $index) {
-							<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
-							}
-						</mat-menu>
-					</mat-chip>
+					@if (state.hasLibraryRole()) {
+						<mat-chip [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
+							{{ 'Přidat štítek' | translate }}
+							<mat-menu #labelsMenu="matMenu">
+								@for(a of state.labels(); track $index) {
+								<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
+								}
+							</mat-menu>
+						</mat-chip>
+					}
 				</mat-chip-set>
 			</div>
 		</mat-card-title>
@@ -93,7 +97,7 @@
 			}
 		</div>
 		} 
-		@if (state.user()) {
+		@if (state.hasLibraryRole()) {
       <button matButton (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
       @for(a of aut(); track $index) {
       <div class="app-metadata-row">
@@ -111,7 +115,7 @@
 	<mat-card-actions align="end">
 		<div class="app-fxLayout app-row app-gap-2">
 			@if(numTitles()) {<button matButton (click)="gotoTitles()" class="app-mr-1">{{ 'action.show_titles' | translate }} ({{ numTitles() }})</button>}
-			@if (state.user()) {
+			@if (state.hasLibraryRole()) {
 			<button matButton="outlined" [disabled]="loading()" (click)="onSave()">{{ 'action.save' | translate }}<mat-icon matSuffix>save</mat-icon></button>
 			<button matButton="outlined" (click)="toggleEdit()" >{{ 'action.edit' | translate }}<mat-icon matSuffix>edit</mat-icon></button>
 			}
