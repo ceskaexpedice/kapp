@@ -196,6 +196,9 @@ export class ResultItem {
   }
 
   addAuthor() {
+    if (!this.state.user()) {
+      return;
+    }
     
     const issued = this.doc().date_issued_year_kapp ? this.doc().date_issued_year_kapp : this.doc().date_issued_year;
     const data: AuthorTitleDialogData = {
@@ -224,6 +227,9 @@ export class ResultItem {
   }
 
   addLabel(l: Label) {
+    if (!this.state.user()) {
+      return;
+    }
     if (!this.labels.find(la => la.name === l.name)) {
       this.labels.push(l);
       this.saveLabels();
@@ -231,6 +237,9 @@ export class ResultItem {
   }
 
   removeLabel(l: Label) {
+    if (!this.state.user()) {
+      return;
+    }
     const index = this.labels.indexOf(l);
     if (index > -1) {
       this.labels.splice(index, 1);
