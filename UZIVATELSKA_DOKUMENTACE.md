@@ -1,7 +1,5 @@
 # Kurátorská aplikace web - uživatelská dokumentace
 
-Stav dokumentace: návrh podle aktuálního webového modulu `kuratorska-aplikace-web`.
-
 Tento dokument popisuje běžnou práci ve webovém rozhraní Kurátorské aplikace: vyhledávání děl a autorů, kurátorské úpravy, dávky, evidenci smluv a administrační nastavení. Dokumentace je psaná pro koncové uživatele aplikace, nikoli pro správce infrastruktury.
 
 ## Snímky obrazovky
@@ -29,6 +27,8 @@ Kurátorská aplikace slouží ke kontrole a evidenci autorskoprávního stavu d
 
 Aplikace pracuje s daty z digitálních knihoven Kramerius a s autoritními záznamy. Rozhraní umožňuje proklik na původní dokument v digitální knihovně i na autoritní záznam autora.
 
+Data proudí oběma směry. Backend Kurátorské aplikace sklízí bibliografická metadata z více instancí Krameria do společného úložiště. Kurátoři je následně kontrolují a upravují v tomto webovém rozhraní. Jednotlivé instance Krameria si změny stavů a licencí načítají zpět z HTTP rozhraní Kurátorské aplikace.
+
 ## Přihlášení
 
 Horní menu obsahuje odkazy na hlavní části aplikace:
@@ -44,6 +44,17 @@ Horní menu obsahuje odkazy na hlavní části aplikace:
 Nepřihlášený uživatel může procházet veřejně dostupné seznamy děl a autorů. Kurátorské akce, jako je editace autora, změna stavu, práce s dávkami nebo smlouvami, vyžadují přihlášení.
 
 ![Horní menu po přihlášení a přepínač jazyka](docs/img/02-menu-a-jazyk.png)
+
+## Oprávnění
+
+Rozsah dostupných akcí určuje přihlášení a role z Keycloaku:
+
+- nepřihlášený uživatel může prohlížet díla a autory,
+- přihlášený uživatel může pracovat se štítky a používat přihlášené části aplikace,
+- role digitální knihovny opravňuje k úpravě titulů, jejichž sigly odpovídají knihovně,
+- role `kappAdmin` umožňuje upravovat všechny tituly a spravovat mapování digitálních knihoven na sigly.
+
+Aktuální role a povolené sigly uživatel najde v uživatelském menu v části **Oprávnění**. Jestliže hromadná operace obsahuje titul mimo oprávněné sigly, aplikace operaci nepovolí.
 
 ## Rozcestník
 
@@ -221,7 +232,6 @@ Při uložení je vhodné vyplnit důvod změny tak, aby bylo z historie zřejm�
 | --- | --- | --- |
 | Kontrolované - volné | Dílo bylo posouzeno jako veřejně dostupné. | `public` |
 | Kontrolované - neveřejné | Dílo zůstává neveřejné. | `onsite` |
-| Kontrolované - neveřejné licence | Dílo je neveřejné obecně, ale může být zpřístupněno pod vybranou lokální licencí. | `onsite` nebo lokální licence |
 | Kontrolované - neznámé | Autorskoprávní stav nelze spolehlivě určit. | `onsite` |
 | Kontrolované - neznámé - volné | Stav je neznámý, ale existuje jiný důvod pro zpřístupnění. | `public` |
 | Kontrolované - bez autorských práv | Dílo není chráněno autorskými právy. | `public` |
