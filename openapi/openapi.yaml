@@ -17,10 +17,10 @@ paths:
       summary: Vrati zmenene licence dokumentu
       description: >
         Vraci dokumenty, u kterych byla zmenena prirazena licence. Vystup lze
-        filtrovat podle licence, zdrojove digitalni knihovny a casu zmeny.
+        filtrovat podle licence, zdrojove digitalni knihovny a casoveho intervalu zmeny.
       operationId: listChangedLicenses
       parameters:
-        - name: license
+        - name: licenses
           in: query
           required: false
           description: Filtr podle prirazene licence.
@@ -31,8 +31,8 @@ paths:
           in: query
           required: false
           description: >
-            Filtr podle zdrojove digitalni knihovny. Odpovida zkratce zdroje,
-            napr. hodnote pole digital_library.
+            Filtr podle zdrojove digitalni knihovny. Odpovida hodnote pole
+            digital_library.
           schema:
             type: string
             minLength: 1
@@ -47,6 +47,17 @@ paths:
             type: string
             format: date-time
           example: "2026-06-01T00:00:00Z"
+        - name: to
+          in: query
+          required: false
+          description: >
+            Vrati pouze zmeny s datem zmeny mensim nebo rovnym zadane hodnote.
+            Datum se predava v UTC jako ISO 8601 date-time. Pokud parametr neni
+            uveden, pouzije se aktualni cas.
+          schema:
+            type: string
+            format: date-time
+          example: "2026-06-30T23:59:59Z"
       responses:
         "200":
           description: Seznam zmenenych licenci odpovidajicich filtru.
@@ -58,9 +69,14 @@ paths:
                   $ref: "#/components/schemas/ChangedLicense"
               example:
                 - pid: "uuid:xxxx"
-                  license: public
+                  title: "Nazev dokumentu"
+                  assigned_licenses:
+                    - public
+                  licenses:
+                    - public
                   source: mzk
-                  date: "2026-06-01T12:34:56Z"
+                  stateDate: "2026-06-01T12:34:56Z"
+                  stateUser: "scheduler"
         "400":
           description: Neplatny filtr nebo spatny format parametru.
           content:
@@ -90,26 +106,50 @@ components:
       additionalProperties: false
       required:
         - pid
-        - license
+        - title
+        - assigned_licenses
+        - licenses
         - source
-        - date
+        - stateDate
+        - stateUser
       properties:
         pid:
           type: string
           description: PID dokumentu.
           pattern: "^uuid:.+"
           example: "uuid:xxxx"
-        license:
-          $ref: "#/components/schemas/License"
+        title:
+          type: string
+          nullable: true
+          description: Nazev dokumentu.
+          example: "Nazev dokumentu"
+        assigned_licenses:
+          type: array
+          nullable: true
+          description: Licence prirazene pracovnim postupem kuratorske aplikace.
+          items:
+            $ref: "#/components/schemas/License"
+        licenses:
+          type: array
+          nullable: true
+          description: Licence evidovane u dokumentu.
+          items:
+            type: string
         source:
           type: string
-          description: Zkratka zdrojove digitalni knihovny.
+          nullable: true
+          description: Zkratka zdrojove digitalni knihovny z pole digital_library.
           example: mzk
-        date:
+        stateDate:
           type: string
           format: date-time
           description: Datum a cas zmeny licence v UTC.
           example: "2026-06-01T12:34:56Z"
+        stateUser:
+          type: string
+          nullable: true
+          description: Uzivatel nebo proces, ktery zmenu provedl.
+          example: scheduler
     Error:
       type: object
       additionalProperties: false
