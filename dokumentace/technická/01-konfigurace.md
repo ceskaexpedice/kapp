@@ -1,153 +1,111 @@
 # Konfigurace aplikace
 
-Backendové služby čtou konfiguraci ze souboru:
+Společné nasazení vychází z repozitáře `nkp-deploy`. Jeho adresář `.kapp` se připojuje do backendových a webových kontejnerů jako `/root/.kapp`.
+
+## Backendová konfigurace
+
+Java služby čtou:
 
 ```text
-nkp-deploy/.kapp/app.conf
+<user-home>/.kapp/app.conf
 ```
 
-## Hlavní konfigurační bloky
-
-Konfigurace se skládá z těchto částí:
-
-- `solr` určuje URL Solru.
-- `workflow` nastavuje časové hranice pro automatické rozhodování.
-- `touchStoreConfig` určuje, kde se ověřuje existence dříve zpracovaných záznamů a kde se ukládá stav MODS.
-- `instances` obsahuje seznam zdrojových instancí Krameria.
-- `jobConfigs` je v modelu konfigurace připravené pole, ale v dostupném kódu se aktivně nepoužívá.
-
-## Příklad konfigurace
+V Docker Compose jde o `/root/.kapp/app.conf`, na hostiteli o `nkp-deploy/.kapp/app.conf`.
 
 ```json
 {
-  "solr": {
-    "url": "http://localhost:8983/solr"
-  },
-  "touchStoreConfig": {
-    "factory": "file",
-    "baseDir": "C:/Users/<user>/.kapp/touchstore"
-  },
   "workflow": {
     "publicYear": 110,
-    "onsiteYear": 70
+    "onsiteYear": 50,
+    "authorDeadEnoughYear": 70
+  },
+  "solr": {
+    "url": "http://solr-kappScheduler:8983/solr"
   },
   "instances": [
     {
-      "acronym": "mzk",
-      "url": "https://kramerius.mzk.cz/search/api/v7.0/client",
+      "acronym": "nkp",
+      "url": "https://api.kramerius7.nkp.cz/search/api/client/v7.0",
       "apiVersion": "v7",
       "solrCloud": true,
-      "physicalLocations": ["ABA000", "ABA001"],
-      "ROWS": 100
-    },
-    {
-      "acronym": "nkp",
-      "url": "https://ndk.cz/search/api/v5.0",
-      "apiVersion": "v5",
-      "solrCloud": false,
       "physicalLocations": ["BOA001"],
       "ROWS": 100
     }
-  ]
-}
-```
-
-## `solr`
-
-`solr.url` je základní URL Solru bez názvu kolekce.
-
-Příklad:
-
-```json
-{
-  "solr": {
-    "url": "http://localhost:8983/solr"
+  ],
+  "touchStoreConfig": {
+    "baseDir": "/touchstore",
+    "factory": "solr"
   }
 }
 ```
 
-Aplikace zapisuje do kolekcí:
+### `workflow`
 
-- `titles`
-- `authors`
+- `publicYear` je počet let od vydání, po kterém lze titul bez přesnějšího autorského údaje automaticky považovat za veřejný.
+- `onsiteYear` vymezuje období od vydání, ve kterém titul zůstává automaticky on-site.
+- `authorDeadEnoughYear` je počet let od úmrtí posledního autora od kdy je dílo považované za veřejné.
 
-## `workflow`
+Hranice se počítají proti aktuálnímu kalendářnímu roku. Změna hodnot ovlivní následující běh updateru nad existujícími daty.
 
-`workflow.publicYear` říká, po kolika letech se dílo považuje za veřejně dostupné podle data vydání.
+### `solr`
 
-`workflow.onsiteYear` říká, po kolika letech dokument přestává být automaticky on-site od roku úmrtí autora nebo roku vydání.
+`solr.url` je základní URL bez názvu core. Scheduler, harvester a updater k ní připojují názvy `titles`, `authors` a `contracts`.
 
-Při hodnotách:
+### `instances`
 
-```json
-{
-  "publicYear": 110,
-  "onsiteYear": 50
-}
-```
+Každá položka představuje jednu zdrojovou instanci Krameria:
 
-platí:
+- `acronym` je stabilní identifikátor zdroje, například `nkp` nebo `mzk`; zapisuje se do `digital_library` a používá se v polích `licenses_<acronym>`,
+- `url` je základní klientské API,
+- `apiVersion` podporuje `v5` nebo `v7` a označuje verzi Krameria,
+- `solrCloud` určuje stránkovací identifikátor API v7 (`compositeId` místo `pid`),
+- `physicalLocations` jsou sigly relevantní pro zdroj,
+- `ROWS` je velikost stránky, výchozí hodnota je `100`.
 
-- dokumenty starší nebo rovné hranici `aktuální rok - 110` mohou automaticky získat veřejnou licenci,
-- dokumenty novější nebo rovné hranici `aktuální rok - 50` mohou automaticky spadnout do on-site/neveřejného režimu,
-- dokumenty mezi těmito hranicemi typicky vyžadují kontrolu.
+Změna `acronym` vytvoří novou větev timestampů a z pohledu harvesteru nový zdroj.
 
-Hranice se počítají vždy proti aktuálnímu roku při běhu služby.
+### `touchStoreConfig`
 
-## `touchStoreConfig`
+- `factory: "solr"` zjišťuje existenci dokumentů přímo v `titles`; je to konfigurace použitá v `nkp-deploy`,
+- `factory: "file"` používá `baseDir` pro soubory PID, root PID, MODS, MD5, zdroje a sigel.
 
-`factory` může být:
+Souborový režim může u velkého objemu vyčerpat inody. `baseDir` musí být v kontejneru trvale připojený.
 
-- `file` používá lokální souborové úložiště - efektivnější, ale náročné na inodes filesystému.
-- `solr` používá solr - vhodné na malých serverech, kde nefunguje možnost file.
+## Timestampy harvestu
 
-Při `file` režimu se pro každý PID ukládají pomocné soubory:
-
-- `pid.txt`
-- `root_pid.txt`
-- `mods.xml`
-- `mods_md5.txt`
-- `source.txt`
-- `physicalLocations.txt`
-
-Adresáře jsou rozdělené podle UUID bez prefixu `uuid:` a bez pomlček.
-
-## `instances`
-
-Každá instance popisuje jeden zdrojový Kramerius:
-
-- `acronym` krátké označení digitální knihovny, zapisuje se do pole `digital_library` a do licenčních polí typu `licenses_<acronym>`.
-- `url` základní URL Kramerius API.
-- `apiVersion` podporované hodnoty jsou `v5` a `v7`.
-- `solrCloud` ovlivňuje identifikátor pro cursor paging u API v7; při `true` se používá `compositeId`, jinak `pid`.
-- `physicalLocations` seznam sigel, podle kterých se může rozhodovat, jestli se existující dokument z dané knihovny má aktualizovat.
-- `ROWS` počet položek na jeden dotaz při harvestu; pokud není uvedeno, výchozí hodnota je `100`.
-
-## Timestampy inkrementálního importu
-
-Harvester si pro každou instanci ukládá čas posledního dokončeného běhu do:
+Každá instance má čas posledního úspěšného běhu v:
 
 ```text
 <user-home>/.kapp/timestamps/<acronym>/timestamp
 ```
 
-Při dalším běhu se tento čas použije jako inkrementální filtr:
+API v5 filtruje podle `modified_date`, API v7 podle `indexed`. Chybějící timestamp znamená plnou sklizeň dané instance.
 
-- API v5 používá pole `modified_date`.
-- API v7 používá pole `indexed`.
+Konfigurace webu, Keycloaku a webových oprávnění je popsána v
+[technické dokumentaci submodulu](../../kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
 
-Pokud timestamp neexistuje, harvester provede full harvest.
+## Smlouvy
 
-## Související soubory
+PDF smluv jsou v adresáři připojeném přes `.kapp/contracts`. Metadata jsou v core `contracts`. Licence smlouvy určená pro konkrétní Kramerius musí mít prefix knihovny a podtržítko:
 
-Pro TSV import se používá také:
+```text
+nkp_<licence>
+mzk_<licence>
+```
+
+Updater prefix použije k výběru pole `licenses_<acronym>` a přidá chybějící licenci titulům odpovídajícím podle ČČNB nebo ISSN.
+
+## Tabulkové importy
+
+TSV importer očekává:
 
 ```text
 <user-home>/.kapp/tsv-mappings.json
-```
-
-Výchozí adresář s TSV soubory je:
-
-```text
 <user-home>/.kapp/Data
 ```
+
+Samostatný last-author updater přijímá vstupní TSV/Excel export a vlastní CLI parametry; viz [04-import-tsv.md](./04-import-tsv.md).
+
+## Citlivé hodnoty
+
+Do Git repozitáře nepatří reálné přístupové tokeny, Keycloak secrets ani produkční klíče pro analýzu smluv. Soubor `.kapp/config.json` musí mít produkční API klíč dodaný provozním secret mechanismem.
