@@ -39,7 +39,8 @@ describe('AuthService', () => {
             deployPath: undefined,
             keycloakUrl: 'https://id.example/realms/kapp/protocol/openid-connect',
             keycloak: {clientId: 'kapp'},
-            interceptresponse: new EventEmitter()
+            interceptresponse: new EventEmitter(),
+            load: jasmine.createSpy('load').and.returnValue(of({}))
           }
         }
       ]
@@ -106,5 +107,6 @@ describe('AuthService', () => {
     expect(request.request.params.get('redirect_uri')).toBe(`${window.location.origin}/keycloak`);
     request.flush({name: 'Test'});
     expect(status).toBe(AuthService.AUTH_AUTHORIZED);
+    expect(TestBed.inject(AppConfiguration).load).toHaveBeenCalled();
   });
 });

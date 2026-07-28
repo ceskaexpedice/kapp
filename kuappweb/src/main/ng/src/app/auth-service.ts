@@ -1,7 +1,7 @@
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { Router } from '@angular/router';
-import { map, Observable, throwError } from 'rxjs';
+import { map, Observable, take, throwError } from 'rxjs';
 import { User } from './shared/user';
 import { AppConfiguration } from './app-configuration';
 import { AppState } from './app-state';
@@ -178,7 +178,12 @@ export class AuthService {
           callback?.(AuthService.AUTH_NOT_LOGGED_IN);
         } else {
           this.state.user.set(user);
-          callback?.(AuthService.AUTH_AUTHORIZED);
+          this.settings.load().pipe(take(1)).subscribe({
+            next: () => callback?.(AuthService.AUTH_AUTHORIZED),
+            // Authentication succeeded even if refreshing optional application
+            // configuration fails. The normal error handling remains in load().
+            error: () => callback?.(AuthService.AUTH_AUTHORIZED)
+          });
         }
       },
       (error) => {
