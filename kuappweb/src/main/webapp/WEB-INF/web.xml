@@ -19,7 +19,7 @@
     </servlet>
     <servlet-mapping>
         <servlet-name>StateChangesServlet</servlet-name>
-        <url-pattern>/state-changes</url-pattern>
+        <url-pattern>/changes</url-pattern>
     </servlet-mapping>
     <servlet>
         <servlet-name>IndexServlet</servlet-name>
