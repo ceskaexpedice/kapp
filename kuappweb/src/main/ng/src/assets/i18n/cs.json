@@ -181,6 +181,7 @@
     "labels_visible_to": "Viditelné pro",
     "labels_everyone": "Pro všechny",
     "labels_private": "Soukromá",
+    "label_underscore_not_allowed": "Veřejný štítek nesmí obsahovat znak _",
     "new_license": "Nová licence",
     "new_dk": "Nová digitální knihovna",
     "dk": "Digitální knihovna",

@@ -181,6 +181,7 @@
     "labels_visible_to": "Visible to",
     "labels_everyone": "Everyone",
     "labels_private": "Private",
+    "label_underscore_not_allowed": "A public label cannot contain the _ character",
     "new_license": "New license",
     "new_dk": "New digital library",
     "dk": "Digital library",

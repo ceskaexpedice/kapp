@@ -66,11 +66,18 @@ export class Admin {
   }
 
   addLabel(l: Label) {
+    if (this.isNewPublicLabelInvalid(l.name)) {
+      return;
+    }
     if (!this.labels.find(la => la.name === l.name)) {
       this.labels.push({name: l.name, color: l.color});
       this.nl = {name: ''};
       this.saveLabels();
     }
+  }
+
+  isNewPublicLabelInvalid(name: string): boolean {
+    return this.labelScope === 'labels' && !!name?.includes('_');
   }
 
   saveLabels() {

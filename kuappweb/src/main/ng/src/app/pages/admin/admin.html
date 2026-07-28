@@ -50,13 +50,17 @@
 					<mat-form-field appearance="outline">
 						<mat-label>{{ 'admin.new_label_name' | translate }}</mat-label>
 						<input matInput [(ngModel)]="nl.name" />
+						@if(isNewPublicLabelInvalid(nl.name)) {
+							<mat-error>{{ 'admin.label_underscore_not_allowed' | translate }}</mat-error>
+						}
 					</mat-form-field>
 					<mat-form-field appearance="outline" class="app-set-color">
 						<mat-label>{{ 'admin.new_label_color' | translate }}</mat-label>
 						<input matInput [(ngModel)]="nl.color" />
 						<div matSuffix class="app-color" [style.background-color]="nl.color"></div>
 					</mat-form-field>
-					<button matButton="outlined" (click)="addLabel(nl)" class="app-btn-add"><!--[style.background-color]="nl.color" [style.color]="nl.text_color"-->
+					<button matButton="outlined" (click)="addLabel(nl)" class="app-btn-add"
+						[disabled]="isNewPublicLabelInvalid(nl.name)"><!--[style.background-color]="nl.color" [style.color]="nl.text_color"-->
 						<mat-icon>add_circle</mat-icon>Přidat
 					</button>
 				</div>
