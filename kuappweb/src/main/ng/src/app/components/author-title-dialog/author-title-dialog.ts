@@ -162,7 +162,9 @@ export class AuthorTitleDialog {
 
           id: a['controlfield_001'],
           nameIdentifier: a['controlfield_001'],
-          full: a['datafield_100a'],
+          // MARC 100$a commonly ends with a cataloguing comma. The UI renders
+          // the date separately, so keeping it would produce "Name, 1900-".
+          full: a['datafield_100a']?.replace(/,\s*$/, ''),
           family: a['family']?.[0],
           given: a['given']?.[0],
           date: a['datafield_100d'],
