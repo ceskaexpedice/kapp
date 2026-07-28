@@ -552,7 +552,7 @@ public class SolrIndexer {
         InputStream is = (InputStream) resp.get("stream");
         String r = IOUtils.toString(is, "UTF-8");
         JSONArray docs = (new JSONObject(r).getJSONObject("response")).getJSONArray("docs");
-        List<SolrInputDocument> tdocs = new ArrayList();
+        List<SolrInputDocument> tdocs = new ArrayList<>();
         for (int i = 0; i < docs.length(); i++) {
             JSONObject doc = docs.getJSONObject(i);
             tdocs.add(saveAuthorInTitle(doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray()), idChanged, user));

@@ -4,7 +4,6 @@
  */
 package cz.nkp.kuapp.kuappweb;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.cloud.vertexai.VertexAI;
 import com.google.cloud.vertexai.api.Content;
 import com.google.cloud.vertexai.api.GenerateContentResponse;
@@ -22,7 +21,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.Map;
 
 @WebServlet("/analyze-pdf")
 @MultipartConfig(
