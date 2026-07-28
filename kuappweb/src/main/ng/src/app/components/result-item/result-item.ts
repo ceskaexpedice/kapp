@@ -230,7 +230,7 @@ export class ResultItem {
   }
 
   addLabel(l: Label) {
-    if (!this.state.canEditTitle(this.doc())) {
+    if (!this.state.canEditTitleLabels()) {
       return;
     }
     if (!this.labels.find(la => (la.storageName || la.name) === (l.storageName || l.name))) {
@@ -240,7 +240,7 @@ export class ResultItem {
   }
 
   removeLabel(l: Label) {
-    if (!this.state.canEditTitle(this.doc())) {
+    if (!this.state.canEditTitleLabels()) {
       return;
     }
     const index = this.labels.indexOf(l);

@@ -8,7 +8,7 @@
 					<mat-chip [style.background-color]="l.color"
 						(removed)="removeLabel(l)"><!--style="--mat-chip-label-text-color: {{l.text_color}};"-->
 						{{ l.name }}
-						@if (state.canEditTitle(doc())) {
+						@if (state.canEditTitleLabels()) {
 							<button matChipRemove [attr.aria-label]="'remove ' + l.name">
 								<mat-icon class="app-close">close</mat-icon>
 								<mat-icon class="app-cancel">cancel</mat-icon>
@@ -16,7 +16,7 @@
 						}
 					</mat-chip>
 					}
-					@if (state.canEditTitle(doc())) {
+					@if (state.canEditTitleLabels()) {
 						<mat-chip [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
 							{{ 'Přidat štítek' | translate }}
 							<mat-menu #labelsMenu="matMenu">

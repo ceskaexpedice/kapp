@@ -382,9 +382,6 @@ public class IndexServlet extends HttpServlet {
                 JSONObject json = new JSONObject();
                 try {
                     JSONObject js = new JSONObject(IOUtils.toString(req.getInputStream(), "UTF-8"));
-                    if (!requireTitleAccess(req, resp, js.getString("pid"))) {
-                        return null;
-                    }
                     if (!IndexSearcher.getVisibleLabelStorageNames(req).contains(js.getString("label"))) {
                         resp.setStatus(HttpServletResponse.SC_FORBIDDEN);
                         return null;

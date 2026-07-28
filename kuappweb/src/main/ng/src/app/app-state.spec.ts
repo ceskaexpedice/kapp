@@ -55,6 +55,16 @@ describe('AppState roles', () => {
     expect(state.canEditTitle({physical_locations: []})).toBeTrue();
   });
 
+  it('allows every logged-in user to edit title labels regardless of library rights', () => {
+    state.setUser({realm_access: {roles: ['viewer']}});
+
+    expect(state.canEditTitleLabels()).toBeTrue();
+    expect(state.canEditTitle({physical_locations: ['MZK01']})).toBeFalse();
+
+    state.setUser(null);
+    expect(state.canEditTitleLabels()).toBeFalse();
+  });
+
   it('requires access to every title in a bulk edit', () => {
     state.setUser({realm_access: {roles: ['MZK']}});
     state.libraryPhysicalLocations.set([

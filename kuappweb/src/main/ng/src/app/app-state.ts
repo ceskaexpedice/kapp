@@ -80,6 +80,10 @@ import { LibraryPhysicalLocations } from "./shared/library-rights";
         return titles.length > 0 && titles.every(title => this.canEditTitle(title));
     }
 
+    canEditTitleLabels(): boolean {
+        return !!this.user();
+    }
+
     setLabelSet(id: string, labels: Label[]): void {
         const sets = {...this.labelSets(), [id]: labels};
         this.labelSets.set(sets);
