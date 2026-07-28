@@ -31,7 +31,7 @@ public class StateChangesServlet extends HttpServlet {
     private static final Logger LOGGER = Logger.getLogger(StateChangesServlet.class.getName());
     private static final int PAGE_SIZE = 1000;
     private static final String FIRST_CURSOR = "*";
-    private static final String RETURN_FIELDS = "pid,title,state,state_date,state_user";
+    private static final String RETURN_FIELDS = "pid,title,assigned_licenses,licenses,state_date,state_user";
 
     private final Clock clock;
 
@@ -109,7 +109,8 @@ public class StateChangesServlet extends HttpServlet {
         JSONObject result = new JSONObject();
         copyIfPresent(source, result, "pid", "pid");
         copyIfPresent(source, result, "title", "title");
-        copyIfPresent(source, result, "state", "state");
+        copyIfPresent(source, result, "assigned_licenses", "assigned_licenses");
+        copyIfPresent(source, result, "licenses", "licenses");
         copyIfPresent(source, result, "state_date", "stateDate");
         copyIfPresent(source, result, "state_user", "stateUser");
         return result;
