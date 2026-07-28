@@ -18,8 +18,6 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.HttpJdkSolrClient;
 import org.apache.solr.client.solrj.impl.InputStreamResponseParser;
 import org.apache.solr.client.solrj.request.json.JsonQueryRequest;
-import org.apache.solr.client.solrj.SolrQuery;
-import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.util.NamedList;
 import org.json.JSONArray;
@@ -226,136 +224,6 @@ public class SolrIndexer {
         return ret;
     }
 
-    public static Integer calculateReleaseYear(Integer dateIssuedYear, Integer lastAuthorDeathYear) {
-        return calculateReleaseYear(dateIssuedYear, lastAuthorDeathYear, false, false, false, false);
-    }
-
-    private static Integer calculateReleaseYear(
-            Integer dateIssuedYear,
-            Integer lastAuthorDeathYear,
-            boolean isAnonymous,
-            boolean isCollective,
-            boolean isOfficial,
-            boolean isPseudonymous
-    ) {
-
-        int publicYear = Options.getInstance().getJSONObject("app")
-                .getJSONObject("workflow").getInt("publicYear");
-        int authorDeadEnoughYear = Options.getInstance().getJSONObject("app")
-                .getJSONObject("workflow").getInt("authorDeadEnoughYear");
-        int onsiteYear = Options.getInstance().getJSONObject("app")
-                .getJSONObject("workflow").getInt("onsiteYear");
-
-        if (isOfficial) {
-            return dateIssuedYear;
-        }
-        if (isAnonymous || isCollective || isPseudonymous) {
-            return dateIssuedYear != null ? dateIssuedYear + authorDeadEnoughYear : null;
-        }
-
-
-        Integer issuedReleaseYear = dateIssuedYear != null ? dateIssuedYear + publicYear : null;
-
-        Integer authorReleaseYear = null;
-        if (dateIssuedYear != null && lastAuthorDeathYear != null) {//Everything is known calculate release year based on both
-            authorReleaseYear = Math.max(
-                    dateIssuedYear + onsiteYear,
-                    lastAuthorDeathYear + authorDeadEnoughYear
-            );
-        } else if (lastAuthorDeathYear != null) {
-            authorReleaseYear = lastAuthorDeathYear + authorDeadEnoughYear;//Issued year not known assume authorDeadEnoughYear from death year only
-        }
-
-        if (issuedReleaseYear == null) {//Issued year not known assume public year from death year only if possible
-            return authorReleaseYear;
-        }
-        if (authorReleaseYear == null) {//Author death year not known assume public year from issued year only
-            return issuedReleaseYear;
-        }
-        return Math.min(issuedReleaseYear, authorReleaseYear);
-    }
-
-    private static Integer calculateReleaseYearForTitleUpdate(SolrClient solr, JSONObject changes)
-            throws SolrServerException, IOException {
-        SolrDocument source = getTitleForReleaseYear(solr, changes.getString("pid"));
-        Integer dateIssuedYear = resolveDateIssuedYear(source, changes);
-        Integer lastYearDeath = changes.has("lastYearDeath")
-                ? changes.optIntegerObject("lastYearDeath", null)
-                : asInteger(source.getFieldValue("last_year_death"));
-
-        boolean isAnonymous = resolveBoolean(source, changes, "is_anonymous");
-        boolean isCollective = resolveBoolean(source, changes, "is_collective");
-        boolean isOfficial = resolveBoolean(source, changes, "is_official");
-        boolean isPseudonymous = resolveBoolean(source, changes, "is_pseudonymous");
-
-        return calculateReleaseYear(
-                dateIssuedYear,
-                lastYearDeath,
-                isAnonymous,
-                isCollective,
-                isOfficial,
-                isPseudonymous
-        );
-    }
-
-    private static SolrDocument getTitleForReleaseYear(SolrClient solr, String pid)
-            throws SolrServerException, IOException {
-        SolrQuery query = new SolrQuery()
-                .setQuery("pid:\"" + pid + "\"")
-                .setRows(1)
-                .setFields(
-                        "date_issued_year_kapp",
-                        "date_issued_year",
-                        "last_year_death",
-                        "is_anonymous",
-                        "is_collective",
-                        "is_official",
-                        "is_pseudonymous"
-                );
-        var docs = solr.query("titles", query).getResults();
-        return docs.isEmpty() ? new SolrDocument() : docs.get(0);
-    }
-
-    private static Integer resolveDateIssuedYear(SolrDocument source, JSONObject changes) {
-        Integer dateIssuedYearKapp = changes.has("date_issued_year_kapp")
-                ? changes.optIntegerObject("date_issued_year_kapp", null)
-                : asInteger(source.getFieldValue("date_issued_year_kapp"));
-        if (dateIssuedYearKapp != null) {
-            return dateIssuedYearKapp;
-        }
-
-        Integer dateIssuedYear = asInteger(source.getFieldValue("date_issued_year"));
-        if (dateIssuedYear != null) {
-            return dateIssuedYear;
-        }
-        return changes.optIntegerObject("dateIssuedYear", null);
-    }
-
-    private static boolean resolveBoolean(SolrDocument source, JSONObject changes, String field) {
-        return changes.has(field) ? changes.optBoolean(field) : isTrue(source.getFieldValue(field));
-    }
-
-    private static boolean isTrue(Object value) {
-        if (value instanceof Boolean booleanValue) {
-            return booleanValue;
-        }
-        return value != null && Boolean.parseBoolean(value.toString());
-    }
-
-    private static Integer asInteger(Object value) {
-        if (value == null) {
-            return null;
-        }
-        if (value instanceof Number number) {
-            return number.intValue();
-        }
-        try {
-            return Integer.valueOf(value.toString());
-        } catch (NumberFormatException ex) {
-            return null;
-        }
-    }
-
     public static JSONObject saveLastYearDeath(JSONObject js, String user) {
 
         JSONObject ret = new JSONObject();
@@ -371,8 +239,6 @@ public class SolrIndexer {
             } else {
                 addAtomicField(doc, "remove", null, "last_year_death");
             }
-            addAtomicField(doc, "set", calculateReleaseYearForTitleUpdate(solr, js), "release_year");
-
             addAtomicField(doc, "set", js.getJSONArray("authors").toString(), "authors_kapp");
 
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
@@ -405,7 +271,6 @@ public class SolrIndexer {
             addAtomicField(doc, "set", js.optBoolean("is_collective"), "is_collective");
             addAtomicField(doc, "set", js.optBoolean("is_official"), "is_official");
             addAtomicField(doc, "set", js.optBoolean("is_pseudonymous"), "is_pseudonymous");
-            addAtomicField(doc, "set", calculateReleaseYearForTitleUpdate(solr, js), "release_year");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
             addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
@@ -455,7 +320,6 @@ public class SolrIndexer {
             doc.setField("pid", js.getString("pid"));
 
             addAtomicField(doc, "set", js.optIntegerObject("date_issued_year_kapp", null), "date_issued_year_kapp");
-            addAtomicField(doc, "set", calculateReleaseYearForTitleUpdate(solr, js), "release_year");
             addAtomicField(doc, "add-distinct", user, "modified_by_user");
             addAtomicField(doc, "set", LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'")), "last_modified_date");
 
