@@ -1,157 +1,119 @@
 # Solr data a vyhledávání
 
-Aplikace používá Solr jako hlavní datové úložiště. V dostupném kódu se pracuje se dvěma kolekcemi:
+Solr je společné úložiště backendu i webu. Provozní definice cores a schémat jsou v `nkp-deploy/solr`.
 
-- `titles`
-- `authors`
+## Cores
 
-## Kolekce `titles`
+- `titles` - bibliografická, workflow a kurátorská data titulů,
+- `authors` - autoři vytěžení z titulů a upravení v KAPP,
+- `aut` - prohledávaný autoritní zdroj,
+- `contracts` - smlouvy a jejich metadata,
+- `configuration` - dynamická konfigurace UI a oprávnění.
 
-Kolekce `titles` obsahuje záznamy dokumentů z Krameria a workflow informace.
+## `titles`
 
-### Identifikace dokumentu
+### Identifikace a zdroj
 
-- `pid` primární identifikátor dokumentu.
-- `root_pid` identifikátor kořenového dokumentu.
-- `model` typ dokumentu.
-- `title` název dokumentu.
-- `root_title` název kořenového dokumentu.
-- `digital_library` zkratka zdrojové knihovny.
+- `pid`, `root_pid`, `model`,
+- `title`, `root_title`,
+- `digital_library`,
+- `physical_locations`,
+- `biblio_mods`, `biblio_mods_md5`.
 
-### MODS a bibliografická metadata
+Jeden centrální core obsahuje data z více Krameriů. `digital_library` a `licenses_<acronym>` zachovávají původ.
 
-- `biblio_mods` plné MODS XML.
-- `biblio_mods_md5` hash MODS XML.
-- `date_issued_str` původní text data vydání.
-- `date_issued_year` rozhodný rok vydání.
-- `date_issued_start_year` začátek rozsahu vydání z TSV importu.
-- `date_issued_end_year` konec rozsahu vydání z TSV importu.
-- `physical_locations` fyzické lokace vytažené z MODS.
+### Roky a autorství
+
+- `date_issued_str` - původní text data vydání,
+- `date_issued_year` - rok odvozený ze sklizených dat,
+- `date_issued_year_kapp` - kurátorsky opravený rok s vyšší prioritou,
+- `last_year_death` - rozhodný rok úmrtí posledního autora,
+- `last_author_excel` - hodnota posledního autora z tabulky,
+- `release_year` - vypočtený rok uvolnění,
+- `is_pseudonymous`, `is_anonymous`, `is_collective`, `is_official`.
 
 ### Autoři
 
-- `authors` čitelný seznam autorů.
-- `authors_kramerius` JSON reprezentace autorů vytažená z MODS.
-- `authors_ids` interní identifikátory autorů.
-- `nameIdentifier` autoritní identifikátor, pokud je dostupný.
-- `last_year_death` rok úmrtí posledního autora nebo jiný rozhodný rok.
+- `authors_kramerius` - autoři ze zdrojových MODS,
+- `authors_kapp` - kurátorsky upravení autoři,
+- `authors` a `authors_ids` - vyhledávací/odvozené hodnoty,
+- `author_modified` a `modified_by_user` - příznaky uživatelských úprav.
 
-### Licence
+### Licence a smlouvy
 
-- `licenses` licence načtené ze zdrojového Krameria.
-- `licenses_<acronym>` licence pro konkrétní digitální knihovnu, například `licenses_mzk`.
-- `assigned_licenses` licence přiřazené workflow aplikace.
+- `licenses` - zdrojové licence,
+- `licenses_<acronym>` - zdrojové licence konkrétní knihovny,
+- `assigned_licenses` - výsledné licence KAPP,
+- `contracts` nebo odpovídající vazební pole webu - smlouvy přiřazené k titulu.
 
-Workflow umí automaticky udržovat zejména hodnoty:
+Updater může `assigned_licenses` měnit workflow přechodem nebo přidáním licence ze smlouvy.
 
-- `public`
-- `onsite`
+### Workflow
 
-### Workflow pole
+- `state`,
+- `state_date`,
+- `state_user`,
+- `state_reason`,
+- `state_history`,
+- `last_modified_date`.
 
-- `state` aktuální stav.
-- `state_date` datum poslední změny stavu.
-- `state_user` uživatel nebo systém, který stav změnil.
-- `state_reason` důvod změny.
-- `state_history` historie změn ve formě JSON položek.
+Enum názvy se do indexu ukládají velkými písmeny, například `TO_CONTROL`, `CONTROLLED_PRIVATE` a `PARENT_OPEN`.
 
-### Pomocná pole
+### Pomocná data
 
-- `is_hierarchical` značí rodičovský/hierarchický dokument.
-- `labels` štítky, často z TSV importu.
-- `note` poznámky z TSV importu.
+- `is_hierarchical`,
+- `labels`,
+- `error_labels`,
+- `note`,
+- `batch`.
 
-## Kolekce `authors`
+## `authors`
 
-Kolekce `authors` obsahuje autoritní dokumenty vytvořené z MODS.
+Core obsahuje mimo jiné:
 
-Používaná pole podle sdíleného kódu zahrnují:
+- `id`, `old_id`, `nameIdentifier`,
+- `full`, `given`, `family`,
+- `date`, `date_birth`, `date_death`,
+- `year_birth`, `year_death`,
+- `confirmed_start_year`, `confirmed_end_year`,
+- `labels`, `note`,
+- `modified_by_user`, `last_modified_date`.
 
-- `date`
-- `year_death`
-- `year_birth`
-- `date_death`
-- `date_birth`
-- `confirmed_end_year`
-- `confirmed_start_year`
+## `contracts`
 
-Konkrétní strukturu dokumentu vytváří objekt autora při převodu na Solr dokument.
+Důležitá pole:
 
-## Běžné operátorské dotazy
+- `filename`, `name`, `cislo_smlouvy`, `title`,
+- `datum_uzavreni`, `datum_platnosti`,
+- `nazev_poskytovatele`, `ico`, `kontaktni_osoby`,
+- `digitalni_knihovny`, `license`,
+- `hlavni`, `hlavni_smlouva`, `dodatky`,
+- `ccnb`, `issn`,
+- `souhrn`, `full_text`.
 
-Dokumenty čekající na kontrolu:
+Updater používá především `filename`, `ccnb`, `issn` a `license`.
+
+## `configuration`
+
+Core je vlastněný webovou vrstvou a obsahuje dynamické seznamy a mapování. Jeho kontrakt je popsán v
+[technické dokumentaci webu](../../kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
+
+## Typické dotazy
 
 ```text
 state:TO_CONTROL
-```
-
-Rodiče s otevřenými dětmi:
-
-```text
+state:FOR_REVIEW
 state:PARENT_OPEN
-```
-
-Dokumenty importované z Excelu/TSV:
-
-```text
-labels:excel
-```
-
-Dokumenty s chybou v hodnotě zveřejnění v TSV:
-
-```text
-labels:excel_incorrect_license
-```
-
-Dokumenty s podezřelým rozsahem roku vydání (obvykle díla vydaná v budoucnosti apod.):
-
-```text
-labels:excel_suspicious_year_range
-```
-
-Dokumenty, které aplikace nastavila jako veřejné:
-
-```text
 assigned_licenses:public
-```
-
-Dokumenty, které aplikace nastavila jako on-site:
-
-```text
 assigned_licenses:onsite
-```
-
-Dokumenty ze zdroje MZK:
-
-```text
 digital_library:mzk
+labels:excel
+labels:excel_incorrect_license
+is_official:true
+release_year:[* TO 2026]
+state_date:[2026-07-01T00:00:00Z TO 2026-08-01T00:00:00Z]
 ```
 
-## Atomické aktualizace
+## Atomické aktualizace a commity
 
-Existující dokumenty se často aktualizují atomicky. Používají se operace:
-
-- `set`
-- `add`
-- `add-distinct`
-- `remove`
-
-## Stavové hodnoty v indexu
-
-Přestože enum má i textové hodnoty, do Solru se zapisují enum názvy. Operátorské dotazy proto používejte s hodnotami typu:
-
-```text
-NONCONTROLLED_PUBLIC
-CONTROLLED_PRIVATE
-TO_CONTROL
-PARENT_OPEN
-```
-
-Ne s hodnotami:
-
-```text
-noncontrolled_public
-controlled_private
-to_control
-parent_open
-```
+Backend i web používají atomické operace `set`, `add`, `add-distinct` a `remove`. Harvester a updater po dávkách provádějí explicitní commit. Při přímém zásahu do Solru zachovejte povinný identifikátor a očekávaný typ pole; jinak může atomická aktualizace selhat nebo změnit tvar vícehodnotového pole.

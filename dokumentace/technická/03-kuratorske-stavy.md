@@ -1,108 +1,89 @@
 # Kurátorské stavy a rozhodování
 
-Aplikace ukládá stav dokumentu do pole `state`.
+Aktuální stav je v `state`, výsledek licenčního rozhodnutí v `assigned_licenses`. Zdrojové licence z Krameria zůstávají odděleně v `licenses` a `licenses_<acronym>`.
 
-## Hlavní skupiny stavů
+## Stavy
 
-### Importní a automatické stavy
+### Automatické a importní
 
-- `IMPORTED` výchozí stav nově vytvořeného workflow dokumentu před automatickým rozhodnutím.
-- `NONCONTROLLED_PUBLIC` dokument je automaticky vyhodnocený jako veřejný; aplikace přiřazuje licenci `public`.
-- `NONCONTROLLED_PRIVATE` dokument je automaticky vyhodnocený jako neveřejný/on-site; aplikace přiřazuje licenci `onsite`.
-- `TO_CONTROL` dokument vyžaduje kurátorskou kontrolu.
-- `FOR_REVIEW` dokument byl dříve kontrolovaný, ale časem nebo novými informacemi vznikl důvod k opětovnému posouzení.
+- `IMPORTED` - záznam byl importován, ale nemá dokončený automatický výsledek.
+- `NONCONTROLLED_PUBLIC` - automaticky veřejný, obvykle `public`.
+- `NONCONTROLLED_PRIVATE` - automaticky on-site, obvykle `onsite`.
+- `TO_CONTROL` - vyžaduje kurátorskou kontrolu.
+- `FOR_REVIEW` - dříve kontrolovaný záznam vyžaduje nové posouzení.
 
-### Kurátorské stavy
+### Kurátorské
 
-- `CONTROLLED_PUBLIC` kurátorem schválené veřejné dílo; aplikace přiřazuje licenci `public`.
-- `CONTROLLED_PRIVATE` kurátorem označené neveřejné/on-site dílo; aplikace přiřazuje licenci `onsite`.
-- `CONTROLLED_UNKNOWN` kurátor nezná stav autorských práv.
-- `CONTROLLED_UNKNOWN_PUBLIC` stav neznámý, ale dokument má být zpřístupněný.
-- `CONTROLLED_WO_RIGHTS` dílo bez autorských práv; aplikace přiřazuje licenci `public`.
-- `CONTROLLED_BLOCKED` dílo je blokované/znepřístupněné z jiného důvodu.
-
-### Hierarchické stavy rodičů
-
-- `PARENT_OPEN` rodičovský dokument má alespoň jedno dítě ve stavu `TO_CONTROL`.
-- `PARENT_CLOSED` rodičovský dokument nemá děti ve stavu `TO_CONTROL`.
-
-## Automatické rozhodnutí po importu
-
-Automatické rozhodnutí se počítá z:
-
-- roku vydání,
-- roku úmrtí posledního autora,
-- typu/modelu dokumentu,
-- informace, zda jde o hierarchický titul,
-- hodnot `workflow.publicYear` a `workflow.onsiteYear`.
-
-Při výchozí konfiguraci `publicYear = 110` a `onsiteYear = 50` se dokumenty rozdělují následovně:
-
-- Rok vydání starší nebo rovný hranici `aktuální rok - 110`: `NONCONTROLLED_PUBLIC`.
-- Rok vydání novější nebo rovný hranici `aktuální rok - 50`: `NONCONTROLLED_PRIVATE`.
-- Monografie a monografické jednotky mezi těmito hranicemi: `TO_CONTROL`.
-- Svazky periodik (`periodicalvolume`): `NONCONTROLLED_PRIVATE`.
-- Ostatní modely mimo monografie: `NONCONTROLLED_PRIVATE`.
-
-Hierarchické rodičovské dokumenty při prvotním výpočtu zůstávají na `IMPORTED`; jejich stav se později dopočítává podle dětí na `PARENT_OPEN` nebo `PARENT_CLOSED`.
-
-## Přechody v čase
-
-Updater a import změněných MODS mohou dokument posunout:
-
-- `NONCONTROLLED_PRIVATE` může přejít na `TO_CONTROL`, pokud podle roku úmrtí autora nebo data vydání už nespadá do on-site okna a je potřeba posouzení.
-- `NONCONTROLLED_PRIVATE` může přejít na `NONCONTROLLED_PUBLIC`, pokud už podle data vydání překročil veřejnou hranici a nejsou k dispozici přesnější autorské údaje.
-- `TO_CONTROL` může automaticky přejít na `NONCONTROLLED_PUBLIC`, pokud rok úmrtí autora nebo rok vydání splňuje veřejnou hranici.
-- `TO_CONTROL` může automaticky přejít na `NONCONTROLLED_PRIVATE`, pokud rok vydání stále spadá do on-site okna.
-- `CONTROLLED_PRIVATE` může přejít na `FOR_REVIEW`, pokud časem překročí relevantní hranici.
-- `CONTROLLED_UNKNOWN` může přejít na `FOR_REVIEW`, pokud se doplní informace, která dovoluje nové posouzení.
-- `CONTROLLED_UNKNOWN` může přejít na `NONCONTROLLED_PRIVATE`, pokud nově zjištěné datum vydání ukáže, že jde o nedávné dílo.
-
-## Kurátorské rozhodnutí
-
-Kurátorský přechod dovoluje nastavit jen vybrané cílové stavy:
-
-- `CONTROLLED_PRIVATE`
 - `CONTROLLED_PUBLIC`
+- `CONTROLLED_PRIVATE`
 - `CONTROLLED_UNKNOWN`
-- `CONTROLLED_BLOCKED`
-- `CONTROLLED_WO_RIGHTS`
 - `CONTROLLED_UNKNOWN_PUBLIC`
-- `TO_CONTROL`
+- `CONTROLLED_WO_RIGHTS`
+- `CONTROLLED_BLOCKED`
 
-Ty používá výhradně TSV import. Webové rozhraní používá jinou logiku.
-Poté co přestane být TSVImporter používaný, bude i tato funkcionalita deprecated.
+Web používá stejné stavové hodnoty jako backend. České a anglické názvy zobrazené uživateli jsou pouze překlady těchto enum hodnot. Konkrétní volby ve webu určuje webová konfigurace; uživatelské významy jsou v
+[uživatelské dokumentaci webu](../../kuratorska-aplikace-web/UZIVATELSKA_DOKUMENTACE.md#ruční-kurátorské-stavy).
 
-## Licence přiřazované aplikací
+### Hierarchické
 
-Workflow stav může aktualizovat pole `assigned_licenses`:
+- `PARENT_OPEN` - alespoň jedno dítě čeká na kontrolu.
+- `PARENT_CLOSED` - žádné dítě nečeká na kontrolu.
+- `PARENT_CONTROLLED` - rodič byl kurátorsky uzavřen.
 
-- Stav s přiřazením `PUBLIC` odstraní `onsite` a přidá `public`.
-- Stav s přiřazením `ONSITE` odstraní `public` a přidá `onsite`.
-- Stav s přiřazením `NONE` licenci nemění.
-- Stav s přiřazením `LOCAL` je v kódu připravený, ale není implementovaný.
+## Vstupy automatického rozhodnutí
 
-## Historie stavů
+Workflow používá:
 
-Každá provedená workflow změna nastavuje:
+- `date_issued_year_kapp`, pokud existuje, jinak `date_issued_year`,
+- `last_year_death`,
+- model a `is_hierarchical`,
+- `is_pseudonymous`, `is_anonymous`, `is_collective`, `is_official`,
+- hranice `publicYear`, `onsiteYear`, `authorDeadEnoughYear`.
 
-- `state`
-- `state_date`
-- `state_user`
-- `state_reason`
+`date_issued_year_kapp` má přednost, protože představuje kurátorsky opravený rok a nesmí být přepsán další sklizní.
 
-Zároveň přidává položku do `state_history` ve formě JSON objektu s klíči:
+## Základní pravidla
 
-- `date`
-- `state`
-- `user`
-- `reason`
+- Velmi staré vydání může přejít na `NONCONTROLLED_PUBLIC`.
+- Nové vydání spadá do `NONCONTROLLED_PRIVATE`.
+- Monografie a monografické jednotky mezi hranicemi přecházejí na `TO_CONTROL`.
+- `periodicalvolume` se vyhodnocuje podle roku vydání; bez roku vyžaduje kontrolu.
+- Jiné modely jsou standardně neveřejné.
+- Hierarchický root se dopočítá ze stavů dětí.
+- Známý poslední autor se hodnotí podle `authorDeadEnoughYear` a současně podle data vydání.
 
-## Rodičovské stavy
+## Pravidla přednostního uvolnění
 
-Po importu se spouští přepočet rodičů. Mechanismus vyhledá dokumenty s `is_hierarchical:true`, seskupí jejich děti podle `root_pid` a nastaví:
+Příznaky pseudonymního, anonymního, kolektivního a úředního díla aktivují přednostní pravidlo. Z příznaku a roku vydání se vypočte `release_year`. Pokud je rok již dosažen, workflow použije uvolněný cílový stav; jinak neveřejný stav nebo ponechá záznam k budoucímu přepočtu.
 
-- `PARENT_OPEN`, pokud některé dítě čeká na kontrolu,
-- `PARENT_CLOSED`, pokud žádné dítě nečeká na kontrolu.
+Při více příznacích má úřední dílo vyšší prioritu než ostatní kategorie. Pokud bez roku vydání nelze pravidlo spočítat, změna se neprovede a důvod tuto skutečnost zaznamená.
 
-Prakticky to znamená, že operátor má u hierarchických titulů řešit hlavně otevřené rodiče, protože signalizují rozpracované nebo nezkontrolované podřízené části.
+## Automatické přechody
+
+Updater znovu vyhodnocuje všechny tituly, ne pouze tituly s `assigned_licenses:onsite`. Může například:
+
+- posunout automaticky neveřejný titul ke kontrole nebo na public,
+- označit kontrolovaný neveřejný/neurčitý titul jako `FOR_REVIEW`,
+- přepočítat periodika,
+- reagovat na kurátorskou opravu roku vydání nebo posledního autora,
+- reagovat na příznaky anonymního, kolektivního, pseudonymního nebo úředního díla,
+- opravit/doplnit `release_year`.
+
+## Záznam změny
+
+Provedený přechod nastaví:
+
+- `state`,
+- `state_date`,
+- `state_user`,
+- `state_reason`,
+- položku v `state_history`,
+- případnou změnu `assigned_licenses`,
+- `release_year`,
+- `last_modified_date`.
+
+`state_date` je integrační timestamp používaný endpointem pro Kramerius k výpisu změn licencí. Ostatní vracená data jsou pro Kramerius pouze informativní.
+
+## Licence ze smluv
+
+Licence smluv jsou nezávislý doplňující mechanismus. Updater najde tituly podle ČČNB/ISSN a pro každou licenci s prefixem knihovny zkontroluje, zda titul pochází z odpovídající instance. Chybějící licence přidá do `assigned_licenses`; existující hodnoty neodstraňuje.

@@ -1,107 +1,77 @@
 # Plánovač a updater
 
-Modul `services:scheduler` používá Quartz a slouží ke spouštění naplánovaných úloh. 
-Úlohy jsou Harvester a Updater.
+Modul `services:scheduler` používá Quartz. Stejný image se v `nkp-deploy` spouští dvakrát s jiným argumentem.
 
-## Hlavní třída
+## Režimy scheduleru
 
-Scheduler startuje třídou:
+`cz.inovatika.SchedulerMain` vyžaduje právě jeden argument:
 
-```text
-cz.inovatika.SchedulerMain
+- `harvester` - zaregistruje jen harvest job,
+- `updater` - zaregistruje jen updater job,
+- `all` - zaregistruje oba joby v jednom procesu.
+
+Bez argumentu nebo s jinou hodnotou proces skončí chybou. Compose používá oddělené služby:
+
+```yaml
+harvester:
+  command: ["harvester"]
+
+updater:
+  command: ["updater"]
 ```
 
-Orientační postup spuštění:
+To umožňuje obě služby restartovat a sledovat nezávisle.
 
-```powershell
-.\gradlew :services:scheduler:run
-```
+## Časování
 
-Tento postup projekt spouští; zde je uvedený jen jako dokumentace pro operátora.
+Oba triggery používají `startNow()`. Harvester má interval 24 hodin, updater `365 * 24` hodin. Praktický důsledek je:
 
-## Co scheduler aktuálně spouští
+- po startu/restartu kontejneru se úloha spustí ihned,
+- harvester poté běží přibližně denně,
+- updater poté přibližně ročně.
 
-Updatovací úloha:
+Interval je v současnosti zapsaný v kódu, není v `app.conf`.
 
-```text
-initUpdateJob(scheduler)
-```
+## Harvester job
 
-Harvestovací úloha:
-
-```text
-initHarvestJob(scheduler)
-```
+`cz.inovatika.HarvesterJob` načte konfiguraci a spustí inkrementální sklizeň. Chybějící timestamp způsobí plnou sklizeň dané instance. Dřívější ruční metody `fullHarvest()` a `incrementalHarvest()` nejsou aktivní veřejné CLI.
 
 ## Updater job
 
-Updater job používá třídu:
+`cz.inovatika.UpdaterJob` načte konfiguraci a spustí `UpdaterImpl`.
 
-```text
-cz.inovatika.UpdaterJob
+Aktuální updater:
+
+1. Projde smlouvy v core `contracts`.
+2. Podle ČČNB/ISSN najde odpovídající tituly.
+3. Licence s prefixem knihovny doplní do `assigned_licenses`, pokud daný titul skutečně náleží odpovídající knihovně.
+4. Cursor pagingem projde všechny dokumenty v `titles` po 100 vstupech.
+5. Zvolí kurátorsky opravený nebo sklizený rok vydání.
+6. Znovu vyhodnotí workflow včetně posledního autora a zvláštních typů autorství.
+7. Doplní chybějící štítek pro titul bez `root_title`.
+8. Aktualizuje `release_year`, i když se stav nemění.
+9. Změny zapisuje po dávkách 200 a explicitně commituje `titles`.
+
+Změny workflow se zapisují s uživatelem `Updater`.
+
+## Kandidátní filtr
+
+Kód obsahuje builder kandidátního filtru podle roků a příznaků. V aktuálním běhu však není filtr připojen k Solr dotazu; updater záměrně prochází všechny tituly. Při odhadu času a zatížení proto vycházejte z celé velikosti core `titles`.
+
+## Last-author updater
+
+`services:last-author-updater` je samostatná jednorázová aplikace, nikoli Quartz job. Páruje hodnoty `last_author_excel` s core `authors`, zapisuje upravená autoritní data k titulům a může připravit podklady pro další workflow přepočet.
+
+Spuštění a volby jsou popsané v [04-import-tsv.md](./04-import-tsv.md).
+
+## Ruční spuštění
+
+Pro lokální Gradle běh:
+
+```powershell
+.\gradlew :services:scheduler:run --args="harvester"
+.\gradlew :services:scheduler:run --args="updater"
+.\gradlew :services:last-author-updater:run --args="<volby>"
 ```
 
-Při spuštění:
-
-1. Načte `<user-home>/.kapp/app.conf`.
-2. Vytvoří `UpdaterImpl`.
-3. Spustí aktualizaci nad Solrem.
-
-Interval v aktuálním kódu je:
-
-```text
-365 * 24 hodin
-```
-
-Trigger zároveň používá `startNow()`, takže po startu scheduleru se úloha spustí hned a pak se opakuje zhruba jednou ročně.
-
-## Co updater kontroluje
-
-Updater prochází kolekci `titles` a hledá dokumenty:
-
-- s `assigned_licenses:onsite`,
-- s `date_issued_year` starším než hranice `aktuální rok - publicYear`.
-
-Pro každý nalezený dokument znovu zavolá workflow pravidla nad aktuálním stavem.
-
-Pokud pravidla vrátí nový stav, updater zapíše workflow přechod s uživatelem:
-
-```text
-Updater
-```
-
-Na konci provede commit kolekce `titles`.
-
-## Harvest job
-
-Harvest job používá třídu:
-
-```text
-cz.inovatika.HarvesterJob
-```
-
-Podporuje parametr:
-
-```text
-runType
-```
-
-Hodnoty:
-
-- `INCREMENTAL` spustí harvester.
-- `FULL` vyhodí chybu, protože plný harvest přes scheduler není implementovaný, místo toho je ekvivalentní INCREMENTAL, když chybí timestamp.
-
-## Ruční trigger metody
-
-`SchedulerMain` obsahuje statické metody:
-
-- `fullHarvest()`
-- `incrementalHarvest()`
-
-Tyto metody předpokládají, že scheduler běží a že je zaregistrovaný odpovídající job. Nejde o samostatné CLI příkazy dostupné operátorovi bez další obslužné vrstvy.
-
-## Docker a volumes
-
-V repozitáři je `Dockerfile` pro scheduler.
-
-Kontejnerové služby očekávají konfiguraci v `/root/.kapp`, mapovanou z lokálního profilu uživatele viz. `nkp-deploy/.kapp/app.conf`.
+V produkci preferujte příslušnou Compose službu, protože používá správné volume a síťové názvy.

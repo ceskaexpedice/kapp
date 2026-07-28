@@ -1,161 +1,107 @@
 # Provoz a řešení problémů
 
-Tento dokument shrnuje praktické kontroly pro operátora. Příkazy jsou uvedené jako postup.
+## Společný deployment
 
-## Deployment
-- Na server se umístí obsah repozitáře nkp-deploy.
-- Je potřeba aby byl dostupný docker a tomcat.
-- v nkp-deploy jednou spustit: docker compose pull
-  - k images aplikace je potřeba autorizace
-- Následné spouštění probíhá pomocí docker compose up
-  - Spustí se Solr
-  - Webová aplikace
-  - Scheduler s Harvesterem a Updaterem
+Produkční jednotkou je repozitář `nkp-deploy`. Aktuální `docker-compose.yml` spouští:
 
-## Před spuštěním služby
+- `solr` na hostitelském portu `8983`,
+- `tomcat` s webem/API na portu `8088`,
+- `harvester` z image `kappscheduler:latest` s argumentem `harvester`,
+- `updater` ze stejného image s argumentem `updater`.
 
-Zkontrolujte:
-- existuje `<user-home>/.kapp/app.conf`,
-- `app.conf` obsahuje `solr.url`,
-- Solr (měl by být správně pokud byl spuštěný z dockeru):
-  - Solr je dostupný na uvedené URL ,
-  - existují kolekce `titles` a `authors`,
-- instance Krameria jsou dostupné,
-- pokud používáte `factory: "file"`, existuje a je zapisovatelný adresář `touchStoreConfig.baseDir`,
-- pokud importujete TSV, existuje `<user-home>/.kapp/tsv-mappings.json`,
-- TSV soubory mají skutečně příponu `.tsv`.
+Oba backendové kontejnery čekají na healthcheck Solru. Všechny aplikační kontejnery sdílejí `./.kapp:/root/.kapp`.
 
-## Jak poznat úspěšný harvest
+## První spuštění
 
-Po běhu harvesteru ověřte:
+V kořeni `nkp-deploy`:
 
-- v Solru přibyly nebo se aktualizovaly dokumenty v `titles`,
-- dokumenty mají pole `state`,
-- dokumenty mají `state_history`,
-- dokumenty mají `biblio_mods_md5`,
-- u importovaných instancí vznikl nebo se změnil timestamp v `.kapp/timestamps/<acronym>/timestamp`,
-- v kolekci `authors` přibyly autoritní záznamy.
-
-## Když se importuje příliš mnoho dat
-
-Pravděpodobné příčiny:
-
-- chybí timestamp instance,
-- timestamp byl smazán,
-- timestamp je nečitelný,
-- změnilo se `acronym`, takže harvester hledá timestamp v jiné složce,
-- zdrojové API vrací jako změněné více záznamů, než se čekalo.
-
-Kontrola:
-
-```text
-<user-home>/.kapp/timestamps/<acronym>/timestamp
+```bash
+sudo chown -R 8983:8983 solr/
+docker compose pull
+docker compose up -d
+docker compose ps
 ```
 
-## Když se neimportuje nic
+Přihlášení do registru je nutné podle nastavení GitLab registry. Hostitelský Tomcat není potřeba; web běží v kontejneru služby `tomcat`.
 
-Pravděpodobné příčiny:
+## Před spuštěním
 
-- timestamp je novější než data ve zdrojové instanci,
-- zdrojové API je nedostupné,
-- query pro danou verzi API neodpovídá očekávaným polím,
-- v konfiguraci je špatná `apiVersion`,
-- při API v7 je špatně nastavené `solrCloud`, a tím i identifikátor pro stránkování.
+Ověřte:
 
-## Když selhává stahování MODS
+- Docker a Compose,
+- čitelnost `.kapp/app.conf` a webové konfigurace,
+- práva uživatele 8983 k `solr/`,
+- cores `titles`, `authors`, `aut`, `contracts`, `configuration`,
+- dostupnost všech URL v `instances`,
+- perzistenci `.kapp/contracts` a případného file touch store,
+- Keycloak URL, realm/client a role,
+- že produkční secrets nejsou nahrazené ukázkovými hodnotami.
 
-Ověřte endpoint podle verze API:
+## Aktualizace
 
-API v5:
-
-```text
-<url>/item/<pid>/streams/BIBLIO_MODS
+```bash
+git pull
+docker compose pull
+docker compose up -d
+docker compose ps
 ```
 
-API v7:
+Změny Solr schémat kontrolujte před restartem. `nkp-deploy` obsahuje i data cores; neprovádějte slepé nahrazení produkčních indexových adresářů obsahem pracovního repozitáře.
 
-```text
-<url>/items/<pid>/metadata/mods
+## Logy
+
+```bash
+docker compose logs -f harvester
+docker compose logs -f updater
+docker compose logs -f tomcat
+docker compose logs -f solr
 ```
 
-Harvester HTTP požadavek opakuje až 10krát. Pokud endpoint vrací jiný stav než `200`, MODS se pro daný PID nezpracuje.
+Protože joby používají `startNow()`, restart `harvester` nebo `updater` okamžitě spustí práci. Restart updateru není neutrální diagnostický krok.
 
-## Když nefunguje file touch store
+## Kontrola harvestu
 
-Zkontrolujte:
+- změnil se `.kapp/timestamps/<acronym>/timestamp`,
+- v `titles` přibyly/změnily se dokumenty a MODS MD5,
+- v `authors` přibyly autority,
+- nové tituly mají `state`, `state_history` a `assigned_licenses`,
+- log obsahuje commity `titles` a `authors`.
 
-- `touchStoreConfig.factory` je `file`,
-- `touchStoreConfig.baseDir` není prázdné,
-- proces má právo do adresáře zapisovat,
-- PID má platný tvar UUID, protože cesta se odvozuje z UUID bez `uuid:` a bez pomlček.
+Chybějící timestamp způsobí full harvest. Nesprávné `apiVersion`, `url` nebo `solrCloud` může způsobit prázdný či opakující se cursor.
 
-Při správném zápisu by u dokumentu měly existovat soubory:
+## Kontrola updateru
 
-- `pid.txt`
-- `root_pid.txt`
-- `mods.xml`
-- `mods_md5.txt`
-- `source.txt`
-- `physicalLocations.txt`
+- log nejdřív zpracuje smlouvy a poté tituly,
+- změny stavu mají `state_user:Updater`,
+- `release_year` odpovídá opravenému nebo sklizenému roku,
+- licence ze smluv se přidaly pouze titulům se shodným ČČNB/ISSN a správnou knihovnou,
+- po běhu proběhl commit `titles`.
 
-Pokud možnost `file` nefunguje použijte solr jako záložní verzi. Omezené servery mohou vyčerpat své inodes pokud používají možnost `file`
+Updater aktuálně prochází celý core. U velkého indexu sledujte dobu běhu a zatížení Solru.
 
-## Když TSV import nezmění stav
+Provozní kontrola webového API a diagnostika oprávnění je v
+[technické dokumentaci webu](../../kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
 
-Zkontrolujte:
+## Smlouvy
 
-- TSV soubor má odpovídající položku v `tsv-mappings.json`,
-- název souboru přesně odpovídá `match`, nebo začíná prefixem z `matchStartsWith`,
-- sloupec s UUID je namapovaný na `pid`,
-- sloupec se zveřejněním je namapovaný na `public_string`,
-- dokument s daným PID už existuje v Solru,
-- dokument má pole `model`,
-- požadovaný stav je mezi povolenými kurátorskými cíli.
+Když updater nepřidá licenci:
 
-## Když rodič zůstává otevřený
+- smlouva musí mít ČČNB nebo ISSN,
+- licence musí obsahovat prefix a `_`, například `mzk_dnnt`,
+- titul musí mít shodný identifikátor,
+- odpovídající `licenses_<acronym>` musí potvrdit danou knihovnu,
+- zkontrolujte log „Skipping contract license“.
 
-Rodič má stav `PARENT_OPEN`, pokud alespoň jedno dítě má `state:TO_CONTROL`.
+## File touch store
 
-Postup:
+Při `factory: "file"` zkontrolujte trvalý a zapisovatelný `baseDir`. Pro PID se ukládají `pid.txt`, `root_pid.txt`, `mods.xml`, `mods_md5.txt`, `source.txt` a `physicalLocations.txt`. Při problémech s inody použijte `factory: "solr"`.
 
-1. Najděte děti podle `root_pid`.
-2. Vyfiltrujte děti se `state:TO_CONTROL`.
-3. Dokončete jejich kurátorskou kontrolu.
-4. Spusťte přepočet rodičů přes harvest nebo odpovídající backendovou úlohu.
+## Bezpečný hromadný zásah
 
-## Když updater mění nečekané dokumenty
-
-Updater hledá dokumenty s:
-
-```text
-assigned_licenses:onsite
-```
-
-a zároveň:
-
-```text
-date_issued_year:{ * TO <aktuální rok - publicYear>}
-```
-
-Pokud se změnila hodnota `publicYear`, může se rozsah dokumentů výrazně změnit.
-
-## Logy a chybové stavy
-
-Služby používají hlavně Java logging a částečně `System.out`/`System.err`. Při provozním incidentu je vhodné hledat:
-
-- `Failed to load configuration`
-- `Harvesting problem`
-- `Failed to get MODS`
-- `Failed to parse date range`
-- `Failed to send batch`
-- `Scheduled task failed`
-- `UpdaterJob failed`
-
-## Bezpečný provozní postup při hromadné změně
-
-1. Zálohujte Solr kolekce nebo snapshot dat.
-2. Ověřte konfiguraci a hranice workflow.
-3. Na menším vzorku ověřte očekávané přechody.
-4. Spusťte import nebo updater.
-5. Zkontrolujte počty dokumentů podle `state` a `assigned_licenses`.
-6. Zkontrolujte `state_history` u několika reprezentativních dokumentů.
+1. Pořiďte Solr backup/snapshot.
+2. Ověřte konfiguraci a počty kandidátů.
+3. Vyzkoušejte reprezentativní vzorek.
+4. Spusťte příslušnou službu/import.
+5. Porovnejte počty stavů a licencí.
+6. Zkontrolujte `state_history`, `state_date`, `release_year` a smluvní licence.
+7. Teprve poté posuňte checkpoint odebírajícího Krameria.

@@ -1,155 +1,123 @@
 # Import z Krameria
 
-Import z Krameria zajišťuje modul `services:harvester`. Jeho úkolem je načíst záznamy z nakonfigurovaných instancí, stáhnout MODS metadata, uložit data do Solru a určit počáteční workflow stav.
+Modul `services:harvester` sklízí metadata z více nakonfigurovaných instancí Krameria do společného Solru. Podporuje API v5 a v7.
 
-## Co musí být připravené
+## Předpoklady
 
-Před importem musí být připravené:
+- běžící Solr s cores `titles` a `authors`,
+- platný `<user-home>/.kapp/app.conf`,
+- dostupná API všech položek `instances`,
+- funkční a perzistentní touch store,
+- zapisovatelný adresář timestampů.
 
-- běžící Solr s kolekcemi `titles` a `authors`,
-- soubor `<user-home>/.kapp/app.conf`,
-- funkční URL zdrojových instancí Krameria,
-- zapisovatelný adresář pro touch store, pokud je `touchStoreConfig.factory` nastaveno na `file`.
+V produkci spouští harvester samostatná Compose služba. Lokálně:
 
-## Jak se import ovládá
+```powershell
+.\gradlew :services:scheduler:run --args="harvester"
+```
 
-V dostupném kódu je hlavní třída harvesteru:
+## Běh přes instance
+
+Pro každou instanci harvester:
+
+1. nastaví `.kapp/timestamps/<acronym>/timestamp`,
+2. načte poslední úspěšný čas, pokud existuje,
+3. sestaví dotaz a inkrementální filtr odpovídající verzi API,
+4. stránkuje přes cursor a stabilní identifikátor,
+5. doplní vazby monografií na `monographunit`,
+6. pro každý dokument stáhne MODS,
+7. vypočte MD5 a porovná jej s touch store,
+8. vytěží rok vydání, autory, identifikátory a sigly,
+9. vytvoří nový dokument nebo atomickou aktualizaci,
+10. vyhodnotí workflow a zapíše změnu stavu,
+11. odešle dávky titulů a autorů,
+12. přepočítá hierarchické rodiče,
+13. explicitně commituje `titles` a `authors`,
+14. uloží nový timestamp.
+
+Timestamp se nesmí posunout po neúspěšném neúplném běhu.
+
+## API v5
+
+Výběrový dotaz omezuje model na:
 
 ```text
-cz.inovatika.impl.HarvesterImpl
+fedora.model:(monograph OR monographunit)
 ```
 
-Harvester je pouštěn primárně skrze scheduler. (`services:scheduler`)
-Jednorázové spuštění je možné přes Gradle úlohu modulu `services:harvester`, případně přes sestavený fat JAR.
+Používá starší pole, například `PID`, `pid_path`, `root_pid`, `root_title`, `fedora.model`, `dc.title`, `dnnt-labels` a `dostupnost`.
 
-```powershell
-.\gradlew :services:harvester:run
-```
-
-Nebo po sestavení shadow JAR:
-
-```powershell
-java -jar services/harvester/build/libs/<harvester-jar>.jar
-```
-
-Služba při startu automaticky čte konfiguraci z `<user-home>/.kapp/app.conf`.
-
-## Průběh importu
-
-Pro každou instanci v `instances` harvester provede:
-
-1. Nastaví cestu k timestampu pro danou instanci.
-2. Načte poslední timestamp, pokud existuje.
-3. Sestaví cursor dotaz do Krameria.
-4. Stránkuje výsledky přes `cursorMark`.
-5. Z každého výsledku vytvoří interní položku s PID, root PID, modelem, názvem a licencemi.
-6. U monografií dohledá, jestli mají podřízené `monographunit`; periodika označuje jako hierarchická.
-7. Pro každý záznam stáhne MODS XML.
-8. Spočítá MD5 MODS XML.
-9. Porovná, zda už dokument existuje a zda se MODS změnilo.
-10. Vytěží metadata a zapíše je do Solru.
-11. Vypočítá nebo aktualizuje workflow stav.
-12. Po dávkách odesílá změny do kolekce `titles` a autority do kolekce `authors`.
-13. Na konci aktualizuje stav rodičů hierarchických dokumentů.
-14. Uloží nový timestamp.
-
-## Podporované verze Krameria
-
-### API v5
-
-Používá se pro starší Kramerius. Importní dotaz pracuje s poli:
-
-- `PID`
-- `pid_path`
-- `root_pid`
-- `root_title`
-- `fedora.model`
-- `dc.title`
-- `dnnt-labels`
-- `dostupnost`
-
-MODS se stahuje z endpointu:
+MODS:
 
 ```text
 <url>/item/<pid>/streams/BIBLIO_MODS
 ```
 
-Inkrementální filtr používá:
+Inkrementální filtr:
 
 ```text
 modified_date:[<lastUpdated> TO *]
 ```
 
-### API v7
+## API v7
 
-Používá se pro novější Kramerius. Importní dotaz pracuje s poli:
+Výběrový dotaz zahrnuje:
 
-- `pid`
-- `own_pid_path`
-- `root.pid`
-- `root.title`
-- `model`
-- `titles.search`
-- `licenses_of_ancestors`
-- `licenses`
+```text
+model:(monograph OR monographunit OR periodical OR periodicalvolume)
+```
 
-MODS se stahuje z endpointu:
+Používá pole `pid`, `own_pid_path`, `root.pid`, `root.title`, `model`, `titles.search`, `licenses_of_ancestors` a `licenses`.
+
+MODS:
 
 ```text
 <url>/items/<pid>/metadata/mods
 ```
 
-Inkrementální filtr používá:
+Inkrementální filtr:
 
 ```text
 indexed:[<lastUpdated> TO *]
 ```
 
-## Jak se pozná nový a existující dokument
+Při `solrCloud:true` se pro cursor používá `compositeId`, jinak `pid`.
 
-Harvester používá `TouchStore`.
+## Omezení počtu požadavků
 
-Při `factory: "file"` se existence pozná podle souboru `mods_md5.txt` v lokálním touch store. Pokud dokument neexistuje, vytvoří se celý Solr dokument. Pokud existuje, harvester připraví atomickou aktualizaci.
+API v7 respektuje hlavičku `Retry-After`. Po jejím obdržení nastaví globální prodlevu mezi dalšími požadavky; prodleva přetrvá během zpracování instance a před další instancí se vynuluje. Chyby při odesílání Solr dávky se opakují až desetkrát.
 
-Při `factory: "solr"` se existence kontroluje proti dokumentu v kolekci `titles`.
+## Nový a existující titul
 
-## Kdy se existující dokument aktualizuje
+Touch store určuje, zda PID už byl zpracován:
 
-U existujícího dokumentu se kontroluje:
+- v režimu `solr` dotazem do `titles`,
+- v režimu `file` pomocí uloženého MD5 a pomocných souborů.
 
-- zda dokument patří k povoleným `physicalLocations`,
-- zda se změnilo MODS XML podle MD5,
-- zda se změnou MODS nemá změnit automatický stav.
+U existujícího titulu se kontroluje změna MODS a relevantní sigly. Kurátorsky spravovaná pole, zejména `date_issued_year_kapp`, musí zůstat oddělená od znovu sklizených hodnot.
 
-Pokud je seznam fyzických lokací z předchozího zpracování prázdný, harvester se pokusí najít lokace přes root PID.
+## Normalizace data vydání
 
-## Co se ukládá z MODS
+Harvester čte text data z MODS, normalizuje známé nepřesné zápisy a parsuje rozsah. Pokud vstup vyžaduje zvláštní zásah nebo jej nelze bezpečně vyložit, přidá diagnostický štítek namísto tichého odhadu.
 
-Z MODS se vytěžuje zejména:
+Výsledkem je zejména:
 
-- bibliografické MODS XML,
-- MD5 MODS XML,
-- datum vydání,
-- autoři,
-- identifikátory,
-- fyzické lokace,
-- poslední rok úmrtí autora, pokud jej autoritní parsování umí odvodit,
-- normalizované identifikátory autorů.
+- `date_issued_str`,
+- `date_issued_year`,
+- případné diagnostické `labels`.
 
-## Dávkování
+## Autoři
 
-Harvester odesílá:
+Autoři z MODS se ukládají do `authors_kramerius` a současně se doplňují do core `authors`. Autoritní identifikátory jsou normalizované. Kurátorské autory v `authors_kapp` sklizeň nemá přepsat.
 
-- tituly po dávkách `200`,
-- autority po dávkách `250`, v části kódu je ale pro flush použit společný limit `200`.
+## Hierarchie
 
-## Očekávaný výsledek importu
+Monografie mohou mít podřízené `monographunit`; API v7 podporuje také periodika a svazky. Root tituly mají `is_hierarchical:true`. Po sklizni se stav rodiče přepočte podle dětí na `PARENT_OPEN` nebo `PARENT_CLOSED`.
 
-Po úspěšném importu by mělo platit:
+## Výsledek úspěšného běhu
 
-- nové nebo změněné tituly jsou v kolekci `titles`,
-- autoři jsou v kolekci `authors`,
-- každý zpracovaný titul má `state`,
-- workflow změna má záznam ve `state_history`,
-- aplikací přiřazená licence je v `assigned_licenses`,
-- timestamp instance je aktualizovaný.
+- změněné tituly jsou commitnuté v `titles`,
+- noví autoři jsou commitnutí v `authors`,
+- nové tituly mají workflow stav, historii a přiřazenou licenci,
+- zdroj je zachovaný v `digital_library` a licenčních polích instance,
+- timestamp instance odpovídá dokončenému běhu.
