@@ -14,7 +14,13 @@
           @if (k.field === 'state') {
           {{ 'state.' + k.value | translate}}
           } @else if (k.field === 'labels') {
-          {{ k.value | translate}}
+            @let label = labelsByStorageName().get(k.value);
+            {{ (label?.name || k.value) | translate }}
+            @if (label?.visibility === 'private') {
+              ({{ 'admin.labels_private' | translate }})
+            } @else if (label?.visibility === 'library') {
+              ({{ label?.owner }})
+            }
           } @else {
           {{ k.value }}
           }

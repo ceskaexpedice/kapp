@@ -121,22 +121,34 @@ import { LibraryPhysicalLocations } from './shared/library-rights';
                     } 
                     this.state.contractTitleColumns.update(a => [...ctc1]);
 
+                    const configuredLibraries: string[] = resp.config
+                        .find((item: any) => item.id === 'digitalni_knihovny')?.value
+                        || this.config.digitalni_knihovny;
                     const labelSets: Record<string, Label[]> = {};
                     resp.config
                         .filter((item: any) => item.id === 'labels' || item.id?.startsWith('labels_'))
                         .forEach((item: any) => {
-                            const visibility = item.label_visibility || (item.id === 'labels' ? 'everyone' : 'scoped');
                             const owner = item.label_owner || (item.id === 'labels' ? '' : item.id.substring('labels_'.length));
+                            const visibility: 'everyone' | 'private' | 'library' = item.label_visibility
+                                || (item.id === 'labels'
+                                    ? 'everyone'
+                                    : configuredLibraries.includes(owner) ? 'library' : 'private');
                             labelSets[item.id] = (item.value || []).map((label: Label) => this.withTextColor({
                                 ...label,
-                                storageName: visibility === 'everyone' || !owner ? label.name : `${label.name}_${owner}`
+                                storageName: visibility === 'everyone' || !owner ? label.name : `${label.name}_${owner}`,
+                                visibility,
+                                owner
                             }));
                         });
                     const globalLabels = labelSets['labels'] || [];
                     const globalNames = new Set(globalLabels.map(label => label.name));
                     this.config.labels.forEach(label => {
                         if (!globalNames.has(label.name)) {
-                            globalLabels.unshift({...label, storageName: label.name});
+                            globalLabels.unshift({
+                                ...label,
+                                storageName: label.name,
+                                visibility: 'everyone'
+                            });
                         }
                     });
                     labelSets['labels'] = globalLabels;

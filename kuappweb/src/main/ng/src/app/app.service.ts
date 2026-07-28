@@ -143,7 +143,8 @@ export class AppService {
   }
 
   saveLabels(labels: Label[], visibility: 'everyone' | 'private' | 'library' = 'everyone', library?: string): Observable<any> {
-    return this.post('index/save_labels', {labels, visibility, library});
+    const storedLabels = labels.map(({storageName, visibility: labelVisibility, owner, ...label}) => label);
+    return this.post('index/save_labels', {labels: storedLabels, visibility, library});
   }
 
   saveDocLabel(pid: string, label: string, selected: boolean): Observable<any> {

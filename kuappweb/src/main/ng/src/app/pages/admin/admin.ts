@@ -78,14 +78,15 @@ export class Admin {
     if (!scope) {
       return;
     }
-    const labelsToSave = this.labels.map(({storageName, ...label}) => label);
-    this.service.saveLabels(labelsToSave, scope.visibility, scope.library).subscribe(resp => {
+    this.service.saveLabels(this.labels, scope.visibility, scope.library).subscribe(resp => {
       if (resp.error) {
         this.ui.showErrorSnackBar('snackbar.record_saved.error');
       } else {
         this.state.setLabelSet(scope.id, this.labels.map(label => ({
           ...label,
-          storageName: scope.visibility === 'everyone' ? label.name : `${label.name}_${scope.owner}`
+          storageName: scope.visibility === 'everyone' ? label.name : `${label.name}_${scope.owner}`,
+          visibility: scope.visibility,
+          owner: scope.owner
         })));
         this.ui.showInfoSnackBar('snackbar.record_saved.success');
         console.log(resp);
