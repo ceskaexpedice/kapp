@@ -1,62 +1,66 @@
 # Přehled kurátorské aplikace
 
-Tato dokumentace popisuje aktuální stav backendu projektu. Webová část `kuratorska-aplikace-web` se zde nepopisuje.
+Tato dokumentace popisuje celý společně nasazovaný systém, včetně webového modulu `kuratorska-aplikace-web`. Web je vedený jako Git submodule jen kvůli oddělenému vývoji; provozně je součástí Kurátorské aplikace.
 
-## K čemu aplikace slouží
+## Účel systému
 
-Kurátorská aplikace shromažďuje bibliografická metadata z instancí Krameria, ukládá je do Solru a nad nimi vede workflow dostupnosti dokumentů. Cílem je určit, jestli má být dokument veřejný, neveřejný/on-site, nebo jestli vyžaduje kurátorskou kontrolu.
+Kurátorská aplikace shromažďuje bibliografická metadata z více instancí Krameria do jednoho centrálního Solru. Nad společnými daty vede autorskoprávní workflow, umožňuje kurátorské zásahy a poskytuje změny zpět jednotlivým instancím Krameria.
 
-Aplikace pracuje hlavně s dokumenty typu:
+Základní integrační směr je:
 
-- `monograph`
-- `monographunit`
+```text
+Kramerius A ─┐
+Kramerius B ─┼─> harvester ─> Solr <─> webové UI / kurátorská práce
+Kramerius N ─┘                     │
+                                  └─> GET /state-changes ─> příslušný Kramerius
+```
 
-## Základní části systému
+Harvester tedy data z Krameria čte. Po automatickém nebo ručním rozhodnutí si Kramerius výsledek vyžádá z Kurátorské aplikace. Kurátorská aplikace změny aktivně neposílá.
 
-Projekt je vícemodulová Java/Gradle aplikace:
+## Části systému
 
-- `services:harvester` stahuje dokumenty z Krameria, načítá MODS metadata, vypočítává počáteční workflow stav a zapisuje záznamy do Solru.
-- `services:Updater` pravidelně hledá záznamy, kterým se časem změnily podmínky dostupnosti, a posouvá je do dalšího stavu.
-- `services:scheduler` spouští naplánované úlohy přes Quartz.
-- `services:init` importuje kurátorské výsledky z TSV souborů, typicky exportů z Excelu.
-- `services:common` obsahuje sdílené parsování dat, autorů, datumů a Solr helpery.
+- `kuratorska-aplikace-web` je webové UI a servletová API vrstva. Její uživatelská a technická dokumentace zůstává v submodulu.
+- `services:harvester` sklízí metadata z API Krameria v5/v7, načítá MODS, počítá počáteční workflow a zapisuje tituly a autory.
+- `services:Updater` znovu vyhodnocuje workflow, dopočítává rok uvolnění, označuje chybějící data a aplikuje licence ze smluv.
+- `services:scheduler` spouští harvester nebo updater jako dlouho běžící Quartz službu.
+- `services:init` importuje kurátorské tabulky TSV a obsahuje import posledních autorů z Excelu.
+- `services:last-author-updater` páruje údaje o posledním autorovi z Excelu s autory a tituly v Solru.
+- `services:common` obsahuje sdílené datové modely, normalizaci, parsování a Solr helpery.
+- `nkp-deploy` skládá celý systém pomocí Docker Compose a obsahuje provozní konfiguraci i Solr cores.
 
 ## Hlavní datový tok
 
-1. Na daný server operátor umístí obsah repozitáře nkp-deploy
-2. Případně upraví konfiguraci v `.kapp/app.conf`.
-3. Harvester projde nakonfigurované instance Krameria.
-4. Pro každý nalezený záznam stáhne stručná metadata ze search endpointu a následně MODS XML.
-5. Z MODS XML vytěží datum vydání, autory, identifikátory a fyzické lokace.
-6. Podle workflow pravidel určí stav dokumentu.
-7. Záznam uloží do Solru do kolekce `titles`; autority ukládá do kolekce `authors`.
-8. U hierarchických titulů dopočítá stav rodiče podle stavů podřízených jednotek.
-9. Updater později kontroluje dokumenty s licencí `onsite`, kterým mohl časem vzniknout nárok na přeposouzení nebo zveřejnění.
-10. TSV import simuluje kurátorskou práci podle Excel tabulek.
+1. `nkp-deploy` spustí Solr, web, samostatný harvester a samostatný updater.
+2. Harvester projde všechny položky `instances` v `.kapp/app.conf`.
+3. Z každé instance načte změněné dokumenty, MODS, licence a zdrojovou knihovnu.
+4. Metadata normalizuje a uloží do centrálních kolekcí `titles` a `authors`.
+5. Workflow určí počáteční stav, přiřazené licence a rok uvolnění.
+6. Kurátoři upravují společná data ve webovém UI. Oprávnění k titulům se odvozují z rolí knihoven a sigel.
+7. Updater periodicky přepočítá kandidáty, doplní licence plynoucí ze smluv a uloží změny.
+8. Změna výsledné licence nastaví `state_date`. Kramerius si licenční změny za časový interval vyžádá přes `GET /state-changes`.
+9. Kramerius z odpovědi převezme licence pro daný PID a uloží si poslední úspěšně zpracovaný čas.
 
-## Co aplikace ukládá
+## Sdílená data
 
-Pro tituly se ukládají zejména:
+Solr v nasazení obsahuje zejména cores:
 
-- PID a root PID.
-- Model dokumentu.
-- Název a root název.
-- MODS XML a jeho MD5 hash.
-- Datum vydání a odvozený rok.
-- Autoři a identifikátory autorů.
-- Zdrojová digitální knihovna.
-- Licence nalezené v Krameriovi.
-- Licence přiřazené aplikací.
-- Workflow stav, datum změny, uživatel, důvod změny a historie změn.
-- Štítky a poznámky z importovaných tabulek.
+- `titles` - tituly, zdrojová metadata, kurátorská data, workflow a licence,
+- `authors` - autoři vytěžení z MODS a upravení v KAPP,
+- `aut` - autoritní index používaný webem,
+- `contracts` - metadata smluv a jejich licence,
+- `configuration` - dynamická konfigurace webu, štítky a vazby knihovna-sigla.
 
-## Jak číst další dokumenty
+PDF smluv a provozní konfigurace jsou ve volume `.kapp`.
 
-- Pokud nastavujete prostředí, začněte dokumentem [01-konfigurace.md](./01-konfigurace.md).
-- Pokud řešíte import z Krameria, pokračujte na [02-import-z-krameria.md](./02-import-z-krameria.md).
-- Pokud řešíte kurátorské rozhodování a stavy, použijte [03-kuratorske-stavy.md](./03-kuratorske-stavy.md).
-- Pokud importujete výsledky kontrol z Excelu/TSV, použijte [04-import-tsv.md](./04-import-tsv.md).
-- Pokud řešíte plánované úlohy, použijte [05-planovac-a-updater.md](./05-planovac-a-updater.md).
-- Pokud potřebujete znát data v Solru, použijte [06-solr-data.md](./06-solr-data.md).
-- Pokud něco selhává, použijte [07-provoz-a-reseni-problemu.md](./07-provoz-a-reseni-problemu.md).
-- Seznam bodů k doplnění je v [08-otevrene-otazky.md](./08-otevrene-otazky.md).
+## Dokumentace
+
+- [01-konfigurace.md](./01-konfigurace.md) - konfigurace backendu a vazba na nasazení.
+- [02-import-z-krameria.md](./02-import-z-krameria.md) - sklizeň z více Krameriů.
+- [03-kuratorske-stavy.md](./03-kuratorske-stavy.md) - workflow, licence a rok uvolnění.
+- [04-import-tsv.md](./04-import-tsv.md) - tabulkové importy a poslední autor.
+- [05-planovac-a-updater.md](./05-planovac-a-updater.md) - plánované služby a updater.
+- [06-solr-data.md](./06-solr-data.md) - Solr cores a důležitá pole.
+- [07-provoz-a-reseni-problemu.md](./07-provoz-a-reseni-problemu.md) - deployment a diagnostika.
+- [08-otevrene-otazky.md](./08-otevrene-otazky.md) - integrační rozhodnutí, která musí být dohodnuta.
+- [Webová uživatelská dokumentace](../../kuratorska-aplikace-web/UZIVATELSKA_DOKUMENTACE.md) - práce ve webovém UI.
+- [Webová technická dokumentace](../../kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md) - servletová vrstva, oprávnění a pull API pro Kramerius.
