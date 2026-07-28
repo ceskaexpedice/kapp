@@ -14,6 +14,14 @@
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
     <servlet>
+        <servlet-name>StateChangesServlet</servlet-name>
+        <servlet-class>cz.nkp.kuapp.kuappweb.StateChangesServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StateChangesServlet</servlet-name>
+        <url-pattern>/state-changes</url-pattern>
+    </servlet-mapping>
+    <servlet>
         <servlet-name>IndexServlet</servlet-name>
         <servlet-class>cz.nkp.kuapp.kuappweb.IndexServlet</servlet-class>
     </servlet>
