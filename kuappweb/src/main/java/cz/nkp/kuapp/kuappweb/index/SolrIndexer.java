@@ -1,6 +1,7 @@
 package cz.nkp.kuapp.kuappweb.index;
 
 import cz.nkp.kuapp.kuappweb.Options;
+import cz.nkp.kuapp.kuappweb.WorkflowUpdaterClient;
 import java.io.IOException;
 import java.io.InputStream;
 import java.time.LocalDateTime;
@@ -379,6 +380,11 @@ public class SolrIndexer {
 
             solr.add("titles", doc);
             solr.commit("titles");
+            WorkflowUpdaterClient.requestUpdate(
+                    js.getString("pid"),
+                    user,
+                    "last_year_death"
+            );
             ret.put("msg", "saved");
 
         } catch (Exception ex) {
@@ -405,6 +411,11 @@ public class SolrIndexer {
 
             solr.add("titles", doc);
             solr.commit("titles");
+            WorkflowUpdaterClient.requestUpdate(
+                    js.getString("pid"),
+                    user,
+                    "authorship_type"
+            );
             ret.put("msg", "saved");
 
         } catch (Exception ex) {
@@ -450,6 +461,11 @@ public class SolrIndexer {
 
             solr.add("titles", doc);
             solr.commit("titles");
+            WorkflowUpdaterClient.requestUpdate(
+                    js.getString("pid"),
+                    user,
+                    "date_issued"
+            );
             ret.put("msg", "saved");
 
         } catch (Exception ex) {
@@ -520,7 +536,18 @@ public class SolrIndexer {
                 // save all titles
                 String old_id = js.optString("old_id", null);
                 boolean idChanged = old_id != null && !js.optString("old_id").equals(js.getString("id"));
-                saveAuthorsInAllTitles(solr, old_id == null ? js.getString("id") : old_id, idChanged, js, user);
+                List<String> affectedPids = saveAuthorsInAllTitles(
+                        solr,
+                        old_id == null ? js.getString("id") : old_id,
+                        idChanged,
+                        js,
+                        user
+                );
+                WorkflowUpdaterClient.requestUpdates(
+                        affectedPids,
+                        user,
+                        "author_updated"
+                );
                 // Remove author if id changed
                 if (idChanged) {
                     solr.deleteById("authors", js.optString("old_id"));
@@ -538,7 +565,13 @@ public class SolrIndexer {
         return ret;
     }
 
-    private static void saveAuthorsInAllTitles(SolrClient solr, String old_id, boolean idChanged, JSONObject js, String user) throws SolrServerException, IOException {
+    private static List<String> saveAuthorsInAllTitles(
+            SolrClient solr,
+            String old_id,
+            boolean idChanged,
+            JSONObject js,
+            String user
+    ) throws SolrServerException, IOException {
         String q = "*";
         JsonQueryRequest jrequest = new JsonQueryRequest()
                 .setQuery(q)
@@ -553,14 +586,17 @@ public class SolrIndexer {
         String r = IOUtils.toString(is, "UTF-8");
         JSONArray docs = (new JSONObject(r).getJSONObject("response")).getJSONArray("docs");
         List<SolrInputDocument> tdocs = new ArrayList<>();
+        List<String> affectedPids = new ArrayList<>();
         for (int i = 0; i < docs.length(); i++) {
             JSONObject doc = docs.getJSONObject(i);
-            tdocs.add(saveAuthorInTitle(doc.getString("pid"), js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray()), idChanged, user));
+            String pid = doc.getString("pid");
+            affectedPids.add(pid);
+            tdocs.add(saveAuthorInTitle(pid, js, doc.optJSONArray("authors_kapp", new JSONArray()), doc.optJSONArray("authors_kramerius", new JSONArray()), idChanged, user));
             //saveAuthorInTitle(solr, doc.getString("pid"), js, new JSONArray());
         }
         solr.add("titles", tdocs);
         solr.commit("titles");
-
+        return affectedPids;
     }
 
     private static SolrInputDocument saveAuthorInTitle(String pid, JSONObject new_author, JSONArray authors_kapp, JSONArray authors_kramerius, boolean idChanged, String user) throws SolrServerException, IOException {
@@ -601,6 +637,13 @@ public class SolrIndexer {
         }
 
         addAtomicField(tdoc, "set", authors_kapp.toString(), "authors_kapp");
+        if (new_author_title.optBoolean("isLast")) {
+            if (new_author.has("year_death") && !new_author.isNull("year_death")) {
+                addAtomicField(tdoc, "set", new_author.getInt("year_death"), "last_year_death");
+            } else {
+                addAtomicField(tdoc, "remove", null, "last_year_death");
+            }
+        }
 
         // Remove old_id, add new
         // addAtomicField(tdoc, "add-distinct", id, "authors_ids");
@@ -644,6 +687,11 @@ public class SolrIndexer {
 
             solr.add("titles", doc);
             solr.commit("titles");
+            WorkflowUpdaterClient.requestUpdate(
+                    js.getString("pid"),
+                    user,
+                    "authors_in_title"
+            );
 
             if (js.has("author") && !js.isNull("author")) {
                 addAtomicField(doc, "add-distinct", "author_modified", "labels");
