@@ -399,6 +399,7 @@ export class ResultItem {
   saveTypDila() {
     this.service.saveTypDila(this.doc().pid, this.is_anonymous, this.is_collective, this.is_official, this.is_pseudonymous).subscribe((res: any) => {
       console.log(res)
+      this.closeEditingDilo();
     })
   }
 
