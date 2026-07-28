@@ -16,8 +16,8 @@
     @if(state.user()) {
       <a matButton [matMenuTriggerFor]="usermenu">{{ state.user().preferred_username ? state.user().preferred_username : state.user().name }}</a>
       <mat-menu #usermenu="matMenu">
-        <!-- <button mat-menu-item  (click)="viewUser()">Profile</button> -->
-        <button mat-menu-item (click)="logout()">Logout</button>
+        <a mat-menu-item [routerLink]="['rights']">{{ 'navbar.rights' | translate }}</a>
+        <button mat-menu-item (click)="logout()">{{ 'navbar.logout' | translate }}</button>
       </mat-menu>
       <a [routerLink]="['admin']" routerLinkActive="app-active-link" matButton>{{ 'navbar.admin' | translate}}</a>
       @if(state.hasRole('kappAdmin')) {

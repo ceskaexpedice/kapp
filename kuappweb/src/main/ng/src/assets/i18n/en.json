@@ -194,11 +194,22 @@
   "navbar": {
     "admin": "Administration",
     "library_rights": "Library rights",
+    "rights": "Rights",
+    "logout": "Logout",
     "titles": "Titles",
     "authors": "Authors",
     "batches": "Batches",
     "login": "Login",
     "contracts": "Contracts"
+  },
+  "user_rights": {
+    "title": "User rights",
+    "library_roles": "Library roles",
+    "physical_locations": "Assigned physical locations",
+    "other_roles": "Other roles",
+    "full_access": "Unrestricted access to all titles and rights settings.",
+    "no_physical_locations": "No physical locations are assigned to this role.",
+    "no_library_roles": "The user has no library role."
   },
   "footer": {
     "kap": "Curator application",

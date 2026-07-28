@@ -194,11 +194,22 @@
   "navbar": {
     "admin": "Administrace",
     "library_rights": "Práva knihoven",
+    "rights": "Práva",
+    "logout": "Odhlásit",
     "titles": "Díla",
     "authors": "Autoři",
     "batches": "Dávky",
     "login": "Login",
     "contracts": "Evidence smluv"
+  },
+  "user_rights": {
+    "title": "Práva uživatele",
+    "library_roles": "Role knihoven",
+    "physical_locations": "Přiřazené sigly / fyzická umístění",
+    "other_roles": "Ostatní role",
+    "full_access": "Neomezený přístup ke všem titulům a nastavením práv.",
+    "no_physical_locations": "K této roli nejsou přiřazena žádná fyzická umístění.",
+    "no_library_roles": "Uživatel nemá žádnou roli knihovny."
   },
   "footer": {
     "kap": "Kurátorská aplikace",

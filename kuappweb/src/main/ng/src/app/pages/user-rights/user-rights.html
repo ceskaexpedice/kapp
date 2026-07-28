@@ -1,0 +1,70 @@
+<div class="app-container-fluid app-user-rights">
+  <mat-card appearance="outlined">
+    <mat-card-header>
+      <div mat-card-avatar class="app-rights-avatar">
+        <mat-icon>manage_accounts</mat-icon>
+      </div>
+      <mat-card-title>{{ 'user_rights.title' | translate }}</mat-card-title>
+      <mat-card-subtitle>
+        {{ state.user()?.name || state.user()?.preferred_username }}
+        @if (state.user()?.name && state.user()?.preferred_username) {
+          · {{ state.user()?.preferred_username }}
+        }
+      </mat-card-subtitle>
+    </mat-card-header>
+
+    <mat-card-content>
+      @if (state.hasRole('kappAdmin')) {
+        <div class="app-admin-access">
+          <mat-icon>verified_user</mat-icon>
+          <div>
+            <strong>kappAdmin</strong>
+            <span>{{ 'user_rights.full_access' | translate }}</span>
+          </div>
+        </div>
+      }
+
+      <section>
+        <h2>{{ 'user_rights.library_roles' | translate }}</h2>
+        <div class="app-role-grid">
+          @for (item of libraryRoles; track item.role) {
+            <article class="app-role-card">
+              <header>
+                <mat-icon>local_library</mat-icon>
+                <h3>{{ item.role }}</h3>
+                <span class="app-count">{{ item.physicalLocations.length }}</span>
+              </header>
+
+              <h4>{{ 'user_rights.physical_locations' | translate }}</h4>
+              @if (item.physicalLocations.length > 0) {
+                <div class="app-location-list">
+                  @for (location of item.physicalLocations; track location) {
+                    <div class="app-location">
+                      <mat-icon>location_on</mat-icon>
+                      <span>{{ location }}</span>
+                    </div>
+                  }
+                </div>
+              } @else {
+                <p class="app-empty">{{ 'user_rights.no_physical_locations' | translate }}</p>
+              }
+            </article>
+          } @empty {
+            <p class="app-empty">{{ 'user_rights.no_library_roles' | translate }}</p>
+          }
+        </div>
+      </section>
+
+      @if (otherRoles.length > 0) {
+        <section>
+          <h2>{{ 'user_rights.other_roles' | translate }}</h2>
+          <mat-chip-set>
+            @for (role of otherRoles; track role) {
+              <mat-chip>{{ role }}</mat-chip>
+            }
+          </mat-chip-set>
+        </section>
+      }
+    </mat-card-content>
+  </mat-card>
+</div>

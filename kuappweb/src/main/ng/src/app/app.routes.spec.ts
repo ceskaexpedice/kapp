@@ -16,4 +16,11 @@ describe('application routes', () => {
     expect(libraryRightsRoute).toBeDefined();
     expect(libraryRightsRoute?.canActivate).toEqual([AuthGuard, KappAdminGuard]);
   });
+
+  it('protects the current user rights page with authentication', () => {
+    const userRightsRoute = routes.find(route => route.path === 'rights');
+
+    expect(userRightsRoute).toBeDefined();
+    expect(userRightsRoute?.canActivate).toContain(AuthGuard);
+  });
 });

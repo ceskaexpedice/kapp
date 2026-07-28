@@ -1,0 +1,119 @@
+.app-user-rights {
+  max-width: 1100px;
+  margin: 0 auto;
+
+  mat-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+    padding-top: 24px;
+  }
+
+  section h2 {
+    margin: 0 0 14px;
+    font-size: 18px;
+  }
+}
+
+.app-rights-avatar {
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  color: var(--app-color-primary);
+  background: rgba(var(--app-color-primary-rgb), .12);
+}
+
+.app-admin-access {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+  border-radius: 8px;
+  color: var(--app-color-primary);
+  background: rgba(var(--app-color-primary-rgb), .08);
+
+  > mat-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 32px;
+  }
+
+  div {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+}
+
+.app-role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 16px;
+}
+
+.app-role-card {
+  padding: 16px;
+  border: 1px solid var(--app-color-gray-3);
+  border-radius: 8px;
+  background: rgb(var(--app-color-lightnes));
+
+  header {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--app-color-gray-3);
+
+    h3 {
+      flex: 1;
+      margin: 0;
+      font-size: 18px;
+    }
+
+    mat-icon {
+      color: var(--app-color-primary);
+    }
+  }
+
+  h4 {
+    margin: 14px 0 9px;
+    color: var(--app-color-gray-7);
+    font-size: 13px;
+    text-transform: uppercase;
+  }
+}
+
+.app-count {
+  min-width: 25px;
+  padding: 3px 8px;
+  border-radius: 12px;
+  text-align: center;
+  background: var(--app-color-gray-2);
+}
+
+.app-location-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.app-location {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  background: var(--app-color-gray-1);
+
+  mat-icon {
+    width: 17px;
+    height: 17px;
+    font-size: 17px;
+    color: var(--app-color-gray-6);
+  }
+}
+
+.app-empty {
+  color: var(--app-color-gray-6);
+  font-style: italic;
+}
