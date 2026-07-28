@@ -8,6 +8,15 @@ public class Constants {
     public static class  Collection {
         public static final String TITLES_COLLECTION = "titles";
         public static final String AUTHORS_COLLECTION = "authors";
+        public static final String CONTRACTS_COLLECTION = "contracts";
+    }
+
+    /** Contracts fields */
+    public static final class ContractsCollectionFields {
+        public static final String FILENAME_FIELD = "filename";
+        public static final String CCNB_FIELD = "ccnb";
+        public static final String ISSN_FIELD = "issn";
+        public static final String LICENSE_FIELD = "license";
     }
 
     /** Authors fields */
