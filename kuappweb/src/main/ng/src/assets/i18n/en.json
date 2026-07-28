@@ -165,9 +165,8 @@
     "CONTROLLED_PRIVATE": "Checked - non-public",
     "CONTROLLED_UNKNOWN": "Checked - unknown",
     "CONTROLLED_UNKNOWN_PUBLIC": "Checked - unknown - public",
-    "CONTROLLED_NO_AP": "Checked - no copyright",
+    "CONTROLLED_WO_RIGHTS": "Checked - no copyright",
     "CONTROLLED_BLOCKED": "Checked - blocked",
-    "CONTROLLED_PRIVATE_LICENSE": "Checked - non-public licenses",
     "IMPORTED": "Imported",
     "FOR_REVIEW": "Monograph - for re-review",
     "undefined": "Unknown"

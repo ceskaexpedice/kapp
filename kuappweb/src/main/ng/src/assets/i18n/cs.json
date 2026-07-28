@@ -166,9 +166,8 @@
     "CONTROLLED_PRIVATE": "Kontrolované - neveřejné",
     "CONTROLLED_UNKNOWN": "Kontrolované - neznámé",
     "CONTROLLED_UNKNOWN_PUBLIC": "Kontrolované - neznámé - volné",
-    "CONTROLLED_NO_AP": "Kontrolované - bez autorskych prav",
-    "CONTROLLED_PROHIBITED": "Kontrolované - znepřístupněné",
-    "CONTROLLED_PRIVATE_LICENSE": "Kontrolované - neveřejné licence",
+    "CONTROLLED_WO_RIGHTS": "Kontrolované - bez autorských práv",
+    "CONTROLLED_BLOCKED": "Kontrolované - znepřístupněné",
     "IMPORTED": "Importované",
     "undefined": "Neznamé"
   },
