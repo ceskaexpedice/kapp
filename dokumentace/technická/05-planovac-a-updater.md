@@ -83,6 +83,11 @@ frontě déle než `workflowUpdate.responseTimeoutSeconds`, vrátí HTTP 202 a
 zpracování pokračuje. Fronta není perzistentní a volání z webové aplikace je
 best-effort; úplný běh updateru zůstává záložním mechanismem.
 
+Webová aplikace při těchto změnách zapisuje pouze vstupní údaje, například
+`last_year_death`, `date_issued_year_kapp` a příznaky autorství. Odvozené pole
+`release_year` počítá a zapisuje výhradně updater. Ruční kurátorská změna stavu
+zůstává samostatnou explicitní operací webové aplikace.
+
 ## Kandidátní filtr
 
 Kód obsahuje builder kandidátního filtru podle roků a příznaků. V aktuálním běhu však není filtr připojen k Solr dotazu; updater záměrně prochází všechny tituly. Při odhadu času a zatížení proto vycházejte z celé velikosti core `titles`.
