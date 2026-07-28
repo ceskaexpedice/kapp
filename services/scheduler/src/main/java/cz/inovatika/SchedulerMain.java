@@ -14,6 +14,8 @@ import java.util.logging.Logger;
 
 public class SchedulerMain {
     public static Scheduler scheduler;
+    private static WorkflowUpdateCoordinator workflowUpdateCoordinator;
+    private static WorkflowUpdateServer workflowUpdateServer;
     private static final Logger LOGGER = Logger.getLogger(SchedulerMain.class.getName());
     private static final String HARVESTERGROUP = "group1";
     private static final String UPDATERGROUP = "group2";
@@ -25,18 +27,50 @@ public class SchedulerMain {
         scheduler.start();
 
         switch (service) {
-            case HARVESTER -> initHarvestJob(scheduler);
-            case UPDATER -> initUpdateJob(scheduler);
+            case HARVESTER -> initHarvestJob();
+            case UPDATER -> {
+                initWorkflowUpdateService();
+                initUpdateJob();
+            }
             case ALL -> {
-                initHarvestJob(scheduler);
-                initUpdateJob(scheduler);
+                initWorkflowUpdateService();
+                initHarvestJob();
+                initUpdateJob();
             }
         }
 
         LOGGER.log(Level.INFO, "Started scheduled service: {0}", service.serviceName);
     }
 
-    static void initUpdateJob(Scheduler scheduler) throws SchedulerException {
+    private static void initWorkflowUpdateService() {
+        ApplicationConfig config = LoadConfiguration(LOGGER);
+        workflowUpdateCoordinator = new WorkflowUpdateCoordinator(config);
+        try {
+            workflowUpdateServer = new WorkflowUpdateServer(
+                    workflowUpdateCoordinator,
+                    config.workflowUpdateOrDefault()
+            );
+            workflowUpdateServer.start();
+        } catch (Exception ex) {
+            workflowUpdateCoordinator.close();
+            workflowUpdateCoordinator = null;
+            throw new IllegalStateException("Unable to start workflow update HTTP server.", ex);
+        }
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            if (workflowUpdateServer != null) {
+                workflowUpdateServer.close();
+            }
+            if (workflowUpdateCoordinator != null) {
+                workflowUpdateCoordinator.close();
+            }
+        }, "workflow-update-shutdown"));
+    }
+
+    static WorkflowUpdateCoordinator workflowUpdateCoordinator() {
+        return workflowUpdateCoordinator;
+    }
+
+    static void initUpdateJob() throws SchedulerException {
         // Parameterize the interval (in hours)
         final int hoursInterval = 365*24;
         // Define the job and tie it to our Job class
@@ -56,7 +90,7 @@ public class SchedulerMain {
         scheduler.scheduleJob(job, trigger);
 
     }
-    static void initHarvestJob(Scheduler scheduler) throws SchedulerException {
+    static void initHarvestJob() throws SchedulerException {
         // Parameterize the interval (in hours)
         final int hoursInterval = 24;
 

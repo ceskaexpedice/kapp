@@ -18,7 +18,8 @@ public record ApplicationConfig(List<Instance> instances,
                                 WorkflowConfig workflow,
                                 SolrConfig solr,
                                 TouchStoreConfig touchStoreConfig,
-                                List<JobConfig> jobConfigs) {
+                                List<JobConfig> jobConfigs,
+                                WorkflowUpdateConfig workflowUpdate) {
 
 
     public static ApplicationConfig loadFromStream(InputStream is) throws ConfigException {
@@ -56,5 +57,9 @@ public record ApplicationConfig(List<Instance> instances,
         return "ApplicationConfig{" +
                 "instances=" + instances +
                 '}';
+    }
+
+    public WorkflowUpdateConfig workflowUpdateOrDefault() {
+        return workflowUpdate == null ? new WorkflowUpdateConfig() : workflowUpdate;
     }
 }

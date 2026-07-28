@@ -22,6 +22,13 @@ V Docker Compose jde o `/root/.kapp/app.conf`, na hostiteli o `nkp-deploy/.kapp/
   "solr": {
     "url": "http://solr-kappScheduler:8983/solr"
   },
+  "workflowUpdate": {
+    "url": "http://updater:8081",
+    "port": 8081,
+    "token": "",
+    "maxBatchSize": 100,
+    "responseTimeoutSeconds": 30
+  },
   "instances": [
     {
       "acronym": "nkp",
@@ -50,6 +57,16 @@ Hranice se počítají proti aktuálnímu kalendářnímu roku. Změna hodnot ov
 ### `solr`
 
 `solr.url` je základní URL bez názvu core. Scheduler, harvester a updater k ní připojují názvy `titles`, `authors` a `contracts`.
+
+### `workflowUpdate`
+
+- `url` používá webová aplikace pro interní požadavky na cílený přepočet workflow,
+- `port` je interní HTTP port služby updateru,
+- `token` je volitelný sdílený Bearer token; prázdná hodnota vypne kontrolu tokenu,
+- `maxBatchSize` omezuje počet PIDů v jednom požadavku,
+- `responseTimeoutSeconds` určuje, jak dlouho endpoint čeká na zpracování fronty, než vrátí HTTP 202.
+
+Volání je best-effort. Neúspěšný požadavek nezruší změnu provedenou ve webové aplikaci; titul později zpracuje úplný běh updateru.
 
 ### `instances`
 

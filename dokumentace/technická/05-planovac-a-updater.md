@@ -54,6 +54,35 @@ Aktuální updater:
 
 Změny workflow se zapisují s uživatelem `Updater`.
 
+## Cílený přepočet z webové aplikace
+
+Proces updateru poslouchá na interním portu `8081`:
+
+```http
+POST /internal/workflow/recalculate
+Content-Type: application/json
+Authorization: Bearer <workflowUpdate.token>
+```
+
+```json
+{
+  "pids": ["uuid:..."],
+  "requestedBy": "uzivatel",
+  "cause": "last_year_death"
+}
+```
+
+Požadavky z webové aplikace a úplný plánovaný běh používají jednu
+jednovláknovou frontu. Výpočty workflow proto neběží souběžně. Cílený přepočet
+načte aktuální dokument a při zápisu používá Solr `_version_`; konflikt způsobí
+nové načtení a nejvýše tři pokusy. Změna stavu potom vyvolá také přepočet
+kořenového titulu.
+
+Endpoint vrací HTTP 200 s výsledkem jednotlivých PIDů. Pokud požadavek čeká ve
+frontě déle než `workflowUpdate.responseTimeoutSeconds`, vrátí HTTP 202 a
+zpracování pokračuje. Fronta není perzistentní a volání z webové aplikace je
+best-effort; úplný běh updateru zůstává záložním mechanismem.
+
 ## Kandidátní filtr
 
 Kód obsahuje builder kandidátního filtru podle roků a příznaků. V aktuálním běhu však není filtr připojen k Solr dotazu; updater záměrně prochází všechny tituly. Při odhadu času a zatížení proto vycházejte z celé velikosti core `titles`.

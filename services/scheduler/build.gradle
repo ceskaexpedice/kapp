@@ -31,7 +31,7 @@ jib {
 
     container {
         mainClass = 'cz.inovatika.SchedulerMain'
-        //ports = ['8080'] // remove if not needed
+        ports = ['8081']
         jvmFlags = ['-Xms256m', '-Xmx512m']
     }
 }
@@ -43,7 +43,12 @@ dependencies {
 
     implementation("org.quartz-scheduler:quartz:2.5.2")
 
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.10.1'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.10.1'
     testRuntimeOnly 'org.junit.platform:junit-platform-launcher:1.10.1'
+}
+
+test {
+    useJUnitPlatform()
 }
 

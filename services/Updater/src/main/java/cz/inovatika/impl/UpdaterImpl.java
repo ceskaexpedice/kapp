@@ -17,8 +17,10 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.response.QueryResponse;
 import org.apache.solr.client.solrj.util.ClientUtils;
+import org.apache.solr.common.SolrException;
 import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
+import org.apache.solr.common.params.CommonParams;
 import org.apache.solr.common.params.ModifiableSolrParams;
 
 import java.io.IOException;
@@ -45,6 +47,7 @@ public class UpdaterImpl implements Updater {
     final int IN_BATCHSIZE = 100;
     final int OUT_BATCHSIZE = 200;
     final String USER = "Updater";
+    private static final int VERSION_CONFLICT_RETRIES = 3;
     private static final List<String> DATE_ISSUED_YEAR_FIELDS = List.of(
             AppComputedFields.DATE_ISSUED_YEAR,
             AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD
@@ -63,9 +66,7 @@ public class UpdaterImpl implements Updater {
 
     @Override
     public void start(ApplicationConfig applicationConfig) {
-        if (solrClient == null) {
-            this.solrClient = buildSolrClient(applicationConfig);
-        }
+        ensureSolrClient(applicationConfig);
         try {
             String cursorMark = "*";
             boolean done = false;
@@ -96,60 +97,10 @@ public class UpdaterImpl implements Updater {
 
                 List<SolrInputDocument> batch = new ArrayList<>();
                 for (SolrDocument doc : response.getResults()) {
-                    String pid = (String) doc.getFieldValue(AppDataFields.PID_FIELD);
-                    Object dateIssuedObj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD);
-                    if (dateIssuedObj==null) dateIssuedObj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
-                    Object lastYearDeathObj = doc.getFieldValue(AppComputedFields.LAST_YEAR_DEATH);
-                    Object statevalue = doc.getFieldValue(AppComputedFields.STATE_FIELD);
-                    States state = (statevalue ==null) ? States.IMPORTED : States.valueOf(statevalue.toString());
+                    DocumentEvaluation evaluation = evaluateDocument(doc, applicationConfig);
+                    if (!evaluation.shouldWrite()) continue;
 
-                    Object modelvalue = doc.getFieldValue(AppDataFields.MODEL_FIELD);
-                    String model = modelvalue ==null ? Constants.TitlesCollectionFields.ModelFields.MONOGRAPHUNIT : modelvalue.toString();
-
-                    Object hierarchical_value = doc.getFieldValue(AppComputedFields.IS_HIERARCHICAL_FIELD);
-                    boolean hierarchical = hierarchical_value != null && Boolean.parseBoolean(hierarchical_value.toString());
-
-                    boolean isPseudonymous = isTrue(doc.getFieldValue(AppComputedFields.IS_PSEUDONYMOUS_FIELD));
-                    boolean isAnonymous = isTrue(doc.getFieldValue(AppComputedFields.IS_ANONYMOUS_FIELD));
-                    boolean isCollective = isTrue(doc.getFieldValue(AppComputedFields.IS_COLLECTIVE_FIELD));
-                    boolean isOfficial = isTrue(doc.getFieldValue(AppComputedFields.IS_OFFICIAL_FIELD));
-
-                    WorkflowDoc workflowDoc = new WorkflowDoc(
-                            dateIssuedObj!=null? Integer.parseInt(dateIssuedObj.toString()):null,
-                            lastYearDeathObj!=null?Integer.parseInt(lastYearDeathObj.toString()):null,
-                            state,
-                            USER,
-                            model,
-                            hierarchical,
-                            isPseudonymous,
-                            isAnonymous,
-                            isCollective,
-                            isOfficial//,state.getLicensesAssignation()
-                    );
-                    StringWrapper reason = new StringWrapper("unspecified") ;
-                    Object root_pid_value = doc.getFieldValue(AppDataFields.ROOT_PID_FIELD);
-                    String root_pid = root_pid_value == null ? pid : root_pid_value.toString();
-                    States newState = workflowDoc.state().calculateNextState(root_pid,solrClient,applicationConfig,workflowDoc,reason);
-                    SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(AppDataFields.PID_FIELD, SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
-                    updateDoc.setField(AppDataFields.PID_FIELD, pid);
-                    boolean shouldWrite = labelMissingRootTitleIfNeeded(doc, updateDoc);
-
-                    if (newState != null) {
-                        if (newState != workflowDoc.state())
-                            System.out.println(
-                                    "Found book with pid: "+pid
-                                            +"\n\t that had state: "+workflowDoc.state()+" that got changed to: "+newState);
-
-                        copyTrueFlags(doc, updateDoc, RELEASE_RULE_FLAG_FIELDS);
-                        Workflow.executeTransition(workflowDoc,USER,reason.value,updateDoc,newState,applicationConfig.workflow());
-                        shouldWrite = true;
-                    } else {
-                        shouldWrite |= updateReleaseYearIfNeeded(doc, updateDoc, workflowDoc, workflowConfig);
-                    }
-
-                    if (!shouldWrite) continue;
-
-                    batch.add(updateDoc.getDocument());
+                    batch.add(evaluation.updateDocument());
 
                     // send batch
                     if (batch.size() >= OUT_BATCHSIZE) {
@@ -171,6 +122,203 @@ public class UpdaterImpl implements Updater {
             }
         } catch (SolrServerException | IOException e) {
             throw new RuntimeException(e);
+        }
+    }
+
+    @Override
+    public List<TitleUpdateResult> updatePids(
+            ApplicationConfig applicationConfig,
+            Collection<String> pids
+    ) {
+        ensureSolrClient(applicationConfig);
+        LinkedHashSet<String> pending = new LinkedHashSet<>();
+        for (String pid : pids) {
+            if (pid != null && !pid.isBlank()) {
+                pending.add(pid.trim());
+            }
+        }
+
+        List<TitleUpdateResult> results = new ArrayList<>();
+        while (!pending.isEmpty()) {
+            String pid = pending.iterator().next();
+            pending.remove(pid);
+
+            TargetedUpdate targetedUpdate = updatePidWithRetry(pid, applicationConfig);
+            results.add(targetedUpdate.result());
+            if (targetedUpdate.changedState()
+                    && targetedUpdate.rootPid() != null
+                    && !targetedUpdate.rootPid().equals(pid)) {
+                pending.add(targetedUpdate.rootPid());
+            }
+        }
+        return results;
+    }
+
+    private TargetedUpdate updatePidWithRetry(String pid, ApplicationConfig applicationConfig) {
+        for (int attempt = 1; attempt <= VERSION_CONFLICT_RETRIES; attempt++) {
+            try {
+                SolrDocument source = getTitleByPid(pid);
+                if (source == null) {
+                    return new TargetedUpdate(
+                            new TitleUpdateResult(pid, "not_found", null, null, "Title was not found."),
+                            null,
+                            false
+                    );
+                }
+
+                DocumentEvaluation evaluation = evaluateDocument(source, applicationConfig);
+                if (!evaluation.shouldWrite()) {
+                    return new TargetedUpdate(
+                            new TitleUpdateResult(
+                                    pid,
+                                    "unchanged",
+                                    evaluation.previousState(),
+                                    evaluation.newState(),
+                                    null
+                            ),
+                            evaluation.rootPid(),
+                            false
+                    );
+                }
+
+                Object version = source.getFieldValue(CommonParams.VERSION_FIELD);
+                if (version != null) {
+                    evaluation.updateDocument().setField(CommonParams.VERSION_FIELD, version);
+                }
+                solrClient.add(TITLES_COLLECTION, evaluation.updateDocument());
+                solrClient.commit(TITLES_COLLECTION);
+                return new TargetedUpdate(
+                        new TitleUpdateResult(
+                                pid,
+                                "updated",
+                                evaluation.previousState(),
+                                evaluation.newState(),
+                                null
+                        ),
+                        evaluation.rootPid(),
+                        evaluation.changedState()
+                );
+            } catch (SolrException ex) {
+                if (ex.code() == 409 && attempt < VERSION_CONFLICT_RETRIES) {
+                    LOGGER.info("Version conflict while updating " + pid + "; retrying.");
+                    continue;
+                }
+                return new TargetedUpdate(
+                        new TitleUpdateResult(pid, "failed", null, null, ex.getMessage()),
+                        null,
+                        false
+                );
+            } catch (SolrServerException | IOException ex) {
+                return new TargetedUpdate(
+                        new TitleUpdateResult(pid, "failed", null, null, ex.getMessage()),
+                        null,
+                        false
+                );
+            }
+        }
+        return new TargetedUpdate(
+                new TitleUpdateResult(pid, "failed", null, null, "Version conflict retry limit reached."),
+                null,
+                false
+        );
+    }
+
+    private SolrDocument getTitleByPid(String pid) throws SolrServerException, IOException {
+        ModifiableSolrParams params = new ModifiableSolrParams();
+        params.set("q", AppDataFields.PID_FIELD + ":" + quoteQueryValue(pid));
+        params.set("rows", 1);
+        QueryResponse response = solrClient.query(TITLES_COLLECTION, params);
+        return response.getResults().isEmpty() ? null : response.getResults().get(0);
+    }
+
+    private DocumentEvaluation evaluateDocument(
+            SolrDocument doc,
+            ApplicationConfig applicationConfig
+    ) throws SolrServerException, IOException {
+        String pid = Objects.toString(doc.getFieldValue(AppDataFields.PID_FIELD), null);
+        Object dateIssuedObj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD);
+        if (dateIssuedObj == null) {
+            dateIssuedObj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR);
+        }
+        Object lastYearDeathObj = doc.getFieldValue(AppComputedFields.LAST_YEAR_DEATH);
+        Object stateValue = doc.getFieldValue(AppComputedFields.STATE_FIELD);
+        States state = stateValue == null ? States.IMPORTED : States.valueOf(stateValue.toString());
+
+        Object modelValue = doc.getFieldValue(AppDataFields.MODEL_FIELD);
+        String model = modelValue == null
+                ? Constants.TitlesCollectionFields.ModelFields.MONOGRAPHUNIT
+                : modelValue.toString();
+        boolean hierarchical = isTrue(doc.getFieldValue(AppComputedFields.IS_HIERARCHICAL_FIELD));
+
+        WorkflowDoc workflowDoc = new WorkflowDoc(
+                asInteger(dateIssuedObj),
+                asInteger(lastYearDeathObj),
+                state,
+                USER,
+                model,
+                hierarchical,
+                isTrue(doc.getFieldValue(AppComputedFields.IS_PSEUDONYMOUS_FIELD)),
+                isTrue(doc.getFieldValue(AppComputedFields.IS_ANONYMOUS_FIELD)),
+                isTrue(doc.getFieldValue(AppComputedFields.IS_COLLECTIVE_FIELD)),
+                isTrue(doc.getFieldValue(AppComputedFields.IS_OFFICIAL_FIELD))
+        );
+        StringWrapper reason = new StringWrapper("unspecified");
+        String rootPid = Objects.toString(
+                doc.getFieldValue(AppDataFields.ROOT_PID_FIELD),
+                pid
+        );
+        States newState = workflowDoc.state().calculateNextState(
+                rootPid,
+                solrClient,
+                applicationConfig,
+                workflowDoc,
+                reason
+        );
+        SolrInputDocumentWrapper updateDoc = new SolrInputDocumentWrapper(
+                AppDataFields.PID_FIELD,
+                SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE
+        );
+        updateDoc.setField(AppDataFields.PID_FIELD, pid);
+        boolean shouldWrite = labelMissingRootTitleIfNeeded(doc, updateDoc);
+
+        if (newState != null && newState != workflowDoc.state()) {
+            System.out.println(
+                    "Found book with pid: " + pid
+                            + "\n\t that had state: " + workflowDoc.state()
+                            + " that got changed to: " + newState
+            );
+            copyTrueFlags(doc, updateDoc, RELEASE_RULE_FLAG_FIELDS);
+            Workflow.executeTransition(
+                    workflowDoc,
+                    USER,
+                    reason.value,
+                    updateDoc,
+                    newState,
+                    applicationConfig.workflow()
+            );
+            shouldWrite = true;
+        } else {
+            shouldWrite |= updateReleaseYearIfNeeded(
+                    doc,
+                    updateDoc,
+                    workflowDoc,
+                    applicationConfig.workflow()
+            );
+        }
+
+        return new DocumentEvaluation(
+                updateDoc.getDocument(),
+                shouldWrite,
+                workflowDoc.state().name(),
+                newState == null ? workflowDoc.state().name() : newState.name(),
+                rootPid,
+                newState != null && newState != workflowDoc.state()
+        );
+    }
+
+    private synchronized void ensureSolrClient(ApplicationConfig applicationConfig) {
+        if (solrClient == null) {
+            solrClient = buildSolrClient(applicationConfig);
         }
     }
 
@@ -413,6 +561,23 @@ public class UpdaterImpl implements Updater {
         String digitalLibraryField() {
             return AppDataFields.LICENSES_DL_FIELD + acronym;
         }
+    }
+
+    private record DocumentEvaluation(
+            SolrInputDocument updateDocument,
+            boolean shouldWrite,
+            String previousState,
+            String newState,
+            String rootPid,
+            boolean changedState
+    ) {
+    }
+
+    private record TargetedUpdate(
+            TitleUpdateResult result,
+            String rootPid,
+            boolean changedState
+    ) {
     }
 
     static boolean labelMissingRootTitleIfNeeded(

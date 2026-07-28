@@ -23,11 +23,15 @@ public class UpdaterJob implements Job {
 
     private void performTask() {
 
-        ApplicationConfig applicationConfig = SchedulerMain.LoadConfiguration(LOGGER);
-
-        Updater h = new UpdaterImpl();
         try {
-            h.start(applicationConfig);
+            WorkflowUpdateCoordinator coordinator = SchedulerMain.workflowUpdateCoordinator();
+            if (coordinator != null) {
+                coordinator.runFullUpdate().join();
+            } else {
+                ApplicationConfig applicationConfig = SchedulerMain.LoadConfiguration(LOGGER);
+                Updater updater = new UpdaterImpl();
+                updater.start(applicationConfig);
+            }
             LOGGER.info("Updating Completed.");
 
 
