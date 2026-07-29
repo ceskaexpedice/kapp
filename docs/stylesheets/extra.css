@@ -1,0 +1,11 @@
+:root > * {
+  --md-primary-fg-color: #2f5694;
+  --md-primary-fg-color--light: #5475a9;
+  --md-primary-fg-color--dark: #244474;
+  --md-accent-fg-color: #2f5694;
+  --md-accent-fg-color--transparent: rgba(47, 86, 148, 0.1);
+}
+
+.md-button {
+  padding: 0.425em 1em;
+}

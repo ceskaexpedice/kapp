@@ -1,0 +1,86 @@
+site_name: Kurátorská aplikace – dokumentace
+site_description: Technická a provozní dokumentace Kurátorské aplikace
+site_url: https://inovatika.gitlab.io/nkp/nkp-kuratorska-aplikace/
+repo_url: https://gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace
+repo_name: inovatika/nkp/nkp-kuratorska-aplikace
+edit_uri: -/edit/main/docs/
+
+theme:
+  name: material
+  language: cs
+  logo: assets/img/kramerius_logo.png
+  favicon: assets/img/kramerius_logo.png
+  font:
+    text: Roboto
+    code: Red Hat Mono
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: Přepnout na tmavý režim
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: indigo
+      accent: light-blue
+      toggle:
+        icon: material/brightness-4
+        name: Přepnout na světlý režim
+  features:
+    - navigation.instant
+    - navigation.instant.prefetch
+    - navigation.tracking
+    - navigation.tabs
+    - navigation.tabs.sticky
+    - navigation.sections
+    - navigation.path
+    - navigation.top
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - content.code.copy
+
+nav:
+  - Úvod: index.md
+  - Architektura: architecture/index.md
+  - Konfigurace: configuration/index.md
+  - Návody:
+      - Přehled: guides/index.md
+      - Import z Krameria: guides/import-z-krameria.md
+      - Kurátorské stavy: guides/kuratorske-stavy.md
+      - Tabulkové importy: guides/import-tsv.md
+  - Provoz:
+      - Přehled: operations/index.md
+      - Plánovač a updater: operations/planovac-a-updater.md
+      - Řešení problémů: operations/reseni-problemu.md
+  - Reference:
+      - Přehled: reference/index.md
+      - Solr data: reference/solr-data.md
+      - Otevřené otázky: reference/otevrene-otazky.md
+  - Nasazení dokumentace: deployment/index.md
+
+extra_css:
+  - stylesheets/extra.css
+
+extra:
+  generator: false
+  social:
+    - icon: fontawesome/brands/gitlab
+      link: https://gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace
+      name: Projekt na GitLabu
+
+copyright: Copyright &copy; 2026 Národní knihovna České republiky
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg

@@ -5,3 +5,9 @@
 .vscode/launch.json
 .vscode/settings.json
 services/scheduler/docker-compose.override.yml
+.venv/
+.cache/
+site/
+public/
+__pycache__/
+*.py[cod]

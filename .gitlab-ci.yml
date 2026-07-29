@@ -5,6 +5,7 @@ stages:
 variables:
   #GIT_SUBMODULE_STRATEGY: recursive
   GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle
+  PIP_CACHE_DIR: $CI_PROJECT_DIR/.cache/pip
 
 image: eclipse-temurin:21-jdk-jammy
 
@@ -36,3 +37,19 @@ docker_image_publish:
     - ./gradlew jib -Djib.to.auth.username=$CI_REGISTRY_USER -Djib.to.auth.password=$CI_JOB_TOKEN
   when: manual
   allow_failure: false
+
+deploy-pages:
+  stage: publish
+  image: python:3.13-slim
+  cache:
+    key: "pip-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .cache/pip/
+  before_script:
+    - python -m pip install --disable-pip-version-check --requirement requirements.txt
+  script:
+    - python -m mkdocs build --strict --site-dir public
+  pages:
+    publish: public
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH'

@@ -5,6 +5,45 @@ Kramerius.
 
 Data jsou importováná z jednotlivých instancí krameria a dokumenty postupují nasledující stavy
 
+## Dokumentace
+
+Technická a provozní dokumentace je připravená jako statický web pomocí MkDocs Material.
+
+- `docs/` obsahuje zdrojové Markdown stránky a statické soubory.
+- `mkdocs.yml` definuje vzhled, navigaci a adresu webu.
+- `requirements.txt` připíná verzi MkDocs Material.
+- `.gitlab-ci.yml` sestaví a publikuje web přes GitLab Pages.
+
+Původní složka `dokumentace/` zůstává beze změn; publikovaný web se generuje pouze z `docs/`.
+
+### Lokální spuštění ve Windows 11
+
+V PowerShellu z kořenové složky repozitáře spusťte:
+
+```powershell
+py -m venv '.venv'
+.\.venv\Scripts\python.exe -m pip install --requirement 'requirements.txt'
+.\.venv\Scripts\python.exe -m mkdocs serve
+```
+
+Web bude dostupný na adrese [http://127.0.0.1:8000/nkp/nkp-kuratorska-aplikace/](http://127.0.0.1:8000/nkp/nkp-kuratorska-aplikace/).
+
+Přísnou kontrolu shodnou s GitLab CI spustíte příkazem:
+
+```powershell
+.\.venv\Scripts\python.exe -m mkdocs build --strict --site-dir 'public'
+```
+
+### Publikování na GitLab Pages
+
+Job `deploy-pages` se automaticky spustí po odeslání změn do výchozí větve. Po prvním úspěšném běhu:
+
+1. Otevřete v projektu **Deploy → Pages**.
+2. Vypněte **Use unique domain**, pokud chcete používat předvídatelnou adresu.
+3. Pro veřejný web v privátním repozitáři nastavte v **Settings → General → Visibility, project features, permissions** přístup k Pages na **Everyone**.
+
+Web pak bude dostupný na adrese [https://inovatika.gitlab.io/nkp/nkp-kuratorska-aplikace/](https://inovatika.gitlab.io/nkp/nkp-kuratorska-aplikace/). Podrobnější návod je součástí dokumentačního webu v `docs/deployment/index.md`.
+
 
 ## Import dokumentů
 
