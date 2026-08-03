@@ -1,11 +1,16 @@
 .mat-toolbar {
   .app-logo {
+    display: inline-flex;
+    vertical-align: middle;
+    align-items: center;
+
     img {
       height: 30px;
     }
     .app-spacer {
       width: 1px;
       height: 30px;
+      margin: 0 12px;
       background-color: var(--app-color-gray-4);
     }
     .app-desc {

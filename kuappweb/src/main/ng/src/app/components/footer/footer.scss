@@ -1,3 +1,13 @@
+.app-info {
+  background-color: var(--app-color-gray-2);
+  border-bottom: 1px solid var(--app-color-gray-3);
+  padding: 32px 16px;
+
+  img {
+    height: 40px;
+  }
+}
+
 .app-footer {
   padding: 16px;
   background-color: var(--app-footer-bg-color);

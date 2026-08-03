@@ -1,6 +1,6 @@
 <mat-toolbar>
   <div class="app-fxFlex">
-    <a [routerLink]="['/']"  class="app-fxFlex app-fxLayout app-row app-center-v app-gap-3 app-logo">
+    <a [routerLink]="['/']"  class="app-logo">
       <img src="../../../assets/img/logo-kap.svg" />
       <span class="app-spacer"></span>
       <span class="app-desc">Kurátorská aplikace</span>
@@ -14,12 +14,15 @@
     <a [routerLink]="['contracts']" routerLinkActive="app-active-link" matButton>{{ 'navbar.contracts' | translate}}</a>
     }
     @if(state.user()) {
-      <a matButton [matMenuTriggerFor]="usermenu">{{ state.user().name }}</a>
+      <a matButton [matMenuTriggerFor]="usermenu">{{ state.user().preferred_username ? state.user().preferred_username : state.user().name }}</a>
       <mat-menu #usermenu="matMenu">
-        <!-- <button mat-menu-item  (click)="viewUser()">Profile</button> -->
-        <button mat-menu-item (click)="logout()">Logout</button>
+        <a mat-menu-item [routerLink]="['rights']">{{ 'navbar.rights' | translate }}</a>
+        <button mat-menu-item (click)="logout()">{{ 'navbar.logout' | translate }}</button>
       </mat-menu>
       <a [routerLink]="['admin']" routerLinkActive="app-active-link" matButton>{{ 'navbar.admin' | translate}}</a>
+      @if(state.hasRole('kappAdmin')) {
+        <a [routerLink]="['library-rights']" routerLinkActive="app-active-link" matButton>{{ 'navbar.library_rights' | translate}}</a>
+      }
     } @else {
      <a matButton (click)="goToKeycloakLogin()">{{ 'navbar.login' | translate}}</a>
     }

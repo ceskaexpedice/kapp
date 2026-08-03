@@ -5,6 +5,7 @@ import { Label } from './shared/label';
 import { Batch } from './shared/batch';
 import { Author, AuthorTitle } from './shared/author';
 import { Contract } from './shared/contract';
+import { LibraryPhysicalLocations } from './shared/library-rights';
 
 @Injectable({
   providedIn: 'root'
@@ -129,28 +130,37 @@ export class AppService {
     return this.post('index/save_dk', dk);
   }
 
+  saveLibraryRights(mappings: LibraryPhysicalLocations[]): Observable<any> {
+    return this.post('index/save_library_rights', mappings);
+  }
+
+  getPhysicalLocations(): Observable<any> {
+    return this.get('data/physical_locations');
+  }
+
   saveLicenses(licenses: string[]): Observable<any> {
     return this.post('index/save_licenses', licenses);
   }
 
-  saveLabels(labels: Label[]): Observable<any> {
-    return this.post('index/save_labels', labels);
+  saveLabels(labels: Label[], visibility: 'everyone' | 'private' | 'library' = 'everyone', library?: string): Observable<any> {
+    const storedLabels = labels.map(({storageName, visibility: labelVisibility, owner, ...label}) => label);
+    return this.post('index/save_labels', {labels: storedLabels, visibility, library});
   }
 
-  saveDocLabels(pid: string, labels: string[]): Observable<any> {
-    return this.post('index/save_doc_labels', {pid,labels});
+  saveDocLabel(pid: string, label: string, selected: boolean): Observable<any> {
+    return this.post('index/save_doc_labels', {pid, label, selected});
   }
 
   saveBatches(batches: Batch[]): Observable<any> {
     return this.post('index/save_batches', batches);
   }
 
-  saveDocBatch(pid: string, batch: string): Observable<any> {
-    return this.post('index/save_doc_batch', {pid,batch});
+  saveDocBatch(pids: string[], batch: string): Observable<any> {
+    return this.post('index/save_doc_batch', {pids,batch});
   }
 
-  saveDocContract(pid: string, contract: string, withState: boolean, selected: boolean, licenses: string[]): Observable<any> {
-    return this.post('index/save_doc_contract', {pid,contract,withState,selected, licenses});
+  saveDocContract(pids: string[], contract: string, withState: boolean, selected: boolean, licenses: string[]): Observable<any> {
+    return this.post('index/save_doc_contract', {pids,contract,withState,selected, licenses});
   }
 
   saveTitleColumns(columns: {field: string, selected: boolean}[]): Observable<any> {
@@ -161,20 +171,28 @@ export class AppService {
     return this.post('index/save_author', author);
   }
 
-  saveAuthorsInTitle(authors: AuthorTitle[], pid: string, author: AuthorTitle, ids: string[], nameIdentifiers: string[]): Observable<any> {
-    return this.post('index/save_authors_in_title', {pid, authors, author, ids, nameIdentifiers});
+  saveAuthorsInTitle(authors: AuthorTitle[], pid: string, author: AuthorTitle, ids: string[], nameIdentifiers: string[], names: string[]): Observable<any> {
+    return this.post('index/save_authors_in_title', {pid, authors, author, ids, nameIdentifiers, names});
   }
 
-  saveAuthorLabels(pid: string, labels: string[]): Observable<any> {
-    return this.post('index/save_author_labels', {pid,labels});
+  saveAuthorLabel(pid: string, label: string, selected: boolean): Observable<any> {
+    return this.post('index/save_author_labels', {id: pid, label, selected});
   }
 
-  saveDecisionDate(pid: string, decisionDate: number): Observable<any> {
-    return this.post('index/save_decision_date', {pid,decisionDate});
+  saveLastYearDeath(pid: string, lastYearDeath: number | null, authors: AuthorTitle[], dateIssuedYear: number | null): Observable<any> {
+    return this.post('index/save_last_year_death', {pid,lastYearDeath,authors,dateIssuedYear});
+  }
+
+  saveTypDila(pid: string, is_anonymous: boolean, is_collective: boolean, is_official: boolean, is_pseudonymous: boolean) {
+    return this.post('index/save_typ_dila', {pid,is_anonymous,is_collective,is_official,is_pseudonymous});
   }
 
   saveTitleNote(pid: string, note: string): Observable<any> {
     return this.post('index/save_title_note', {pid,note});
+  }
+
+  saveDateIssued(pid: string, date_issued_year_kapp: number | null): Observable<any> {
+    return this.post('index/save_date_issued', {pid,date_issued_year_kapp});
   }
 
   createBatchFromLabel(label: string): Observable<any> {
@@ -202,7 +220,7 @@ export class AppService {
   }
 
   logout(): Observable<any> {
-    return this.post('user/login', {});
+    return this.post('user/logout', {});
   }
 
   searchContracts(params: HttpParams): Observable<any> {

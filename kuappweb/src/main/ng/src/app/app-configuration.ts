@@ -5,6 +5,7 @@ import { AppState } from './app-state';
 import { Configuration } from './shared/config';
 import { Label } from './shared/label';
 import { AuthService } from './auth-service';
+import { LibraryPhysicalLocations } from './shared/library-rights';
 
 @Injectable({
     providedIn: 'root'
@@ -60,7 +61,7 @@ import { AuthService } from './auth-service';
 
     public load() {
         console.log('Loading config...')
-        return this.http.get('assets/config.json').pipe(
+        return this.http.get('api/config').pipe(
             switchMap((cfg: any) => {
                 this.config = cfg as Configuration;
                 return this.http.get('api/index/config').pipe(tap((resp: any) => {
@@ -120,29 +121,39 @@ import { AuthService } from './auth-service';
                     } 
                     this.state.contractTitleColumns.update(a => [...ctc1]);
 
-                    const labels: Label[] = [];
-                    const labelsJson: Label[] = [...this.config.labels];
-                    const labelsC: Label[] = resp.config.find((a: any) => a.id === 'labels')?.value;
-                    if (labelsC) {
-                        const names = labelsC.map(l => l.name);
-                        labelsJson.forEach(l => {
-                            if (!names.includes(l.name)) {
-                                labels.push(l);
-                            }
+                    const configuredLibraries: string[] = resp.config
+                        .find((item: any) => item.id === 'digitalni_knihovny')?.value
+                        || this.config.digitalni_knihovny;
+                    const labelSets: Record<string, Label[]> = {};
+                    resp.config
+                        .filter((item: any) => item.id === 'labels' || item.id?.startsWith('labels_'))
+                        .forEach((item: any) => {
+                            const owner = item.label_owner || (item.id === 'labels' ? '' : item.id.substring('labels_'.length));
+                            const visibility: 'everyone' | 'private' | 'library' = item.label_visibility
+                                || (item.id === 'labels'
+                                    ? 'everyone'
+                                    : configuredLibraries.includes(owner) ? 'library' : 'private');
+                            labelSets[item.id] = (item.value || []).map((label: Label) => this.withTextColor({
+                                ...label,
+                                storageName: visibility === 'everyone' || !owner ? label.name : `${label.name}_${owner}`,
+                                visibility,
+                                owner
+                            }));
                         });
-                        labelsC.forEach(l => {
-                            const r = parseInt(l.color.substring(1,3), 16);
-                            const g = parseInt(l.color.substring(3,5), 16);
-                            const b = parseInt(l.color.substring(5,7), 16);
-                            // const c = parseInt(l.color.substring(1), 16);
-                            const c = r+g+b;
-                            l.text_color = c > 500 ? '#000' : '#fff';
-                            labels.push(l);
-                        });
-                        this.state.labels.set([...labels]);
-                    } else {
-                        this.state.labels.set([...this.config.labels]);
-                    }
+                    const globalLabels = labelSets['labels'] || [];
+                    const globalNames = new Set(globalLabels.map(label => label.name));
+                    this.config.labels.forEach(label => {
+                        if (!globalNames.has(label.name)) {
+                            globalLabels.unshift({
+                                ...label,
+                                storageName: label.name,
+                                visibility: 'everyone'
+                            });
+                        }
+                    });
+                    labelSets['labels'] = globalLabels;
+                    this.state.labelSets.set({});
+                    Object.entries(labelSets).forEach(([id, labels]) => this.state.setLabelSet(id, labels));
                     
                     const licenses: string[] = resp.config.find((a: any) => a.id === 'licenses')?.value;
                     if (licenses) {
@@ -158,6 +169,19 @@ import { AuthService } from './auth-service';
                         this.state.digitalni_knihovny.set([...this.config.digitalni_knihovny]);
                     }
 
+                    const structuredMappings: LibraryPhysicalLocations[] = resp.config
+                        .filter((item: any) => item.config_type === 'library_physical_locations')
+                        .map((item: any) => ({
+                            library: item.library,
+                            physicalLocations: item.physical_locations || []
+                        }));
+                    const legacyMappings: LibraryPhysicalLocations[] = resp.config
+                        .find((item: any) => item.id === 'library_physical_locations')?.value || [];
+                    const libraryPhysicalLocations = structuredMappings.length > 0
+                        ? structuredMappings
+                        : legacyMappings;
+                    this.state.libraryPhysicalLocations.set(libraryPhysicalLocations);
+
                 }));
             }),
             catchError((err) => {
@@ -165,6 +189,17 @@ import { AuthService } from './auth-service';
                 return of(err);
             })
         );
+    }
+
+    private withTextColor(label: Label): Label {
+        if (!label.color || !/^#[0-9a-fA-F]{6}$/.test(label.color)) {
+            return label;
+        }
+        const red = parseInt(label.color.substring(1, 3), 16);
+        const green = parseInt(label.color.substring(3, 5), 16);
+        const blue = parseInt(label.color.substring(5, 7), 16);
+        label.text_color = red + green + blue > 500 ? '#000' : '#fff';
+        return label;
     }
 
 }

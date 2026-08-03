@@ -41,7 +41,8 @@ import { SimpleDialogData } from '../../components/simple-dialog/simple-dialog';
 import { Contract } from '../../shared/contract';
 import { TranslateService } from '@ngx-translate/core';
 import { AuthorTitle } from '../../shared/author';
-import { AuthorTitleDialog, AuthorTitleDialogData } from '../../components/author-title-dialog/author-title-dialog';
+import { UsedFacet } from '../../shared/facet';
+import { ReleaseYearDisplayPipe } from '../../shared/release-year-display.pipe';
 
 @Component({
   selector: 'app-results',
@@ -53,7 +54,7 @@ import { AuthorTitleDialog, AuthorTitleDialogData } from '../../components/autho
     MatFormFieldModule, MatIconModule, MatInputModule, MatButtonToggleModule,
     MatListModule, MatCheckboxModule, MatRadioModule, MatTooltipModule, FacetsComponent,
     ResultItem, AuthorItem, MatMenuModule, LowerCasePipe,
-    NgClass
+    NgClass, ReleaseYearDisplayPipe
   ],
   templateUrl: './results.html',
   styleUrl: './results.scss'
@@ -77,7 +78,11 @@ export class Results {
   readonly dialog = inject(MatDialog);
 
   viewType = signal<string>('table_view');
-  displayedColumns = computed<string[]>(() => [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']);
+  displayedColumns = computed<string[]>(() => 
+    this.state.user() ?
+    ['selection', ...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action'] :
+    [...this.state.titleColumns().filter(c => c.selected).map(f => f.field), 'action']
+);
   columnSizes: { [field: string]: number } = {};
 
   columnsToDisplayWithExpand = computed<string[]>(() => [...this.displayedColumns()]);
@@ -119,21 +124,13 @@ export class Results {
     this.getData();
   }
 
-  addFilters(p: any, usedFacets: { field: string, value: string }[]) {
-    p.author = usedFacets.filter(k => k.field === 'authors').map(k => k.value);
-    p.authors_ids = usedFacets.filter(k => k.field === 'authors_ids').map(k => k.value);
-    p.state = usedFacets.filter(k => k.field === 'state').map(k => k.value);
-    p.labels = usedFacets.filter(k => k.field === 'labels').map(k => k.value);
-    p.contracts = usedFacets.filter(k => k.field === 'contracts').map(k => k.value);
-    p.physical_locations = usedFacets.filter(k => k.field === 'physical_locations').map(k => k.value);
-    p.assigned_licenses = usedFacets.filter(k => k.field === 'assigned_licenses').map(k => k.value);
-    p.licenses = usedFacets.filter(k => k.field === 'licenses').map(k => k.value);
-    p.digital_library = usedFacets.filter(k => k.field === 'digital_library').map(k => k.value);
-    p.model = usedFacets.filter(k => k.field === 'model').map(k => k.value);
-    p.date = usedFacets.filter(k => k.field === 'date').map(k => k.value);
-    p.no_nameIdentifier = usedFacets.filter(k => k.field === 'no_nameIdentifier').map(k => k.value);
-    p.no_year_death = usedFacets.filter(k => k.field === 'no_year_death').map(k => k.value);
-
+  addFilters(p: any, usedFacets: UsedFacet[]) {
+    usedFacets.forEach(facet => {
+      const field = facet.field === 'authors' ? 'author' : facet.field;
+      const parameter = facet.negated ? `${field}_not` : field;
+      p[parameter] ??= [];
+      p[parameter].push(facet.value);
+    });
   }
 
   clearQ() {
@@ -177,6 +174,7 @@ export class Results {
     p.sort = this.sort.active + " " + this.sort.direction;
     if (csv) {
       p.export = true;
+      p.fl = this.displayedColumns();
     } else {
       this.docs.set([]);
     }
@@ -279,34 +277,34 @@ export class Results {
   }
 
 
-  addAuthor(doc: any) {
+  // addAuthor(doc: any) {
 
-    const data: AuthorTitleDialogData = {
-      pid: doc.pid,
-      authors_kapp: doc.authors_kapp,
-      authors_kramerius: doc.authors_kramerius,
-      id: null,
-      ids: doc.authors_ids,
-      nameIdentifiers: doc.nameIdentifiers
-    }
-    const dialogRef = this.dialog.open(AuthorTitleDialog, {
-      data: data,
-    });
+  //   const data: AuthorTitleDialogData = {
+  //     pid: doc.pid,
+  //     authors_kapp: doc.authors_kapp,
+  //     authors_kramerius: doc.authors_kramerius,
+  //     id: null,
+  //     ids: doc.authors_ids,
+  //     nameIdentifiers: doc.nameIdentifiers
+  //   }
+  //   const dialogRef = this.dialog.open(AuthorTitleDialog, {
+  //     data: data,
+  //   });
 
-    dialogRef.afterClosed().subscribe(result => {
-      if (result) {
-        this.service.getDoc(doc.pid).subscribe((resp: any) => {
-          if (resp.response?.docs?.length > 0) {
-            //this.doc.set(resp.response.docs[0]);
-          }
-        });
-      }
-    });
-  }
+  //   dialogRef.afterClosed().subscribe(result => {
+  //     if (result) {
+  //       this.service.getDoc(doc.pid).subscribe((resp: any) => {
+  //         if (resp.response?.docs?.length > 0) {
+  //           //this.doc.set(resp.response.docs[0]);
+  //         }
+  //       });
+  //     }
+  //   });
+  // }
 
   setState(doc: any) {
 
-    if (doc.is_hierarchical || !this.state.user()) {
+    if (doc.is_hierarchical || !this.state.canEditTitle(doc)) {
       return;
     }
 
@@ -335,12 +333,19 @@ export class Results {
     return doc['contracts']?.includes(filename)
   }
 
-  addToBatch(b: Batch, doc: any) {
-    this.saveDocBatch(b.name, doc);
+  addSelectionToBatch(b: Batch) {
+    this.saveDocBatch(b.name, this.docs().filter(d => d.selected));
   }
 
-  saveDocBatch(bs: string, doc: any) {
-    this.service.saveDocBatch(doc.pid, bs).subscribe((res: any) => {
+  addToBatch(b: Batch, doc: any) {
+    this.saveDocBatch(b.name, [doc]);
+  }
+
+  saveDocBatch(bs: string, docs: any[]) {
+    if (!this.state.canEditTitles(docs)) {
+      return;
+    }
+    this.service.saveDocBatch(docs.map(d => d.pid), bs).subscribe((res: any) => {
       if (res.error) {
         this.ui.showErrorSnackBar('snackbar.record_added.error');
       } else {
@@ -350,7 +355,14 @@ export class Results {
     })
   }
 
-  addToContract(contract: Contract, doc: any) {
+  addSelectionToContract(contract: Contract) {
+    this.addToContract(contract, this.docs().filter(d => d.selected));
+  }
+
+  addToContract(contract: Contract, docs: any[]) {
+    if (!this.state.canEditTitles(docs)) {
+      return;
+    }
     const checkboxes = [{
       label: String(this.translator.instant('change_licenses_at_same_time')),
       checked: true
@@ -377,7 +389,7 @@ export class Results {
     });
     dialogRef.afterClosed().subscribe(result => {
       if (result === 'yes') {
-        this.service.saveDocContract(doc.pid, contract.filename, checkboxes[0].checked, !this.inContract(contract.filename, doc), contract.license).subscribe((res: any) => {
+        this.service.saveDocContract(docs.map(d => d.pid), contract.filename, checkboxes[0].checked, !this.inContract(contract.filename, docs), contract.license).subscribe((res: any) => {
           if (res.error) {
             this.ui.showErrorSnackBar('snackbar.record_added.error');
           } else {
@@ -405,12 +417,23 @@ export class Results {
     } else {
       console.log("nemelo by")
     }
-    console.log(el, this.state.titleColumns())
     localStorage.setItem('titleColumns', JSON.stringify(this.state.titleColumns()));
   }
 
   authorChanged() {
     this.getData();
+  }
+
+  selectAll(e: any) {
+    this.docs().forEach((d: any) => d['selected'] = this.state.canEditTitle(d) && e.target.checked);
+  }
+
+  numSelected() {
+    return this.docs().filter(d => d.selected).length;
+  }
+
+  canEditAnyTitle(): boolean {
+    return this.docs().some(doc => this.state.canEditTitle(doc));
   }
 
 }

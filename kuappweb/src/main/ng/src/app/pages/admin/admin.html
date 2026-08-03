@@ -5,11 +5,31 @@
 				<mat-card-title> {{ 'admin.labels' | translate}} </mat-card-title>
 			</mat-card-header>
 			<mat-card-content>
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'admin.labels_visible_to' | translate }}</mat-label>
+					<mat-select [(ngModel)]="labelScope" (selectionChange)="selectLabelScope()">
+						@for(scope of labelScopes; track scope.id) {
+							<mat-option [value]="scope.id">
+								@if(scope.visibility === 'everyone') {
+									{{ 'admin.labels_everyone' | translate }}
+								} @else if(scope.visibility === 'private') {
+									{{ 'admin.labels_private' | translate }}
+								} @else {
+									{{ scope.library }}
+								}
+							</mat-option>
+						}
+					</mat-select>
+				</mat-form-field>
 				@for(l of labels; let idx = $index; track $index) {
 					<div class="app-fxLayout app-row app-baseline-v app-gap-2">
 						<mat-form-field appearance="outline">
 							<mat-label>Name</mat-label>
-							<input matInput [(ngModel)]="l.name" [disabled]="l.name === 'test'" />
+							<input matInput [(ngModel)]="l.name" [title]="l.name | translate" />
+						</mat-form-field>
+						<mat-form-field appearance="outline">
+							<mat-label>Note</mat-label>
+							<input matInput [(ngModel)]="l.note"  />
 						</mat-form-field>
 						<mat-form-field appearance="outline">
 							<mat-label>Color</mat-label>
@@ -30,13 +50,17 @@
 					<mat-form-field appearance="outline">
 						<mat-label>{{ 'admin.new_label_name' | translate }}</mat-label>
 						<input matInput [(ngModel)]="nl.name" />
+						@if(isNewPublicLabelInvalid(nl.name)) {
+							<mat-error>{{ 'admin.label_underscore_not_allowed' | translate }}</mat-error>
+						}
 					</mat-form-field>
 					<mat-form-field appearance="outline" class="app-set-color">
 						<mat-label>{{ 'admin.new_label_color' | translate }}</mat-label>
 						<input matInput [(ngModel)]="nl.color" />
 						<div matSuffix class="app-color" [style.background-color]="nl.color"></div>
 					</mat-form-field>
-					<button matButton="outlined" (click)="addLabel(nl)" class="app-btn-add"><!--[style.background-color]="nl.color" [style.color]="nl.text_color"-->
+					<button matButton="outlined" (click)="addLabel(nl)" class="app-btn-add"
+						[disabled]="isNewPublicLabelInvalid(nl.name)"><!--[style.background-color]="nl.color" [style.color]="nl.text_color"-->
 						<mat-icon>add_circle</mat-icon>Přidat
 					</button>
 				</div>
@@ -74,37 +98,6 @@
 			</mat-card-content>
 			<mat-card-actions class="app-mat-card-actions">
 				<button matButton="filled" (click)="saveLicenses()">{{ 'action.save' | translate }}</button>
-			</mat-card-actions>
-		</mat-card>
-
-		<mat-card appearance="outlined" class="app-fxFlex app-ml-4">
-			<mat-card-header class="app-mb-4">
-				<mat-card-title> {{ 'admin.dk_administration' | translate}} </mat-card-title>
-			</mat-card-header>
-			<mat-card-content class="app-fxLayout app-column">
-				@for(l of dk; track $index) {
-					<mat-form-field appearance="outline" disabled="true">
-						<mat-label>{{ 'admin.dk' | translate }}</mat-label>
-						<input matInput [value]="l" [disabled]="l === 'MZK'" />
-						@if(l !== 'MZK') {
-							<button matIconButton matSuffix (click)="removeDK()" class="app-btn-remove" [matTooltip]="'remove_this_record' | translate">
-								<mat-icon>close</mat-icon>
-							</button>
-						}
-					</mat-form-field>
-				}	
-				<div class="app-fxLayout app-row app-gap-2">
-					<mat-form-field appearance="outline" class="app-fxFlex">
-						<mat-label>{{ 'admin.new_dk' | translate }}</mat-label>
-						<input matInput [(ngModel)]="new_dk" />
-					</mat-form-field>
-					<button matButton="outlined"  (click)="addDK()" class="app-btn-add">
-						<mat-icon>add_circle</mat-icon>Přidat
-					</button>
-				</div>
-			</mat-card-content>
-			<mat-card-actions class="app-mat-card-actions">
-				<button matButton="filled" (click)="saveDK()">{{ 'action.save' | translate }}</button>
 			</mat-card-actions>
 		</mat-card>
 	</div>

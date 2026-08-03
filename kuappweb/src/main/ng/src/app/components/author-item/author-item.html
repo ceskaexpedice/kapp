@@ -7,25 +7,29 @@
 	<mat-card-header>
 		<mat-card-title>
 			<div class="app-fxLayout app-row app-gap-1">
-				<div class="app-fxFlex" [title]="author['id']">{{ author['full']}}</div>
+				<div class="app-fxFlex" [title]="author['id']">{{ author['full']}} ({{ author.id }})</div>
 				<mat-chip-set>
 					@for(l of labels; track $index) {
 					<mat-chip [style.background-color]="l.color" style="--mat-chip-label-text-color: {{l.text_color}};"
 						(removed)="removeLabel(l)">
 						{{ l.name }}
-						<button matChipRemove [attr.aria-label]="'remove ' + l.name">
-							<mat-icon>cancel</mat-icon>
-						</button>
+						@if (state.hasLibraryRole()) {
+							<button matChipRemove [attr.aria-label]="'remove ' + l.name">
+								<mat-icon>cancel</mat-icon>
+							</button>
+						}
 					</mat-chip>
 					}
-					<mat-chip [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
-						{{ 'Přidat štítek' | translate }}
-						<mat-menu #labelsMenu="matMenu">
-							@for(a of state.labels(); track $index) {
-							<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
-							}
-						</mat-menu>
-					</mat-chip>
+					@if (state.hasLibraryRole()) {
+						<mat-chip [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
+							{{ 'Přidat štítek' | translate }}
+							<mat-menu #labelsMenu="matMenu">
+								@for(a of state.labels(); track $index) {
+								<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
+								}
+							</mat-menu>
+						</mat-chip>
+					}
 				</mat-chip-set>
 			</div>
 		</mat-card-title>
@@ -39,7 +43,7 @@
 			@if(editing()) {
 				<mat-form-field appearance="outline">
 					<mat-label>{{ 'field.year_birth' | translate }}</mat-label>
-					<input matInput [(ngModel)]="author.year_birth" />
+					<input matInput [(ngModel)]="author.year_birth" (ngModelChange)="setFull()" />
 				</mat-form-field>
 			} @else {
 				<span class="app-label">{{ 'field.year_birth' | translate }}:</span>
@@ -50,7 +54,7 @@
 			@if(editing()) {
 				<mat-form-field appearance="outline">
 					<mat-label>{{ 'field.year_death' | translate }}</mat-label>
-					<input matInput [(ngModel)]="author.year_death" />
+					<input matInput [(ngModel)]="author.year_death" (ngModelChange)="setFull()" />
 				</mat-form-field>
 			} @else {
 				<span class="app-label">{{ 'field.year_death' | translate }}:</span>
@@ -72,7 +76,7 @@
 		</div>
 		@if (author.nameIdentifier) {
 		<div class="app-metadata-row">
-			<span class="app-label">{{ 'field.id' | translate }}:</span>
+			<span class="app-label" [title]="'field.nameIdentifier_desc' | translate">{{ 'field.nameIdentifier' | translate }}:</span>
 			<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+author.nameIdentifier" class="app-value">
 				<span>{{ author.nameIdentifier}}</span>
 				<mat-icon>open_in_new</mat-icon>
@@ -93,7 +97,7 @@
 			}
 		</div>
 		} 
-		@if (state.user()) {
+		@if (state.hasLibraryRole()) {
       <button matButton (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
       @for(a of aut(); track $index) {
       <div class="app-metadata-row">
@@ -111,8 +115,8 @@
 	<mat-card-actions align="end">
 		<div class="app-fxLayout app-row app-gap-2">
 			@if(numTitles()) {<button matButton (click)="gotoTitles()" class="app-mr-1">{{ 'action.show_titles' | translate }} ({{ numTitles() }})</button>}
-			@if (state.user()) {
-			<button matButton="outlined" [disabled]="loading()" (click)="save()">{{ 'action.save' | translate }}<mat-icon matSuffix>save</mat-icon></button>
+			@if (state.hasLibraryRole()) {
+			<button matButton="outlined" [disabled]="loading()" (click)="onSave()">{{ 'action.save' | translate }}<mat-icon matSuffix>save</mat-icon></button>
 			<button matButton="outlined" (click)="toggleEdit()" >{{ 'action.edit' | translate }}<mat-icon matSuffix>edit</mat-icon></button>
 			}
 		</div>

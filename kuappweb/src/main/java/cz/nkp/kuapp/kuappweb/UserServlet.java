@@ -10,9 +10,12 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
+import java.util.HashSet;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import javax.servlet.ServletException;
@@ -21,6 +24,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import org.json.JSONException;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.keycloak.authorization.client.AuthzClient;
 import org.keycloak.representations.idm.authorization.AuthorizationRequest;
@@ -94,6 +98,15 @@ public class UserServlet extends HttpServlet {
     public static String getUserName(HttpServletRequest req) {
         JSONObject user = getUser(req);
         if (user != null) {
+            return user.getString("preferred_username");
+        } else {
+            return null;
+        }
+    }
+
+    public static String getUserNameHuman(HttpServletRequest req) {
+        JSONObject user = getUser(req);
+        if (user != null) {
             return user.getString("name");
         } else {
             return null;
@@ -123,9 +136,50 @@ public class UserServlet extends HttpServlet {
             return ((JSONObject) req.getSession().getAttribute("user"));
         } else {
             
-            //JSONObject u = new JSONObject().put("name", "mock");
-            //return u;
+//            JSONObject u = new JSONObject().put("name", "mock");
+//            return u;
             return null;
+        }
+    }
+
+    public static boolean hasRole(HttpServletRequest req, String role) {
+        return getRoles(req).contains(role);
+    }
+
+    public static Set<String> getRoles(HttpServletRequest req) {
+        Set<String> roles = new HashSet<>();
+        JSONObject user = getUser(req);
+        if (user == null) {
+            return roles;
+        }
+
+        addRoles(roles, user.optJSONArray("roles"));
+        JSONObject realmAccess = user.optJSONObject("realm_access");
+        if (realmAccess != null) {
+            addRoles(roles, realmAccess.optJSONArray("roles"));
+        }
+
+        JSONObject resourceAccess = user.optJSONObject("resource_access");
+        if (resourceAccess != null) {
+            for (String resource : resourceAccess.keySet()) {
+                JSONObject clientAccess = resourceAccess.optJSONObject(resource);
+                if (clientAccess != null) {
+                    addRoles(roles, clientAccess.optJSONArray("roles"));
+                }
+            }
+        }
+        return roles;
+    }
+
+    private static void addRoles(Set<String> target, JSONArray roles) {
+        if (roles == null) {
+            return;
+        }
+        for (int i = 0; i < roles.length(); i++) {
+            String role = roles.optString(i, null);
+            if (role != null && !role.isBlank()) {
+                target.add(role);
+            }
         }
     }
 
@@ -191,6 +245,7 @@ public class UserServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject user = new JSONObject();
                 try {
+                    req.getSession().removeAttribute("user");
                     JSONObject js = Options.getInstance().getJSONObject("keycloak");
 
                     ///  curl -s -X POST "https://eduid.inovatika.dev/realms/kapp/protocol/openid-connect/token" ^
@@ -209,13 +264,22 @@ public class UserServlet extends HttpServlet {
                     formData.put("code", req.getParameter("code"));
                     formData.put("redirect_uri", req.getParameter("redirect_uri"));
 
-                    HttpClient client = HttpClient.newHttpClient();
+                    HttpClient client = HttpClient.newBuilder()
+                            .connectTimeout(Duration.ofSeconds(10))
+                            .build();
                     HttpRequest request = HttpRequest.newBuilder()
                             .POST(HttpRequest.BodyPublishers.ofString(getFormDataAsString(formData)))
+                            .timeout(Duration.ofSeconds(20))
                             .setHeader("Content-Type", "application/x-www-form-urlencoded")
                             .uri(new URI(url))
                             .build();
                     HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+                    if (response.statusCode() < 200 || response.statusCode() >= 300) {
+                        resp.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+                        return new JSONObject()
+                                .put("error", "Keycloak token exchange failed")
+                                .put("status", response.statusCode());
+                    }
                     String r = response.body();
 
                     JSONObject json = new JSONObject(r);
@@ -223,8 +287,8 @@ public class UserServlet extends HttpServlet {
                     String[] chunks = json.getString("access_token").split("\\.");
                     Base64.Decoder decoder = Base64.getUrlDecoder();
 
-                    String header = new String(decoder.decode(chunks[0]));
-                    String payload = new String(decoder.decode(chunks[1]));
+                    String header = new String(decoder.decode(chunks[0]), StandardCharsets.UTF_8);
+                    String payload = new String(decoder.decode(chunks[1]), StandardCharsets.UTF_8);
                     user = new JSONObject(payload);
                     req.getSession().setAttribute("user", user);
 

@@ -1,8 +1,18 @@
 .app-left {
   width: 350px;
+
+  &.app-facets-wrapper {
+    border: 1px solid var(--app-border-color-default);
+  }
 }
 
 .app-right {
+  .app-toolbar {
+    border-bottom: 1px solid var(--app-color-gray-3);
+    padding-top: 6px;
+    padding-bottom: 2px;
+  }
+
   .mat-mdc-table {
     tr {
       &.app-element-row {

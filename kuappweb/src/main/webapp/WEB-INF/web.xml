@@ -14,6 +14,14 @@
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
     <servlet>
+        <servlet-name>StateChangesServlet</servlet-name>
+        <servlet-class>cz.nkp.kuapp.kuappweb.StateChangesServlet</servlet-class>
+    </servlet>
+    <servlet-mapping>
+        <servlet-name>StateChangesServlet</servlet-name>
+        <url-pattern>/changes</url-pattern>
+    </servlet-mapping>
+    <servlet>
         <servlet-name>RestApiServlet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
@@ -46,7 +54,9 @@
     <servlet-mapping>
         <servlet-name>StaticServlet</servlet-name>
         <url-pattern>/admin</url-pattern>
+        <url-pattern>/library-rights</url-pattern>
         <url-pattern>/home</url-pattern>
+        <url-pattern>/keycloak</url-pattern>
         <url-pattern>/batches</url-pattern>
         <url-pattern>/titles</url-pattern>
         <url-pattern>/authors</url-pattern>

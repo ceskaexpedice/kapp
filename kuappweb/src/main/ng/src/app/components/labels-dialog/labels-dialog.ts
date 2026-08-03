@@ -34,12 +34,12 @@ export class LabelsDialog {
 
   ngOnInit() {
     const p: any = {};
-    this.labels = this.state.labels();
+    this.labels = this.state.labelSets()['labels'] || [];
   }
 
   save() {
-    this.state.labels.set(this.labels);
-    this.service.saveLabels(this.state.labels()).subscribe(resp => {
+    this.service.saveLabels(this.labels, 'everyone').subscribe(resp => {
+      this.state.setLabelSet('labels', this.labels);
       console.log(resp)
     });
   }

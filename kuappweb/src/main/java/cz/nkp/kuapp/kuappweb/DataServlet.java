@@ -189,11 +189,17 @@ public class DataServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getLabels();
+                    json = IndexSearcher.getLabels(req);
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());
                 }
                 return json;
+            }
+        },
+        PHYSICAL_LOCATIONS {
+            @Override
+            JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
+                return IndexSearcher.getPhysicalLocations();
             }
         },
         GET_BATCH_DOCS {
@@ -267,7 +273,7 @@ public class DataServlet extends HttpServlet {
             JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception {
                 JSONObject json = new JSONObject();
                 try {
-                    json = IndexSearcher.getConfig();
+                    json = IndexSearcher.getConfig(req);
                     json.put("user", UserServlet.getUser(req));
                 } catch (JSONException ex) {
                     json.put("error", ex.toString());

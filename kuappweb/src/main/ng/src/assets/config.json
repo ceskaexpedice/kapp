@@ -19,10 +19,7 @@
       "year_death": "-year_birth:*",
       "nameIdentifier": "-nameIdentifier:*"
     },
-    "digitalni_knihovny": [
-        "NKP",
-        "MZK"
-    ],
+    "digitalni_knihovny": [],
     "labels": [
         {"name": "author_modified", "color": "#920707", "text_color": "#fff", "inconfig": true},
         {"name": "excel", "color": "#0b5928", "text_color": "#fff", "inconfig": true},
@@ -43,13 +40,10 @@
     "states": [
         {"value": "CONTROLLED_PUBLIC", "licenses": ["public"], "licenseEditable":false},
         {"value": "CONTROLLED_PRIVATE", "licenses": ["onsite"],"licenseEditable":false},
-        {"value": "CONTROLLED_PRIVATE_LICENSE", 
-        "licenses": ["onsite", "nkp_local", "nkp_local_dedic", "nkp_local_nakladatel", "mzk_local", "mzk_local_dedic", "mzk_local_nakladatel"],
-        "licenseEditable":true},
         {"value": "CONTROLLED_UNKNOWN", "licenses": ["onsite"], "licenseEditable":false},
         {"value": "CONTROLLED_UNKNOWN_PUBLIC", "licenses": ["public"],"licenseEditable":false},
-        {"value": "CONTROLLED_NO_AP", "licenses": ["public"],"licenseEditable":false},
-        {"value": "CONTROLLED_PROHIBITED", "licenses": ["onsite"],"licenseEditable":false}
+        {"value": "CONTROLLED_WO_RIGHTS", "licenses": ["public"],"licenseEditable":false},
+        {"value": "CONTROLLED_BLOCKED", "licenses": ["onsite"],"licenseEditable":false}
     ],
 
 
@@ -59,14 +53,22 @@
         {"field": "authors", "selected": true},
         {"field": "state", "selected": true},
         {"field": "model", "selected": true},
-        {"field": "date_issued", "selected": true},
+        {"field": "date_issued_year", "selected": true},
+        {"field": "last_year_death", "selected": true},
+        {"field": "release_year", "selected": true},
         {"field": "indextime", "selected": true},
-        {"field": "decision_date", "selected": false},
-        {"field": "release_date", "selected": false},
         {"field": "assigned_licenses", "selected": false},
         {"field": "licenses", "selected": false},
         {"field": "digital_library", "selected": false},
-        {"field": "sigla", "selected": true}
+        {"field": "id_ccnb", "selected": false},
+        {"field": "id_urnnbn", "selected": false},
+        {"field": "id_isbn", "selected": false},
+        {"field": "id_issn", "selected": false},
+        {"field": "id_barCode", "selected": false},
+        {"field": "id_sysno", "selected": false},
+        {"field": "sigla", "selected": false},
+        {"field": "archiver_location", "selected": false}
+
     ],
 
     "contractColumns": [

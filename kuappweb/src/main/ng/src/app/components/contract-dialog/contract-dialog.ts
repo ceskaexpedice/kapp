@@ -190,7 +190,10 @@ export class ContractDialog {
   }
 
   addTitleToContract(doc: any, add: boolean) {
-    this.service.saveDocContract(doc.pid, this.contract().filename, this.withState, add, this.contract().license).subscribe((res: any) => {
+    if (!this.state.canEditTitle(doc)) {
+      return;
+    }
+    this.service.saveDocContract([doc.pid], this.contract().filename, this.withState, add, this.contract().license).subscribe((res: any) => {
       console.log(res);
       this.getTitles();
     })

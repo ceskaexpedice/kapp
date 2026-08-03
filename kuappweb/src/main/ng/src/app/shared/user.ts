@@ -6,7 +6,9 @@ export class User {
   authenticated: boolean = false;
   sid: string;
   name: string;
+  preferred_username: string;
   realm_access: {roles: string[]};
+  resource_access: {[resource: string]: {roles: string[]}};
   roles: string[];
   licenses: string[];
   session: any;
@@ -17,6 +19,9 @@ export class User {
       user.authenticated = !!json['authenticated'];
       user.name = (json['name'] || '').trim();
       user.sid = json['sid'];
+      user.preferred_username = json['preferred_username'];
+      user.realm_access = json['realm_access'] || {roles: []};
+      user.resource_access = json['resource_access'] || {};
       user.roles = json['roles'] || [];
       user.session = json['session'] || {};
       user.licenses = json['licenses'] || [];

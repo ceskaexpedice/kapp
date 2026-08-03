@@ -1,66 +1,160 @@
 @if(hasUsedFacets) {
-  <div class="app-facet-used">
-    <mat-expansion-panel [expanded]="true">
-      <mat-expansion-panel-header>
-        <mat-panel-title> {{ 'usedFilters' | translate}} </mat-panel-title>
-      </mat-expansion-panel-header>
-      <mat-list>
-        @for(k of usedFacets; track $index; let idx = $index){
-          @if(!hard_facets().includes(k.field)) {
-            <mat-list-item (click)="unfilter(k.field, k.value)">
-              <mat-icon matListItemIcon>close</mat-icon>
-              <span matListItemTitle>
-                <strong>{{ 'field.' + k.field | translate}}: </strong>
-                @if (k.field === 'state') {
-                  {{ 'state.' + k.value | translate}}
-                } @else {
-                  {{ k.value }}
-                }
-              </span>
-            </mat-list-item>
+<div class="app-facet app-facet-used">
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title> {{ 'usedFilters' | translate}} </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-list>
+      @for(k of usedFacets; track $index; let idx = $index){
+      @if(!hard_facets().includes(k.field)) {
+      <mat-list-item (click)="unfilter(k.field, k.value)">
+        <mat-icon matListItemIcon>close</mat-icon>
+        <span matListItemTitle>
+          <strong>{{ 'field.' + k.field | translate}}: </strong>
+          @if (k.field === 'state') {
+          {{ 'state.' + k.value | translate}}
+          } @else if (k.field === 'labels') {
+            @let label = labelsByStorageName().get(k.value);
+            {{ (label?.name || k.value) | translate }}
+            @if (label?.visibility === 'private') {
+              ({{ 'admin.labels_private' | translate }})
+            } @else if (label?.visibility === 'library') {
+              ({{ label?.owner }})
+            }
+          } @else {
+          {{ k.value }}
           }
-        }
-      </mat-list>
-    </mat-expansion-panel>
-  </div>
+        </span>
+      </mat-list-item>
+      }
+      }
+    </mat-list>
+  </mat-expansion-panel>
+</div>
 }
 
 @if(hard_facets().length > 0){
-    <div>
-      <mat-expansion-panel [expanded]="true">
-        <mat-expansion-panel-header>
-          <mat-panel-title> {{ 'field.hard_facets' | translate}} </mat-panel-title>
-        </mat-expansion-panel-header>
-        <mat-list class="app-facet">
-          @for(hf of hard_facets(); track $index; let idx = $index){
-            <mat-list-item>
-                <mat-checkbox (change)="filterHard(hf, $event)" [checked]="isHardUsed(hf)">{{ 'field.' + hf | translate }} <span class="app-count">({{facets()[hf].count}})</span> </mat-checkbox>
-            </mat-list-item>
-          }
-        </mat-list>
-      </mat-expansion-panel>
-    </div>
+<div class="app-facet">
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title> {{ 'field.hard_facets' | translate}} </mat-panel-title>
+    </mat-expansion-panel-header>
+    <mat-list class="app-facet">
+      @for(hf of hard_facets(); track $index; let idx = $index){
+      <mat-list-item class="app-tickable-filter" (click)="filterHard(hf)">
+        @if (isHardNegated(hf)) {
+          <span class="app-facet-negative-mark" aria-hidden="true">&times;</span>
+        }
+        <mat-checkbox (click)="filterHard(hf); $event.preventDefault(); $event.stopPropagation()"
+          [checked]="isHardUsed(hf)" [class.app-negated]="isHardNegated(hf)">
+          <span class="app-text">{{ 'field.' + hf | translate }}</span>
+           <span class="app-count">({{facets()[hf].count}})</span>
+         </mat-checkbox>
+      </mat-list-item>
+      }
+    </mat-list>
+  </mat-expansion-panel>
+</div>
 }
 
-@for(f of fields(); track $index; let idx = $index){
-  @if (facets()[f]?.buckets.length > 0) {
-    <div>
+
+<div class="app-facet app-facet-date-change">
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title> {{ 'field.state_date' | translate}} </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="app-fxLayout app-row app-pl-4 app-pr-4 app-pb-1 app-gap-2">
+      <mat-form-field class="app-fxFlex" appearance="outline">
+        <mat-label>{{ 'Datum změny stavu' | translate}}</mat-label>
+        <mat-date-range-input [rangePicker]="picker">
+          <input matStartDate [placeholder]="'from' | translate" [(ngModel)]="dateChangedFrom">
+          <input matEndDate [placeholder]="'to' | translate" [(ngModel)]="dateChangedTo">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="picker"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker></mat-date-range-picker>
+      </mat-form-field>
+      <button matIconButton (click)="filterStateDate()"><mat-icon>search</mat-icon></button>
+    </div>
+  </mat-expansion-panel>
+</div>
+
+<div class="app-facet app-facet-date-change">
+  <mat-expansion-panel [expanded]="true">
+    <mat-expansion-panel-header>
+      <mat-panel-title> {{ 'field.last_modified_date' | translate}} </mat-panel-title>
+    </mat-expansion-panel-header>
+    <div class="app-fxLayout app-row app-pl-4 app-pr-4 app-pb-1 app-gap-2">
+      <mat-form-field class="app-fxFlex" appearance="outline">
+        <mat-label>{{ 'Datum změny' | translate}}</mat-label>
+        <mat-date-range-input [rangePicker]="picker2">
+          <input matStartDate [placeholder]="'from' | translate" [(ngModel)]="modifiedChangedFrom">
+          <input matEndDate [placeholder]="'to' | translate" [(ngModel)]="modifiedChangedTo">
+        </mat-date-range-input>
+        <mat-datepicker-toggle matIconSuffix [for]="picker2"></mat-datepicker-toggle>
+        <mat-date-range-picker #picker2></mat-date-range-picker>
+      </mat-form-field>
+      <button matIconButton (click)="filterModifiedDate()"><mat-icon>search</mat-icon></button>
+    </div>
+  </mat-expansion-panel>
+</div>
+
+
+@for(f of fields(); track $index; let idx = $index) {
+  @if(f==='date_issued_year') {
+    <div class="app-facet app-facet-date-issue">
       <mat-expansion-panel [expanded]="true">
         <mat-expansion-panel-header>
           <mat-panel-title> {{ 'field.' + f | translate}} </mat-panel-title>
         </mat-expansion-panel-header>
-        <mat-list class="app-facet">
-          @for(k of facets()[f].buckets; track $index; let idx = $index){
-            <mat-list-item (click)="filter(f, k.val)" title="{{ k.val}} ({{k.count}})" (mouseover)="fireMouserOver(f, k.val)" (mouseout)="fireMouseOut(f, k.val)">
-              @if (f === 'state') {
-                <mat-checkbox [checked]="isUsed(f, k.val)">{{ 'state.' + k.val | translate}} <span class="app-count">({{k.count}})</span></mat-checkbox>
-              } @else {
-                <mat-checkbox [checked]="isUsed(f, k.val)">{{ k.val }} <span class="app-count">({{k.count}})</span> </mat-checkbox>
-              }
-            </mat-list-item>
-          }
-        </mat-list>
+        <div class="app-fxLayout app-row app-gap-2 app-pl-4 app-pr-4 app-pb-1">
+          <mat-form-field appearance="outline" class="app-fxFlex">
+            <input [(ngModel)]="yearFrom" type="number" matInput />
+          </mat-form-field>
+          <mat-form-field appearance="outline" class="app-fxFlex">
+            <input [(ngModel)]="yearTo" type="number" matInput />
+          </mat-form-field>
+          <!-- <button matIconButton (click)="clearYear()"><mat-icon>cancel</mat-icon></button> -->
+          <button matIconButton (click)="filterYear()"><mat-icon>search</mat-icon></button>
+        </div>
       </mat-expansion-panel>
     </div>
+  } @else {
+    @if (facetBuckets(f).length > 0) {
+      <div class="app-facet">
+        <mat-expansion-panel [expanded]="false">
+          <mat-expansion-panel-header>
+            <mat-panel-title> {{ 'field.' + f | translate}} </mat-panel-title>
+          </mat-expansion-panel-header>
+          <mat-list class="app-facet">
+            @for(k of facetBuckets(f); track k.val; let idx = $index){
+              <mat-list-item class="app-tickable-filter" (click)="filter(f, k.val)" (mouseover)="fireMouserOver(f, k.val)" (mouseout)="fireMouseOut(f, k.val)">
+                @if (isNegated(f, k.val)) {
+                  <span class="app-facet-negative-mark" aria-hidden="true">&times;</span>
+                }
+                @if (f === 'state') {
+                  <mat-checkbox (click)="filter(f, k.val); $event.preventDefault(); $event.stopPropagation()"
+                    [checked]="isUsed(f, k.val)" [class.app-negated]="isNegated(f, k.val)">
+                    <span class="app-text" [matTooltip]="'state.' + k.val | translate">{{ 'state.' + k.val | translate }}</span>
+                    <span class="app-count">({{k.count}})</span>
+                  </mat-checkbox>
+                } @else if (f === 'labels') {
+                  <mat-checkbox (click)="filter(f, k.val); $event.preventDefault(); $event.stopPropagation()"
+                    [checked]="isUsed(f, k.val)" [class.app-negated]="isNegated(f, k.val)">
+                    <span class="app-text" [matTooltip]="labelsByStorageName().get(k.val)?.note">{{ labelsByStorageName().get(k.val)?.name || k.val | translate }}</span>
+                    <span class="app-count">({{k.count}})</span>
+                  </mat-checkbox>
+                } @else {
+                  <mat-checkbox (click)="filter(f, k.val); $event.preventDefault(); $event.stopPropagation()"
+                    [checked]="isUsed(f, k.val)" [class.app-negated]="isNegated(f, k.val)">
+                    <span class="app-text app-text-cutter" [matTooltip]="k.val">{{ k.val }}</span>
+                    <span class="app-count">({{k.count}})</span>
+                  </mat-checkbox>
+                }
+              </mat-list-item>
+            }
+          </mat-list>
+        </mat-expansion-panel>
+      </div>
+    }
   }
 }

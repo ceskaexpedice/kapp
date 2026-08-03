@@ -83,7 +83,8 @@ export class StateDialog {
       pid: this.data.doc.pid,
       state: this.newState,
       licenses: this.newLicenses,
-      reason: this.reason
+      reason: this.reason,
+      model: this.data.doc.model
     };
     this.service.changeState(p).subscribe(resp => {
       if (resp.error) {

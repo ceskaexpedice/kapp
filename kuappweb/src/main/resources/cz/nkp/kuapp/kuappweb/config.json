@@ -1,5 +1,6 @@
 {
     "solr": "http://solr-kappScheduler:8983/solr", 
+    "error_labels": ["Kniha není z krameria, nebo má podezřelá data"],
     "gemini": {
         "api_key": "",
         "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=",

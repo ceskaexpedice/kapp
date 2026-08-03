@@ -11,6 +11,8 @@ import { provideTranslateHttpLoader } from '@ngx-translate/http-loader';
 import { AppConfiguration } from './app-configuration';
 import { Configuration } from './shared/config';
 import { AuthService } from './auth-service';
+import { AuthGuard } from './auth.guard';
+import { DatePipe } from '@angular/common';
 
 
 export const appConfig: ApplicationConfig = {
@@ -29,6 +31,6 @@ export const appConfig: ApplicationConfig = {
     }),
     provideHttpClient(),
     { provide: APP_INITIALIZER, useFactory: (config: AppConfiguration) => () => config.load(), deps: [AppConfiguration], multi: true },
-    TranslateService, AuthService, AppState, AppService, UIService
+    TranslateService, DatePipe, AuthGuard, AuthService, AppState, AppService, UIService
   ]
 };

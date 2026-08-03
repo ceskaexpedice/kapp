@@ -24,7 +24,8 @@ export interface AuthorTitleDialogData {
     authors_kramerius: AuthorTitle[], 
     id: string,
     ids: string[], 
-    nameIdentifiers: string[]
+    nameIdentifiers: string[],
+    date_issued_year: number | null
   }
 
 @Component({
@@ -161,7 +162,9 @@ export class AuthorTitleDialog {
 
           id: a['controlfield_001'],
           nameIdentifier: a['controlfield_001'],
-          full: a['datafield_100a'],
+          // MARC 100$a commonly ends with a cataloguing comma. The UI renders
+          // the date separately, so keeping it would produce "Name, 1900-".
+          full: a['datafield_100a']?.replace(/,\s*$/, ''),
           family: a['family']?.[0],
           given: a['given']?.[0],
           date: a['datafield_100d'],
@@ -225,7 +228,8 @@ export class AuthorTitleDialog {
         if (this.author().family !== a['family'] ||
           this.author().given !== a['given'] ||
           this.author().year_birth !== a['year_birth'] ||
-          this.author().year_death !== a['year_death']
+          this.author().year_death !== a['year_death'] ||
+          this.author().nameIdentifier !== a['id']
         ) {
           const message = this.translator.instant('alert.saving_author_differs_desc') +
                           `<div>${this.translator.instant('field.family')}: ${a['family']} -> ${this.author().family} </div>
@@ -265,7 +269,6 @@ export class AuthorTitleDialog {
   }
 
   save(inAuthors: boolean): void {
-    console.log(this.author());
     if (this.author().id !== this.data.id) {
       this.author().old_id = this.data.id;
     }
@@ -288,26 +291,37 @@ export class AuthorTitleDialog {
     const authors_kramerius_nameIdentifiers = this.data.authors_kramerius.filter(a => a.nameIdentifier && !authors_kapp_nameIdentifiers.includes(a.nameIdentifier)).map(a => a.nameIdentifier);
     const nameIdentifiers: string[] =  [...authors_kapp_nameIdentifiers, ...authors_kramerius_nameIdentifiers];
     
-    this.service.saveAuthorsInTitle(authors, this.data.pid, inAuthors ? this.author() : null, ids, nameIdentifiers).subscribe((res: any) => {
+    const authors_kapp_names = authors.map(a => a.full);
+    const authors_kramerius_names = this.data.authors_kramerius.filter(a => !authors_kapp_names.includes(a.full)).map(a => a.full);
+    const names: string[] =  [...authors_kapp_names, ...authors_kramerius_names];
+    
+    this.service.saveAuthorsInTitle(authors, this.data.pid, inAuthors ? this.author() : null, ids, nameIdentifiers, names).subscribe((res: any) => {
       if (res.error) {
         this.ui.showErrorSnackBar('snackbar.record_saved.error');
       } else {
-        console.log(this.author());
         this.ui.showInfoSnackBar('snackbar.record_saved.success');
         this.hasChanges = true;
       }
     })
   }
 
-  setAsLast() {
+  setAsLast(isLast: boolean) {
     if (this.author().year_death) {
-      this.service.saveDecisionDate(this.data.pid, this.author().year_death).subscribe((res: any) => {
+      this.author().isLast = isLast;
+      
+      //ulozit vsechny autory. jen jeden je last this.author().id
+      const authors = this.data.authors_kapp ? [...this.data.authors_kapp.filter(a => a.id !== this.author().id)] : [];
+      authors.forEach(a => {a.isLast = false});
+      authors.push(JSON.parse(JSON.stringify(this.author())));
+
+      this.service.saveLastYearDeath(this.data.pid, isLast ? this.author().year_death : null, authors, this.data.date_issued_year).subscribe((res: any) => {
         this.hasChanges = true;
         if (res.error) {
           this.ui.showErrorSnackBar('snackbar.record_changed.error');
         } else {
-          console.log(res);
-          this.ui.showInfoSnackBar('snackbar.record_changed.success');
+          this.save(false);
+          // console.log(res);
+          // this.ui.showInfoSnackBar('snackbar.record_changed.success');
         }
       })
     }
@@ -318,5 +332,40 @@ export class AuthorTitleDialog {
     this.state.q = this.author().full;
     this.router.navigate(['/authors'], { queryParams: { s: this.state.encodeState() } });
     this.dialogRef.close(false);
+  }
+
+  toggleRemoved() {
+
+    if (this.author().removed) {
+              this.author().removed = false;
+              this.save(false);
+    } else {
+
+          const data: SimpleDialogData = {
+            title: this.translator.instant('alert.remove_author'),
+            message: this.translator.instant('alert.remove_author_desc'),
+            alertClass: 'app-warn',
+            btn1: {
+              label: 'Ano',
+              value: 'yes',
+              color: 'warn'
+            },
+            btn2: {
+              label: 'Ne',
+              value: 'no',
+              color: 'default'
+            }
+          };
+          const dialogRef = this.dialog.open(SimpleDialogComponent, {
+            data: data
+          });
+          dialogRef.afterClosed().subscribe(result => {
+            if (result === 'yes') {
+              this.author().removed = true;
+              this.save(false);
+            }
+          });
+
+    }
   }
 }

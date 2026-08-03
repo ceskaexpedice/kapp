@@ -1,5 +1,4 @@
 import { Component, inject, signal } from '@angular/core';
-import { MatDialog, MatDialogModule } from '@angular/material/dialog';
 import { AppState } from '../../app-state';
 import { AppService } from '../../app.service';
 import { UIService } from '../../ui.service';
@@ -9,20 +8,26 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatChipsModule } from '@angular/material/chips';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
-import { MatProgressBar } from '@angular/material/progress-bar';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatCardModule } from '@angular/material/card';
 import { Label } from '../../shared/label';
-import { AppConfiguration } from '../../app-configuration';
-import { MatTooltip, MatTooltipModule } from "@angular/material/tooltip";
+import { MatTooltipModule } from "@angular/material/tooltip";
+import { MatSelectModule } from '@angular/material/select';
+
+interface LabelScopeOption {
+  id: string;
+  visibility: 'everyone' | 'private' | 'library';
+  library?: string;
+  owner?: string;
+}
 
 @Component({
   selector: 'app-admin',
   imports: [
     TranslateModule, FormsModule,
-    MatDialogModule, MatIconModule, MatButtonModule, MatCardModule,
+    MatIconModule, MatButtonModule, MatCardModule,
     MatChipsModule, MatFormFieldModule, MatInputModule,
-    MatTooltipModule
+    MatTooltipModule, MatSelectModule
 ],
   templateUrl: './admin.html',
   styleUrl: './admin.scss'
@@ -34,21 +39,36 @@ export class Admin {
   loading = signal<boolean>(false);
   labels: Label[];
   nl: Label = {name: ''};
+  labelScope = 'labels';
+  labelScopes: LabelScopeOption[] = [];
 
   licenses:string[] = [];
   new_license: string;
 
-  dk:string[] = [];
-  new_dk: string;
-
   ngOnInit() {
     const p: any = {};
-    this.labels = this.state.labels();
+    this.labelScopes = [{id: 'labels', visibility: 'everyone'}];
+    const username = this.state.user()?.preferred_username;
+    if (username) {
+      this.labelScopes.push({id: `labels_${username}`, visibility: 'private', owner: username});
+    }
+    const roles = new Set(this.state.roles());
+    this.state.digitalni_knihovny()
+      .filter(library => this.state.hasRole('kappAdmin') || roles.has(library))
+      .forEach(library => this.labelScopes.push({
+        id: `labels_${library}`,
+        visibility: 'library',
+        library,
+        owner: library
+      }));
+    this.selectLabelScope();
     this.licenses = [...this.state.licenses()];
-    this.dk = [...this.state.digitalni_knihovny()];
   }
 
   addLabel(l: Label) {
+    if (this.isNewPublicLabelInvalid(l.name)) {
+      return;
+    }
     if (!this.labels.find(la => la.name === l.name)) {
       this.labels.push({name: l.name, color: l.color});
       this.nl = {name: ''};
@@ -56,16 +76,33 @@ export class Admin {
     }
   }
 
+  isNewPublicLabelInvalid(name: string): boolean {
+    return this.labelScope === 'labels' && !!name?.includes('_');
+  }
+
   saveLabels() {
-    this.state.labels.set(this.labels);
-    this.service.saveLabels(this.state.labels()).subscribe(resp => {
+    const scope = this.labelScopes.find(option => option.id === this.labelScope);
+    if (!scope) {
+      return;
+    }
+    this.service.saveLabels(this.labels, scope.visibility, scope.library).subscribe(resp => {
       if (resp.error) {
         this.ui.showErrorSnackBar('snackbar.record_saved.error');
       } else {
+        this.state.setLabelSet(scope.id, this.labels.map(label => ({
+          ...label,
+          storageName: scope.visibility === 'everyone' ? label.name : `${label.name}_${scope.owner}`,
+          visibility: scope.visibility,
+          owner: scope.owner
+        })));
         this.ui.showInfoSnackBar('snackbar.record_saved.success');
         console.log(resp);
       }
     });
+  }
+
+  selectLabelScope() {
+    this.labels = (this.state.labelSets()[this.labelScope] || []).map(label => ({...label}));
   }
 
   removeLabel(idx: number) {
@@ -103,32 +140,4 @@ export class Admin {
     });
   }
 
-  addDK() {
-    if (!this.licenses.find(l => l === this.new_license)) {
-      this.licenses.push(this.new_license);
-      this.new_license = null;
-      //this.saveDK();
-    }
-  }
-
-  saveDK() {
-    this.state.digitalni_knihovny.set(this.dk);
-    this.service.saveDK(this.state.digitalni_knihovny()).subscribe(resp => {
-      if (resp.error) {
-        this.ui.showErrorSnackBar('snackbar.record_saved.error');
-        console.log(resp);
-      } else {
-        this.ui.showInfoSnackBar('snackbar.record_saved.success');
-        console.log(resp);
-      }
-    });
-  }
-
-  removeDK() {
-    // todo
-    // success
-    this.ui.showInfoSnackBar('snackbar.record_removed.success');
-    // error
-    //this.ui.showErrorSnackBar('snackbar.record_removed.error');
-  }
 }
