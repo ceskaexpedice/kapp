@@ -12,7 +12,7 @@ Základní integrační směr je:
 Kramerius A ─┐
 Kramerius B ─┼─> harvester ─> Solr <─> webové UI / kurátorská práce
 Kramerius N ─┘                     │
-                                  └─> GET /state-changes ─> příslušný Kramerius
+                                  └─> GET /api/changes ─> příslušný Kramerius
 ```
 
 Harvester tedy data z Krameria čte. Po automatickém nebo ručním rozhodnutí si Kramerius výsledek vyžádá z Kurátorské aplikace. Kurátorská aplikace změny aktivně neposílá.
@@ -37,7 +37,7 @@ Harvester tedy data z Krameria čte. Po automatickém nebo ručním rozhodnutí 
 5. Workflow určí počáteční stav, přiřazené licence a rok uvolnění.
 6. Kurátoři upravují společná data ve webovém UI. Oprávnění k titulům se odvozují z rolí knihoven a sigel.
 7. Updater periodicky přepočítá kandidáty, doplní licence plynoucí ze smluv a uloží změny.
-8. Změna výsledné licence nastaví `state_date`. Kramerius si licenční změny za časový interval vyžádá přes `GET /state-changes`.
+8. Změna výsledné licence nastaví `state_date`. Kramerius si licenční změny za časový interval vyžádá přes `GET /api/changes`.
 9. Kramerius z odpovědi převezme licence pro daný PID a uloží si poslední úspěšně zpracovaný čas.
 
 ## Sdílená data

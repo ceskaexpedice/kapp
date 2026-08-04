@@ -9,12 +9,12 @@ Backend ukládá více Krameriů do jednoho core `titles`. Je potřeba potvrdit 
 
 ## Checkpoint a hranice
 
-`startDate` i `endDate` jsou inkluzivní. Odběratel musí:
+`from` i `to` jsou inkluzivní. Odběratel musí:
 
 - uložit checkpoint až po úspěšném zpracování celé odpovědi,
 - při opakování intervalu deduplikovat záznamy,
-- používat UTC Unix timestamp v sekundách,
-- počítat s více změnami v jedné sekundě.
+- používat UTC ISO 8601 date-time,
+- počítat s více změnami se stejným časem.
 
 ## Licence konkrétní instance
 

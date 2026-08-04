@@ -78,7 +78,7 @@ paths:
                   stateDate: "2026-06-01T12:34:56Z"
                   stateUser: "scheduler"
         "400":
-          description: Neplatny filtr nebo spatny format parametru.
+          description: Neznamy parametr, neplatny filtr nebo spatny format parametru.
           content:
             application/json:
               schema:

@@ -64,7 +64,7 @@ Dokumentace je určená především kurátorům, administrátorům a vývojář
 Kramerius A ─┐
 Kramerius B ─┼─> harvester ─> Solr <─> webové UI / kurátorská práce
 Kramerius N ─┘                     │
-                                  └─> GET /state-changes ─> příslušný Kramerius
+                                  └─> GET /api/changes ─> příslušný Kramerius
 ```
 
 Harvester data z Krameria čte. Po automatickém nebo ručním rozhodnutí si Kramerius výsledek vyžádá z Kurátorské aplikace; aplikace změny aktivně neposílá.
