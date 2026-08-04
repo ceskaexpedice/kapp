@@ -1,0 +1,201 @@
+openapi: 3.0.3
+info:
+  title: Kuratorska aplikace REST API
+  version: "1.0.0"
+  description: API pro poskytovani zmen kuratorskych dat externim aplikacim.
+servers:
+  - url: "${REST_BASE_URL}"
+paths:
+  /v1/status:
+    get:
+      summary: Stav REST API
+      operationId: getStatus
+      responses:
+        "200":
+          description: REST API je dostupne.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  service:
+                    type: string
+                    example: kuappweb-rest
+                  status:
+                    type: string
+                    example: ok
+                  timestamp:
+                    type: string
+                    format: date-time
+  /v1/changes/{type}:
+    get:
+      summary: Zmeny titulu podle knihovny a typu
+      description: Vraci zmeny stavu a licenci z jadra Solru `titles` filtrovane podle pole `digital_library`. Typ se urcuje path parametrem.
+      operationId: getChanges
+      parameters:
+        - name: type
+          in: path
+          required: true
+          description: >-
+            `simple-monographs` vraci monografie mimo stavy `PARENT_OPEN` a `PARENT_CLOSED`.
+            `sets` vraci celky monografii a periodik ve stavech `PARENT_OPEN` nebo
+            `PARENT_CLOSED` vcetne jejich dilu v poli `children`.
+          schema:
+            type: string
+            enum:
+              - simple-monographs
+              - sets
+        - name: library
+          in: query
+          required: true
+          description: Knihovna, pro kterou se data stahuji.
+          schema:
+            type: string
+            enum:
+              - mzk
+              - nkp
+        - name: from
+          in: query
+          required: false
+          description: Zacatek intervalu zmen podle `state_date`.
+          schema:
+            type: string
+            example: "2026-01-01T00:00:00.000Z"
+        - name: to
+          in: query
+          required: false
+          description: Konec intervalu zmen podle `state_date`.
+          schema:
+            type: string
+            example: "2026-08-01T23:59:59.999Z"
+        - name: assignedLicense
+          in: query
+          required: false
+          description: Filtr prirazene licence z pole `assigned_licenses`. Parametr lze opakovat.
+          schema:
+            type: array
+            items:
+              type: string
+          style: form
+          explode: true
+        - name: rows
+          in: query
+          required: false
+          description: Pocet vracenych zaznamu. Vychozi hodnota je 100, maximum 1000.
+          schema:
+            type: integer
+            minimum: 1
+            maximum: 1000
+            default: 100
+        - name: cursor
+          in: query
+          required: false
+          description: Kurzorem rizena iterace pres vysledky. Prvni volani parametr vynecha nebo pouzije `*`; dalsi volani pouzije hodnotu `nextCursor` z predchozi odpovedi.
+          schema:
+            type: string
+            default: "*"
+      responses:
+        "200":
+          description: Seznam zmen.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChangesResponse"
+        "400":
+          description: Neplatne vstupni parametry.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+        "500":
+          description: Chyba pri dotazu do Solru.
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ErrorResponse"
+components:
+  schemas:
+    ChangesResponse:
+      type: object
+      properties:
+        library:
+          type: string
+          enum:
+            - mzk
+            - nkp
+        type:
+          type: string
+          enum:
+            - simple-monographs
+            - sets
+        rows:
+          type: integer
+        cursor:
+          type: string
+        nextCursor:
+          type: string
+        response:
+          type: object
+          properties:
+            numFound:
+              type: integer
+            start:
+              type: integer
+            docs:
+              type: array
+              items:
+                $ref: "#/components/schemas/ChangedTitle"
+    ChangedTitle:
+      type: object
+      additionalProperties: true
+      properties:
+        pid:
+          type: string
+        root_pid:
+          type: string
+        title:
+          type: string
+        model:
+          type: string
+        digital_library:
+          type: string
+        state:
+          type: string
+        state_date:
+          type: string
+          format: date-time
+        state_reason:
+          type: string
+        state_user:
+          type: string
+        licenses:
+          type: array
+          items:
+            type: string
+        assigned_licenses:
+          type: array
+          items:
+            type: string
+        contracts:
+          type: array
+          items:
+            type: string
+        date_issued_year:
+          type: integer
+        state_history:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+        children:
+          type: array
+          description: Dily dotazene k parent zaznamu u typu `sets`.
+          items:
+            $ref: "#/components/schemas/ChangedTitle"
+    ErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+        message:
+          type: string
