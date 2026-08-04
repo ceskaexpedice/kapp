@@ -29,6 +29,8 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
+import org.apache.solr.client.solrj.util.ClientUtils;
+import org.apache.solr.common.SolrDocument;
 import org.apache.solr.common.SolrInputDocument;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
@@ -362,6 +364,9 @@ public class HarvesterImpl implements Harvester {
         commitCollection(Constants.Collection.TITLES_COLLECTION);
         commitCollection(Constants.Collection.AUTHORS_COLLECTION);
 
+        updateCombinedLicenses(applicationConfig, harvestedPids);
+        commitCollection(Constants.Collection.TITLES_COLLECTION);
+
         LOGGER.log(Level.INFO, "Updating state");
         UpdateParentState updateParentState = new UpdateParentStateImpl(this.solrClient);
         updateParentState.updateParentState();
@@ -412,6 +417,62 @@ public class HarvesterImpl implements Harvester {
     private void commitCollection(String collection) throws SolrServerException, IOException {
         LOGGER.log(Level.INFO, "Committing collection: {0}", collection);
         this.solrClient.commit(collection);
+    }
+
+    private void updateCombinedLicenses(ApplicationConfig applicationConfig, Set<String> harvestedPids)
+            throws SolrServerException, IOException {
+        if (harvestedPids.isEmpty()) {
+            return;
+        }
+
+        List<String> sourceFields = applicationConfig.instances().stream()
+                .map(Instance::getAcronym)
+                .filter(Objects::nonNull)
+                .map(acronym -> AppDataFields.LICENSES_DL_FIELD + acronym)
+                .distinct()
+                .toList();
+
+        List<String> pids = new ArrayList<>(harvestedPids);
+        for (int from = 0; from < pids.size(); from += BATCH_SIZE) {
+            List<String> batchPids = pids.subList(from, Math.min(from + BATCH_SIZE, pids.size()));
+            String pidQuery = batchPids.stream()
+                    .map(pid -> "\"" + ClientUtils.escapeQueryChars(pid) + "\"")
+                    .collect(java.util.stream.Collectors.joining(" OR ", "pid:(", ")"));
+
+            List<String> fields = new ArrayList<>(sourceFields.size() + 1);
+            fields.add(AppDataFields.PID_FIELD);
+            fields.addAll(sourceFields);
+            SolrQuery query = new SolrQuery(pidQuery)
+                    .setFields(fields.toArray(String[]::new))
+                    .setRows(batchPids.size());
+
+            List<SolrInputDocument> updates = new ArrayList<>(batchPids.size());
+            for (SolrDocument source : solrClient.query(Constants.Collection.TITLES_COLLECTION, query).getResults()) {
+                SolrInputDocumentWrapper update = new SolrInputDocumentWrapper(
+                        AppDataFields.PID_FIELD,
+                        SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE
+                );
+                update.setField(AppDataFields.PID_FIELD, source.getFieldValue(AppDataFields.PID_FIELD));
+                List<String> licenses = combinedLicenses(source, sourceFields);
+                update.setField(AppDataFields.LICENSES_FIELD, licenses.isEmpty() ? null : licenses);
+                updates.add(update.getDocument());
+            }
+            sendBatch(Constants.Collection.TITLES_COLLECTION, updates);
+        }
+    }
+
+    static List<String> combinedLicenses(SolrDocument source, Collection<String> sourceFields) {
+        Set<String> licenses = new LinkedHashSet<>();
+        for (String sourceField : sourceFields) {
+            Collection<Object> values = source.getFieldValues(sourceField);
+            if (values != null) {
+                values.stream()
+                        .filter(Objects::nonNull)
+                        .map(Object::toString)
+                        .forEach(licenses::add);
+            }
+        }
+        return List.copyOf(licenses);
     }
 /*
     private static Map<String, Object> createSetOperation(Object value) {
@@ -536,14 +597,20 @@ public class HarvesterImpl implements Harvester {
                 );
 
         doc.setField(AppDataFields.PID_FIELD, ctx.item().getPid());
-        if (ctx.item().getLicenses() != null && ctx.item().getLicenses().length > 0) {
-            List<String> licenses = Arrays.asList(ctx.item().getLicenses());
-            doc.addField(AppDataFields.LICENSES_FIELD, licenses);
-            doc.addField(String.format("%s%s", AppDataFields.LICENSES_DL_FIELD, ctx.config().getAcronym()), licenses);
-        }
+        setHarvestedLicenses(doc, ctx.config().getAcronym(), ctx.item().getLicenses());
         doc.setField(AppComputedFields.IS_HIERARCHICAL_FIELD, ctx.item().isHierarchical());
         
         return doc;
+    }
+
+    static void setHarvestedLicenses(SolrInputDocumentWrapper doc, String acronym, String[] harvestedLicenses) {
+        List<String> licenses = harvestedLicenses == null ? List.of() : Arrays.asList(harvestedLicenses);
+        String sourceLicenseField = AppDataFields.LICENSES_DL_FIELD + acronym;
+        if (!licenses.isEmpty()) {
+            doc.setField(sourceLicenseField, licenses);
+        } else if (doc.getTypeOfChange() == SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE) {
+            doc.setField(sourceLicenseField, null);
+        }
     }
 
     private WorkflowDoc buildWorkflowDoc(Instance config,String pid,HarvesterContext ctx,SolrInputDocumentWrapper wrapper, BiblioModsEntity entity, Document parsed,List<SolrInputDocument> authorsBuffer) throws IOException {
