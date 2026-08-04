@@ -27,7 +27,6 @@ class UpdaterImplTest {
         Assertions.assertNotNull(contractLicense);
         Assertions.assertEquals("MZK_local_dedic", contractLicense.license());
         Assertions.assertEquals("mzk", contractLicense.acronym());
-        Assertions.assertEquals("licenses_mzk", contractLicense.digitalLibraryField());
     }
 
     @Test
@@ -39,7 +38,7 @@ class UpdaterImplTest {
     }
 
     @Test
-    void addsMissingContractLicenseToGlobalAndDigitalLibraryFields() {
+    void addsMissingContractLicensesOnlyToAssignedLicenses() {
         SolrDocument source = new SolrDocument();
         SolrInputDocumentWrapper target = atomicDocument("uuid:test");
         List<UpdaterImpl.ContractLicense> contractLicenses = List.of(
@@ -50,14 +49,16 @@ class UpdaterImplTest {
         boolean changed = UpdaterImpl.addMissingContractLicenses(source, target, contractLicenses);
 
         Assertions.assertTrue(changed);
-        Assertions.assertEquals(List.of("nkp_local", "mzk_local_dedic"), atomicAddDistinctValue(target, AppDataFields.LICENSES_FIELD));
-        Assertions.assertEquals(List.of("nkp_local"), atomicAddDistinctValue(target, "licenses_nkp"));
-        Assertions.assertEquals(List.of("mzk_local_dedic"), atomicAddDistinctValue(target, "licenses_mzk"));
+        Assertions.assertEquals(List.of("nkp_local", "mzk_local_dedic"),
+                atomicAddDistinctValue(target, AppComputedFields.ASSIGNED_LICENSES));
+        Assertions.assertFalse(target.getDocument().getFieldNames().contains(AppDataFields.LICENSES_FIELD));
+        Assertions.assertFalse(target.getDocument().getFieldNames().contains("licenses_nkp"));
+        Assertions.assertFalse(target.getDocument().getFieldNames().contains("licenses_mzk"));
         Assertions.assertTrue(target.getDocument().getFieldNames().contains(AppComputedFields.LAST_MODIFIED_DATE));
     }
 
     @Test
-    void addsContractLicenseOnlyToFieldsWhereItIsMissing() {
+    void sourceLicenseDoesNotPreventAssignedLicenseUpdate() {
         SolrDocument source = new SolrDocument();
         source.setField(AppDataFields.LICENSES_FIELD, List.of("nkp_local"));
         SolrInputDocumentWrapper target = atomicDocument("uuid:test");
@@ -69,15 +70,15 @@ class UpdaterImplTest {
         );
 
         Assertions.assertTrue(changed);
+        Assertions.assertEquals(List.of("nkp_local"),
+                atomicAddDistinctValue(target, AppComputedFields.ASSIGNED_LICENSES));
         Assertions.assertFalse(target.getDocument().getFieldNames().contains(AppDataFields.LICENSES_FIELD));
-        Assertions.assertEquals(List.of("nkp_local"), atomicAddDistinctValue(target, "licenses_nkp"));
     }
 
     @Test
-    void skipsContractLicenseUpdateWhenAlreadyPresentEverywhere() {
+    void skipsContractLicenseUpdateWhenAlreadyAssigned() {
         SolrDocument source = new SolrDocument();
-        source.setField(AppDataFields.LICENSES_FIELD, List.of("nkp_local"));
-        source.setField("licenses_nkp", List.of("nkp_local"));
+        source.setField(AppComputedFields.ASSIGNED_LICENSES, List.of("nkp_local"));
         SolrInputDocumentWrapper target = atomicDocument("uuid:test");
 
         boolean changed = UpdaterImpl.addMissingContractLicenses(
@@ -87,8 +88,8 @@ class UpdaterImplTest {
         );
 
         Assertions.assertFalse(changed);
+        Assertions.assertFalse(target.getDocument().getFieldNames().contains(AppComputedFields.ASSIGNED_LICENSES));
         Assertions.assertFalse(target.getDocument().getFieldNames().contains(AppDataFields.LICENSES_FIELD));
-        Assertions.assertFalse(target.getDocument().getFieldNames().contains("licenses_nkp"));
     }
 
     @Test

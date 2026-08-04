@@ -376,7 +376,7 @@ public class UpdaterImpl implements Updater {
             params.set("rows", IN_BATCHSIZE);
             params.set("cursorMark", cursorMark);
             params.set("sort", "pid asc");
-            params.set("fl", titleFieldsForLicenseCheck(contractLicenses));
+            params.set("fl", titleFieldsForLicenseCheck());
 
             QueryResponse response = solrClient.query(TITLES_COLLECTION, params);
             String nextCursorMark = response.getNextCursorMark();
@@ -425,34 +425,21 @@ public class UpdaterImpl implements Updater {
             SolrInputDocumentWrapper target,
             List<ContractLicense> contractLicenses
     ) {
-        Set<String> currentLicenses = stringFieldValues(source, AppDataFields.LICENSES_FIELD);
+        Set<String> currentLicenses = stringFieldValues(source, AppComputedFields.ASSIGNED_LICENSES);
         Set<String> missingLicenses = new LinkedHashSet<>();
-        Map<String, Set<String>> missingDigitalLibraryLicenses = new LinkedHashMap<>();
 
         for (ContractLicense contractLicense : contractLicenses) {
             String license = contractLicense.license();
             if (!currentLicenses.contains(license)) {
                 missingLicenses.add(license);
             }
-
-            String digitalLibraryField = contractLicense.digitalLibraryField();
-            if (!stringFieldValues(source, digitalLibraryField).contains(license)) {
-                missingDigitalLibraryLicenses
-                        .computeIfAbsent(digitalLibraryField, ignored -> new LinkedHashSet<>())
-                        .add(license);
-            }
         }
 
-        if (missingLicenses.isEmpty() && missingDigitalLibraryLicenses.isEmpty()) {
+        if (missingLicenses.isEmpty()) {
             return false;
         }
 
-        if (!missingLicenses.isEmpty()) {
-            target.addField(AppDataFields.LICENSES_FIELD, new ArrayList<>(missingLicenses));
-        }
-        for (Map.Entry<String, Set<String>> entry : missingDigitalLibraryLicenses.entrySet()) {
-            target.addField(entry.getKey(), new ArrayList<>(entry.getValue()));
-        }
+        target.addField(AppComputedFields.ASSIGNED_LICENSES, new ArrayList<>(missingLicenses));
         return true;
     }
 
@@ -514,14 +501,8 @@ public class UpdaterImpl implements Updater {
         return "\"" + ClientUtils.escapeQueryChars(value) + "\"";
     }
 
-    private static String titleFieldsForLicenseCheck(List<ContractLicense> contractLicenses) {
-        Set<String> fields = new LinkedHashSet<>();
-        fields.add(AppDataFields.PID_FIELD);
-        fields.add(AppDataFields.LICENSES_FIELD);
-        for (ContractLicense contractLicense : contractLicenses) {
-            fields.add(contractLicense.digitalLibraryField());
-        }
-        return String.join(",", fields);
+    private static String titleFieldsForLicenseCheck() {
+        return String.join(",", AppDataFields.PID_FIELD, AppComputedFields.ASSIGNED_LICENSES);
     }
 
     private static String contractName(SolrDocument contract) {
@@ -558,9 +539,6 @@ public class UpdaterImpl implements Updater {
     }
 
     record ContractLicense(String license, String acronym) {
-        String digitalLibraryField() {
-            return AppDataFields.LICENSES_DL_FIELD + acronym;
-        }
     }
 
     private record DocumentEvaluation(
