@@ -11,6 +11,8 @@ import org.apache.solr.common.SolrInputDocument;
 import org.apache.solr.common.params.ModifiableSolrParams;
 import org.apache.solr.common.util.NamedList;
 
+import static cz.inovatika.Constants.Collection.TITLES_COLLECTION;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
@@ -61,7 +63,7 @@ public class UpdateParentStateImpl implements UpdateParentState {
             params.set("rows", 0);
             params.set("json.facet", jsonFacet);
 
-            QueryResponse response = solrClient.query(Constants.Collection.TITLES_COLLECTION, params);
+            QueryResponse response = solrClient.query(TITLES_COLLECTION, params);
             processBatchResponse(response);
         }
     }
@@ -97,7 +99,7 @@ public class UpdateParentStateImpl implements UpdateParentState {
 
         if (!updates.isEmpty()) {
             try {
-                this.solrClient.add(Constants.Collection.TITLES_COLLECTION, updates);
+                this.solrClient.add(TITLES_COLLECTION, updates);
             } catch (SolrServerException | IOException e) {
                 LOGGER.log(Level.SEVERE, e.getMessage(), e);
             }
@@ -119,7 +121,7 @@ public class UpdateParentStateImpl implements UpdateParentState {
         params.set("rows", 0); // Dokumenty nas nezajimaji, jen ty unikaty
         params.set("json.facet", jsonFacet);
 
-        QueryResponse response = this.solrClient.query("titles", params);
+        QueryResponse response = this.solrClient.query(TITLES_COLLECTION, params);
 
         Object idFacet = getFacetValue(response.getResponse().get("facets"), "all_ids");
         for (Object bucket : getBuckets(idFacet)) {

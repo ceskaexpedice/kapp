@@ -1,9 +1,12 @@
 package cz.inovatika.touchstore.impl;
 
+import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import cz.inovatika.touchstore.TouchStore;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.common.SolrDocument;
+
+import static cz.inovatika.Constants.Collection.TITLES_COLLECTION;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -41,7 +44,7 @@ public class SolrTouchStoreImpl implements TouchStore {
         if (cachedDoc != null) {
             return cachedDoc;
         }
-        SolrDocument doc = this.solrClient.getById("titles", pid);
+        SolrDocument doc = this.solrClient.getById(TITLES_COLLECTION, pid);
         if (doc != null) {
             cache.put(pid, doc);
         }
@@ -73,7 +76,9 @@ public class SolrTouchStoreImpl implements TouchStore {
     @Override
     public boolean isModsChanged(String pid, String md5){
         try {
-            Object soldM5Sum = getDocument(pid).getFirstValue("biblio_mods_md5");
+            Object soldM5Sum = getDocument(pid).getFirstValue(
+                    AppDataFields.BIBLIO_MODS_MD_5_FIELD
+            );
             if (soldM5Sum != null) {
                 return !md5.equals(soldM5Sum.toString());
             } else return true;
@@ -104,8 +109,7 @@ public class SolrTouchStoreImpl implements TouchStore {
     @Override
     public String getRootPid(String pid) throws IOException {
         try {
-            SolrDocument doc = solrClient.getById("titles", pid);
-            Object soldM5Sum = doc.getFirstValue("root.pid");
+            Object soldM5Sum = solrClient.getById(TITLES_COLLECTION, pid).getFirstValue("root.pid");
             return soldM5Sum != null ?  soldM5Sum.toString() : null;
         } catch (SolrServerException e) {
             throw new RuntimeException(e);
@@ -115,8 +119,9 @@ public class SolrTouchStoreImpl implements TouchStore {
     @Override
     public String getMd5(String pid) throws IOException {
         try {
-            SolrDocument doc = solrClient.getById("titles", pid);
-            Object soldM5Sum = doc.getFirstValue("biblio_mods_md5");
+            Object soldM5Sum = solrClient.getById(TITLES_COLLECTION, pid).getFirstValue(
+                AppDataFields.BIBLIO_MODS_MD_5_FIELD
+            );
             return soldM5Sum != null ?  soldM5Sum.toString() : null;
         } catch (SolrServerException e) {
             throw new RuntimeException(e);

@@ -166,10 +166,10 @@ public class HarvesterImpl implements Harvester {
         List<String> hierarchicalPids = new ArrayList<>();
         SolrQuery q = new SolrQuery()
                 .setQuery("is_hierarchical:true")
-                .setFields("pid")
+                .setFields(AppDataFields.PID_FIELD)
                 .setRows(10000);
-        for (SolrDocument doc : this.solrClient.query("titles", q).getResults()) {
-            Object pid = doc.getFieldValue("pid");
+        for (SolrDocument doc : this.solrClient.query(Constants.Collection.TITLES_COLLECTION, q).getResults()) {
+            Object pid = doc.getFieldValue(AppDataFields.PID_FIELD);
             hierarchicalPids.add(pid.toString());
         }
     }*/
@@ -454,8 +454,8 @@ public class HarvesterImpl implements Harvester {
 
                                 // state differs
                                 JSONObject oldDoc = getExistingDocument((String) wrapper.document().getFieldValue(AppDataFields.PID_FIELD));
-                                if (oldDoc != null && oldDoc.has("state")) {
-                                    String oldState = oldDoc.getString("state");
+                                if (oldDoc != null && oldDoc.has(AppComputedFields.STATE_FIELD)) {
+                                    String oldState = oldDoc.getString(AppComputedFields.STATE_FIELD);
                                     StringWrapper reason = new StringWrapper("unspecified");
                                     States newState = Workflow.calculateAutomaticTransition(ctx, workflowDoc,reason);
                                     String message = String.format("Imported from '%s'"+" + "+reason.value, config.getUrl());
@@ -672,7 +672,7 @@ public class HarvesterImpl implements Harvester {
                 .put("date", d)
                 .put("reason", "import from " + config.getUrl())
                 .put("user", "importer")
-                .put("state", nState.toString());
+                .put(AppComputedFields.STATE_FIELD, nState.toString());
 
         idoc.setField(AppComputedFields.STATE_FIELD, nState.toString());
         idoc.setField(AppComputedFields.STATE_DATE_FIELD, d);

@@ -1,5 +1,6 @@
 package cz.inovatika.solr;
 
+import cz.inovatika.Constants.AuthorsCollectionFields.AuthDataFields;
 import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
 import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import org.junit.jupiter.api.Assertions;
@@ -42,12 +43,12 @@ class SolrInputDocumentWrapperTest {
     @Test
     void nonTitleWrapperDoesNotSetLastModifiedDateAutomatically() {
         SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
-                "nameIdentifier",
+                AuthDataFields.NAME_IDENTIFIER_FIELD,
                 SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE
         );
 
-        wrapper.setField("nameIdentifier", "jk01021023");
-        wrapper.setField("full", "Karel Capek");
+        wrapper.setField(AuthDataFields.NAME_IDENTIFIER_FIELD, "jk01021023");
+        wrapper.setField(AuthDataFields.FULL_FIELD, "Karel Capek");
 
         Assertions.assertNull(wrapper.getDocument().getFieldValue(AppComputedFields.LAST_MODIFIED_DATE));
     }

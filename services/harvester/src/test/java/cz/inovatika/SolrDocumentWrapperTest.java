@@ -36,9 +36,9 @@ public class SolrDocumentWrapperTest {
             updateRequest.add(wrapper.getDocument());
 
             //UpdateResponse response = 
-             updateRequest.process(solrClient, "titles");
+             updateRequest.process(solrClient, Constants.Collection.TITLES_COLLECTION);
 
-            solrClient.commit("titles");
+            solrClient.commit(Constants.Collection.TITLES_COLLECTION);
 
         }
 

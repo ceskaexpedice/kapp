@@ -1,7 +1,9 @@
 package cz.inovatika.impl;
 
 import cz.inovatika.Constants;
-import cz.inovatika.Constants.TitlesCollectionFields.AppComputedFields;
+import cz.inovatika.Constants.TitlesCollectionFields;
+import cz.inovatika.Constants.AuthorsCollectionFields;
+import cz.inovatika.Constants.AuthorsCollectionFields.AuthComputedFields;
 import cz.inovatika.Constants.TitlesCollectionFields.AppDataFields;
 import cz.inovatika.LastAuthorUpdater;
 import cz.inovatika.conf.ApplicationConfig;
@@ -82,7 +84,7 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
                             authorsKapp,
                             authorsKramerius,
                             authorsCollection,
-                            LastAuthorMatcher.asInteger(doc.getFieldValue(AppComputedFields.LAST_YEAR_DEATH))
+                            LastAuthorMatcher.asInteger(doc.getFieldValue(TitlesCollectionFields.AppComputedFields.LAST_YEAR_DEATH))
                     );
 
                     if (updatePlan.matched()) {
@@ -100,7 +102,7 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
                                     "Updating %s: %s -> %s",
                                     pid,
                                     updatePlan.matchedExcelAuthor(),
-                                    updatePlan.matchedAuthor().optString("full")
+                                    updatePlan.matchedAuthor().optString(AuthorsCollectionFields.AuthDataFields.FULL_FIELD)
                             )
                     );
 
@@ -157,7 +159,7 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
                         LAST_AUTHOR_EXCEL_FIELD,
                         AppDataFields.AUTHORS_KAPP_FIELD,
                         AppDataFields.AUTHORS_KRAMERIUS_FIELD,
-                        AppComputedFields.LAST_YEAR_DEATH
+                        TitlesCollectionFields.AppComputedFields.LAST_YEAR_DEATH
                 )
         );
         return params;
@@ -171,9 +173,9 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
             addAtomicField(doc, "set", updatePlan.updatedAuthorsKapp().toString(), AppDataFields.AUTHORS_KAPP_FIELD);
         }
         if (updatePlan.clearLastYearDeath()) {
-            addAtomicField(doc, "set", null, AppComputedFields.LAST_YEAR_DEATH);
+            addAtomicField(doc, "set", null, TitlesCollectionFields.AppComputedFields.LAST_YEAR_DEATH);
         } else if (updatePlan.lastYearDeath() != null) {
-            addAtomicField(doc, "set", updatePlan.lastYearDeath(), AppComputedFields.LAST_YEAR_DEATH);
+            addAtomicField(doc, "set", updatePlan.lastYearDeath(), TitlesCollectionFields.AppComputedFields.LAST_YEAR_DEATH);
         }
         if (updatePlan.updateAuthors()) {
             addAtomicField(doc, "set", titleAuthorFields.ids(), AppDataFields.AUTHORS_IDS);
@@ -182,13 +184,13 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
         }
         List<String> labels = new ArrayList<>(updatePlan.labels());
         if (updatePlan.updateAuthors() || updatePlan.lastYearDeath() != null || updatePlan.clearLastYearDeath()) {
-            addDistinctString(labels, Constants.TitlesCollectionFields.Labels.AUTHOR_MODIFIED);
+            addDistinctString(labels, TitlesCollectionFields.Labels.AUTHOR_MODIFIED);
         }
         if (!labels.isEmpty()) {
-            addAtomicField(doc, "add-distinct", labels, AppComputedFields.LABELS_FIELD);
+            addAtomicField(doc, "add-distinct", labels, TitlesCollectionFields.AppComputedFields.LABELS_FIELD);
         }
-        addAtomicField(doc, "add-distinct", USER, "modified_by_user");
-        addAtomicField(doc, "set", SolrInputDocumentWrapper.currentSolrDate(), AppComputedFields.LAST_MODIFIED_DATE);
+        addAtomicField(doc, "add-distinct", USER, Constants.CommonFields.MODIFIED_BY_USER_FIELD);
+        addAtomicField(doc, "set", SolrInputDocumentWrapper.currentSolrDate(), TitlesCollectionFields.AppComputedFields.LAST_MODIFIED_DATE);
         return doc;
     }
 
@@ -209,7 +211,7 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
             }
 
             for (JSONObject author : bestMatches.values()) {
-                String id = optPresentString(author, "id");
+                String id = optPresentString(author, AuthorsCollectionFields.AuthDataFields.ID_FIELD);
                 if (id != null && seenIds.add(id)) {
                     authors.put(author);
                 }
@@ -226,21 +228,21 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
                 "fl",
                 String.join(
                         ",",
-                        "id",
-                        "old_id",
-                        "nameIdentifier",
-                        "full",
-                        "family",
-                        "given",
-                        "labels",
-                        "termsOfAddress",
-                        "date",
-                        "date_birth",
-                        "date_death",
-                        "year_birth",
-                        "year_death",
-                        "confirmed_start_year",
-                        "confirmed_end_year"
+                        AuthorsCollectionFields.AuthDataFields.ID_FIELD,
+                        AuthorsCollectionFields.AuthDataFields.OLD_ID_FIELD,
+                        AuthorsCollectionFields.AuthDataFields.NAME_IDENTIFIER_FIELD,
+                        AuthorsCollectionFields.AuthDataFields.FULL_FIELD,
+                        AuthorsCollectionFields.AuthDataFields.FAMILY_FIELD,
+                        AuthorsCollectionFields.AuthDataFields.GIVEN_FIELD,
+                        AuthorsCollectionFields.AuthDataFields.LABELS_FIELD,
+                        AuthorsCollectionFields.AuthDataFields.TERMS_OF_ADDRESS_FIELD,
+                        AuthComputedFields.AUTHOR_DATE_STR,
+                        AuthComputedFields.AUTHOR_DATE_BIRTH,
+                        AuthComputedFields.AUTHOR_DATE_DEATH,
+                        AuthComputedFields.AUTHOR_YEAR_BIRTH,
+                        AuthComputedFields.AUTHOR_YEAR_DEATH,
+                        AuthComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH,
+                        AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH
                 )
         );
         return params;
@@ -320,20 +322,20 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
     }
 
     private static String authorDedupeKey(JSONObject author) {
-        String full = optPresentString(author, "full");
+        String full = optPresentString(author, AuthorsCollectionFields.AuthDataFields.FULL_FIELD);
         if (full == null) {
-            full = optPresentString(author, "id");
+            full = optPresentString(author, AuthorsCollectionFields.AuthDataFields.ID_FIELD);
         }
         return normalizeAuthorKey(full)
                 + "|"
-                + Objects.toString(author.opt("year_birth"), "")
+                + Objects.toString(author.opt(AuthComputedFields.AUTHOR_YEAR_BIRTH), "")
                 + "|"
-                + Objects.toString(author.opt("year_death"), "");
+                + Objects.toString(author.opt(AuthComputedFields.AUTHOR_YEAR_DEATH), "");
     }
 
     private static boolean preferAuthor(JSONObject candidate, JSONObject existing) {
-        boolean candidateHasNameIdentifier = optPresentString(candidate, "nameIdentifier") != null;
-        boolean existingHasNameIdentifier = optPresentString(existing, "nameIdentifier") != null;
+        boolean candidateHasNameIdentifier = optPresentString(candidate, AuthorsCollectionFields.AuthDataFields.NAME_IDENTIFIER_FIELD) != null;
+        boolean existingHasNameIdentifier = optPresentString(existing, AuthorsCollectionFields.AuthDataFields.NAME_IDENTIFIER_FIELD) != null;
         if (candidateHasNameIdentifier != existingHasNameIdentifier) {
             return candidateHasNameIdentifier;
         }
@@ -346,36 +348,36 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
 
     private static JSONObject toAuthorJson(SolrDocument authorDocument, LastAuthorMatcher.ExcelAuthor excelAuthor) {
         JSONObject author = new JSONObject();
-        copySolrField(author, authorDocument, "id");
-        copySolrField(author, authorDocument, "old_id");
-        copySolrField(author, authorDocument, "nameIdentifier");
-        copySolrField(author, authorDocument, "full");
-        copySolrField(author, authorDocument, "family");
-        copySolrField(author, authorDocument, "given");
-        copySolrField(author, authorDocument, "labels");
-        copySolrField(author, authorDocument, "termsOfAddress");
-        copySolrField(author, authorDocument, "date");
-        copySolrField(author, authorDocument, "date_birth");
-        copySolrField(author, authorDocument, "date_death");
-        copySolrField(author, authorDocument, "year_birth");
-        copySolrField(author, authorDocument, "year_death");
-        copySolrField(author, authorDocument, "confirmed_start_year");
-        copySolrField(author, authorDocument, "confirmed_end_year");
+        copySolrField(author, authorDocument, AuthorsCollectionFields.AuthDataFields.ID_FIELD);
+        copySolrField(author, authorDocument, AuthorsCollectionFields.AuthDataFields.OLD_ID_FIELD);
+        copySolrField(author, authorDocument, AuthorsCollectionFields.AuthDataFields.NAME_IDENTIFIER_FIELD);
+        copySolrField(author, authorDocument, AuthorsCollectionFields.AuthDataFields.FULL_FIELD);
+        copySolrField(author, authorDocument, AuthorsCollectionFields.AuthDataFields.FAMILY_FIELD);
+        copySolrField(author, authorDocument, AuthorsCollectionFields.AuthDataFields.GIVEN_FIELD);
+        copySolrField(author, authorDocument, AuthorsCollectionFields.AuthDataFields.LABELS_FIELD);
+        copySolrField(author, authorDocument, AuthorsCollectionFields.AuthDataFields.TERMS_OF_ADDRESS_FIELD);
+        copySolrField(author, authorDocument, AuthComputedFields.AUTHOR_DATE_STR);
+        copySolrField(author, authorDocument, AuthComputedFields.AUTHOR_DATE_BIRTH);
+        copySolrField(author, authorDocument, AuthComputedFields.AUTHOR_DATE_DEATH);
+        copySolrField(author, authorDocument, AuthComputedFields.AUTHOR_YEAR_BIRTH);
+        copySolrField(author, authorDocument, AuthComputedFields.AUTHOR_YEAR_DEATH);
+        copySolrField(author, authorDocument, AuthComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH);
+        copySolrField(author, authorDocument, AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH);
 
         mergeExcelYears(author, excelAuthor);
-        if (optPresentString(author, "date") == null) {
+        if (optPresentString(author, AuthComputedFields.AUTHOR_DATE_STR) == null) {
             String date = buildDate(
-                    LastAuthorMatcher.asInteger(author.opt("year_birth")),
-                    LastAuthorMatcher.asInteger(author.opt("year_death"))
+                    LastAuthorMatcher.asInteger(author.opt(AuthComputedFields.AUTHOR_YEAR_BIRTH)),
+                    LastAuthorMatcher.asInteger(author.opt(AuthComputedFields.AUTHOR_YEAR_DEATH))
             );
             if (!date.isBlank()) {
-                author.put("date", date);
+                author.put(AuthComputedFields.AUTHOR_DATE_STR, date);
             }
         }
-        if (!author.has("role")) {
-            author.put("role", new JSONArray());
+        if (!author.has(AuthorsCollectionFields.AuthDataFields.ROLE_FIELD)) {
+            author.put(AuthorsCollectionFields.AuthDataFields.ROLE_FIELD, new JSONArray());
         }
-        author.put("isLast", false);
+        author.put(AuthorsCollectionFields.AuthDataFields.IS_LAST_FIELD, false);
         return author;
     }
 
@@ -396,18 +398,18 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
     }
 
     private static void mergeExcelYears(JSONObject author, LastAuthorMatcher.ExcelAuthor excelAuthor) {
-        if (!author.has("year_birth") && excelAuthor.birthYear() != null) {
-            author.put("year_birth", excelAuthor.birthYear());
+        if (!author.has(AuthComputedFields.AUTHOR_YEAR_BIRTH) && excelAuthor.birthYear() != null) {
+            author.put(AuthComputedFields.AUTHOR_YEAR_BIRTH, excelAuthor.birthYear());
         }
         if (excelAuthor.deathYear() != null) {
-            author.put("year_death", excelAuthor.deathYear());
-            author.put("confirmed_end_year", true);
+            author.put(AuthComputedFields.AUTHOR_YEAR_DEATH, excelAuthor.deathYear());
+            author.put(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, true);
         }
-        if (!author.has("confirmed_start_year")) {
-            author.put("confirmed_start_year", author.has("year_birth"));
+        if (!author.has(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH)) {
+            author.put(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, author.has(AuthComputedFields.AUTHOR_YEAR_BIRTH));
         }
-        if (!author.has("confirmed_end_year")) {
-            author.put("confirmed_end_year", author.has("year_death"));
+        if (!author.has(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH)) {
+            author.put(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, author.has(AuthComputedFields.AUTHOR_YEAR_DEATH));
         }
     }
 
@@ -424,7 +426,7 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
             Set<String> queuedAuthorIds,
             int batchSize
     ) throws SolrServerException, IOException {
-        String id = optPresentString(author, "id");
+        String id = optPresentString(author, AuthorsCollectionFields.AuthDataFields.ID_FIELD);
         if (id == null || !queuedAuthorIds.add(id)) {
             return false;
         }
@@ -441,22 +443,22 @@ public class LastAuthorUpdaterImpl implements LastAuthorUpdater, AutoCloseable {
 
     private static SolrInputDocument toAuthorDocument(JSONObject author) {
         SolrInputDocument doc = new SolrInputDocument();
-        setFieldIfPresent(doc, author, "id");
-        setFieldIfPresent(doc, author, "old_id");
-        setFieldIfPresent(doc, author, "nameIdentifier");
-        setFieldIfPresent(doc, author, "full");
-        setFieldIfPresent(doc, author, "family");
-        setFieldIfPresent(doc, author, "given");
-        setFieldIfPresent(doc, author, "labels");
-        setFieldIfPresent(doc, author, "termsOfAddress");
-        setFieldIfPresent(doc, author, "date");
-        setFieldIfPresent(doc, author, "date_birth");
-        setFieldIfPresent(doc, author, "date_death");
-        setFieldIfPresent(doc, author, "year_birth");
-        setFieldIfPresent(doc, author, "year_death");
-        setFieldIfPresent(doc, author, "confirmed_start_year");
-        setFieldIfPresent(doc, author, "confirmed_end_year");
-        doc.setField("modified_by_user", USER);
+        setFieldIfPresent(doc, author, AuthorsCollectionFields.AuthDataFields.ID_FIELD);
+        setFieldIfPresent(doc, author, AuthorsCollectionFields.AuthDataFields.OLD_ID_FIELD);
+        setFieldIfPresent(doc, author, AuthorsCollectionFields.AuthDataFields.NAME_IDENTIFIER_FIELD);
+        setFieldIfPresent(doc, author, AuthorsCollectionFields.AuthDataFields.FULL_FIELD);
+        setFieldIfPresent(doc, author, AuthorsCollectionFields.AuthDataFields.FAMILY_FIELD);
+        setFieldIfPresent(doc, author, AuthorsCollectionFields.AuthDataFields.GIVEN_FIELD);
+        setFieldIfPresent(doc, author, AuthorsCollectionFields.AuthDataFields.LABELS_FIELD);
+        setFieldIfPresent(doc, author, AuthorsCollectionFields.AuthDataFields.TERMS_OF_ADDRESS_FIELD);
+        setFieldIfPresent(doc, author, AuthComputedFields.AUTHOR_DATE_STR);
+        setFieldIfPresent(doc, author, AuthComputedFields.AUTHOR_DATE_BIRTH);
+        setFieldIfPresent(doc, author, AuthComputedFields.AUTHOR_DATE_DEATH);
+        setFieldIfPresent(doc, author, AuthComputedFields.AUTHOR_YEAR_BIRTH);
+        setFieldIfPresent(doc, author, AuthComputedFields.AUTHOR_YEAR_DEATH);
+        setFieldIfPresent(doc, author, AuthComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH);
+        setFieldIfPresent(doc, author, AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH);
+        doc.setField(Constants.CommonFields.MODIFIED_BY_USER_FIELD, USER);
         return doc;
     }
 

@@ -10,6 +10,9 @@ import java.time.Year;
 import java.util.*;
 import java.util.regex.Pattern;
 
+import cz.inovatika.Constants.AuthorsCollectionFields.AuthComputedFields;
+import cz.inovatika.Constants.AuthorsCollectionFields.AuthDataFields;
+
 public class LastAuthorMatcher {
 
     private static final Pattern DIACRITICS = Pattern.compile("\\p{InCombiningDiacriticalMarks}+");
@@ -209,16 +212,16 @@ public class LastAuthorMatcher {
         }
 
         JSONObject author = candidate.author();
-        Integer existingDeathYear = asInteger(author.opt("year_death"));
+        Integer existingDeathYear = asInteger(author.opt(AuthComputedFields.AUTHOR_YEAR_DEATH));
         if (Objects.equals(existingDeathYear, excelAuthor.deathYear())) {
-            if (!author.has("confirmed_end_year")) {
-                author.put("confirmed_end_year", true);
+            if (!author.has(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH)) {
+                author.put(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, true);
             }
             return false;
         }
 
-        author.put("year_death", excelAuthor.deathYear());
-        author.put("confirmed_end_year", true);
+        author.put(AuthComputedFields.AUTHOR_YEAR_DEATH, excelAuthor.deathYear());
+        author.put(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, true);
         return existingDeathYear != null;
     }
 
@@ -253,10 +256,10 @@ public class LastAuthorMatcher {
 
         for (int i = 0; i < authorsKapp.length(); i++) {
             JSONObject author = authorsKapp.getJSONObject(i);
-            addDistinct(ids, author.optString("id", null));
-            addDistinct(nameIdentifiers, author.optString("nameIdentifier", null));
-            addDistinct(names, author.optString("full", null));
-            addKey(oldIds, author.optString("old_id", null));
+            addDistinct(ids, author.optString(AuthDataFields.ID_FIELD, null));
+            addDistinct(nameIdentifiers, author.optString(AuthDataFields.NAME_IDENTIFIER_FIELD, null));
+            addDistinct(names, author.optString(AuthDataFields.FULL_FIELD, null));
+            addKey(oldIds, author.optString(AuthDataFields.OLD_ID_FIELD, null));
         }
 
         Set<String> kappIds = new HashSet<>(ids);
@@ -264,9 +267,9 @@ public class LastAuthorMatcher {
         Set<String> kappNames = new HashSet<>(names);
         for (int i = 0; i < authorsKramerius.length(); i++) {
             JSONObject author = authorsKramerius.getJSONObject(i);
-            String id = author.optString("id", null);
-            String nameIdentifier = author.optString("nameIdentifier", null);
-            String full = author.optString("full", null);
+            String id = author.optString(AuthDataFields.ID_FIELD, null);
+            String nameIdentifier = author.optString(AuthDataFields.NAME_IDENTIFIER_FIELD, null);
+            String full = author.optString(AuthDataFields.FULL_FIELD, null);
 
             if (isPresent(id) && !kappIds.contains(id) && !oldIds.contains(id)) {
                 addDistinct(ids, id);
@@ -378,7 +381,7 @@ public class LastAuthorMatcher {
         JSONArray updated = copyArray(authorsKapp);
         if (selected != null) {
             for (int i = 0; i < updated.length(); i++) {
-                updated.getJSONObject(i).put("isLast", false);
+                updated.getJSONObject(i).put(AuthDataFields.IS_LAST_FIELD, false);
             }
         }
 
@@ -394,7 +397,7 @@ public class LastAuthorMatcher {
 
     private static void upsertAuthor(JSONArray authors, JSONObject authorToUpsert, boolean isLast) {
         JSONObject author = copyObject(authorToUpsert);
-        author.put("isLast", isLast);
+        author.put(AuthDataFields.IS_LAST_FIELD, isLast);
         int duplicateIndex = findSameAuthor(authors, author);
         if (duplicateIndex >= 0) {
             authors.put(duplicateIndex, author);
@@ -418,22 +421,22 @@ public class LastAuthorMatcher {
         String date = buildDate(excelAuthor.birthYear(), excelAuthor.deathYear());
         String id = normalizeId(name.family() + name.given() + date);
 
-        author.put("id", id);
-        author.put("full", name.full());
-        author.put("family", name.family());
-        author.put("given", name.given());
-        author.put("date", date);
-        author.put("role", new JSONArray());
-        author.put("labels", new JSONArray().put(Constants.TitlesCollectionFields.Labels.AUTHOR_MODIFIED));
-        author.put("confirmed_start_year", excelAuthor.birthYear() != null);
-        author.put("confirmed_end_year", excelAuthor.deathYear() != null);
+        author.put(AuthDataFields.ID_FIELD, id);
+        author.put(AuthDataFields.FULL_FIELD, name.full());
+        author.put(AuthDataFields.FAMILY_FIELD, name.family());
+        author.put(AuthDataFields.GIVEN_FIELD, name.given());
+        author.put(AuthComputedFields.AUTHOR_DATE_STR, date);
+        author.put(AuthDataFields.ROLE_FIELD, new JSONArray());
+        author.put(AuthDataFields.LABELS_FIELD, new JSONArray().put(Constants.TitlesCollectionFields.Labels.AUTHOR_MODIFIED));
+        author.put(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_BIRTH, excelAuthor.birthYear() != null);
+        author.put(AuthComputedFields.AUTHOR_CONFIRMED_YEAR_DEATH, excelAuthor.deathYear() != null);
         if (excelAuthor.birthYear() != null) {
-            author.put("year_birth", excelAuthor.birthYear());
+            author.put(AuthComputedFields.AUTHOR_YEAR_BIRTH, excelAuthor.birthYear());
         }
         if (excelAuthor.deathYear() != null) {
-            author.put("year_death", excelAuthor.deathYear());
+            author.put(AuthComputedFields.AUTHOR_YEAR_DEATH, excelAuthor.deathYear());
         }
-        author.put("isLast", false);
+        author.put(AuthDataFields.IS_LAST_FIELD, false);
         return author;
     }
 
@@ -625,10 +628,10 @@ public class LastAuthorMatcher {
                     .filter(candidate -> sameAuthorName(candidate.author(), author))
                     .findFirst();
 
-            if (sameTitleAuthor.isPresent() && isPresent(author.optString("nameIdentifier", null))) {
-                String oldId = sameTitleAuthor.get().author().optString("id", null);
-                if (isPresent(oldId) && !author.has("old_id")) {
-                    author.put("old_id", oldId);
+            if (sameTitleAuthor.isPresent() && isPresent(author.optString(AuthDataFields.NAME_IDENTIFIER_FIELD, null))) {
+                String oldId = sameTitleAuthor.get().author().optString(AuthDataFields.ID_FIELD, null);
+                if (isPresent(oldId) && !author.has(AuthDataFields.OLD_ID_FIELD)) {
+                    author.put(AuthDataFields.OLD_ID_FIELD, oldId);
                 }
                 candidates.removeIf(candidate -> candidate.titleAuthor() && sameAuthorName(candidate.author(), author));
                 candidates.add(new AuthorCandidate(author, -1, false));
@@ -665,9 +668,9 @@ public class LastAuthorMatcher {
 
     private static Set<String> authorNameKeys(JSONObject author) {
         Set<String> keys = new HashSet<>();
-        addNameKey(keys, author.optString("full", null));
-        addNameKey(keys, joinNameParts(author.optString("given", null), author.optString("family", null)));
-        addNameKey(keys, joinNameParts(author.optString("family", null), author.optString("given", null)));
+        addNameKey(keys, author.optString(AuthDataFields.FULL_FIELD, null));
+        addNameKey(keys, joinNameParts(author.optString(AuthDataFields.GIVEN_FIELD, null), author.optString(AuthDataFields.FAMILY_FIELD, null)));
+        addNameKey(keys, joinNameParts(author.optString(AuthDataFields.FAMILY_FIELD, null), author.optString(AuthDataFields.GIVEN_FIELD, null)));
         return keys;
     }
 
@@ -690,9 +693,9 @@ public class LastAuthorMatcher {
 
     private static Set<String> authorIdentityKeys(JSONObject author) {
         Set<String> keys = new HashSet<>();
-        addKey(keys, author.optString("id", null));
-        addKey(keys, author.optString("old_id", null));
-        addKey(keys, author.optString("nameIdentifier", null));
+        addKey(keys, author.optString(AuthDataFields.ID_FIELD, null));
+        addKey(keys, author.optString(AuthDataFields.OLD_ID_FIELD, null));
+        addKey(keys, author.optString(AuthDataFields.NAME_IDENTIFIER_FIELD, null));
         return keys;
     }
 
@@ -873,7 +876,7 @@ public class LastAuthorMatcher {
     private record AuthorCandidate(JSONObject author, int kappIndex, boolean titleAuthor) {
 
         Integer yearDeath() {
-            Integer yearDeath = asInteger(author.opt("year_death"));
+            Integer yearDeath = asInteger(author.opt(AuthComputedFields.AUTHOR_YEAR_DEATH));
             if (yearDeath == null || yearDeath <= 0 || yearDeath >= 9999 || yearDeath > Year.now().getValue()) {
                 return null;
             }
@@ -882,10 +885,10 @@ public class LastAuthorMatcher {
 
         List<String> namesForMatching() {
             List<String> names = new ArrayList<>();
-            addName(names, author.optString("full", null));
-            addName(names, joinNameParts(author.optString("given", null), author.optString("family", null)));
-            addName(names, joinNameParts(author.optString("family", null), author.optString("given", null)));
-            addName(names, author.optString("family", null));
+            addName(names, author.optString(AuthDataFields.FULL_FIELD, null));
+            addName(names, joinNameParts(author.optString(AuthDataFields.GIVEN_FIELD, null), author.optString(AuthDataFields.FAMILY_FIELD, null)));
+            addName(names, joinNameParts(author.optString(AuthDataFields.FAMILY_FIELD, null), author.optString(AuthDataFields.GIVEN_FIELD, null)));
+            addName(names, author.optString(AuthDataFields.FAMILY_FIELD, null));
             return names.stream().distinct().toList();
         }
 
@@ -909,7 +912,7 @@ public class LastAuthorMatcher {
     private record Match(String excelAuthor, AuthorCandidate candidate, double score, String reason) {
 
         String matchedAuthor() {
-            return excelAuthor.isBlank() ? candidate.author().optString("full") : excelAuthor;
+            return excelAuthor.isBlank() ? candidate.author().optString(AuthDataFields.FULL_FIELD) : excelAuthor;
         }
     }
 

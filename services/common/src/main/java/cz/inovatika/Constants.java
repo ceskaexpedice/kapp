@@ -4,6 +4,11 @@ import java.time.Year;
 
 public class Constants {
 
+    /** Fields shared by multiple collections. */
+    public static final class CommonFields {
+        public static final String MODIFIED_BY_USER_FIELD = "modified_by_user";
+    }
+
     /** Collections */
     public static class  Collection {
         public static final String TITLES_COLLECTION = "titles";
@@ -21,7 +26,20 @@ public class Constants {
 
     /** Authors fields */
     public static final class AuthorsCollectionFields {
-        public static class AppComputedFields {
+        public static final class AuthDataFields {
+            public static final String ID_FIELD = "id";
+            public static final String OLD_ID_FIELD = "old_id";
+            public static final String NAME_IDENTIFIER_FIELD = "nameIdentifier";
+            public static final String FULL_FIELD = "full";
+            public static final String FAMILY_FIELD = "family";
+            public static final String GIVEN_FIELD = "given";
+            public static final String ROLE_FIELD = "role";
+            public static final String TERMS_OF_ADDRESS_FIELD = "termsOfAddress";
+            public static final String LABELS_FIELD = "labels";
+            public static final String IS_LAST_FIELD = "isLast";
+        }
+
+        public static final class AuthComputedFields {
             public static final String AUTHOR_DATE_STR = "date";
             public static final String AUTHOR_YEAR_DEATH = "year_death";
             public static final String AUTHOR_YEAR_BIRTH = "year_birth";

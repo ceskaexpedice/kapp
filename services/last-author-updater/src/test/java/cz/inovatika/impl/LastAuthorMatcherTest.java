@@ -1,5 +1,7 @@
 package cz.inovatika.impl;
 
+import cz.inovatika.Constants.AuthorsCollectionFields.AuthComputedFields;
+import cz.inovatika.Constants.AuthorsCollectionFields.AuthDataFields;
 import cz.inovatika.Constants.TitlesCollectionFields.Labels;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -19,11 +21,11 @@ class LastAuthorMatcherTest {
     @Test
     void usesExcelDeathYearWhenExistingTitleDeathYearDiffers() {
         JSONArray authorsKapp = new JSONArray().put(new JSONObject()
-                .put("id", "capek")
-                .put("full", "Capek, Karel")
-                .put("family", "Capek")
-                .put("given", "Karel")
-                .put("year_death", 1937));
+                .put(AuthDataFields.ID_FIELD, "capek")
+                .put(AuthDataFields.FULL_FIELD, "Capek, Karel")
+                .put(AuthDataFields.FAMILY_FIELD, "Capek")
+                .put(AuthDataFields.GIVEN_FIELD, "Karel")
+                .put(AuthComputedFields.AUTHOR_YEAR_DEATH, 1937));
 
         LastAuthorMatcher.UpdatePlan plan = matcher.prepareUpdate(
                 List.of(new JSONObject()
@@ -40,26 +42,26 @@ class LastAuthorMatcherTest {
         assertTrue(plan.updateAuthors());
         assertEquals(1938, plan.lastYearDeath());
         assertTrue(plan.labels().contains(Labels.DIFFERING_AUTHOR_DEATH_YEAR));
-        assertEquals(1938, plan.updatedAuthorsKapp().getJSONObject(0).getInt("year_death"));
+        assertEquals(1938, plan.updatedAuthorsKapp().getJSONObject(0).getInt(AuthComputedFields.AUTHOR_YEAR_DEATH));
     }
 
     @Test
     void clearsExistingTitleDeathYearWhenMatchedLastAuthorHasNoDeathYear() {
         JSONArray authorsKapp = new JSONArray().put(new JSONObject()
-                .put("id", "johnovabozena1920")
-                .put("full", "Johnová, Božena")
-                .put("family", "Johnová")
-                .put("given", "Božena")
-                .put("year_birth", 1920));
+                .put(AuthDataFields.ID_FIELD, "johnovabozena1920")
+                .put(AuthDataFields.FULL_FIELD, "Johnová, Božena")
+                .put(AuthDataFields.FAMILY_FIELD, "Johnová")
+                .put(AuthDataFields.GIVEN_FIELD, "Božena")
+                .put(AuthComputedFields.AUTHOR_YEAR_BIRTH, 1920));
         JSONArray authorsKramerius = new JSONArray()
                 .put(new JSONObject()
-                        .put("id", "xx0095447")
-                        .put("full", "Šapošnikov, Vladimir Nikolajevič")
-                        .put("year_death", 1968))
+                        .put(AuthDataFields.ID_FIELD, "xx0095447")
+                        .put(AuthDataFields.FULL_FIELD, "Šapošnikov, Vladimir Nikolajevič")
+                        .put(AuthComputedFields.AUTHOR_YEAR_DEATH, 1968))
                 .put(new JSONObject()
-                        .put("id", "jk01060966")
-                        .put("full", "Kocková-Kratochvílová, Anna")
-                        .put("year_death", 1992));
+                        .put(AuthDataFields.ID_FIELD, "jk01060966")
+                        .put(AuthDataFields.FULL_FIELD, "Kocková-Kratochvílová, Anna")
+                        .put(AuthComputedFields.AUTHOR_YEAR_DEATH, 1992));
 
         LastAuthorMatcher.UpdatePlan plan = matcher.prepareUpdate(
                 List.of(new JSONObject()

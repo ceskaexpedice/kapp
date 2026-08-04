@@ -288,20 +288,7 @@ public enum States {
         public States transitionByCurator(String rootPid, SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
             return null;
         }
-    }
-    /*,
-
-    PARENT_CONTROLLED("parent_controlled",LicensesAssignation.NONE, true) {
-        @Override
-        public States calculateNextState(String rootPid,SolrClient solrClient,ApplicationConfig config, WorkflowDoc currentDoc) {
-            return PARENT_CONTROLLED;
-        }
-
-        @Override
-        public States transitionByCurator(String rootPid,SolrClient solrClient, WorkflowDoc currentDoc, States desiredState) {
-            return null;
-        }
-    }*/;
+    };
 
     States checkChildren(String rootPid, SolrClient solrClient) {
         try {

@@ -142,7 +142,7 @@ public class TsvToSolrIndexer {
                                             System.err.println("Empty imported date on row: " + recordNumber);
                                         }
                                     }*/
-                                    case "pid" -> {
+                                    case AppDataFields.PID_FIELD -> {
                                         String[] parts = value.trim().replaceAll(";", " ").replaceAll("\\|", " ").split("\\s+");
                                         for (int i = 0; i < parts.length; i++) {
                                             if (!parts[i].startsWith("uuid:")) {
@@ -220,7 +220,7 @@ public class TsvToSolrIndexer {
                                             public_year = Integer.valueOf(value);
                                         }
                                     }
-                                    case "date_issued_str" -> {
+                                    case AppDataFields.DATE_ISSUED_STR -> {
                                         doc.setField(AppDataFields.DATE_ISSUED_STR, value);//TODO: This should maybe not be set since that is Kramerius only value
                                         ParseDates(doc, value, recordNumber, show_comma_info,labels,notes);
                                         Object strobj = doc.getFieldValue(AppComputedFields.DATE_ISSUED_YEAR_KAPP_FIELD);
@@ -303,13 +303,13 @@ public class TsvToSolrIndexer {
 
 
                                     }
-                                    case "title"->{
-                                        doc.setField("title",value);//This may change the title that came from kramerius, but it is not going to appear in kramerius anyway, and there are books that are in Excel only that need title
+                                    case AppDataFields.TITLE_FIELD->{
+                                        doc.setField(AppDataFields.TITLE_FIELD,value);//This may change the title that came from kramerius, but it is not going to appear in kramerius anyway, and there are books that are in Excel only that need title
                                     }
-                                    case "authors","id_ccnb"->{
+                                    case AppDataFields.AUTHORS_FIELD,"id_ccnb"->{
                                         //skip
                                     }
-                                    case "physical_locations"->{
+                                    case AppDataFields.PHYSICAL_LOCATIONS_FACET_FIELD->{
                                         doc.addField("archiver_location",value);
                                     }
                                     default -> {
@@ -447,8 +447,8 @@ public class TsvToSolrIndexer {
                         }*/
                         Map<String,Object> userUpdateMap = new HashMap<>();
                         userUpdateMap.put("add-distinct",users );
-                        doc.getDocument().setField("state_user",(users.isEmpty())?"Excel without curator":"Excel");//userUpdateMap);
-                        doc.getDocument().addField("modified_by_user", userUpdateMap);
+                        doc.getDocument().setField(AppComputedFields.STATE_USER_FIELD,(users.isEmpty())?"Excel without curator":"Excel");//userUpdateMap);
+                        doc.getDocument().addField(Constants.CommonFields.MODIFIED_BY_USER_FIELD, userUpdateMap);
                         doc.markModified();
 
                         docerr = doc.getDocument();
@@ -610,7 +610,7 @@ public class TsvToSolrIndexer {
             var results = solrClient.query(Collection.TITLES_COLLECTION, q).getResults();
             if (results.getNumFound() > 0)
             {
-                Object modelobj = results.getFirst().getFieldValue("model");
+                Object modelobj = results.getFirst().getFieldValue(AppDataFields.MODEL_FIELD);
                 return modelobj!=null?modelobj.toString():null;
             }
             else

@@ -1,5 +1,7 @@
 package cz.inovatika;
 
+//import cz.inovatika.Constants.AuthorsCollectionFields.AppDataFields;
+
 import java.text.Normalizer;
 import java.time.Year;
 import java.util.Arrays;
@@ -131,17 +133,17 @@ public class XmlProcessor {
             SolrInputDocumentWrapper aDoc = new SolrInputDocumentWrapper(
                     Constants.TitlesCollectionFields.KramFields.PID_FIELD,
                     SolrInputDocumentWrapper.TypeOfChange.ATOMIC_CHANGE);
-            aDoc.addField("nameIdentifier", author.getNameIdentifier());
+            aDoc.addField(AppDataFields.NAME_IDENTIFIER_FIELD, author.getNameIdentifier());
             if (author.getNameIdentifier() != null) {
-                aDoc.addField("id", author.getNameIdentifier());
+                aDoc.addField(AppDataFields.ID_FIELD, author.getNameIdentifier());
             } else {
-                aDoc.addField("id", normalize(author.getFull() + author.getDate()));
+                aDoc.addField(AppDataFields.ID_FIELD, normalize(author.getFull() + author.getDate()));
             }
-            aDoc.addField("full", author.getFull());
-            aDoc.addField("family", author.getFamily());
-            aDoc.addField("given", author.getGiven());
-            aDoc.addField("date", author.getDate());
-            aDoc.addField("termsOfAddress", author.getTermsOfAddress());
+            aDoc.addField(AppDataFields.FULL_FIELD, author.getFull());
+            aDoc.addField(AppDataFields.FAMILY_FIELD, author.getFamily());
+            aDoc.addField(AppDataFields.GIVEN_FIELD, author.getGiven());
+            aDoc.addField(Constants.AuthorsCollectionFields.AppComputedFields.AUTHOR_DATE_STR, author.getDate());
+            aDoc.addField(AppDataFields.TERMS_OF_ADDRESS_FIELD, author.getTermsOfAddress());
 
             if (author.getDate() != null) {
                 parseDateBasic(aDoc, author.getDate(), 0, author.getDate());
