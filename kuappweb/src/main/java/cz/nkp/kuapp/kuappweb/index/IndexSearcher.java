@@ -7,6 +7,7 @@ import java.net.URI;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
@@ -24,6 +25,7 @@ import org.apache.solr.client.solrj.request.json.TermsFacetMap;
 import org.apache.solr.client.solrj.util.ClientUtils;
 import org.apache.solr.common.util.NamedList;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
@@ -33,6 +35,10 @@ import org.json.JSONObject;
 public class IndexSearcher {
 
     public static final Logger LOGGER = Logger.getLogger(IndexSearcher.class.getName());
+    private static final int LINK_RESPONSE_PREVIEW_LENGTH = 500;
+    private static final HttpClient LINKS_HTTP_CLIENT = HttpClient.newBuilder()
+            .connectTimeout(Duration.ofSeconds(5))
+            .build();
     // final static SimpleDateFormat dtformatter = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
 
     public static JSONObject home(HttpServletRequest request) {
@@ -947,18 +953,48 @@ public class IndexSearcher {
         try {
             String url = "https://nklink.toolforge.org/link.php?format=json&autid=" + autid;
 
-            HttpClient client = HttpClient.newHttpClient();
             HttpRequest request = HttpRequest.newBuilder()
                     .GET()
                     .uri(new URI(url))
+                    .timeout(Duration.ofSeconds(10))
                     .build();
-            HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-            ret = new JSONObject(response.body());
+            HttpResponse<String> response = LINKS_HTTP_CLIENT.send(request, HttpResponse.BodyHandlers.ofString());
+            int status = response.statusCode();
+            String contentType = response.headers().firstValue("Content-Type").orElse("<missing>");
+            String body = response.body();
+
+            if (status < 200 || status >= 300) {
+                LOGGER.log(Level.SEVERE,
+                        "Error getting links for {0}: upstream status={1}, contentType={2}, bodyPreview={3}",
+                        new Object[]{autid, status, contentType, responsePreview(body)});
+                return ret.put("error", "Link service returned HTTP status " + status);
+            }
+
+            try {
+                ret = new JSONObject(body);
+            } catch (JSONException ex) {
+                LOGGER.log(Level.SEVERE,
+                        "Error getting links for {0}: upstream response is not a JSON object; "
+                                + "status={1}, contentType={2}, bodyPreview={3}, parseError={4}",
+                        new Object[]{autid, status, contentType, responsePreview(body), ex.toString()});
+                return ret.put("error", "Link service returned an invalid JSON object");
+            }
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Error getting links for {0}: {1}", new Object[]{autid, ex});
-            ret.put("error", ex);
+            ret.put("error", ex.toString());
         }
         return ret;
+    }
+
+    private static String responsePreview(String body) {
+        if (body == null) {
+            return "<null>";
+        }
+        String singleLine = body.replace('\r', ' ').replace('\n', ' ');
+        if (singleLine.length() <= LINK_RESPONSE_PREVIEW_LENGTH) {
+            return singleLine;
+        }
+        return singleLine.substring(0, LINK_RESPONSE_PREVIEW_LENGTH) + "...";
     }
 
     public static JSONObject searchContracts(HttpServletRequest request) {
