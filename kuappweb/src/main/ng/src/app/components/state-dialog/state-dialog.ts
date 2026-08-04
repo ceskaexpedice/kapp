@@ -50,7 +50,7 @@ export class StateDialog {
 
     } else {
       this.initialState = this.data.doc['state'];
-      this.initialLicenses = this.data.doc['licenses'];
+      this.initialLicenses = this.data.doc['assigned_licenses'] ?? [];
     }
     this.allowedLicenses.set([...this.config.states.find(s => s.value === this.initialState).licenses]);
     if (this.allowedLicenses().length > 0) {
@@ -99,11 +99,10 @@ export class StateDialog {
   }
 
   changeStateInBatch() {
-    const l: string[] = [];
     const p = {
       batch: this.data.batch,
       state: this.newState,
-      licenses: l,
+      licenses: this.newLicenses ?? [],
       reason: this.reason
     };
     this.service.changeStateInBatch(p).subscribe(resp => {

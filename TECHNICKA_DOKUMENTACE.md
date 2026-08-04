@@ -84,7 +84,9 @@ state_date:[<from> TO <to>]
 ]
 ```
 
-Pole je vždy přítomné; pokud chybí ve zdrojovém dokumentu, má hodnotu `null`.
+Pole jsou vždy přítomná; pokud chybí ve zdrojovém dokumentu, mají hodnotu `null`.
+Výjimkou je `assigned_licenses`: chybějící Solr pole znamená prázdné přiřazení a
+API je vrací jako `[]`. To platí zejména pro stavy `FOR_REVIEW` a `TO_CONTROL`.
 
 Kramerius používá z odpovědi licenční údaje. `pid` slouží k identifikaci titulu; název, datum a uživatel jsou informativní a diagnostické. Filtrování podle `state_date` je mechanismus pro výpis změn licencí. Pole `source` je odvozeno z `digital_library`; pokud je zdrojové pole vícehodnotové, API vrací první hodnotu.
 

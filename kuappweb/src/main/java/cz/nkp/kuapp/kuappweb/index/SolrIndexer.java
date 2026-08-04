@@ -721,7 +721,7 @@ public class SolrIndexer {
     private static void fillState(SolrInputDocument doc, String state, JSONArray licenses, String reason, String user) {
 
         addAtomicField(doc, "set", state, "state");
-        addAtomicField(doc, "set", licenses, "licenses");
+        addAtomicField(doc, "set", licenses, "assigned_licenses");
         addAtomicField(doc, "set", user, "state_user");
         addAtomicField(doc, "set", reason, "state_reason");
         addAtomicField(doc, "add-distinct", user, "modified_by_user");

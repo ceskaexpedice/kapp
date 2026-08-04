@@ -91,7 +91,8 @@ public class LicenseChangesServlet extends HttpServlet {
             JsonQueryRequest query = new JsonQueryRequest()
                     .setQuery("*:*")
                     .withFilter("state_date:[" + fromBoundary + " TO " + to + "]")
-                    .withFilter("assigned_licenses:[* TO *]")
+                    .withFilter("(assigned_licenses:[* TO *]"
+                            + " OR state:FOR_REVIEW OR state:TO_CONTROL)")
                     .withParam("cursorMark", cursor)
                     .setSort("pid asc")
                     .setLimit(PAGE_SIZE)
@@ -128,12 +129,20 @@ public class LicenseChangesServlet extends HttpServlet {
         JSONObject result = new JSONObject();
         copyIfPresent(source, result, "pid", "pid");
         copyIfPresent(source, result, "title", "title");
-        copyIfPresent(source, result, "assigned_licenses", "assigned_licenses");
+        copyAssignedLicenses(source, result);
         copyIfPresent(source, result, "licenses", "licenses");
         copyIfPresent(source, result, "state_date", "stateDate");
         copyIfPresent(source, result, "state_user", "stateUser");
         copyDigitalLibrary(source, result);
         return result;
+    }
+
+    private static void copyAssignedLicenses(JSONObject source, JSONObject target) {
+        Object assignedLicenses = source.opt("assigned_licenses");
+        target.put("assigned_licenses",
+                assignedLicenses == null || assignedLicenses == JSONObject.NULL
+                        ? new JSONArray()
+                        : assignedLicenses);
     }
 
     private static void copyDigitalLibrary(JSONObject source, JSONObject target) {
