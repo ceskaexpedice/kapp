@@ -135,7 +135,7 @@ export class Results {
 
   clearQ() {
     this.state.q = '';
-    this.getData();
+    this.router.navigate([], { queryParams: this.state.toQueryParams() });
   }
 
   doSearch() {
@@ -143,8 +143,7 @@ export class Results {
     //   q: this.state.q
     // }
     // this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
-    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
-    this.getData(false);
+    this.router.navigate([], { queryParams: this.state.toQueryParams() });
   }
 
   export() {

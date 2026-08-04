@@ -43,7 +43,7 @@ export class Home {
 
   doSearch(target: string) {
     this.state.q = this.q;
-    this.router.navigate(['/' + target], { queryParams: {s: this.state.encodeState()} });
+    this.router.navigate(['/' + target], { queryParams: this.state.toQueryParams() });
   }
 
   newImported() {

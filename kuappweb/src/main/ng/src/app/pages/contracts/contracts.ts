@@ -97,6 +97,7 @@ export class Contracts {
 
   clearQ() {
     this.state.q = '';
+    this.router.navigate([], { queryParams: this.state.toQueryParams() });
     this.getData();
   }
 
@@ -105,7 +106,7 @@ export class Contracts {
     //   q: this.state.q
     // }
     // this.router.navigate([], { queryParams: params, queryParamsHandling: 'merge' });
-    this.router.navigate([], { queryParams: {s: this.state.encodeState()} });
+    this.router.navigate([], { queryParams: this.state.toQueryParams() });
     this.getData();
   }
 

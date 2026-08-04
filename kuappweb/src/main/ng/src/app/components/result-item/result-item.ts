@@ -406,7 +406,7 @@ export class ResultItem {
   gotoPid(pid: string) {
     this.state.q = pid;
     this.state.usedFacets.set([]);
-    this.router.navigate(['/titles'], { queryParams: { s: this.state.encodeState() } });
+    this.router.navigate(['/titles'], { queryParams: this.state.toQueryParams() });
     // const p: any = {};
     // p.q = pid;
     // p.only_pid = true;

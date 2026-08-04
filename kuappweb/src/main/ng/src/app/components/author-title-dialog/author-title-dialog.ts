@@ -330,7 +330,7 @@ export class AuthorTitleDialog {
   gotoAuthors() {
     this.state.usedFacets.set([]);
     this.state.q = this.author().full;
-    this.router.navigate(['/authors'], { queryParams: { s: this.state.encodeState() } });
+    this.router.navigate(['/authors'], { queryParams: this.state.toQueryParams() });
     this.dialogRef.close(false);
   }
 

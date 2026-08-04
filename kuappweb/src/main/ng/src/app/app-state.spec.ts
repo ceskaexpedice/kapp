@@ -114,4 +114,55 @@ describe('AppState roles', () => {
 
     expect(state.labels().map(label => label.storageName)).toEqual(['review_jane', 'review_MZK']);
   });
+
+  it('serializes text and facets as readable query parameters', () => {
+    state.q = 'uuid:470c08eb-6ed0-11f1-befe-be5744c0a6f6';
+    state.usedFacets.set([
+      {field: 'labels', value: 'review_jane'},
+      {field: 'labels', value: 'new_imported'},
+      {field: 'state', value: 'TO_CONTROL', negated: true}
+    ]);
+
+    expect(state.toQueryParams()).toEqual({
+      q: 'uuid:470c08eb-6ed0-11f1-befe-be5744c0a6f6',
+      labels: ['review_jane', 'new_imported'],
+      state_not: 'TO_CONTROL'
+    });
+  });
+
+  it('restores readable query parameters including repeated and negated facets', () => {
+    state.decodeQueryParams({
+      q: 'a title',
+      labels: ['review_jane', 'new_imported'],
+      state_not: 'TO_CONTROL'
+    });
+
+    expect(state.q).toBe('a title');
+    expect(state.usedFacets()).toEqual([
+      {field: 'labels', value: 'review_jane'},
+      {field: 'labels', value: 'new_imported'},
+      {field: 'state', value: 'TO_CONTROL', negated: true}
+    ]);
+  });
+
+  it('keeps decoding legacy state links', () => {
+    const legacyState = btoa(encodeURIComponent(JSON.stringify({
+      q: 'legacy',
+      f: [{field: 'labels', value: 'old_label'}]
+    })));
+
+    state.decodeQueryParams({s: legacyState});
+
+    expect(state.q).toBe('legacy');
+    expect(state.usedFacets()).toEqual([{field: 'labels', value: 'old_label'}]);
+  });
+
+  it('prefers readable parameters when both URL formats are present', () => {
+    const legacyState = btoa(encodeURIComponent(JSON.stringify({q: 'legacy', f: []})));
+
+    state.decodeQueryParams({s: legacyState, q: 'readable', state: 'TO_CONTROL'});
+
+    expect(state.q).toBe('readable');
+    expect(state.usedFacets()).toEqual([{field: 'state', value: 'TO_CONTROL'}]);
+  });
 });

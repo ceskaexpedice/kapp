@@ -104,7 +104,7 @@ export class FacetsComponent {
     }
     this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
     this.state.usedFacets.update(f => [...this.usedFacets]);
-    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+    this.router.navigate([], { queryParams: this.state.toQueryParams() });
   }
 
   isUsed(field: string, value: string) {
@@ -131,7 +131,7 @@ export class FacetsComponent {
     this.usedFacets = this.usedFacets.filter(f => !(f.field === 'date_issued_year'));
     this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
     this.state.usedFacets.set(this.usedFacets);
-    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+    this.router.navigate([], { queryParams: this.state.toQueryParams() });
   }
 
   filterStateDate() {
@@ -142,7 +142,7 @@ export class FacetsComponent {
       this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
       this.state.usedFacets.update(f => [...this.usedFacets]);
       //console.log(this.usedFacets)
-      this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+      this.router.navigate([], { queryParams: this.state.toQueryParams() });
   }
 
   filterModifiedDate() {
@@ -152,7 +152,7 @@ export class FacetsComponent {
       this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
       this.state.usedFacets.update(f => [...this.usedFacets]);
       //console.log(this.usedFacets)
-      this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+      this.router.navigate([], { queryParams: this.state.toQueryParams() });
   }
 
   filterYear() {
@@ -162,7 +162,7 @@ export class FacetsComponent {
       this.usedFacets.push({field: 'date_issued_year', value});
       this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
       this.state.usedFacets.update(f => [...this.usedFacets]);
-      this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+      this.router.navigate([], { queryParams: this.state.toQueryParams() });
   }
   
   filter(field: string, value: string) {
@@ -176,14 +176,14 @@ export class FacetsComponent {
     }
     this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
     this.state.usedFacets.update(f => [...this.usedFacets]);
-    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+    this.router.navigate([], { queryParams: this.state.toQueryParams() });
   }
 
   unfilter(field: string, value: string) {
     this.usedFacets = this.usedFacets.filter(f => !(f.field === field && f.value === value));
     this.hasUsedFacets = this.usedFacets.filter(item => !this.hard_facets().includes(item.field)).length > 0;
     this.state.usedFacets.set(this.usedFacets);
-    this.router.navigate([], { queryParams: { s: this.state.encodeState() } });
+    this.router.navigate([], { queryParams: this.state.toQueryParams() });
   }
 
   fireMouserOver(field: string, value: string) {

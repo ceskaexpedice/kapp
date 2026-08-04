@@ -260,6 +260,6 @@ export class AuthorItem {
 
   gotoTitles() {
     this.state.usedFacets.set([{ field: "authors_ids", value: this.author['id'] }]);
-    this.router.navigate(['/titles'], { queryParams: { s: this.state.encodeState() } });
+    this.router.navigate(['/titles'], { queryParams: this.state.toQueryParams() });
   }
 }
