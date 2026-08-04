@@ -21,6 +21,7 @@ import cz.inovatika.workflow.States;
 import cz.inovatika.workflow.StringWrapper;
 import cz.inovatika.workflow.Workflow;
 import cz.inovatika.workflow.WorkflowDoc;
+import cz.inovatika.workflow.WorkflowUpdaterClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -28,10 +29,7 @@ import org.apache.solr.client.solrj.SolrServerException;
 import org.apache.solr.client.solrj.impl.Http2SolrClient;
 import org.apache.solr.client.solrj.request.UpdateRequest;
 import org.apache.solr.client.solrj.response.UpdateResponse;
-import org.apache.solr.common.SolrDocumentList;
 import org.apache.solr.common.SolrInputDocument;
-import org.json.JSONObject;
-import org.noggit.JSONUtil;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 import org.xml.sax.SAXException;
@@ -332,9 +330,17 @@ public class HarvesterImpl implements Harvester {
         LOGGER.log(Level.INFO, "Harvesting started, BatchSize: {0}", BATCH_SIZE);
         List<SolrInputDocument> createBuffer = new ArrayList<>(BATCH_SIZE);
         List<SolrInputDocument> updateBuffer = new ArrayList<>(BATCH_SIZE);
+        Set<String> harvestedPids = new LinkedHashSet<>();
 
         ArrayList<SolrInputDocument> authorBuffer = new ArrayList<>(AUTHOR_BATCH_SIZE + 20);
-        harvest(applicationConfig, config, ctx -> processHarvest(config, ctx, createBuffer, updateBuffer, authorBuffer));
+        harvest(applicationConfig, config, ctx -> processHarvest(
+                config,
+                ctx,
+                createBuffer,
+                updateBuffer,
+                authorBuffer,
+                harvestedPids
+        ));
 
         if (!createBuffer.isEmpty()) { // BATCH_SIZE
             LOGGER.log(Level.INFO, "Sending batch");
@@ -360,6 +366,15 @@ public class HarvesterImpl implements Harvester {
         UpdateParentState updateParentState = new UpdateParentStateImpl(this.solrClient);
         updateParentState.updateParentState();
         commitCollection(Constants.Collection.TITLES_COLLECTION);
+
+        // Reload committed documents before calculating derived workflow fields.
+        WorkflowUpdaterClient.requestUpdates(
+                this.httpClient,
+                applicationConfig.workflowUpdateOrDefault(),
+                harvestedPids,
+                user,
+                "harvest:" + config.getAcronym()
+        );
 
     }
 
@@ -409,7 +424,8 @@ public class HarvesterImpl implements Harvester {
                                 final HarvesterContext ctx,
                                 List<SolrInputDocument> createBuffer,
                                 List<SolrInputDocument> updateBuffer,
-                                List<SolrInputDocument> authorsBuffer) {
+                                List<SolrInputDocument> authorsBuffer,
+                                Set<String> harvestedPids) {
         {
 
             if (ctx.processedSoFar() % 1000 == 0) {
@@ -450,19 +466,8 @@ public class HarvesterImpl implements Harvester {
                         if (ctx.touchStore().isModsChanged(pid, entity.md5Sum())) {
                             try {
                                 Document parsed = XMLUtils.parseDocument(new StringReader(entity.biblioMods()), true);
-                                WorkflowDoc workflowDoc = buildWorkflowDoc(config,pid,ctx,wrapper, entity, parsed,authorsBuffer);
-
-                                // state differs
-                                JSONObject oldDoc = getExistingDocument((String) wrapper.document().getFieldValue(AppDataFields.PID_FIELD));
-                                if (oldDoc != null && oldDoc.has(AppComputedFields.STATE_FIELD)) {
-                                    String oldState = oldDoc.getString(AppComputedFields.STATE_FIELD);
-                                    StringWrapper reason = new StringWrapper("unspecified");
-                                    States newState = Workflow.calculateAutomaticTransition(ctx, workflowDoc,reason);
-                                    String message = String.format("Imported from '%s'"+" + "+reason, config.getUrl());
-                                    if (oldState != null && !oldState.equals(newState.name())) {
-                                        Workflow.executeTransition( workflowDoc, user, message, wrapper,newState,ctx.applicationConfig().workflow());
-                                    }
-                                }
+                                // Do not evaluate workflow against an unmerged atomic update fragment.
+                                buildWorkflowDoc(config,pid,ctx,wrapper, entity, parsed,authorsBuffer);
                             } catch (ParserConfigurationException | SAXException e) {
                                 LOGGER.severe(e.getMessage());
                                 throw new RuntimeException(e);
@@ -470,6 +475,7 @@ public class HarvesterImpl implements Harvester {
                         }
                     }
                     addToBufferAndSend(updateBuffer, authorsBuffer, wrapper);
+                    harvestedPids.add(pid);
                 } catch (IOException | InterruptedException | NoSuchAlgorithmException e) {
                     LOGGER.severe(e.getMessage());
                     throw new RuntimeException(e);
@@ -502,6 +508,7 @@ public class HarvesterImpl implements Harvester {
                     );
 
                     addToBufferAndSend(createBuffer, authorsBuffer, doc);
+                    harvestedPids.add(pid);
 
                 } catch (final IOException | InterruptedException | NoSuchAlgorithmException |
                                ParserConfigurationException | SAXException e) {
@@ -711,20 +718,6 @@ public class HarvesterImpl implements Harvester {
                 //.connectTimeout(Duration.ofMinutes(1))
                 .followRedirects(HttpClient.Redirect.NORMAL)
                 .build();
-    }
-
-    private JSONObject getExistingDocument(String pid) {
-        SolrQuery q = new SolrQuery()
-                .setQuery(String.format("%s:\"%s\"", AppDataFields.PID_FIELD, pid))
-                .setFields(AppComputedFields.STATE_HISTORY_FIELD)
-                .setRows(1);
-        try {
-            SolrDocumentList docs = this.solrClient.query(Constants.Collection.TITLES_COLLECTION, q).getResults();
-            return docs.getNumFound() > 0 ? new JSONObject(JSONUtil.toJSON(docs.getFirst())) : null;
-        } catch (SolrServerException | IOException e) {
-            LOGGER.log(Level.SEVERE, null, e);
-            return null;
-        }
     }
 
 //    private static void elapseAndReset(Stopwatch sw) {

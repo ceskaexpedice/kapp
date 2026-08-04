@@ -54,7 +54,7 @@ Aktuální updater:
 
 Změny workflow se zapisují s uživatelem `Updater`.
 
-## Cílený přepočet z webové aplikace
+## Cílený přepočet z webové aplikace a harvesteru
 
 Proces updateru poslouchá na interním portu `8081`:
 
@@ -72,7 +72,7 @@ Authorization: Bearer <workflowUpdate.token>
 }
 ```
 
-Požadavky z webové aplikace a úplný plánovaný běh používají jednu
+Požadavky z webové aplikace, harvesteru a úplný plánovaný běh používají jednu
 jednovláknovou frontu. Výpočty workflow proto neběží souběžně. Cílený přepočet
 načte aktuální dokument a při zápisu používá Solr `_version_`; konflikt způsobí
 nové načtení a nejvýše tři pokusy. Změna stavu potom vyvolá také přepočet
@@ -87,6 +87,13 @@ Webová aplikace při těchto změnách zapisuje pouze vstupní údaje, napřík
 `last_year_death`, `date_issued_year_kapp` a příznaky autorství. Odvozené pole
 `release_year` počítá a zapisuje výhradně updater. Ruční kurátorská změna stavu
 zůstává samostatnou explicitní operací webové aplikace.
+
+Harvester po zapsání a commitnutí sklizených titulů odešle jejich PIDy na stejný
+endpoint v dávkách po `workflowUpdate.maxBatchSize`. U existujících titulů už
+workflow nevyhodnocuje nad neúplným atomickým dokumentem; cílený updater jej
+vyhodnotí až nad sloučeným dokumentem načteným ze Solru. Nové tituly dostanou
+počáteční stav během importu a updater následně doplní odvozená pole a případné
+navazující změny. Odeslání je best-effort a jeho selhání nezruší sklizeň.
 
 ## Kandidátní filtr
 
