@@ -291,7 +291,7 @@ public class UpdaterImpl implements Updater {
             Workflow.executeTransition(
                     workflowDoc,
                     USER,
-                    reason.value,
+                    reason.toString(),
                     updateDoc,
                     newState,
                     applicationConfig.workflow()
