@@ -21,7 +21,6 @@ import cz.inovatika.workflow.States;
 import cz.inovatika.workflow.StringWrapper;
 import cz.inovatika.workflow.Workflow;
 import cz.inovatika.workflow.WorkflowDoc;
-import cz.inovatika.workflow.WorkflowUpdaterClient;
 import org.apache.commons.io.IOUtils;
 import org.apache.solr.client.solrj.SolrClient;
 import org.apache.solr.client.solrj.SolrQuery;
@@ -371,15 +370,6 @@ public class HarvesterImpl implements Harvester {
         UpdateParentState updateParentState = new UpdateParentStateImpl(this.solrClient);
         updateParentState.updateParentState();
         commitCollection(Constants.Collection.TITLES_COLLECTION);
-
-        // Reload committed documents before calculating derived workflow fields.
-        WorkflowUpdaterClient.requestUpdates(
-                this.httpClient,
-                applicationConfig.workflowUpdateOrDefault(),
-                harvestedPids,
-                user,
-                "harvest:" + config.getAcronym()
-        );
 
     }
 

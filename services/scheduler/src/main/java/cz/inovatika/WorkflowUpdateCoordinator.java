@@ -43,5 +43,12 @@ public final class WorkflowUpdateCoordinator implements AutoCloseable {
     @Override
     public void close() {
         executor.shutdownNow();
+        if (updater instanceof AutoCloseable closeable) {
+            try {
+                closeable.close();
+            } catch (Exception ex) {
+                throw new RuntimeException("Unable to close workflow updater.", ex);
+            }
+        }
     }
 }

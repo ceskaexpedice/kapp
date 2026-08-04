@@ -6,9 +6,10 @@ Modul `services:scheduler` používá Quartz. Stejný image se v `nkp-deploy` sp
 
 `cz.inovatika.SchedulerMain` vyžaduje právě jeden argument:
 
-- `harvester` - zaregistruje jen harvest job,
-- `updater` - zaregistruje jen updater job,
-- `all` - zaregistruje oba joby v jednom procesu.
+- `harvester` - zaregistruje denní harvest job; po sklizni spustí úplný updater,
+- `updater` - spustí interní službu pro cílené přepočty bez časovaného full updater jobu,
+- `updater-once` - jednou synchronně spustí úplný updater a proces ukončí,
+- `all` - spustí interní službu a denní harvest job v jednom procesu.
 
 Bez argumentu nebo s jinou hodnotou proces skončí chybou. Compose používá oddělené služby:
 
@@ -24,21 +25,26 @@ To umožňuje obě služby restartovat a sledovat nezávisle.
 
 ## Časování
 
-Oba triggery používají `startNow()`. Harvester má interval 24 hodin, updater `365 * 24` hodin. Praktický důsledek je:
+Trigger harvesteru používá `startNow()` a interval 24 hodin. Praktický důsledek je:
 
 - po startu/restartu kontejneru se úloha spustí ihned,
 - harvester poté běží přibližně denně,
-- updater poté přibližně ročně.
+- po dokončení každé úspěšné sklizně se ihned spustí úplný updater,
+- updater nemá samostatný časovaný trigger.
 
 Interval je v současnosti zapsaný v kódu, není v `app.conf`.
 
 ## Harvester job
 
-`cz.inovatika.HarvesterJob` načte konfiguraci a spustí inkrementální sklizeň. Chybějící timestamp způsobí plnou sklizeň dané instance. Dřívější ruční metody `fullHarvest()` a `incrementalHarvest()` nejsou aktivní veřejné CLI.
+`cz.inovatika.HarvesterJob` načte konfiguraci, spustí inkrementální sklizeň všech
+instancí a po jejím úspěšném dokončení ihned spustí úplný `UpdaterImpl`. Chybějící
+timestamp způsobí plnou sklizeň dané instance. Dřívější ruční metody
+`fullHarvest()` a `incrementalHarvest()` nejsou aktivní veřejné CLI.
 
 ## Updater job
 
-`cz.inovatika.UpdaterJob` načte konfiguraci a spustí `UpdaterImpl`.
+`cz.inovatika.UpdaterJob` umí načíst konfiguraci a spustit `UpdaterImpl`, ale není
+samostatně registrován do Quartz scheduleru. Úplný běh vyvolává `HarvesterJob`.
 
 Aktuální updater:
 
@@ -54,7 +60,7 @@ Aktuální updater:
 
 Změny workflow se zapisují s uživatelem `Updater`.
 
-## Cílený přepočet z webové aplikace a harvesteru
+## Cílený přepočet z webové aplikace
 
 Proces updateru poslouchá na interním portu `8081`:
 
@@ -72,8 +78,7 @@ Authorization: Bearer <workflowUpdate.token>
 }
 ```
 
-Požadavky z webové aplikace, harvesteru a úplný plánovaný běh používají jednu
-jednovláknovou frontu. Výpočty workflow proto neběží souběžně. Cílený přepočet
+Požadavky z webové aplikace používají jednovláknovou frontu. Cílený přepočet
 načte aktuální dokument a při zápisu používá Solr `_version_`; konflikt způsobí
 nové načtení a nejvýše tři pokusy. Změna stavu potom vyvolá také přepočet
 kořenového titulu.
@@ -88,12 +93,8 @@ Webová aplikace při těchto změnách zapisuje pouze vstupní údaje, napřík
 `release_year` počítá a zapisuje výhradně updater. Ruční kurátorská změna stavu
 zůstává samostatnou explicitní operací webové aplikace.
 
-Harvester po zapsání a commitnutí sklizených titulů odešle jejich PIDy na stejný
-endpoint v dávkách po `workflowUpdate.maxBatchSize`. U existujících titulů už
-workflow nevyhodnocuje nad neúplným atomickým dokumentem; cílený updater jej
-vyhodnotí až nad sloučeným dokumentem načteným ze Solru. Nové tituly dostanou
-počáteční stav během importu a updater následně doplní odvozená pole a případné
-navazující změny. Odeslání je best-effort a jeho selhání nezruší sklizeň.
+Harvester po zapsání a commitnutí všech sklizených titulů spustí úplný updater
+přímo. Ten proto provede také kontrolu smluv a přepočítá celý core `titles`.
 
 ## Kandidátní filtr
 
@@ -112,6 +113,7 @@ Pro lokální Gradle běh:
 ```powershell
 .\gradlew :services:scheduler:run --args="harvester"
 .\gradlew :services:scheduler:run --args="updater"
+.\gradlew :services:scheduler:run --args="updater-once"
 .\gradlew :services:last-author-updater:run --args="<volby>"
 ```
 

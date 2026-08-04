@@ -41,7 +41,7 @@ import static cz.inovatika.Constants.Collection.CONTRACTS_COLLECTION;
 import static cz.inovatika.Constants.Collection.TITLES_COLLECTION;
 
 
-public class UpdaterImpl implements Updater {
+public class UpdaterImpl implements Updater, AutoCloseable {
     public static final Logger LOGGER = Logger.getLogger(UpdaterImpl.class.getName());
     public SolrClient solrClient = null;
     final int IN_BATCHSIZE = 100;
@@ -657,6 +657,20 @@ public class UpdaterImpl implements Updater {
                 .withIdleTimeout(5, TimeUnit.MINUTES)
                 .withRequestTimeout(5, TimeUnit.MINUTES).useHttp1_1(true)
                 .build();
+    }
+
+    @Override
+    public void close() {
+        if (solrClient == null) {
+            return;
+        }
+        try {
+            solrClient.close();
+        } catch (IOException ex) {
+            throw new RuntimeException("Unable to close updater Solr client.", ex);
+        } finally {
+            solrClient = null;
+        }
     }
 
     private static final class FilterQuery {

@@ -29,8 +29,9 @@ public class UpdaterJob implements Job {
                 coordinator.runFullUpdate().join();
             } else {
                 ApplicationConfig applicationConfig = SchedulerMain.LoadConfiguration(LOGGER);
-                Updater updater = new UpdaterImpl();
-                updater.start(applicationConfig);
+                try (UpdaterImpl updater = new UpdaterImpl()) {
+                    updater.start(applicationConfig);
+                }
             }
             LOGGER.info("Updating Completed.");
 

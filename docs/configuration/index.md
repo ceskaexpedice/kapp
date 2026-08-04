@@ -62,8 +62,8 @@ Hranice se počítají proti aktuálnímu kalendářnímu roku. Změna hodnot ov
 
 ### `workflowUpdate`
 
-- `url` používá webová aplikace a harvester pro interní požadavky na cílený přepočet workflow,
-- `enabled` umožňuje cílené požadavky z webové aplikace a harvesteru vypnout,
+- `url` používá webová aplikace pro interní požadavky na cílený přepočet workflow,
+- `enabled` umožňuje cílené požadavky z webové aplikace vypnout,
 - `port` je interní HTTP port služby updateru,
 - `token` je volitelný sdílený Bearer token; prázdná hodnota vypne kontrolu tokenu,
 - `maxBatchSize` omezuje počet PIDů v jednom požadavku,

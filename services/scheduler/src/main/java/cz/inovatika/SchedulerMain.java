@@ -1,6 +1,7 @@
 package cz.inovatika;
 
 import cz.inovatika.conf.ApplicationConfig;
+import cz.inovatika.impl.UpdaterImpl;
 import org.quartz.*;
 import org.quartz.impl.StdSchedulerFactory;
 
@@ -23,6 +24,11 @@ public class SchedulerMain {
     public static void main(String[] args) throws SchedulerException {
         ScheduledService service = ScheduledService.fromArgs(args);
 
+        if (service == ScheduledService.UPDATER_ONCE) {
+            runUpdaterOnce();
+            return;
+        }
+
         scheduler = StdSchedulerFactory.getDefaultScheduler();
         scheduler.start();
 
@@ -30,16 +36,26 @@ public class SchedulerMain {
             case HARVESTER -> initHarvestJob();
             case UPDATER -> {
                 initWorkflowUpdateService();
-                initUpdateJob();
+                // Full updates run immediately after the scheduled harvest.
+                // initUpdateJob();
             }
             case ALL -> {
                 initWorkflowUpdateService();
                 initHarvestJob();
-                initUpdateJob();
+                // Full updates run immediately after the scheduled harvest.
+                // initUpdateJob();
             }
         }
 
         LOGGER.log(Level.INFO, "Started scheduled service: {0}", service.serviceName);
+    }
+
+    private static void runUpdaterOnce() {
+        ApplicationConfig config = LoadConfiguration(LOGGER);
+        try (UpdaterImpl updater = new UpdaterImpl()) {
+            updater.start(config);
+        }
+        LOGGER.info("One-off full update completed.");
     }
 
     private static void initWorkflowUpdateService() {
@@ -160,6 +176,7 @@ public class SchedulerMain {
     enum ScheduledService {
         HARVESTER("harvester"),
         UPDATER("updater"),
+        UPDATER_ONCE("updater-once"),
         ALL("all");
 
         private final String serviceName;

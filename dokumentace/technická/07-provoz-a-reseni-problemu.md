@@ -57,7 +57,9 @@ docker compose logs -f tomcat
 docker compose logs -f solr
 ```
 
-Protože joby používají `startNow()`, restart `harvester` nebo `updater` okamžitě spustí práci. Restart updateru není neutrální diagnostický krok.
+Harvest job používá `startNow()`, takže restart `harvester` okamžitě spustí
+sklizeň a po ní úplný updater. Restart samostatné služby `updater` pouze obnoví
+interní API pro cílené přepočty.
 
 ## Kontrola harvestu
 
