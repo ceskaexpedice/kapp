@@ -27,7 +27,7 @@ Kurátorská aplikace slouží ke kontrole a evidenci autorskoprávního stavu d
 
 Aplikace pracuje s daty z digitálních knihoven Kramerius a s autoritními záznamy. Rozhraní umožňuje proklik na původní dokument v digitální knihovně i na autoritní záznam autora.
 
-Data proudí oběma směry. Backend Kurátorské aplikace sklízí bibliografická metadata z více instancí Krameria do společného úložiště. Kurátoři je následně kontrolují a upravují v tomto webovém rozhraní. Jednotlivé instance Krameria si změny stavů a licencí načítají zpět z HTTP rozhraní Kurátorské aplikace.
+Data proudí oběma směry. Backend Kurátorské aplikace sklízí bibliografická metadata z více instancí Krameria do společného úložiště. Kurátoři je následně kontrolují a upravují v tomto webovém rozhraní. Jednotlivé instance Krameria si změny licencí načítají zpět z HTTP rozhraní Kurátorské aplikace.
 
 ## Přihlášení
 

@@ -14,11 +14,11 @@
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
     <servlet>
-        <servlet-name>StateChangesServlet</servlet-name>
-        <servlet-class>cz.nkp.kuapp.kuappweb.StateChangesServlet</servlet-class>
+        <servlet-name>LicenseChangesServlet</servlet-name>
+        <servlet-class>cz.nkp.kuapp.kuappweb.LicenseChangesServlet</servlet-class>
     </servlet>
     <servlet-mapping>
-        <servlet-name>StateChangesServlet</servlet-name>
+        <servlet-name>LicenseChangesServlet</servlet-name>
         <url-pattern>/changes</url-pattern>
     </servlet-mapping>
     <servlet>

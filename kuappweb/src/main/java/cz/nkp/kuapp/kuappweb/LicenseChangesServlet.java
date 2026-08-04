@@ -26,10 +26,10 @@ import org.json.JSONObject;
  * Public read-only endpoint returning documents whose assigned licence
  * changed in a given interval.
  */
-@WebServlet(name = "StateChangesServlet", urlPatterns = {"/changes"})
-public class StateChangesServlet extends HttpServlet {
+@WebServlet(name = "LicenseChangesServlet", urlPatterns = {"/changes"})
+public class LicenseChangesServlet extends HttpServlet {
 
-    private static final Logger LOGGER = Logger.getLogger(StateChangesServlet.class.getName());
+    private static final Logger LOGGER = Logger.getLogger(LicenseChangesServlet.class.getName());
     private static final int PAGE_SIZE = 1000;
     private static final String FIRST_CURSOR = "*";
     private static final String RETURN_FIELDS
@@ -37,11 +37,11 @@ public class StateChangesServlet extends HttpServlet {
 
     private final Clock clock;
 
-    public StateChangesServlet() {
+    public LicenseChangesServlet() {
         this(Clock.systemUTC());
     }
 
-    StateChangesServlet(Clock clock) {
+    LicenseChangesServlet(Clock clock) {
         this.clock = clock;
     }
 
@@ -52,16 +52,17 @@ public class StateChangesServlet extends HttpServlet {
 
         final Instant from;
         final Instant to;
-        final String license;
+        final String licenseFilter;
         final String source;
         try {
+            ChangesQueryParameters.validate(request.getParameterMap().keySet());
             from = parseOptionalDateTime(request.getParameter("from"), "from", null);
             to = parseOptionalDateTime(request.getParameter("to"), "to", clock.instant());
             if (from != null && to.isBefore(from)) {
                 throw new IllegalArgumentException(
                         "Parameter 'to' must be greater than or equal to parameter 'from'.");
             }
-            license = parseLicense(request.getParameter("license"));
+            licenseFilter = parseLicense(request.getParameter("licenses"));
             source = parseSource(request.getParameter("source"));
         } catch (IllegalArgumentException ex) {
             writeError(response, HttpServletResponse.SC_BAD_REQUEST,
@@ -72,7 +73,7 @@ public class StateChangesServlet extends HttpServlet {
         try (SolrClient solr = new HttpJdkSolrClient.Builder(
                 Options.getInstance().getString("solr")).build()) {
             response.getWriter().println(
-                    findLicenseChanges(solr, from, to, license, source).toString(2));
+                    findLicenseChanges(solr, from, to, licenseFilter, source).toString(2));
         } catch (Exception ex) {
             LOGGER.log(Level.SEVERE, "Unable to retrieve licence changes", ex);
             writeError(response, HttpServletResponse.SC_INTERNAL_SERVER_ERROR,
@@ -173,7 +174,7 @@ public class StateChangesServlet extends HttpServlet {
         }
         if (!value.equals("public") && !value.equals("onsite")) {
             throw new IllegalArgumentException(
-                    "Parameter 'license' must be either 'public' or 'onsite'.");
+                    "Parameter 'licenses' must be either 'public' or 'onsite'.");
         }
         return value;
     }

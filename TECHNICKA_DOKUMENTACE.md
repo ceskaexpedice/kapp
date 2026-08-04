@@ -45,22 +45,27 @@ Správa mapování knihoven na sigly je dostupná pouze roli `kappAdmin`. Uživa
 Web poskytuje veřejný read-only endpoint:
 
 ```http
-GET <web-context>/state-changes?startDate=<unix-seconds>&endDate=<unix-seconds>
+GET /api/changes?from=<utc-date-time>&to=<utc-date-time>&licenses=<license>&source=<digital-library>
 ```
 
-`<web-context>` je kontext nasazeného WAR, v Compose typicky `/kuappweb`.
+V aktuálním Compose nasazení je endpoint dostupný například jako
+`http://localhost:8088/api/changes`.
 
 ### Parametry
 
 | Parametr | Povinný | Význam |
 | --- | --- | --- |
-| `startDate` | ano | Začátek intervalu jako Unix timestamp v sekundách (UTC). |
-| `endDate` | ne | Konec intervalu jako Unix timestamp v sekundách (UTC). Při vynechání se použije aktuální čas serveru. |
+| `licenses` | ne | Jedna přiřazená licence, `public` nebo `onsite`; filtruje Solr pole `assigned_licenses`. |
+| `source` | ne | Zdrojová digitální knihovna; filtruje Solr pole `digital_library`. |
+| `from` | ne | Inkluzivní začátek intervalu jako UTC ISO 8601 date-time. Při vynechání nemá interval dolní mez. |
+| `to` | ne | Inkluzivní konec intervalu jako UTC ISO 8601 date-time. Při vynechání se použije aktuální čas serveru. |
 
 Konec nesmí být před začátkem. Obě hranice jsou inkluzivní:
 
+Jiný query parametr než `licenses`, `source`, `from` nebo `to` je odmítnut odpovědí `400`.
+
 ```text
-state_date:[<start> TO <end>]
+state_date:[<from> TO <to>]
 ```
 
 ### Odpověď
@@ -72,6 +77,7 @@ state_date:[<start> TO <end>]
     "title": "Název díla",
     "assigned_licenses": ["public"],
     "licenses": ["onsite"],
+    "source": "mzk",
     "stateDate": "2026-06-30T10:15:20Z",
     "stateUser": "kurator"
   }
@@ -80,18 +86,18 @@ state_date:[<start> TO <end>]
 
 Pole je vždy přítomné; pokud chybí ve zdrojovém dokumentu, má hodnotu `null`.
 
-Kramerius používá z odpovědi licenční údaje. `pid` slouží k identifikaci titulu; název, datum a uživatel jsou informativní a diagnostické. Filtrování podle `state_date` je záměrný mechanismus pro výpis změn licencí. Aktuální odpověď neobsahuje `state` ani `digital_library`.
+Kramerius používá z odpovědi licenční údaje. `pid` slouží k identifikaci titulu; název, datum a uživatel jsou informativní a diagnostické. Filtrování podle `state_date` je mechanismus pro výpis změn licencí. Pole `source` je odvozeno z `digital_library`; pokud je zdrojové pole vícehodnotové, API vrací první hodnotu.
 
 Chyba vstupu vrací `400`:
 
 ```json
-{"error":"startDate is required"}
+{"code":"invalid_request","message":"Parameter 'from' must be a valid UTC ISO 8601 date-time."}
 ```
 
 Chyba při čtení Solru vrací `500`:
 
 ```json
-{"error":"Unable to retrieve state changes"}
+{"code":"internal_error","message":"Unable to retrieve licence changes."}
 ```
 
 Odpovědi mají typ `application/json;charset=UTF-8` a zakázanou cache.
@@ -105,7 +111,7 @@ Servlet čte `titles` přes Solr `cursorMark`, řadí podle `pid asc` a interně
 Každá instance Krameria má vlastní checkpoint:
 
 1. Načte poslední úspěšný konec intervalu.
-2. Před dotazem zvolí nový pevný `endDate`.
+2. Před dotazem zvolí nový pevný čas `to`.
 3. Vyžádá inkluzivní interval.
 4. Vybere záznamy relevantní pro svou instanci.
 5. Idempotentně aplikuje licence podle PID.
@@ -115,12 +121,10 @@ Kvůli inkluzivním hranicím se záznam na hranici může vrátit dvakrát. Odb
 
 ## Více instancí Krameria
 
-Kurátorská aplikace má jeden společný Solr pro více Krameriů. Endpoint aktuálně serverově nefiltruje podle instance. Dokud nebude doplněn zdrojový filtr nebo `digital_library` v odpovědi, musí každý odběratel ignorovat cizí PID nebo použít jiné dohodnuté rozlišení.
+Kurátorská aplikace má jeden společný Solr pro více Krameriů. Každý odběratel může použít parametr `source`, který odpovídá hodnotě `digital_library`, a odebírat jen změny vlastní instance.
 
 ## Známá omezení API
 
 - endpoint nevyžaduje autentizaci,
-- nefiltruje podle knihovny,
 - nemá klientské stránkování,
-- význam a použití polí `licenses_<acronym>` pro jednotlivé instance Krameria ještě není uzavřený,
-- `../openapi/openapi.yaml` popisuje odlišný starší návrh `/api/changes` a musí být před publikací sjednocen s implementací.
+- význam a použití polí `licenses_<acronym>` pro jednotlivé instance Krameria ještě není uzavřený.
