@@ -11,6 +11,9 @@ Aktuální stav je v `state`, výsledek licenčního rozhodnutí v `assigned_lic
 - `NONCONTROLLED_PRIVATE` - automaticky on-site, obvykle `onsite`.
 - `TO_CONTROL` - vyžaduje kurátorskou kontrolu.
 - `FOR_REVIEW` - dříve kontrolovaný záznam vyžaduje nové posouzení.
+- `assigned_licenses` je v Solru pro stavy `FOR_REVIEW` a `TO_CONTROL` bez
+  hodnoty (Solr prázdné vícehodnotové pole neukládá); API tuto absenci vrací
+  jako prázdné pole `[]`.
 
 ### Kurátorské
 

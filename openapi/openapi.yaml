@@ -125,8 +125,9 @@ components:
           example: "Nazev dokumentu"
         assigned_licenses:
           type: array
-          nullable: true
-          description: Licence prirazene pracovnim postupem kuratorske aplikace.
+          description: >
+            Licence prirazene pracovnim postupem kuratorske aplikace. Pro stavy
+            FOR_REVIEW a TO_CONTROL je pole prazdne.
           items:
             $ref: "#/components/schemas/License"
         licenses:
