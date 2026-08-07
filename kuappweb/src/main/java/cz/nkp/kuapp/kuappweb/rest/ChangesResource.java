@@ -60,6 +60,8 @@ public class ChangesResource {
             @QueryParam("rows") String rowsParam,
             @QueryParam("cursor") String cursorParam) {
 
+        LOGGER.log(Level.INFO, String.format( "changeType %s, library %s, from %s, to %s, assignedLicense %s, rows %s", changeType, library, from, to, assignedLicenses, rowsParam));
+
         String normalizedLibrary = normalizeLibrary(library);
         ChangeType normalizedChangeType = normalizeChangeType(changeType);
         validateDate("from", from);
@@ -80,10 +82,14 @@ public class ChangesResource {
                     .setQuery("*")
                     .withFilter("digital_library:\"" + ClientUtils.escapeQueryChars(normalizedLibrary) + "\"")
                     .withFilter("state_date:*")
+                    .withFilter("NOT state:TO_CONTROL")
+                    .withFilter("NOT state:FOR_REVIEW")
                     .setLimit(rows)
                     .setSort(DEFAULT_SORT)
                     .withParam("cursorMark", cursor)
                     .returnFields(DEFAULT_FIELDS);
+
+            LOGGER.info("Request: " + request.toString() + "");
 
             request = addDateRangeFilter(request, from, to);
             request = addSimpleMonographsFilter(request);
@@ -102,6 +108,8 @@ public class ChangesResource {
                     .put("nextCursor", solrJson.optString("nextCursorMark", cursor))
                     .put("response", solrJson.getJSONObject("response"));
 
+            LOGGER.log(Level.INFO, "Changes: {0}", result.toString(2));
+
             return Response.ok(result.toString(2), MediaType.APPLICATION_JSON).build();
         } catch (WebApplicationException ex) {
             throw ex;
@@ -117,7 +125,7 @@ public class ChangesResource {
                 .setQuery("*")
                 .withFilter("digital_library:\"" + ClientUtils.escapeQueryChars(library) + "\"")
                 .withFilter("model:(monograph OR periodical)")
-                .withFilter("state:(PARENT_OPEN OR PARENT_CLOSED)")
+                .withFilter("state:(PARENT_CLOSED)")
                 .withFilter("state_date:*")
                 .setLimit(rows)
                 .setSort(DEFAULT_SORT)
