@@ -116,7 +116,7 @@ public enum States {
             return null;
         }
     },
-    FOR_REVIEW("for_review", LicensesAssignation.NONE, false) {
+    FOR_REVIEW("for_review", LicensesAssignation.ONSITE, false) {
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason){
             return null;
@@ -126,7 +126,7 @@ public enum States {
     /**
      * to control , curator decision
      */
-    TO_CONTROL("to_control", LicensesAssignation.NONE, false) {
+    TO_CONTROL("to_control", LicensesAssignation.ONSITE, false) {
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
             WorkflowConfig wConfig = config.workflow();
@@ -211,7 +211,7 @@ public enum States {
         }
     },
 
-    CONTROLLED_UNKNOWN("controlled_unknown", LicensesAssignation.NONE, false) {
+    CONTROLLED_UNKNOWN("controlled_unknown", LicensesAssignation.ONSITE, false) {
 
         @Override
         public States calculateNextState(String rootPid, SolrClient solrClient, ApplicationConfig config, WorkflowDoc currentDoc,StringWrapper reason) {
