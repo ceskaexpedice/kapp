@@ -4,7 +4,8 @@ info:
   version: "1.0.0"
   description: API pro poskytovani zmen kuratorskych dat externim aplikacim.
 servers:
-  - url: "${REST_BASE_URL}"
+  - url: /rest
+
 paths:
   /v1/status:
     get:
