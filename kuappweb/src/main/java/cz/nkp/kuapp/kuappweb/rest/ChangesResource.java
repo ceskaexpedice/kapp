@@ -82,8 +82,6 @@ public class ChangesResource {
                     .setQuery("*")
                     .withFilter("digital_library:\"" + ClientUtils.escapeQueryChars(normalizedLibrary) + "\"")
                     .withFilter("state_date:*")
-                    .withFilter("NOT state:TO_CONTROL")
-                    .withFilter("NOT state:FOR_REVIEW")
                     .setLimit(rows)
                     .setSort(DEFAULT_SORT)
                     .withParam("cursorMark", cursor)
