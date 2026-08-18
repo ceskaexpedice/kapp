@@ -14,14 +14,6 @@
         <url-pattern>/api/*</url-pattern>
     </servlet-mapping>
     <servlet>
-        <servlet-name>LicenseChangesServlet</servlet-name>
-        <servlet-class>cz.nkp.kuapp.kuappweb.LicenseChangesServlet</servlet-class>
-    </servlet>
-    <servlet-mapping>
-        <servlet-name>LicenseChangesServlet</servlet-name>
-        <url-pattern>/changes</url-pattern>
-    </servlet-mapping>
-    <servlet>
         <servlet-name>RestApiServlet</servlet-name>
         <servlet-class>org.glassfish.jersey.servlet.ServletContainer</servlet-class>
         <init-param>
