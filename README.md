@@ -11,7 +11,9 @@ Technická a provozní dokumentace je připravená jako statický web pomocí Mk
 
 - `docs/` obsahuje zdrojové Markdown stránky a statické soubory.
 - `mkdocs.yml` definuje vzhled, navigaci a adresu webu.
+- `mkdocs.local.yml` přepíná chat na lokální Documentation Chat API.
 - `requirements.txt` připíná verzi MkDocs Material.
+- `tools/` obsahuje build dokumentu pro LLM, publisher, build chatovacího UI a spouštěcí skript MkDocs.
 - `.gitlab-ci.yml` sestaví a publikuje web přes GitLab Pages.
 
 Původní složka `dokumentace/` zůstává beze změn; publikovaný web se generuje pouze z `docs/`.
@@ -23,10 +25,42 @@ V PowerShellu z kořenové složky repozitáře spusťte:
 ```powershell
 py -m venv '.venv'
 .\.venv\Scripts\python.exe -m pip install --requirement 'requirements.txt'
-.\.venv\Scripts\python.exe -m mkdocs serve
+.\tools\run_mkdocs.ps1
 ```
 
 Web bude dostupný na adrese [http://127.0.0.1:8000/nkp/nkp-kuratorska-aplikace/](http://127.0.0.1:8000/nkp/nkp-kuratorska-aplikace/).
+
+Výchozí konfigurace používá vzdálené Documentation Chat API. Pro lokální API spusťte:
+
+```powershell
+.\tools\run_mkdocs.ps1 -LocalChatApi
+```
+
+### Dokumentace pro LLM asistenta
+
+Sloučený Markdown dokument vytvoříte příkazem:
+
+```powershell
+.\.venv\Scripts\python.exe '.\tools\build_kuratorska_aplikace_doc.py'
+```
+
+Výstup vznikne v `out/kuratorska-aplikace-doc.md`. Dokument lze odeslat do Documentation Chat API příkazem:
+
+```powershell
+.\.venv\Scripts\python.exe '.\tools\publish_kuratorska_aplikace_doc.py'
+```
+
+Publisher načítá URL a API klíč z argumentů, proměnných `DOC_CHAT_API_URL` a `DOC_CHAT_API_KEY` nebo ze souboru `%USERPROFILE%\.documentation-chat-api\doc_chat_api.json`.
+
+### Chatovací UI v MkDocs
+
+Angular Web Component a jeho profilové assety sestavíte a zkopírujete do `docs/assets/` příkazem:
+
+```powershell
+.\tools\build_documentation_chat_ui.ps1
+```
+
+Skript používá Angular projekt v `C:\VA\Projects\VA\documentation-chat\documentation-chat-ui`. Vygenerovaný JavaScript i profilová loga zůstávají verzované, protože GitLab Pages job spouští pouze MkDocs.
 
 Přísnou kontrolu shodnou s GitLab CI spustíte příkazem:
 

@@ -9,7 +9,7 @@ Požadavkem je nainstalovaný Python 3. V PowerShellu spusťte z kořenové slo�
 ```powershell
 py -m venv '.venv'
 .\.venv\Scripts\python.exe -m pip install --requirement 'requirements.txt'
-.\.venv\Scripts\python.exe -m mkdocs serve
+.\tools\run_mkdocs.ps1
 ```
 
 Web bude dostupný na adrese:
@@ -19,6 +19,40 @@ http://127.0.0.1:8000/nkp/nkp-kuratorska-aplikace/
 ```
 
 Server průběžně sleduje změny v `docs/` i `mkdocs.yml`. Ukončíte ho klávesami ++ctrl+c++.
+
+Výchozí spuštění používá vzdálené Documentation Chat API. Lokální API zapnete přepínačem:
+
+```powershell
+.\tools\run_mkdocs.ps1 -LocalChatApi
+```
+
+## Aktualizace chatovacího UI
+
+Chatovací Web Component se vyvíjí v samostatném Angular projektu. Produkční bundle a profilová loga zkopírujete do MkDocs dokumentace příkazem:
+
+```powershell
+.\tools\build_documentation_chat_ui.ps1
+```
+
+Skript sestaví projekt `C:\VA\Projects\VA\documentation-chat\documentation-chat-ui` a aktualizuje soubory pod `docs/assets/documentation-chat-ui/` a `docs/assets/profiles/`. Tyto soubory patří do Git repozitáře, protože GitLab Pages job Node ani Angular nespouští.
+
+Launcher používá profil `kuratorska-aplikace`. Produkční API je nastavené v `docs/assets/documentation-chat-launcher.js`, lokální konfigurace v `docs/assets/documentation-chat-local-config.js`.
+
+## Dokumentace pro LLM asistenta
+
+Markdown stránky z `docs/` sloučíte příkazem:
+
+```powershell
+.\.venv\Scripts\python.exe '.\tools\build_kuratorska_aplikace_doc.py'
+```
+
+Výstup `out/kuratorska-aplikace-doc.md` lze publikovat do Documentation Chat API příkazem:
+
+```powershell
+.\.venv\Scripts\python.exe '.\tools\publish_kuratorska_aplikace_doc.py'
+```
+
+Publisher posílá dokument metodou `PUT` na `/api/assistants/kuratorska-aplikace/documents/kuratorska-aplikace` a vyžaduje API klíč.
 
 ## Kontrola produkčního sestavení
 

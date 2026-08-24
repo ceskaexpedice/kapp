@@ -9,5 +9,6 @@ services/scheduler/docker-compose.override.yml
 .cache/
 site/
 public/
+/out/
 __pycache__/
 *.py[cod]

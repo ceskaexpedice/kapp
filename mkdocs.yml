@@ -64,6 +64,9 @@ nav:
 extra_css:
   - stylesheets/extra.css
 
+extra_javascript:
+  - assets/documentation-chat-launcher.js
+
 extra:
   generator: false
   social:
