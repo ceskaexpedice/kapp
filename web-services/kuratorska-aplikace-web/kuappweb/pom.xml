@@ -115,7 +115,7 @@
                     </from>
 
                     <to>
-                        <image>registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb</image>
+                        <image>registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kuappweb</image>
                         <tags>
                             <tag>latest</tag>
                             <tag>${project.version}</tag>
