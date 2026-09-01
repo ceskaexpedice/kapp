@@ -8,8 +8,6 @@ import org.junit.jupiter.api.Test;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.time.Year;
 import java.util.List;
 
@@ -18,7 +16,8 @@ public class ConfigurationTest {
     @Test
     public void testLoad() throws IOException {
         ApplicationConfig config;
-        try (InputStream resourceAsStream = Files.newInputStream(findDeployAppConfig())) {
+        try (InputStream resourceAsStream = getClass().getResourceAsStream("app.conf")) {
+            Assertions.assertNotNull(resourceAsStream, "Missing test configuration resource");
             config = ApplicationConfig.loadFromStream(resourceAsStream);
         }
         //TouchStoreConfig touchStoreConfig = config.touchStoreConfig();
@@ -52,21 +51,5 @@ public class ConfigurationTest {
         expectation = Year.now().minusYears(70).getValue();
         Assertions.assertEquals(expectation, calculateAuthorDeadYear);
 
-    }
-
-    private Path findDeployAppConfig() {
-        Path path = Path.of("").toAbsolutePath();
-        while (path != null) {
-            Path candidate = path.resolve("nkp-deploy").resolve(".kapp").resolve("app.conf");
-            if (Files.isRegularFile(candidate)) {
-                return candidate;
-            }
-            candidate = path.resolveSibling("nkp-deploy").resolve(".kapp").resolve("app.conf");
-            if (Files.isRegularFile(candidate)) {
-                return candidate;
-            }
-            path = path.getParent();
-        }
-        throw new AssertionError("Could not find nkp-deploy/.kapp/app.conf");
     }
 }
