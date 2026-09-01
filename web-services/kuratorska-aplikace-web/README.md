@@ -1,12 +1,22 @@
 # Kurátorská aplikace web
 
-Webová a HTTP API část Kurátorské aplikace. Modul je vyvíjený v samostatném repozitáři a připojený jako Git submodule backendového repozitáře, ale provozně jde o jednu aplikaci.
+Webová a HTTP API část Kurátorské aplikace. Modul je součástí společného repozitáře v `web-services/kuratorska-aplikace-web` a provozně se nasazuje se zbytkem aplikace.
 
 ## Dokumentace
 
-- [Uživatelská dokumentace](./UZIVATELSKA_DOKUMENTACE.md)
-- [Technická dokumentace webu a API](./TECHNICKA_DOKUMENTACE.md)
-- [Backendová technická dokumentace](../dokumentace/technická/00-prehled.md)
+- [Uživatelská příručka](../../docs/guides/webova-aplikace.md)
+- [Technická dokumentace webu a API](../../docs/architecture/web-a-api.md)
+- [Architektura celé aplikace](../../docs/architecture/index.md)
+
+## Sestavení
+
+Z adresáře `kuappweb` spusťte:
+
+```shell
+mvn clean verify
+```
+
+Web má vlastní GitLab child pipeline a není součástí kořenového backendového Maven reactoru.
 
 ## Nasazení
 

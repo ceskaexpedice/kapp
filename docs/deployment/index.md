@@ -90,4 +90,4 @@ Pokud má být web veřejný a repozitář zůstane privátní, nastavte v **Set
 3. Doplňte odkaz z příslušného rozcestníku.
 4. Spusťte lokální server a přísný build.
 
-Původní složka `dokumentace/` zůstává nedotčená. Publikovaný web se sestavuje výhradně z nové složky `docs/`.
+Veškerá udržovaná technická i uživatelská dokumentace je soustředěná v `docs/` a publikuje se společně tímto GitLab Pages buildem.

@@ -1,7 +1,7 @@
 # Otevřená backendová integrační rozhodnutí
 
 Detaily současného HTTP endpointu a jeho webová omezení jsou vedené pouze v
-[technické dokumentaci webového modulu](https://gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/-/blob/main/web-services/kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
+[technické dokumentaci webové a API vrstvy](../architecture/web-a-api.md).
 
 ## Rozlišení zdrojů
 

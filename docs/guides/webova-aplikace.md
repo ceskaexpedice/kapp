@@ -1,25 +1,6 @@
-# Kurátorská aplikace web - uživatelská dokumentace
+# Uživatelská příručka webové aplikace
 
 Tento dokument popisuje běžnou práci ve webovém rozhraní Kurátorské aplikace: vyhledávání děl a autorů, kurátorské úpravy, dávky, evidenci smluv a administrační nastavení. Dokumentace je psaná pro koncové uživatele aplikace, nikoli pro správce infrastruktury.
-
-## Snímky obrazovky
-
-Tato verze obsahuje několik screenshotů pořízených z testovací aplikace `http://kapp-test.nkp.cz/`. Obrazovky vyžadující přihlášení nebo konkrétní kurátorskou akci jsou ponechané jako místa k doplnění.
-
-Použité a navržené názvy souborů:
-
-- `docs/img/01-rozcestnik.png` - úvodní obrazovka aplikace
-- `docs/img/02-menu-a-jazyk.png` - horní menu, uživatelské menu a přepínání jazyka
-- `docs/img/03-vyhledavani-dila-tabulka.png` - výsledky hledání děl v tabulkovém zobrazení včetně levého panelu facetů
-- `docs/img/05-vyber-sloupcu.png` - dialog Výběr sloupců
-- `docs/img/06-detail-dila.png` - rozbalený detail díla nebo kartové zobrazení
-- `docs/img/07-zmena-stavu.png` - dialog Nastavit stav
-- `docs/img/08-autor-v-dile.png` - dialog autora připojeného k dílu
-- `docs/img/09-autori.png` - seznam autorů
-- `docs/img/10-davky.png` - stránka Dávek
-- `docs/img/11-smlouvy.png` - Evidence smluv
-- `docs/img/12-detail-smlouvy.png` - detail smlouvy s PDF a přiřazenými díly; zatím k doplnění, protože testovací evidence smluv byla prázdná
-- `docs/img/13-administrace.png` - administrace štítků, licencí a digitálních knihoven
 
 ## Účel aplikace
 
@@ -43,7 +24,7 @@ Horní menu obsahuje odkazy na hlavní části aplikace:
 
 Nepřihlášený uživatel může procházet veřejně dostupné seznamy děl a autorů. Kurátorské akce, jako je editace autora, změna stavu, práce s dávkami nebo smlouvami, vyžadují přihlášení.
 
-![Horní menu po přihlášení a přepínač jazyka](docs/img/02-menu-a-jazyk.png)
+![Horní menu po přihlášení a přepínač jazyka](../assets/img/web/02-menu-a-jazyk.png)
 
 ## Oprávnění
 
@@ -68,7 +49,7 @@ Aktuální role a povolené sigly uživatel najde v uživatelském menu v část
 
 Vyhledávací pole na kartách spustí hledání po stisknutí klávesy Enter nebo kliknutím na ikonu lupy. Tlačítko **Zobrazit** otevře příslušnou agendu bez zadaného dotazu.
 
-![Rozcestník aplikace](docs/img/01-rozcestnik.png)
+![Rozcestník aplikace](../assets/img/web/01-rozcestnik.png)
 
 ## Vyhledávání
 
@@ -103,7 +84,7 @@ U autorů jsou navíc dostupné rychlé filtry pro autory bez identifikátoru a 
 
 Aktivní filtry jsou zobrazeny v části **Vybrané filtry**. Kliknutím na položku s ikonou křížku se filtr odebere. U roku vydání a dat změny se zadává rozsah od-do.
 
-![Facety ve výsledcích děl](docs/img/03-vyhledavani-dila-tabulka.png)
+![Facety ve výsledcích děl](../assets/img/web/03-vyhledavani-dila-tabulka.png)
 
 ### Tabulkové zobrazení
 
@@ -119,7 +100,7 @@ Ve výsledcích děl je výchozí tabulkové zobrazení. Tabulka podporuje:
 
 Přihlášenému uživateli se v tabulce zobrazují navíc akce pro práci s dávkami a smlouvami. U nepřihlášeného uživatele zůstává rozhraní primárně pro prohlížení.
 
-![Výsledky hledání děl v tabulce](docs/img/03-vyhledavani-dila-tabulka.png)
+![Výsledky hledání děl v tabulce](../assets/img/web/03-vyhledavani-dila-tabulka.png)
 
 ### Výběr sloupců
 
@@ -133,7 +114,7 @@ V dialogu lze:
 
 Nastavení sloupců a jejich šířek se ukládá lokálně v prohlížeči.
 
-![Dialog Výběr sloupců](docs/img/05-vyber-sloupcu.png)
+![Dialog Výběr sloupců](../assets/img/web/05-vyber-sloupcu.png)
 
 ### Kartové zobrazení
 
@@ -155,7 +136,7 @@ Karta díla obsahuje zejména:
 - rok uvolnění,
 - u hierarchických dokumentů seznam částí.
 
-![Rozbalený detail díla](docs/img/06-detail-dila.png)
+![Rozbalený detail díla](../assets/img/web/06-detail-dila.png)
 
 ## Práce s dílem
 
@@ -195,7 +176,7 @@ U autora v díle lze:
 
 Pokud má autor `nameIdentifier`, aplikace zobrazuje odkazy na externí autoritní zdroje.
 
-![Dialog autora v díle](docs/img/08-autor-v-dile.png)
+![Dialog autora v díle](../assets/img/web/08-autor-v-dile.png)
 
 ### Poslední autor
 
@@ -224,7 +205,7 @@ Dialog **Nastavit stav** zobrazuje:
 
 Při uložení je vhodné vyplnit důvod změny tak, aby bylo z historie zřejmé, proč bylo rozhodnutí provedeno.
 
-![Dialog Nastavit stav](docs/img/07-zmena-stavu.png)
+![Dialog Nastavit stav](../assets/img/web/07-zmena-stavu.png)
 
 ### Ruční kurátorské stavy
 
@@ -256,7 +237,7 @@ Přihlášený uživatel může autora upravit, uložit, označit štítkem a po
 
 Tlačítko **Zobrazit díla** otevře seznam děl filtrovaný podle daného autora.
 
-![Seznam autorů](docs/img/09-autori.png)
+![Seznam autorů](../assets/img/web/09-autori.png)
 
 ## Dávky
 
@@ -289,7 +270,7 @@ Tlačítko **Nastavit stav** otevře dialog pro hromadnou změnu stavu celé dá
 
 Před uložením hromadné změny je vhodné zkontrolovat, že dávka obsahuje pouze záznamy, na které se má rozhodnutí vztahovat.
 
-![Stránka Dávek](docs/img/10-davky.png)
+![Stránka Dávek](../assets/img/web/10-davky.png)
 
 ## Evidence smluv
 
@@ -305,7 +286,7 @@ Stránka **Evidence smluv** obsahuje:
 
 Pokud už soubor se stejným názvem existuje, aplikace zobrazí upozornění a nabídne přepsání.
 
-![Evidence smluv](docs/img/11-smlouvy.png)
+![Evidence smluv](../assets/img/web/11-smlouvy.png)
 
 ### Detail smlouvy
 
@@ -334,8 +315,6 @@ Pravá část obsahuje záložky:
 - **Díla** - seznam děl přiřazených ke smlouvě a nástroje pro jejich vyhledání.
 
 Tlačítko **Analyzovat** znovu spustí analýzu smlouvy. Tlačítko **Uložit** uloží metadata smlouvy.
-
-> Screenshot k doplnění: `docs/img/12-detail-smlouvy.png` - detail smlouvy se záložkami Souhrn, PDF a Díla. V testovací aplikaci při pořizování dokumentace nebyl dostupný žádný záznam smlouvy.
 
 ### Přiřazení děl ke smlouvě
 
@@ -373,7 +352,7 @@ V části **Administrace licencí** lze přidávat další licence používané 
 
 V části **Administrace digitálních knihoven** se spravuje seznam digitálních knihoven, které lze přiřazovat například ke smlouvám.
 
-![Administrace štítků, licencí a digitálních knihoven](docs/img/13-administrace.png)
+![Administrace štítků, licencí a digitálních knihoven](../assets/img/web/13-administrace.png)
 
 ## Doporučený postup
 
@@ -402,9 +381,3 @@ Pokud akce selže, zkontrolujte zejména:
 - zda je vyplněné povinné pole,
 - zda není záznam už přiřazen nebo už existuje,
 - zda je backend aplikace dostupný.
-
-## Doplnění screenshotů
-
-Při doplňování obrázků je vhodné použít testovací data, která neobsahují citlivé informace. U obrazovek se smlouvami doporučujeme použít testovací PDF nebo smlouvu určenou pro dokumentační ukázky.
-
-Každý screenshot by měl ukazovat právě tu část UI, která je popisovaná v okolním textu. Není nutné vkládat obrázek ke každému tlačítku; největší hodnotu mají obrázky hlavní navigace, výsledků, detailu díla, dialogu změny stavu, dávek a detailu smlouvy.

@@ -1,6 +1,6 @@
-# Webová a API vrstva - technická dokumentace
+# Webová a API vrstva
 
-Tento dokument popisuje technické části vlastněné submodulem `kuratorska-aplikace-web`: servletovou vrstvu, Angular UI, autentizaci a HTTP rozhraní pro Kramerius. Harvester, workflow, updater a backendová konfigurace jsou popsány v `../dokumentace/technická`.
+Tato stránka popisuje technické části v `web-services/kuratorska-aplikace-web`: servletovou vrstvu, Angular UI, autentizaci a HTTP rozhraní pro Kramerius. Harvester, workflow, updater a ostatní backendové části popisuje [hlavní architektura](index.md).
 
 ## Postavení v systému
 
@@ -13,6 +13,17 @@ Web pracuje zejména s cores:
 - `aut`,
 - `contracts`,
 - `configuration`.
+
+## Sestavení a CI
+
+Webová aplikace vyžaduje Javu 21, Maven a Node.js 20. Sestavuje se nezávisle na kořenovém backendovém Maven reactoru:
+
+```powershell
+cd web-services/kuratorska-aplikace-web/kuappweb
+mvn clean verify
+```
+
+Změny pod `web-services/kuratorska-aplikace-web` spouštějí samostatný GitLab child pipeline. Ten ověří webový Maven build a nabízí ruční publikování image `registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb`. Backendový pipeline webovou aplikaci nesestavuje.
 
 ## Konfigurace
 

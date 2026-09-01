@@ -19,7 +19,7 @@ Harvester tedy data z Krameria čte. Po automatickém nebo ručním rozhodnutí 
 
 ## Části systému
 
-- `web-services/kuratorska-aplikace-web` je webové UI a servletová API vrstva. Její uživatelská a technická dokumentace je uložena přímo u webového modulu.
+- `web-services/kuratorska-aplikace-web` je webové UI a servletová API vrstva. Podrobnosti jsou v [technické dokumentaci webové a API vrstvy](web-a-api.md) a v [uživatelské příručce](../guides/webova-aplikace.md).
 - `services/harvester` sklízí metadata z API Krameria v5/v7, načítá MODS, počítá počáteční workflow a zapisuje tituly a autory.
 - `services/updater` znovu vyhodnocuje workflow, dopočítává rok uvolnění, označuje chybějící data a aplikuje licence ze smluv.
 - `services/scheduler` spouští harvester nebo updater jako dlouho běžící Quartz službu.
@@ -62,5 +62,5 @@ PDF smluv a provozní konfigurace jsou ve volume `.kapp`.
 - [Solr data](../reference/solr-data.md) - Solr cores a důležitá pole.
 - [Provoz a řešení problémů](../operations/reseni-problemu.md) - deployment a diagnostika.
 - [Otevřená integrační rozhodnutí](../reference/otevrene-otazky.md) - rozhodnutí, která musí být dohodnuta.
-- [Webová uživatelská dokumentace](https://gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/-/blob/main/web-services/kuratorska-aplikace-web/UZIVATELSKA_DOKUMENTACE.md) - práce ve webovém UI.
-- [Webová technická dokumentace](https://gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/-/blob/main/web-services/kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md) - servletová vrstva, oprávnění a pull API pro Kramerius.
+- [Uživatelská příručka webové aplikace](../guides/webova-aplikace.md) - práce ve webovém UI.
+- [Webová a API vrstva](web-a-api.md) - servletová vrstva, oprávnění a pull API pro Kramerius.

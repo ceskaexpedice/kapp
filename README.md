@@ -26,7 +26,7 @@ Technická a provozní dokumentace je připravená jako statický web pomocí Mk
 - `tools/` obsahuje build dokumentu pro LLM, publisher, build chatovacího UI a spouštěcí skript MkDocs.
 - `.gitlab-ci.yml` sestaví a publikuje web přes GitLab Pages.
 
-Složka `dokumentace/` obsahuje paralelně udržovanou technickou dokumentaci; publikovaný web se generuje pouze z `docs/`.
+Složka `docs/` je jediným zdrojem udržované technické i uživatelské dokumentace a publikuje se jako jeden web.
 
 ### Lokální spuštění ve Windows 11
 

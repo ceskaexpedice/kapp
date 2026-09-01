@@ -44,10 +44,13 @@ theme:
 
 nav:
   - Úvod: index.md
-  - Architektura: architecture/index.md
+  - Architektura:
+      - Přehled: architecture/index.md
+      - Webová a API vrstva: architecture/web-a-api.md
   - Konfigurace: configuration/index.md
   - Návody:
       - Přehled: guides/index.md
+      - Webová aplikace: guides/webova-aplikace.md
       - Import z Krameria: guides/import-z-krameria.md
       - Kurátorské stavy: guides/kuratorske-stavy.md
       - Tabulkové importy: guides/import-tsv.md

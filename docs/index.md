@@ -28,7 +28,7 @@ Dokumentace je určená především kurátorům, administrátorům a vývojář
 
     ---
 
-    Sklizeň z Krameria, kurátorské workflow a řízené tabulkové importy.
+    Práce ve webové aplikaci, sklizeň z Krameria, kurátorské workflow a řízené tabulkové importy.
 
     [:octicons-arrow-right-24: Zobrazit návody](guides/index.md)
 
