@@ -78,7 +78,7 @@ class WorkflowDocTest {
     }
 
     @Test
-    void specialAuthorshipReleaseYearHasPriorityOverOfficialAndAuthorDeath() {
+    void officialReleaseYearHasPriorityOverSpecialAuthorshipAndAuthorDeath() {
         WorkflowConfig config = workflowConfig();
         SolrInputDocumentWrapper wrapper = new SolrInputDocumentWrapper(
                 AppDataFields.PID_FIELD,
@@ -99,13 +99,13 @@ class WorkflowDocTest {
                 true
         ).mapToSolrDocument(wrapper, "test", config);
 
-        Assertions.assertEquals(issuedYear + config.getOnsiteYear(), atomicSetValue(wrapper, AppComputedFields.RELEASE_YEAR));
+        Assertions.assertEquals(issuedYear, atomicSetValue(wrapper, AppComputedFields.RELEASE_YEAR));
     }
 
     @Test
-    void toControlSpecialAuthorshipUsesOnsiteReleaseYearWithoutAuthorDeath() {
+    void toControlSpecialAuthorshipUsesAuthorDeadEnoughReleaseYearWithoutAuthorDeath() {
         ApplicationConfig config = applicationConfig();
-        int issuedYear = Year.now().getValue() - config.workflow().getOnsiteYear() - 1;
+        int issuedYear = Year.now().getValue() - config.workflow().getAuthorDeadEnoughYear() - 1;
         WorkflowDoc doc = new WorkflowDoc(
                 issuedYear,
                 null,
@@ -125,9 +125,9 @@ class WorkflowDocTest {
     }
 
     @Test
-    void specialAuthorshipBeatsOfficialityWhenReleaseYearIsStillInFuture() {
+    void officialityBeatsSpecialAuthorshipWhenSpecialReleaseYearIsStillInFuture() {
         ApplicationConfig config = applicationConfig();
-        int issuedYear = Year.now().getValue() - config.workflow().getOnsiteYear() + 1;
+        int issuedYear = Year.now().getValue() - config.workflow().getAuthorDeadEnoughYear() + 1;
         WorkflowDoc doc = new WorkflowDoc(
                 issuedYear,
                 1900,
@@ -143,7 +143,7 @@ class WorkflowDocTest {
 
         States newState = States.TO_CONTROL.calculateNextState("uuid:test", null, config, doc, new StringWrapper("test"));
 
-        Assertions.assertEquals(States.NONCONTROLLED_PRIVATE, newState);
+        Assertions.assertEquals(States.NONCONTROLLED_PUBLIC, newState);
     }
 
     @Test
