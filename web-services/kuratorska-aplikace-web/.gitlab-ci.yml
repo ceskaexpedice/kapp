@@ -32,7 +32,7 @@ web_image_publish:
   extends: .web_job
   stage: publish
   script:
-    - echo "Target - registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb"
+    - echo "Target - registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kuappweb"
     - cd "$WEB_APP_DIR"
     - mvn --batch-mode --no-transfer-progress clean install -s "$CI_PROJECT_DIR/settings.xml" -DskipTests
     - mvn --batch-mode --no-transfer-progress jib:build -DskipTests "-Djib.to.auth.username=gitlab-ci-token" "-Djib.to.auth.password=$CI_JOB_TOKEN"
