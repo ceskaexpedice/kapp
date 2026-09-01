@@ -1,0 +1,312 @@
+@if(loading()){<mat-progress-bar mode="indeterminate"></mat-progress-bar>}
+<div class="app-container-fluid app-h-100">
+  <div class="app-fxLayout app-row app-fill app-gap-4">
+    @if(solrResponse?.facets) {
+    <div class="app-left app-facets-wrapper">
+      <app-facets [fields]="[
+          'date_issued_year',
+          'labels', 
+          'state',
+          'modified_by_user',
+          'batch',
+          'contracts',
+          'assigned_licenses', 
+          'licenses', 
+          'digital_library',
+          'model',
+          'physical_locations',
+          'authors'
+          ]" [facets]="solrResponse.facets" [hard_facets]="view() === 'titles' ? [] : ['no_nameIdentifier', 'no_year_death']"></app-facets>
+    </div>
+    }
+    <div class="app-fxFlex app-right app-oh app-mt-n2">
+      <div class="app-fxLayout app-row app-gap-4 app-toolbar">
+        <div class="app-fxFlex">
+          <mat-form-field appearance="outline" class="app-view-search">
+            <mat-label>{{ 'action.search' | translate }}</mat-label>
+            <input [(ngModel)]="state.q" matInput placeholder="{{ 'field.query' | translate }}" (keyup.enter)="doSearch()">
+            @if (state.q) {
+            <button matIconButton matSuffix (click)="clearQ()" class="app-color-error"><mat-icon>close</mat-icon></button>
+            }
+            <button matIconButton matSuffix (click)="doSearch()"><mat-icon>search</mat-icon></button>
+          </mat-form-field>
+        </div>
+        <div class="app-fxLayout app-row app-start-v">
+          @if (view() === 'titles') {
+          <button matButton="outlined" matSuffix (click)="export()" class="app-mr-2"><mat-icon>file_download</mat-icon>{{ 'action.export' | translate }}</button>
+          <mat-button-toggle-group name="viewType" aria-label="viewType" [(ngModel)]="viewType">
+            <mat-button-toggle value="table_view"><mat-icon>table_view</mat-icon> {{'action.table_view' | translate}}</mat-button-toggle>
+            <mat-button-toggle value="card_view">{{'action.card_view' | translate}} <mat-icon>credit_card</mat-icon></mat-button-toggle>
+          </mat-button-toggle-group>
+          }
+        </div>
+      </div>
+      <div class="app-fxLayout app-row app-center-v app-gap-4">
+        <div class="app-fxFlex">
+          <h4>{{ 'num_found' | translate}}: {{ numFound }}</h4>
+        </div>
+        <div>
+          <mat-paginator #paginator class="demo-paginator" (page)="handlePageEvent($event)" [length]="numFound"
+            [pageSize]="rows" [showFirstLastButtons]="false" [pageSizeOptions]="pageSizeOptions" [pageIndex]="pageIndex"
+            aria-label="Select page"></mat-paginator>
+        </div>
+      </div>
+      <div>
+        @if (viewType() === 'table_view' && view() === 'titles') {
+        <div class="app-table-wrapper app-oa-y">
+          <table mat-table [dataSource]="docs()" class="app-hover app-resize" matSort
+            [matSortDisableClear]="true" [matSortActive]="sort.active" [matSortDirection]="sort.direction"
+            (matSortChange)="sortTable($event)" multiTemplateDataRows>
+
+            <ng-container matColumnDef="selection" [stickyEnd]="true" >
+              <th mat-header-cell *matHeaderCellDef [style.width]="'30px'">
+                <div class="app-fxLayout app-row app-gap-1 app-ml-1 app-center-h">
+                    <mat-checkbox color="primary" (click)="selectAll($event)"></mat-checkbox>
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let doc">
+                <div class="app-fxLayout app-row app-gap-1 app-ml-1 app-center-h">
+                    <mat-checkbox color="primary" [(ngModel)]="doc.selected"
+                                  [disabled]="!state.canEditTitle(doc)"></mat-checkbox>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="pid">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'pid')" [style.width]="columnSizes['pid'] + 'px'">
+                <div class="app-fxLayout app-row app-center-v app-gap-1 app-ml-1">
+                  <button (click)="setColumns()" mat-icon-button [matTooltip]="'editor.children.select_columns' | translate" color="primary" class="app-ml-n1">
+                    <mat-icon class="material-icons-outlined">view_column</mat-icon>
+                  </button>
+                  <span mat-sort-header>PID</span>
+                </div>
+              </th>
+              <td mat-cell *matCellDef="let doc">
+                <div class="app-fxLayout app-row app-center-v app-gap-1">
+                  <button mat-icon-button class="app-icon-size-16" (click)="ui.copyTextToClipboard(doc['pid'])" [matTooltip]="'copy_text_to_clipboard' | translate">
+                    <mat-icon>content_copy</mat-icon>
+                  </button>
+                  <span> {{doc['pid']}}</span>
+                </div>
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="title">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'title')" [style.width]="columnSizes['title'] + 'px'"><span mat-sort-header>{{ 'field.title' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.title }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="model">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'model')" [style.width]="columnSizes['model'] + 'px'"><span mat-sort-header>{{ 'field.model' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.model }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="id_isbn">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_isbn')" [style.width]="columnSizes['id_isbn'] + 'px'"><span mat-sort-header>{{ 'field.id_isbn' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_isbn }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="id_ccnb">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_ccnb')" [style.width]="columnSizes['id_ccnb'] + 'px'"><span mat-sort-header>{{ 'field.id_ccnb' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_ccnb }}
+              </td>
+            </ng-container>
+            
+
+            <ng-container matColumnDef="id_issn">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_issn')" [style.width]="columnSizes['id_issn'] + 'px'"><span mat-sort-header>{{ 'field.id_issn' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_issn }}
+              </td>
+            </ng-container>
+            
+
+            <ng-container matColumnDef="id_sysno">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_sysno')" [style.width]="columnSizes['id_sysno'] + 'px'"><span mat-sort-header>{{ 'field.id_sysno' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_sysno }}
+              </td>
+            </ng-container>
+            
+            <ng-container matColumnDef="id_urnnbn">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_urnnbn')" [style.width]="columnSizes['id_urnnbn'] + 'px'"><span mat-sort-header>{{ 'field.id_urnnbn' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_urnnbn }}
+              </td>
+            </ng-container>
+            
+
+            <ng-container matColumnDef="id_barCode">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'id_barCode')" [style.width]="columnSizes['id_barCode'] + 'px'"><span mat-sort-header>{{ 'field.id_barCode' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                {{ doc.id_barCode }}
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="state">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'state')" [style.width]="columnSizes['state'] + 'px'"><span mat-sort-header>{{ 'field.state' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                <div class="app-badge app-text-cutter-wrapper" [class.app-cursor-pointer]="!doc.is_hierarchical && state.canEditTitle(doc)"  [ngClass]="'app-' + doc.state | lowercase" [matTooltip]="doc.is_hierarchical || !state.canEditTitle(doc) ? '' : 'action.set_state' | translate">
+                  <div class="app-text-cutter" (click)="setState(doc)"><!-- [matTooltip]="'action.set_state' | translate" -->
+                    {{ 'state.' + doc.state | translate }}
+                  </div>  
+                </div> 
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="authors">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'authors')" [style.width]="columnSizes['authors'] + 'px'"><span mat-sort-header>{{ 'field.authors' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">
+                @for(a of mergedAuthors(doc); track $index) {
+                  <span>{{ a.full }} {{ a.date }} ({{ a.role }}) </span><!-- <mat-icon>info</mat-icon> -->
+                }  
+              </td>
+            </ng-container>
+
+            <ng-container matColumnDef="date_issued_year">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'date_issued_year')" [style.width]="columnSizes['date_issued_year'] + 'px'"><span mat-sort-header>{{ 'field.date_issued' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{  doc['date_issued_year_kapp'] ? doc['date_issued_year_kapp'] : doc['date_issued_str'] }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="sigla">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'sigla')" [style.width]="columnSizes['sigla'] + 'px'"><span mat-sort-header>{{ 'field.sigla' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc['physical_locations'] }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="archiver_location">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'archiver_location')" [style.width]="columnSizes['archiver_location'] + 'px'"><span mat-sort-header>{{ 'field.archiver_location' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc['archiver_location'] }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="digital_library">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'digital_library')" [style.width]="columnSizes['digital_library'] + 'px'"><span mat-sort-header>{{ 'field.digital_library' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc['digital_library'] }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="licenses">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'licenses')" [style.width]="columnSizes['licenses'] + 'px'"><span mat-sort-header>{{ 'field.licenses' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc['licenses'] }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="assigned_licenses">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'assigned_licenses')" [style.width]="columnSizes['assigned_licenses'] + 'px'"><span mat-sort-header>{{ 'field.assigned_licenses' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc['assigned_licenses'] }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="indextime">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'indextime')" [style.width]="columnSizes['indextime'] + 'px'"><span mat-sort-header>{{ 'field.indextime' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc.indextime | date : 'dd.MM.yyyy HH:mm:SS' }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="last_year_death">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'last_year_death')" [style.width]="columnSizes['last_year_death'] + 'px'"><span mat-sort-header>{{ 'field.last_year_death' | translate }}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc.last_year_death }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="release_year">
+              <th mat-header-cell *matHeaderCellDef [resizeColumn]="true" (columnResized)="saveColumnsSizes($event,'release_year')" [style.width]="columnSizes['release_year'] + 'px'"><span mat-sort-header>{{ 'field.release_year' | translate}}</span></th>
+              <td mat-cell *matCellDef="let doc">{{ doc.release_year | releaseYearDisplay }}</td>
+            </ng-container>
+
+            <ng-container matColumnDef="action" [stickyEnd]="true" >
+              <th mat-header-cell *matHeaderCellDef [style.width]="canEditAnyTitle() ? '80px' : '30px'" style="padding: 0;">
+                @if(canEditAnyTitle()) {
+                <div class="app-fxLayout app-row app-gap-1  app-actions">
+                  <button mat-icon-button [matMenuTriggerFor]="allBatchesMenu" [matTooltip]="('action.add_docs_to_bacth' | translate) + ' ('+numSelected()+')'">
+                    <mat-icon>playlist_add</mat-icon>
+                  </button>
+                  <mat-menu #allBatchesMenu="matMenu">
+                    @for(a of state.batches(); track $index) {
+                      <button mat-menu-item (click)="addSelectionToBatch(a)" class="app-text-cutter-wrapper" [matTooltip]="a.name">
+                        {{ a.name }}
+                      </button>
+                    }
+                  </mat-menu>
+
+                  <button mat-icon-button [matMenuTriggerFor]="allContractsMenu" [matTooltip]="('action.add_docs_to_contract' | translate) + ' ('+numSelected()+')'">
+                    <mat-icon>history_edu</mat-icon>
+                  </button>
+                  <mat-menu #allContractsMenu="matMenu">
+                    @for(a of contracts(); track $index) {
+                      <button mat-menu-item (click)="addSelectionToContract(a)" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
+                        {{ a.title }}
+                      </button>
+                    }
+                  </mat-menu>
+                </div>
+                }
+              </th>
+              <td mat-cell *matCellDef="let doc">
+                <div class="app-fxLayout app-row app-gap-1 app-center-h app-actions">
+                @if (state.canEditTitle(doc)) {
+                  <button mat-icon-button [matMenuTriggerFor]="batchesMenu" [matTooltip]="'action.add_doc_to_bacth' | translate">
+                    <mat-icon>playlist_add</mat-icon>
+                  </button>
+                <mat-menu #batchesMenu="matMenu">
+                  @for(a of state.batches(); track $index) {
+                    <button mat-menu-item (click)="addToBatch(a, doc)" class="app-text-cutter-wrapper" [matTooltip]="a.name">
+                      @if (inBatch(a.name, doc)) { <mat-icon>check_box</mat-icon> }
+                      {{ a.name }}
+                    </button>
+                  }
+                </mat-menu>
+                  <button mat-icon-button [matMenuTriggerFor]="contractsMenu" [matTooltip]="'action.add_doc_to_contract' | translate">
+                    <mat-icon>history_edu</mat-icon>
+                  </button>
+                <mat-menu #contractsMenu="matMenu">
+                  @for(a of contracts(); track $index) {
+                    <button mat-menu-item (click)="addToContract(a, [doc])" class="app-text-cutter-wrapper" [matTooltip]=" a.filename">
+                      @if (inContract(a.filename, doc)) { <mat-icon>check_box</mat-icon> }
+                      {{ a.title }}
+                    </button>
+                  }
+                </mat-menu>
+              }
+                  <button matIconButton aria-label="expand row" (click)="toggle(doc); $event.stopPropagation()" class="app-btn-toggle" [class.app-btn-toggle-expanded]="isExpanded(doc)" >
+                    <mat-icon>keyboard_arrow_down</mat-icon>
+                  </button>
+                </div>
+              </td>
+            </ng-container>
+
+            <!-- Expanded Content Column -->
+            <ng-container matColumnDef="expandedDetail">
+              <td mat-cell *matCellDef="let element" [attr.colspan]="displayedColumns().length" class="app-col-detail">
+                <div class="app-element-detail-wrapper" [class.app-element-detail-wrapper-expanded]="isExpanded(element)">
+                  <div class="app-element-detail">
+                    <app-result-item [doc]="element" [expanded]="expanded(element['root_pid'])"></app-result-item>
+                  </div>
+                </div>
+              </td>
+            </ng-container>
+
+            <tr mat-header-row *matHeaderRowDef="displayedColumns(); sticky: true" [matContextMenuTriggerFor]="contextMenu"></tr>
+            <tr mat-row *matRowDef="let row; columns: columnsToDisplayWithExpand();" class="app-element-row" [class.app-expanded-row]="isExpanded(row)"></tr><!--(click)="viewDoc(row)" class="app-cursor-pointer"--><!--(click)="toggle(row)"-->
+            <tr mat-row *matRowDef="let row; columns: ['expandedDetail']" class="app-detail-row"></tr>
+          </table>
+          <mat-menu #contextMenu>
+            <button mat-menu-item (click)="setColumns()"><mat-icon>more_vert</mat-icon>{{ 'titleColumns_dialog' | translate }}</button>
+          </mat-menu>
+        </div>
+        } @else {
+          @if (view() === 'titles') {
+            @for(doc of docs(); track $index){
+            <app-result-item [doc]="doc" [expanded]="expanded(doc['root_pid'])"></app-result-item>
+            }
+          } @else {
+            @for(doc of docs(); track $index){
+              <app-author-item [inputAuthor]="doc" (authorChanged)="authorChanged()" ></app-author-item>
+            }
+          }
+        }
+      </div>
+    </div>
+  </div>
+</div>

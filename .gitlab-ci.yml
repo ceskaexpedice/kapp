@@ -3,7 +3,6 @@ stages:
   - publish
 
 variables:
-  #GIT_SUBMODULE_STRATEGY: recursive
   GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle
   PIP_CACHE_DIR: $CI_PROJECT_DIR/.cache/pip
 

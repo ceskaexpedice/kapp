@@ -1,6 +1,6 @@
 # Přehled kurátorské aplikace
 
-Tato dokumentace popisuje celý společně nasazovaný systém, včetně webového modulu `kuratorska-aplikace-web`. Web je vedený jako Git submodule jen kvůli oddělenému vývoji; provozně je součástí Kurátorské aplikace.
+Tato dokumentace popisuje celý společně nasazovaný systém, včetně webového modulu `web-services/kuratorska-aplikace-web`. Web je běžnou součástí tohoto repozitáře a provozně součástí Kurátorské aplikace.
 
 ## Účel systému
 
@@ -19,7 +19,7 @@ Harvester tedy data z Krameria čte. Po automatickém nebo ručním rozhodnutí 
 
 ## Části systému
 
-- `kuratorska-aplikace-web` je webové UI a servletová API vrstva. Její uživatelská a technická dokumentace zůstává v submodulu.
+- `web-services/kuratorska-aplikace-web` je webové UI a servletová API vrstva. Její uživatelská a technická dokumentace je uložena přímo u webového modulu.
 - `services:harvester` sklízí metadata z API Krameria v5/v7, načítá MODS, počítá počáteční workflow a zapisuje tituly a autory.
 - `services:updater` znovu vyhodnocuje workflow, dopočítává rok uvolnění, označuje chybějící data a aplikuje licence ze smluv.
 - `services:scheduler` spouští harvester nebo updater jako dlouho běžící Quartz službu.
@@ -62,5 +62,5 @@ PDF smluv a provozní konfigurace jsou ve volume `.kapp`.
 - [06-solr-data.md](./06-solr-data.md) - Solr cores a důležitá pole.
 - [07-provoz-a-reseni-problemu.md](./07-provoz-a-reseni-problemu.md) - deployment a diagnostika.
 - [08-otevrene-otazky.md](./08-otevrene-otazky.md) - integrační rozhodnutí, která musí být dohodnuta.
-- [Webová uživatelská dokumentace](../../kuratorska-aplikace-web/UZIVATELSKA_DOKUMENTACE.md) - práce ve webovém UI.
-- [Webová technická dokumentace](../../kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md) - servletová vrstva, oprávnění a pull API pro Kramerius.
+- [Webová uživatelská dokumentace](../../web-services/kuratorska-aplikace-web/UZIVATELSKA_DOKUMENTACE.md) - práce ve webovém UI.
+- [Webová technická dokumentace](../../web-services/kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md) - servletová vrstva, oprávnění a pull API pro Kramerius.

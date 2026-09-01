@@ -1,0 +1,54 @@
+// --- VARIABLES ---
+@use 'sass:map';
+@use '@angular/material' as mat;
+
+:root {
+  // colors
+  --app-color-primary: var(--mat-sys-primary);
+  --app-color-primary-rgb: 22, 121, 155;
+  --app-color-secondary: var(--mat-sys-secondary);
+  --app-color-lightnes: 255, 255, 255;
+  --app-color-darknes: 0, 0, 0;
+
+  --app-color-success-dark: 30, 70, 32;
+  --app-color-success-light: 46, 125, 50;
+  --app-color-success-lightnes: 237, 247, 237;
+  --app-color-info-dark: 1, 67, 97;
+  --app-color-info-light: 2, 136, 209;
+  --app-color-info-lightnes: 229, 246, 253;
+  --app-color-warn-dark: 102, 60, 0;
+  --app-color-warn-light: 237, 108, 2;
+  --app-color-warn-lightnes: 255, 244, 229;
+  --app-color-error-dark: 95, 33, 32;
+  --app-color-error-light: 211, 47, 47;
+  --app-color-error-lightnes: 253, 237, 237;
+
+  // gray pallete
+  --app-color-gray-0: #FAFAFA;
+  --app-color-gray-1: #F5F5F5;
+  --app-color-gray-2: #EEEEEE;
+  --app-color-gray-3: #E0E0E0;
+  --app-color-gray-4: #BDBDBD;
+  --app-color-gray-5: #9E9E9E;
+  --app-color-gray-6: #757575;
+  --app-color-gray-7: #616161;
+  --app-color-gray-8: #424242;
+  --app-color-gray-9: #212121;
+
+  // layout
+  --app-container: 1480px;
+
+  // global
+  --app-radius-default: 4px;
+  --app-border-color-default:var(--app-color-gray-3);
+
+  // footer
+  --app-footer-bg-color: var(--app-color-gray-1);
+  --app-footer-color: var(--app-color-gray-8);
+  
+  // material
+  --app-menu-item-height: 32px; 
+  --app-button-height: 36px;
+  
+  --mat-icon-button-touch-target-size: 20px;
+}

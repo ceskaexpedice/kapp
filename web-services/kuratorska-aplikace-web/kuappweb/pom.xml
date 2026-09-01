@@ -1,0 +1,317 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>cz.nkp.kuapp</groupId>
+    <artifactId>kuappweb</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>war</packaging>
+
+    <name>kuappweb</name>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <context.name>/kuappweb/</context.name>
+        <skipNg>false</skipNg>
+        <skipNpmInstall>false</skipNpmInstall>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.glassfish.jersey.containers</groupId>
+            <artifactId>jersey-container-servlet-core</artifactId>
+            <version>2.48</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.inject</groupId>
+            <artifactId>jersey-hk2</artifactId>
+            <version>2.48</version>
+        </dependency>
+        <dependency>
+            <groupId>org.glassfish.jersey.media</groupId>
+            <artifactId>jersey-media-json-jackson</artifactId>
+            <version>2.48</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20250517</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.solr</groupId>
+            <artifactId>solr-solrj</artifactId>
+            <version>9.9.0</version>
+            <type>jar</type>
+        </dependency>
+        
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>2.20.0</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-xml</artifactId>
+            <version>2.19.1</version>
+            <type>jar</type>
+        </dependency>
+        
+<!--        <dependency>
+        <groupId>jakarta.servlet</groupId>
+        <artifactId>jakarta.servlet-api</artifactId>
+        <version>6.0.0</version>
+        <scope>provided</scope>
+    </dependency>-->
+    
+    
+        <dependency>
+            <groupId>javax</groupId>
+            <artifactId>javaee-web-api</artifactId>
+            <version>8.0.1</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.13.4</version>
+            <scope>test</scope>
+        </dependency>
+        
+        <dependency>
+            <groupId>org.keycloak</groupId>
+            <artifactId>keycloak-authz-client</artifactId>
+            <version>26.0.7</version>
+        </dependency>
+        
+        
+        <dependency>
+        <groupId>com.google.cloud</groupId>
+        <artifactId>google-cloud-vertexai</artifactId>
+        <version>1.7.0</version>
+    </dependency>
+
+    <dependency>
+        <groupId>com.fasterxml.jackson.core</groupId>
+        <artifactId>jackson-databind</artifactId>
+        <version>2.16.1</version>
+    </dependency>
+        
+        
+    </dependencies> 
+
+    <build>
+        <plugins>
+            <plugin>
+                <groupId>com.google.cloud.tools</groupId>
+                <artifactId>jib-maven-plugin</artifactId>
+                <version>3.4.3</version>
+                <configuration>
+                    <from>
+                        <image>tomcat:9.0.107-jdk21-temurin</image>
+                    </from>
+
+                    <to>
+                        <image>registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb</image>
+                        <tags>
+                            <tag>latest</tag>
+                            <tag>${project.version}</tag>
+                        </tags>
+                    </to>
+
+                    <container>
+                        <ports>
+                            <port>8080</port>
+                        </ports>
+                        <!-- Tomcat webapps directory -->
+                        <appRoot>/usr/local/tomcat/webapps</appRoot>
+                    </container>
+                    
+
+                    <!-- Copy the WAR file into the container -->
+                    <extraDirectories>
+                        <paths>
+                            <path>
+                                <from>${project.build.directory}</from>  <!-- directory containing the WAR -->
+                                <into>/usr/local/tomcat/webapps/</into>
+                                <includes>
+                                    <include>ROOT.war</include>
+                                </includes>
+                            </path>
+                        </paths>
+                    </extraDirectories>
+                </configuration>
+            </plugin>
+
+
+
+
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.6.0</version>
+                <executions>
+                    <execution>
+                        <id>exec-npm-install</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <skip>${skipNpmInstall}</skip>
+                            <executable>npm</executable>
+                            <workingDirectory>${project.basedir}/src/main/ng</workingDirectory>  
+                            <arguments>
+                                <argument>install</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>exec-npm-ng-build</id>
+                        <phase>generate-sources</phase>
+                        <configuration>
+                            <skip>${skipNg}</skip>
+                            <executable>npm</executable>
+                            <workingDirectory>${project.basedir}/src/main/ng</workingDirectory>  
+                            <arguments>
+                                <argument>run</argument>
+                                <argument>build</argument>
+                            </arguments>
+                        </configuration>
+                        <goals>
+                            <goal>exec</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+      
+            <plugin>
+                <artifactId>maven-clean-plugin</artifactId>
+                <version>3.0.0</version>
+                <configuration>
+                    <filesets>
+                        <fileset>
+                            <directory>${project.basedir}/src/main/webapp</directory>
+                            <includes>
+                                <include>assets/*/**</include>
+                                <include>*.*</include>
+                            </includes>
+                            <excludes>
+                                <exclude>.gitignore</exclude>
+                                <exclude>index.jsp</exclude>
+                            </excludes>
+                            <followSymlinks>false</followSymlinks>
+                        </fileset>
+                    </filesets>
+                </configuration>
+            </plugin>
+      
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>2.7</version>
+                <executions>
+          
+                    <execution>
+                        <id>copy-frontend-resources</id>
+                        <phase>generate-resources</phase>
+                        <goals>
+                            <goal>copy-resources</goal>
+                        </goals>
+                        <configuration>
+                            <outputDirectory>${project.basedir}/src/main/webapp</outputDirectory>
+                            <resources>
+                                <resource>
+                                    <directory>src/main/ng/dist/ng/browser</directory>
+                                    <includes>
+                                        <include>*/**</include>
+                                    </includes>
+                                </resource>
+                            </resources>
+                        </configuration>
+                    </execution>
+          
+                </executions>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                </configuration>
+            </plugin>
+
+    
+            <!-- Insert jsp pageEncoding tag to index.html -->
+            <plugin> 
+                <groupId>com.google.code.maven-replacer-plugin</groupId> 
+                <artifactId>replacer</artifactId> 
+                <version>1.5.3</version> 
+                <executions> 
+                    <execution> 
+                        <id>replace-for-index</id>
+                        <phase>prepare-package</phase> 
+                        <goals> 
+                            <goal>replace</goal> 
+                        </goals>  
+                        <configuration> 
+                            <file>${project.basedir}/src/main/webapp/index.html</file> 
+                            <replacements> 
+                                <replacement> 
+                                    <token>&lt;!doctype html&gt;</token> 
+                                    <value>&lt;%@page contentType="text/html" pageEncoding="UTF-8"%&gt;&lt;!doctype html&gt;</value> 
+                                </replacement>
+                                <!--                                <replacement> 
+                                  <token>base href="/"</token> 
+                                  <value>base href="${context.name}"</value> 
+                                </replacement> -->
+                            </replacements> 
+                        </configuration> 
+                    </execution> 
+	  
+                    <execution> 
+                        <id>replace-for-config</id>
+                        <phase>prepare-package</phase> 
+                        <goals> 
+                            <goal>replace</goal> 
+                        </goals>  
+                        <configuration> 
+                            <file>${project.basedir}/src/main/webapp/assets/config.json</file> 
+                            <replacements> 
+                                <replacement> 
+                                    <token>"context": "/",</token> 
+                                    <value>"context": "${context.name}",</value> 
+                                </replacement> 
+                            </replacements> 
+                        </configuration> 
+                    </execution> 
+          
+                </executions>
+            </plugin>
+      
+      
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.12.1</version>
+                <configuration>
+                    <source>21</source>
+                    <target>21</target>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.5.3</version>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-war-plugin</artifactId>
+                <version>3.4.0</version>
+                <configuration>
+                    <warName>ROOT</warName>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

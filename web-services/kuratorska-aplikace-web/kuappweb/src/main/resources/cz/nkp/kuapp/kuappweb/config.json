@@ -1,0 +1,92 @@
+{
+    "solr": "http://solr-kappScheduler:8983/solr", 
+    "error_labels": ["Kniha není z krameria, nebo má podezřelá data"],
+    "gemini": {
+        "api_key": "",
+        "url": "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=",
+        "text2": "Analyze this PDF and extract metadata. Return JSON with: title, author, creationDate, keywords (array), summary (3-sentence), pageCount, language.",
+        "text": "Analyzuj PDF a extrahuj metadata. Return JSON with: title, cislo_smlouvy, nazev_poskytovatele, IČO poskytovatele (as ico), datum_uzavreni, datum_platnosti, kontaktni_osoby, keywords (array), souhrn (10-vet cesky), pageCount, Čísla České národní bibliografie, ISBN, ISSN.",
+        "config": {
+            "responseMimeType": "application/json",
+            "responseSchema": {
+                "type": "object",
+                "properties": {
+                    "title": {
+                        "type": "string"
+                    },
+                    "cislo_smlouvy": {
+                        "type": "string"
+                    },
+                    "nazev_poskytovatele": {
+                        "type": "string"
+                    },
+                    "ico": {
+                        "type": "string"
+                    },
+                    "datum_uzavreni": {
+                        "type": "string"
+                    },
+                    "datum_platnosti": {
+                        "type": "string"
+                    },
+                    "kontaktni_osoby": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "souhrn": {
+                        "type": "string"
+                    },
+                    "pageCount": {
+                        "type": "string"
+                    },
+                    "keywords": {
+                        "type": "array",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "ccnb": {
+                        "type": "array",
+                        "description": "Číslo České národní bibliografie (Identifikace dle ČNB)",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "issn": {
+                        "type": "array",
+                        "description": "Identifikace dle ISSN",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "isbn": {
+                        "type": "array",
+                        "description": "Identifikace dle ISBN",
+                        "items": {
+                            "type": "string"
+                        }
+                    },
+                    "language": {
+                        "type": "string"
+                    }
+                },
+                "required": ["title", "souhrn"]
+            }
+        }
+    },
+    "keycloak": {
+        "realm": "kapp",
+        "auth-server-url": "https://eduid.inovatika.dev/",
+        "ssl-required": "external",
+        "resource": "kapp",
+        "public-client": true,
+        "confidential-port": 0,
+        "credentials": {
+            "secret": "secret"
+        }
+    }
+}
+
+

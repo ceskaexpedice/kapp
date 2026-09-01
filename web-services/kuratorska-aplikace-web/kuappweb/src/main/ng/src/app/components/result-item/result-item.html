@@ -1,0 +1,257 @@
+<mat-card appearance="outlined">
+	<mat-card-header>
+		<mat-card-title>
+			<div class="app-fxLayout app-row app-gap-1">
+				<div class="app-fxFlex">{{ doc()['root_title']}} ({{ doc()['model']}})</div>
+				<mat-chip-set>
+					@for(l of labels; track $index) {
+					<mat-chip [style.background-color]="l.color"
+						(removed)="removeLabel(l)"><!--style="--mat-chip-label-text-color: {{l.text_color}};"-->
+						{{ l.name }}
+						@if (state.canEditTitleLabels()) {
+							<button matChipRemove [attr.aria-label]="'remove ' + l.name">
+								<mat-icon class="app-close">close</mat-icon>
+								<mat-icon class="app-cancel">cancel</mat-icon>
+							</button>
+						}
+					</mat-chip>
+					}
+					@if (state.canEditTitleLabels()) {
+						<mat-chip [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
+							{{ 'Přidat štítek' | translate }}
+							<mat-menu #labelsMenu="matMenu">
+								@for(a of state.labels(); track $index) {
+								<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
+								}
+							</mat-menu>
+						</mat-chip>
+					}
+				</mat-chip-set>
+			</div>
+		</mat-card-title>
+	</mat-card-header>
+	<mat-card-content>
+		<div class="app-grid-table app-mt-4 app-mb-4">
+			@if (!doc()['is_hierarchical']) {
+				<div>{{ (doc().model === 'periodicalvolume' ? 'Periodical' : 'Monograph') | translate }}:</div>
+				<div><a (click)="gotoPid(doc()['root_pid'])" [title]="'gotoParent' | translate">{{ doc()['root_title']}} </a></div>
+			}
+
+			<div>{{ 'Díla' | translate }}:</div>
+			<div class="app-fxLayout app-row app-center-v app-gap-2">
+				
+				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_anonymous">{{ 'field.is_anonymous' | translate }}</mat-checkbox>
+				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_collective">{{ 'field.is_collective' | translate }}</mat-checkbox>
+				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_official">{{ 'field.is_official' | translate }}</mat-checkbox>
+				<mat-checkbox [disabled]="!editingDilo()" [(ngModel)]="is_pseudonymous">{{ 'field.is_pseudonymous' | translate }}</mat-checkbox>
+				@if (state.canEditTitle(doc())) {
+					@if (editingDilo()) {
+						<button matIconButton (click)="saveTypDila()" class="app-ml-4"><mat-icon>save</mat-icon></button>
+						<button matIconButton (click)="closeEditingDilo()"><mat-icon>cancel</mat-icon></button>
+					} @else {
+						<button matIconButton (click)="editTypDila()"><mat-icon>edit</mat-icon></button>
+					}
+				}
+			</div>
+
+
+			<div>{{ 'field.archiver_location' | translate }}:</div>
+			<div>{{ doc()['archiver_location'] }}</div>
+
+			@if(doc()['public_since']) {
+				<div>{{ 'field.public_since' | translate }}:</div>
+				<div>{{ doc()['public_since'] }}</div>
+			}
+
+			<div>{{ 'field.indextime' | translate }}:</div>
+			<div>{{ doc()['indextime'] | date : 'dd.MM.yyyy HH:mm:SS' }}</div>
+		</div>
+
+
+		<div class="app-grid-table app-mb-4">
+			<div>{{ 'field.authors' | translate }}:</div>
+			<div>
+				@for(a of mergedAuthors; track $index) {
+					<div>
+						@if (state.canEditTitle(doc())) {
+							<a (click)="infoAuthor(a)">
+								<span [class.app-removed]="a.removed" [class.app-last-author]="a.isLast">{{ a.full }} {{ a.date }} ({{ a.role }})</span>
+							</a>
+						} @else {
+							<span [class.app-removed]="a.removed" [class.app-last-author]="a.isLast">{{ a.full }} {{ a.date }} ({{ a.role }})</span>
+						}
+					</div>
+				}
+				@if (state.canEditTitle(doc())) {
+					<a (click)="addAuthor()" [title]="'action.add_author' | translate" class="app-value">
+						<strong>{{ 'action.add_author' | translate }}</strong>
+					</a>
+				}
+			</div>
+
+			<div>{{ 'field.last_author' | translate }}:</div>
+			<div>{{ lastAuthor }}</div>
+
+			<div>{{ 'field.last_year_death' | translate }}:</div>
+			<div class="app-fxLayout app-row app-center-v app-gap-2">
+				@if (editingDate()) {
+					<input [(ngModel)]="lastYearDeath" />
+					<button matIconButton (click)="saveLastYearDeath()"><mat-icon>save</mat-icon></button>
+					<button matIconButton (click)="closeEditingDate()"><mat-icon>cancel</mat-icon></button>
+				} @else {
+					<!-- <span>{{ doc()['last_year_death']}}</span> -->
+					<input [value]="doc()['last_year_death']" disabled />
+					@if (state.canEditTitle(doc())) {
+						<button matIconButton (click)="editLastYearDeath()"><mat-icon>edit</mat-icon></button>
+					}
+				}
+			</div>
+			<div>{{ 'field.date_issued_kramerius' | translate }}:</div>
+			<div>{{ doc()['date_issued_str']}}</div>
+
+			<div>{{ 'field.date_issued_kapp' | translate }}:</div>
+			<div class="app-fxLayout app-row app-center-v app-gap-2">
+				@if (editingDateIssued()) {
+					<input [(ngModel)]="date_issued_year_kapp" />
+					<button matIconButton (click)="saveDateIssued()"><mat-icon>save</mat-icon></button>
+					<button matIconButton (click)="closeEditingDateIssued()"><mat-icon>cancel</mat-icon></button>
+				} @else {
+					<input [value]="doc()['date_issued_year_kapp']" disabled />
+					@if (state.canEditTitle(doc())) {
+						<button matIconButton (click)="editDateIssued()"><mat-icon>edit</mat-icon></button>
+					}
+				}
+			</div>
+
+			
+
+
+			<div>{{ 'field.pid' | translate }}:</div>
+			<div>
+				@if (doc()['physical_locations']?.[0] === 'ABA001') {
+					<a target="_blank" [href]="'https://ndk.cz/view/'+doc()['pid']" class="app-link-icon">
+						<span>{{doc()['pid']}}</span>
+						<mat-icon>open_in_new</mat-icon>
+					</a>
+				} @else {
+					<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+doc()['pid']" class="app-link-icon">
+						<span>{{doc()['pid']}}</span>
+						<mat-icon>open_in_new</mat-icon>
+					</a>
+				}
+			</div>
+
+			<div>{{ 'field.physical_locations' | translate }}:</div>
+			<div>{{ doc()['physical_locations'] }}</div>
+
+			<div>{{ 'field.id_urnnbn' | translate }}:</div>
+			<div>{{ doc()['id_urnnbn']}}</div>
+
+			<div>{{ 'field.id_ccnb' | translate }}:</div>
+			<div>{{ doc()['id_ccnb']}}</div>
+
+			<div>{{ 'field.id_sysno' | translate }}:</div>
+			<div>{{ doc()['id_sysno']}}</div>
+
+			<div>{{ 'field.id_isbn' | translate }}:</div>
+			<div>{{ doc()['id_isbn']}}</div>
+
+			<div>{{ 'field.id_barCode' | translate }}:</div>
+			<div>{{ doc()['id_barCode']}}</div>
+		</div>
+
+
+		<div class="app-grid-table app-mb-2">
+			<div>{{ 'field.assigned_licenses' | translate }}:</div>
+			<div>{{ doc()['assigned_licenses']}}</div>
+
+			<div>{{ 'field.digitalni_knihovny' | translate }}:</div>
+			<div>
+				<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+doc()['pid']" class="app-link-icon">
+					{{ doc()['digital_library']}}
+					<mat-icon>open_in_new</mat-icon>
+				</a>
+			</div>
+
+			<div>{{ 'field.licenses' | translate }}:</div>
+			<div>{{ doc()['licenses']}}</div>
+
+@if (state.canEditTitle(doc())) {
+			<div>{{ 'field.note' | translate }}:</div>
+			<div class="app-fxLayout app-row  app-gap-2 app-center-v">
+				<textarea [disabled]="!editingNote()" [(ngModel)]="note" matInput [rows]="noteRows" [style.width]="noteWidth"></textarea>
+				@if (editingNote()) {
+					<button matIconButton (click)="saveNote()"><mat-icon>save</mat-icon></button>
+					<button matIconButton (click)="closeEditingNote()"><mat-icon>cancel</mat-icon></button>
+				} @else {
+    			<button matIconButton  (click)="editNote()" class="app-value"><mat-icon>edit</mat-icon></button>
+				}
+			</div>
+}
+
+			<div>{{ 'field.release_year' | translate }}:</div>
+			<div>{{ doc()['release_year'] | releaseYearDisplay }}</div>
+		</div>
+
+		@if (hasCollapsed) {
+			<table class="app-table app-mt-4 app-mb-2">
+				<thead>
+					<tr>
+						<th colspan="5">{{ 'Části' | translate }}</th>
+					</tr>
+				</thead>
+				<tbody>
+					@for (ch of related(); track ch) {
+						<tr>
+							<td> <a (click)="gotoPid(ch['pid'])" class="app-value">{{ ch['model']}}</a></td>
+							<td style="min-width: 200px">
+								<div class="app-text-cutter-wrapper">
+									<div class="app-text-cutter">{{ ch['root_title']}}</div>
+								</div>
+							</td>
+							<td style="min-width: 200px">
+								<div class="app-text-cutter-wrapper">
+									<div class="app-text-cutter">{{ ch['state']}}</div>
+								</div>
+							</td>
+							<td class="app-col-icon">
+								@if (ch['physical_locations']?.[0] === 'ABA001') {
+									<a target="_blank" [href]="'https://ndk.cz/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon class="app-ml-1">open_in_new</mat-icon></a>
+								} @else {
+									<a target="_blank" [href]="'https://www.digitalniknihovna.cz/mzk/uuid/'+ch['pid']" class="app-value">{{ch['pid']}}<mat-icon class="app-ml-1">open_in_new</mat-icon></a>
+								}
+							</td>
+							<td>
+								@if (state.canEditTitle(doc())) {
+									<a (click)="setState()"><strong>{{ (doc()['state'] ? ('state.' + ch['state']) : 'action.set_state') | translate }}</strong></a>
+								}
+							</td>
+						</tr>
+					}
+				</tbody>
+			</table>
+		}
+	</mat-card-content>
+	<mat-card-actions align="end">
+		<div class="app-fxLayout app-row app-gap-2">
+			@if (state.canEditTitle(doc())) {
+				<button matButton="outlined" (click)="addAuthor()">{{ 'action.add_author' | translate }}</button>
+			}
+			@if (state.canEditTitle(doc())) {
+				<button matButton="outlined"
+				[disabled]="doc()['is_hierarchical']"
+				[class.state-ke-kontrole]="doc()['state'] === 'KE_KONTROLE'"
+				[class.state-nekontrolovano]="doc()['state']?.startsWith('NEKONTROLOVANO')"
+				(click)="setState()">{{ (doc()['state'] ? ('state.' + doc()['state']) : 'action.set_state') | translate }}</button>
+				<button matButton="outlined" [matMenuTriggerFor]="batchesMenu">{{'action.add_doc_to_bacth' | translate}}</button>
+			}
+		</div>
+		<mat-menu #batchesMenu="matMenu">
+			@for(a of state.batches(); track $index) {
+				<button mat-menu-item (click)="addToBatch(a)">
+					<mat-icon>{{ inBatch(a.name) ? 'check' : 'none'}}</mat-icon>{{ a.name }}
+				</button>
+			}
+		</mat-menu>
+	</mat-card-actions>
+</mat-card>

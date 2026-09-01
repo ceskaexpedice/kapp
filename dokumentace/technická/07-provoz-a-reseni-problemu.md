@@ -82,7 +82,7 @@ Chybějící timestamp způsobí full harvest. Nesprávné `apiVersion`, `url` n
 Updater aktuálně prochází celý core. U velkého indexu sledujte dobu běhu a zatížení Solru.
 
 Provozní kontrola webového API a diagnostika oprávnění je v
-[technické dokumentaci webu](../../kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
+[technické dokumentaci webu](../../web-services/kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
 
 ## Smlouvy
 

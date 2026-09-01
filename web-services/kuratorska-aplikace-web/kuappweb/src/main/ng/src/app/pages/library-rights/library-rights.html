@@ -1,0 +1,78 @@
+<div class="app-container-fluid app-h-100">
+  <mat-card appearance="outlined">
+    <mat-card-header class="app-mb-4">
+      <mat-card-title>{{ 'admin.dk_administration' | translate }}</mat-card-title>
+    </mat-card-header>
+    <mat-card-content>
+      <div class="app-library-rights-layout">
+        <section class="app-libraries">
+          <h3>{{ 'admin.libraries' | translate }}</h3>
+          <div class="app-library-list">
+            @for (library of libraries; track library; let index = $index) {
+              <button type="button" class="app-library-row"
+                      [class.app-selected]="selectedLibrary === library"
+                      (click)="selectLibrary(library)">
+                <span>{{ library }}</span>
+                <span class="app-count">{{ mappings[index].physicalLocations.length }}</span>
+                <mat-icon (click)="removeLibrary(index); $event.stopPropagation()"
+                          [matTooltip]="'remove_this_record' | translate">close</mat-icon>
+              </button>
+            }
+          </div>
+
+          <div class="app-fxLayout app-row app-gap-2 app-mt-4">
+            <mat-form-field appearance="outline" class="app-fxFlex">
+              <mat-label>{{ 'admin.new_dk' | translate }}</mat-label>
+              <input matInput [(ngModel)]="newLibrary" (keyup.enter)="addLibrary()" />
+            </mat-form-field>
+            <button matButton="outlined" (click)="addLibrary()" class="app-btn-add"
+                    [disabled]="!newLibrary.trim()">
+              <mat-icon>add_circle</mat-icon>{{ 'action.add' | translate }}
+            </button>
+          </div>
+        </section>
+
+        <section class="app-locations">
+          @if (selectedLibrary) {
+            <div class="app-location-heading">
+              <div>
+                <h3>{{ 'admin.physical_locations' | translate }} — {{ selectedLibrary }}</h3>
+                <p>{{ 'admin.physical_locations_help' | translate }}</p>
+              </div>
+              <strong>{{ selectedMapping?.physicalLocations?.length || 0 }} / {{ physicalLocations.length }}</strong>
+            </div>
+
+            <mat-form-field appearance="outline" class="app-w-100">
+              <mat-label>{{ 'action.search' | translate }}</mat-label>
+              <input matInput [(ngModel)]="locationFilter" />
+              <mat-icon matSuffix>search</mat-icon>
+            </mat-form-field>
+
+            @if (loadingLocations) {
+              <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+            } @else {
+              <div class="app-location-list">
+                @for (location of filteredPhysicalLocations; track location.val) {
+                  <mat-checkbox [checked]="isAssigned(location.val)"
+                                (change)="toggleLocation(location.val, $event.checked)">
+                    <span>{{ location.val }}</span>
+                    <span class="app-count">({{ location.count }})</span>
+                  </mat-checkbox>
+                } @empty {
+                  <p class="app-empty">{{ 'admin.no_physical_locations' | translate }}</p>
+                }
+              </div>
+            }
+          } @else {
+            <p class="app-empty">{{ 'admin.select_library' | translate }}</p>
+          }
+        </section>
+      </div>
+    </mat-card-content>
+    <mat-card-actions class="app-mat-card-actions">
+      <button matButton="filled" (click)="save()" [disabled]="saving">
+        {{ 'action.save' | translate }}
+      </button>
+    </mat-card-actions>
+  </mat-card>
+</div>

@@ -1,0 +1,41 @@
+// --- LAYOUT ---
+
+html {
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+}
+
+*, *:before, *:after {
+  -webkit-box-sizing: inherit;
+  -moz-box-sizing: inherit;
+  box-sizing: inherit;
+}
+
+html, body { 
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: Roboto, "Helvetica Neue", sans-serif;
+  font-size: 14px;
+}
+
+.app-content-wrapper {
+  position: relative;
+}
+
+.app-container {
+  margin: 0 auto;
+  max-width: var(--app-container);
+  width: 100%;
+  padding: 32px;
+}
+
+.app-container-fluid {
+  margin: 0 auto;
+  max-width: 100%;
+  width: 100%;
+  padding: 16px;
+}

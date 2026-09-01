@@ -103,7 +103,7 @@ Každá instance má čas posledního úspěšného běhu v:
 API v5 filtruje podle `modified_date`, API v7 podle `indexed`. Chybějící timestamp znamená plnou sklizeň dané instance.
 
 Konfigurace webu, Keycloaku a webových oprávnění je popsána v
-[technické dokumentaci submodulu](../../kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
+[technické dokumentaci webového modulu](../../web-services/kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
 
 ## Smlouvy
 

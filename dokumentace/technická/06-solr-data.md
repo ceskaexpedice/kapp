@@ -96,7 +96,7 @@ Updater používá především `filename`, `ccnb`, `issn` a `license`.
 ## `configuration`
 
 Core je vlastněný webovou vrstvou a obsahuje dynamické seznamy a mapování. Jeho kontrakt je popsán v
-[technické dokumentaci webu](../../kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
+[technické dokumentaci webu](../../web-services/kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
 
 ## Typické dotazy
 

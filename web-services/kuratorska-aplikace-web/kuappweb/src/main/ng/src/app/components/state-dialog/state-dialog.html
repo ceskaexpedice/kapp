@@ -1,0 +1,81 @@
+<h2 mat-dialog-title>{{ 'action.set_state' | translate}}
+	@if (data.isBatch) {
+		<span [style.color]="'red'">({{ 'batch_alert' | translate}})</span>
+	}
+</h2>
+<mat-dialog-content>
+	@if (loading()) {
+		<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+	}
+	<div class="app-fxLayout app-row app-gap-1">
+		@if (data.isBatch) {
+			<span>{{ 'current_states' | translate}}:</span>
+			@for (s of data.states; track s) {
+				<div class="app-badge" [ngClass]="'app-' + s | lowercase">{{ 'state.' + s | translate}}</div>
+			}
+		} @else {
+			{{ 'current_state' | translate}}:
+			<strong>{{ 'state.' + initialState | translate}}</strong>
+		} 
+	</div>
+	@if (!data.isBatch) {
+		<div>
+			{{ 'current_licenses' | translate}}: <strong>{{ initialLicenses }}</strong>
+		</div>
+	} 
+	<div class="app-fxLayout app-column app-mt-4">
+		<div class="app-fxLayout app-row app-gap-2">
+			<mat-form-field appearance="outline" class="app-fxFlex">
+				<mat-label>{{ 'new_state' | translate }}</mat-label>
+				<mat-select [(ngModel)]="newState" required (selectionChange)="setState()" >
+					@for (l of config.states; track l) {
+						<mat-option [value]="l.value">{{ 'state.' + l.value | translate}}</mat-option>
+					}
+				</mat-select>
+			</mat-form-field>
+
+			<mat-form-field appearance="outline" class="app-fxFlex">
+				<mat-label>{{ 'licenses' | translate }}</mat-label>
+				<mat-select [(ngModel)]="newLicenses" multiple  [disabled]="!selectLicenseEnabled()">
+					@for (l of allowedLicenses(); track l) {
+						<mat-option [value]="l">{{ l}}</mat-option>
+					}
+				</mat-select>
+			</mat-form-field>
+		</div>
+		<mat-form-field appearance="outline" class="app-fill-w">
+			<mat-label>{{ 'reason' | translate }}</mat-label>
+			<textarea [(ngModel)]="reason" matInput></textarea>
+		</mat-form-field>
+		@if (!data.isBatch) {
+			<mat-form-field appearance="outline" class="app-fill-w">
+				<mat-label>{{ 'history' | translate }}</mat-label>
+				<mat-select [(ngModel)]="currentHistory">
+					@for (l of data.doc['state_history']; track l) {
+						<mat-option [value]="l">{{ l['date'] | date : 'dd.MM.yyyy hh:mm:ss' }}.- {{ 'state.' + l['state'] | translate }}</mat-option>
+					}
+				</mat-select>
+			</mat-form-field>
+			@if(currentHistory) {
+				<div>
+					<div>
+						<span class="app-label">Date</span>: <span class="app-value">{{ currentHistory['date'] | date : 'dd.MM.yyyy hh:mm:ss' }}</span>
+					</div>
+					<div>
+						<span class="app-label">State</span>: {{ 'state.' + currentHistory['state'] | translate }}
+					</div>
+					<div>
+						<span class="app-label">Reason</span>: {{ currentHistory['reason'] }}
+					</div>
+					<div>
+						<span class="app-label">User</span>: {{ currentHistory['user']  }}
+					</div>		
+				</div>
+			}
+		}
+	</div>
+</mat-dialog-content>
+<mat-dialog-actions>
+	<button matButton="filled" [disabled]="!newState" (click)="save()">{{ 'action.save' | translate }}</button>
+	<button matButton="outlined" [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+</mat-dialog-actions>

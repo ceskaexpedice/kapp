@@ -1,0 +1,25 @@
+<h2 mat-dialog-title>{{ 'configuration.labels' | translate}}</h2>
+<mat-dialog-content>
+
+    @if (loading()) {
+    <mat-progress-bar mode="indeterminate"></mat-progress-bar>
+    }
+    @for(l of state.labels(); track $index) {
+    <div class="app-label">
+        <mat-form-field appearance="outline">
+            <mat-label>Name</mat-label>
+            <input matInput [(ngModel)]="l.name" />
+        </mat-form-field>
+        <mat-form-field appearance="outline">
+            <mat-label>Color</mat-label>
+            <input matInput [(ngModel)]="l.color" />
+        </mat-form-field>
+        <button mat-flat-button [style.background-color]="l.color" [style.color]="l.text_color">{{ l.name }}</button> 
+    </div>
+    }
+
+</mat-dialog-content>
+<mat-dialog-actions>
+    <button matButton (click)="save()">{{ 'action.save' | translate }}</button>
+    <button matButton [mat-dialog-close]="false" cdkFocusInitial>{{ 'action.close' | translate }}</button>
+</mat-dialog-actions>

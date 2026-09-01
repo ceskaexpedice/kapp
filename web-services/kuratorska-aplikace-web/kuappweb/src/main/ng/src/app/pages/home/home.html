@@ -1,0 +1,88 @@
+<div class="app-container app-h-100">
+	<div class="app-fxLayout app-column app-fill app-center-v app-center-h">
+		
+		<div class="app-fxLayout app-row app-wrap app-center-v app-center-h app-cards-wrapper">
+			<mat-card appearance="outlined" class="app-card-titles">
+				<mat-card-header>
+					<mat-card-title>{{ 'home.titles' | translate }} <span class="app-count">({{ totals()?.titles }})</span></mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					<mat-form-field appearance="outline">
+						<mat-label>{{ 'action.search' | translate }}</mat-label>
+						<input [(ngModel)]="q" matInput [placeholder]="'field.query' | translate" (keyup.enter)="doSearch('titles')">
+						<mat-icon matSuffix (click)="doSearch('titles')">search</mat-icon>
+					</mat-form-field>
+				</mat-card-content>
+				<mat-card-actions align="end" class="app-mat-card-actions">
+					<button matButton="outlined" [routerLink]="['/titles']" queryParamsHandling="preserve">{{ 'action.view' | translate }}</button>
+				</mat-card-actions>
+			</mat-card>
+
+			<mat-card appearance="outlined" class="app-card-authors">
+				<mat-card-header>
+					<mat-card-title>{{ 'home.authors' | translate }}  <span class="app-count">({{ totals()?.authors }})</span></mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					<mat-form-field appearance="outline">
+						<mat-label>{{ 'action.search' | translate }}</mat-label>
+						<input [(ngModel)]="q" matInput [placeholder]="'field.query' | translate" (keyup.enter)="doSearch('authors')">
+						<mat-icon matSuffix (click)="doSearch('authors')">search</mat-icon>
+					</mat-form-field>
+				</mat-card-content>
+				<mat-card-actions align="end" class="app-mat-card-actions">
+					<button matButton="outlined" [routerLink]="['/authors']" queryParamsHandling="preserve" mat-raised-button>{{ 'action.view' | translate }}</button>
+				</mat-card-actions>
+			</mat-card>
+
+			<!-- <mat-card appearance="outlined" class="app-card-imports">
+				<mat-card-header>
+					<mat-card-title>{{ 'New imports' | translate }} </mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					Seznam dil nove importovane
+				</mat-card-content>
+				<mat-card-actions align="end" class="app-mat-card-actions">
+					<button matButton="outlined" (click)="newImported()" mat-raised-button>{{ 'action.view' | translate }}</button>
+				</mat-card-actions>
+			</mat-card> -->
+
+			<mat-card appearance="outlined" class="app-card-authors-with-conflict">
+				<mat-card-header>
+						<mat-card-title>{{ 'home.authors_modified' | translate }}</mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					{{ 'home.authors_modified_desc' | translate }}
+				</mat-card-content>
+				<mat-card-actions align="end" class="app-mat-card-actions">
+					<button matButton="outlined"  (click)="authorsConflict()" queryParamsHandling="preserve" mat-raised-button>{{ 'action.view' | translate }}</button>
+				</mat-card-actions>
+			</mat-card>
+			
+			<mat-card appearance="outlined" class="app-card-non-revised-titles">
+				<mat-card-header>
+					<mat-card-title>{{ 'home.titles_to_control' | translate }} </mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					{{ 'home.titles_to_control_desc' | translate }}
+				</mat-card-content>
+				<mat-card-actions align="end" class="app-mat-card-actions">
+					<button matButton="outlined" (click)="toControll()" mat-raised-button>{{ 'action.view' | translate }}</button>
+				</mat-card-actions>
+			</mat-card>
+			@if (state.user()) {
+			<mat-card appearance="outlined" class="app-card-repo">
+				<mat-card-header>
+					<mat-card-title (click)="contracts()">{{ 'home.contracts' | translate }} </mat-card-title>
+				</mat-card-header>
+				<mat-card-content>
+					{{ 'home.contracts_desc' | translate }} <span class="app-count">({{ totals()?.contracts }})</span>
+
+				</mat-card-content>
+				<mat-card-actions align="end" class="app-mat-card-actions">
+					<button matButton="outlined" (click)="contracts()" mat-raised-button>{{ 'action.view' | translate }}</button>
+				</mat-card-actions>
+			</mat-card>
+			}
+		</div>
+	</div>
+</div>

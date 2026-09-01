@@ -1,7 +1,7 @@
 # Otevřená backendová integrační rozhodnutí
 
 Detaily současného HTTP endpointu a jeho webová omezení jsou vedené pouze v
-[technické dokumentaci submodulu](../../kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
+[technické dokumentaci webového modulu](../../web-services/kuratorska-aplikace-web/TECHNICKA_DOKUMENTACE.md).
 
 ## Rozlišení zdrojů
 

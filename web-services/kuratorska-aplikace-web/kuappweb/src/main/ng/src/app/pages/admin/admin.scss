@@ -1,0 +1,51 @@
+.app-btn-add {
+	&:not(:disabled) {
+		color: rgb(var(--app-color-darknes)) !important;
+	}
+}
+
+::ng-deep .mat-mdc-form-field {
+  $size: 24px;
+
+  &.app-set-color {
+    .mat-mdc-form-field-infix {
+      width: calc(180px - 18px);
+    }
+
+    .app-color {
+      height: $size;
+      width: $size;
+      border-radius: calc($size / 2);
+      margin-right: 2px;
+    }
+  }
+}
+
+.app-chip {
+	$app-height: 20px;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 18px;
+  display: inline-flex;
+  padding: 0 15px 0 8px;
+  height: $app-height;
+  align-items: center;
+  border-radius: calc(#{$app-height} / 2);
+  min-width: 100px;
+  justify-content: center;
+  position: relative;
+
+  .mdc-icon-button {
+    position: absolute;
+    right: -6px;
+    top: -13px;
+
+    .mat-icon {
+      $size: 14;
+      font-size: #{$size}px;
+      height: #{$size}px;
+      width: #{$size}px;
+      color: rgb(var(--app-color-lightnes));
+    }
+  }
+}

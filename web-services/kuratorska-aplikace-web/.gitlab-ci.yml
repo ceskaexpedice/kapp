@@ -1,0 +1,43 @@
+stages:
+  - build
+  - publish
+
+variables:
+  GITLAB_PROJECT_ID: "NAHRAD_CISLEM_PROJEKTU"
+  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
+  APP_DIR: "kuappweb"
+
+image: maven:3.9.6-eclipse-temurin-21
+
+cache:
+  paths:
+    - .m2/repository
+    - ${APP_DIR}/src/main/ng/node_modules/
+
+before_script:
+  - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+  - apt-get install -y nodejs
+  - echo "<settings><servers><server><id>gitlab-maven</id><username>gitlab-ci-token</username><password>${CI_JOB_TOKEN}</password></server></servers></settings>" > settings.xml
+
+
+build_job:
+  stage: build
+  script:
+    - echo "Spoustim kontrolni build aplikace v $APP_DIR..."
+    - cd $APP_DIR
+    - mvn clean install -s ../settings.xml -DskipTests
+  
+publish_all_manual:
+  stage: publish
+  script:
+    - echo "Registry - $CI_REGISTRY"
+    - echo "User - $CI_REGISTRY_USER"
+    - echo "JobToken - $CI_JOB_TOKEN"
+    - echo "Target- registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb"
+    - echo "Prepinam se do adresare $APP_DIR"
+    - cd $APP_DIR
+    - mvn clean install -s ../settings.xml -DskipTests
+    - mvn jib:build "-Djib.to.auth.username=gitlab-ci-token" "-Djib.to.auth.password=$CI_JOB_TOKEN" -DskipTests
+  when: manual
+  allow_failure: false
+  

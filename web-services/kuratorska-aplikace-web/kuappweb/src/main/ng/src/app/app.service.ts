@@ -1,0 +1,259 @@
+import { HttpClient, HttpHeaders, HttpErrorResponse, HttpParams } from '@angular/common/http';
+import { Injectable } from '@angular/core';
+import { Observable, map, finalize, catchError, of } from 'rxjs';
+import { Label } from './shared/label';
+import { Batch } from './shared/batch';
+import { Author, AuthorTitle } from './shared/author';
+import { Contract } from './shared/contract';
+import { LibraryPhysicalLocations } from './shared/library-rights';
+
+@Injectable({
+  providedIn: 'root'
+})
+export class AppService {
+
+  constructor(
+    private http: HttpClient) { }
+
+  private get(path: string, params = {}, responseType: any = null): Observable<Object> {
+    const headers = new HttpHeaders({
+      //'Accept-Language': this.getLang()
+    })
+    return this.http.get(encodeURI(`api/${path}`), { params: params, headers, responseType })
+      .pipe(map((r: any) => {
+        if (r.response?.status === -1) {
+          r.response.errors = { path: [{ errorMessage: r.response.errorMessage }] };
+        }
+        return r;
+
+      }))
+      .pipe(finalize(() => this.stopLoading()))
+      .pipe(catchError(err => this.handleError(err, this)));
+  }
+
+  private post(path: string, body: any, options: any = {}): Observable<Object> {
+    return this.http.post(encodeURI(`api/${path}`), body, options)
+      .pipe(map((r: any) => {
+        if (r.response?.status === -1) {
+          r.response.errors = [{ errorMessage: r.response.errorMessage }];
+        }
+        return r;
+
+      }))
+      .pipe(finalize(() => this.stopLoading()))
+      .pipe(catchError(err => this.handleError(err, this)));
+  }
+
+  stopLoading() {
+    // this.numLoading--;
+    // if (this.numLoading === 0 && this.spinnerTopRef.hasAttached()) {
+    //   this.spinnerTopRef.detach();
+    // }
+  }
+
+  private handleError(error: HttpErrorResponse, me: any) {
+    //  console.log(error);
+    if (error.status === 0) {
+      // A client-side or network error occurred. Handle it accordingly.
+      console.error('An error occurred:', error.error);
+    } else if (error.status === 503 || error.status === 504) {
+      // Forbiden. Redirect to login
+      console.log("Service Unavailable");
+      const url = me.router.routerState.snapshot.url;
+      if (me.router) {
+        me.router.navigate(['/login'], { url: url, err: '503' });
+      }
+    } else if (error.status === 403) {
+      // Forbiden. Redirect to login
+      console.log("Forbiden");
+      // const url = me.router.routerState.snapshot.url;
+      // if (me.router) {
+      //   me.router.navigate(['/login'], {url: url});
+      // }
+    } else {
+      console.error(
+        `Backend returned code ${error.status}, body was: `, error.error);
+    }
+    // Return an observable with a user-facing error message.
+    // return throwError({'status':error.status, 'message': error.message});
+    return of({ response: { 'status': error.status, 'message': error.message, 'errors': [error.error] } });
+  }
+
+  getUser(): Observable<any> {
+    return this.get('data/user');
+  }
+
+  getHome(): Observable<any> {
+    return this.get('data/home');
+  }
+
+  searchTitles(params: HttpParams, csv: boolean = false): Observable<any> {
+    
+    const headers = csv ? 'plain/text' : null;
+    
+    return this.get('data/titles', params, headers)
+  }
+
+  getDoc(pid: string): Observable<any> {
+    return this.get('data/get_doc', {pid});
+  }
+
+  getRelated(pid: string): Observable<any> {
+    return this.get('data/get_related', {pid});
+  }
+
+  searchAuthors(params: HttpParams): Observable<any> {
+    return this.get('data/authors', params)
+  }
+
+  searchTitlesByAuthor(params: HttpParams): Observable<any> {
+    return this.get('data/titles_author', params)
+  }
+
+  checkAuthor(params: HttpParams): Observable<any> {
+    return this.get('data/check_author', params)
+  }
+
+  getAuthorById(params: HttpParams): Observable<any> {
+    return this.get('data/get_author_by_id', params);
+  }
+
+  getAutById(params: HttpParams): Observable<any> {
+    return this.get('data/get_aut_by_id', params);
+  }
+
+  getLinks(params: HttpParams): Observable<any> {
+    return this.get('data/get_links', params)
+  }
+
+  saveDK(dk: string[]): Observable<any> {
+    return this.post('index/save_dk', dk);
+  }
+
+  saveLibraryRights(mappings: LibraryPhysicalLocations[]): Observable<any> {
+    return this.post('index/save_library_rights', mappings);
+  }
+
+  getPhysicalLocations(): Observable<any> {
+    return this.get('data/physical_locations');
+  }
+
+  saveLicenses(licenses: string[]): Observable<any> {
+    return this.post('index/save_licenses', licenses);
+  }
+
+  saveLabels(labels: Label[], visibility: 'everyone' | 'private' | 'library' = 'everyone', library?: string): Observable<any> {
+    const storedLabels = labels.map(({storageName, visibility: labelVisibility, owner, ...label}) => label);
+    return this.post('index/save_labels', {labels: storedLabels, visibility, library});
+  }
+
+  saveDocLabel(pid: string, label: string, selected: boolean): Observable<any> {
+    return this.post('index/save_doc_labels', {pid, label, selected});
+  }
+
+  saveBatches(batches: Batch[]): Observable<any> {
+    return this.post('index/save_batches', batches);
+  }
+
+  saveDocBatch(pids: string[], batch: string): Observable<any> {
+    return this.post('index/save_doc_batch', {pids,batch});
+  }
+
+  saveDocContract(pids: string[], contract: string, withState: boolean, selected: boolean, licenses: string[]): Observable<any> {
+    return this.post('index/save_doc_contract', {pids,contract,withState,selected, licenses});
+  }
+
+  saveTitleColumns(columns: {field: string, selected: boolean}[]): Observable<any> {
+    return this.post('index/save_title_columns', columns);
+  }
+
+  saveAuthor(author: Author): Observable<any> {
+    return this.post('index/save_author', author);
+  }
+
+  saveAuthorsInTitle(authors: AuthorTitle[], pid: string, author: AuthorTitle, ids: string[], nameIdentifiers: string[], names: string[]): Observable<any> {
+    return this.post('index/save_authors_in_title', {pid, authors, author, ids, nameIdentifiers, names});
+  }
+
+  saveAuthorLabel(pid: string, label: string, selected: boolean): Observable<any> {
+    return this.post('index/save_author_labels', {id: pid, label, selected});
+  }
+
+  saveLastYearDeath(pid: string, lastYearDeath: number | null, authors: AuthorTitle[], dateIssuedYear: number | null): Observable<any> {
+    return this.post('index/save_last_year_death', {pid,lastYearDeath,authors,dateIssuedYear});
+  }
+
+  saveTypDila(pid: string, is_anonymous: boolean, is_collective: boolean, is_official: boolean, is_pseudonymous: boolean) {
+    return this.post('index/save_typ_dila', {pid,is_anonymous,is_collective,is_official,is_pseudonymous});
+  }
+
+  saveTitleNote(pid: string, note: string): Observable<any> {
+    return this.post('index/save_title_note', {pid,note});
+  }
+
+  saveDateIssued(pid: string, date_issued_year_kapp: number | null): Observable<any> {
+    return this.post('index/save_date_issued', {pid,date_issued_year_kapp});
+  }
+
+  createBatchFromLabel(label: string): Observable<any> {
+    return this.post('index/create_batch_from_label', {label});
+  }
+
+  getUsedBatches(): Observable<any> {
+    return this.get('data/get_used_batches');
+  }
+
+  getDocsInBatch(batch: string): Observable<any> {
+    return this.get('data/get_batch_docs', {batch});
+  }
+
+  changeState(state: any): Observable<any> {
+    return this.post('index/change_state', state);
+  }
+
+  changeStateInBatch(state: any): Observable<any> {
+    return this.post('index/change_state_in_batch', state);
+  }
+
+  login(): Observable<any> {
+    return this.post('user/login', {});
+  }
+
+  logout(): Observable<any> {
+    return this.post('user/logout', {});
+  }
+
+  searchContracts(params: HttpParams): Observable<any> {
+    return this.get('data/contracts', params);
+  }
+
+  searchTitlesByContract(params: HttpParams): Observable<any> {
+    return this.get('data/titles_contract', params);
+  }
+
+  findTitlesByContract(params: HttpParams): Observable<any> {
+    return this.get('data/titles_contract_find', params);
+  }
+
+  getContract(id: string): Observable<any> {
+    return this.get('data/get_contract', {id});
+  }
+
+  uploadContract(form: any): Observable<any> {
+    return this.post('index/upload_batch', form);
+  }
+
+  saveContract(c: Contract): Observable<any> {
+    return this.post('index/save_contract', c);
+  }
+
+  analyzeContract(c: string): Observable<any> {
+    return this.get('index/analyze_contract', {filename:c});
+  }
+
+  checkContractExists(filename: string, ) {
+    const url = `/index/check_contract_exists?filename=${filename}`;
+    return this.get(url);
+  }
+  
+}

@@ -1,0 +1,125 @@
+
+<mat-card appearance="outlined">
+	@if(loading()){
+<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+}
+@if(author) {
+	<mat-card-header>
+		<mat-card-title>
+			<div class="app-fxLayout app-row app-gap-1">
+				<div class="app-fxFlex" [title]="author['id']">{{ author['full']}} ({{ author.id }})</div>
+				<mat-chip-set>
+					@for(l of labels; track $index) {
+					<mat-chip [style.background-color]="l.color" style="--mat-chip-label-text-color: {{l.text_color}};"
+						(removed)="removeLabel(l)">
+						{{ l.name }}
+						@if (state.hasLibraryRole()) {
+							<button matChipRemove [attr.aria-label]="'remove ' + l.name">
+								<mat-icon>cancel</mat-icon>
+							</button>
+						}
+					</mat-chip>
+					}
+					@if (state.hasLibraryRole()) {
+						<mat-chip [matMenuTriggerFor]="labelsMenu" class="app-chip-add">
+							{{ 'Přidat štítek' | translate }}
+							<mat-menu #labelsMenu="matMenu">
+								@for(a of state.labels(); track $index) {
+								<button mat-menu-item (click)="addLabel(a)">{{ a.name }}</button>
+								}
+							</mat-menu>
+						</mat-chip>
+					}
+				</mat-chip-set>
+			</div>
+		</mat-card-title>
+	</mat-card-header>
+	<mat-card-content>
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.date' | translate }}:</span>
+			<span class="app-value">{{ author['date']}}</span>
+		</div>
+		<div class="app-metadata-row">
+			@if(editing()) {
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'field.year_birth' | translate }}</mat-label>
+					<input matInput [(ngModel)]="author.year_birth" (ngModelChange)="setFull()" />
+				</mat-form-field>
+			} @else {
+				<span class="app-label">{{ 'field.year_birth' | translate }}:</span>
+				<span class="app-value">{{ author.year_birth}}</span>
+			}
+		</div>
+		<div class="app-metadata-row">
+			@if(editing()) {
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'field.year_death' | translate }}</mat-label>
+					<input matInput [(ngModel)]="author.year_death" (ngModelChange)="setFull()" />
+				</mat-form-field>
+			} @else {
+				<span class="app-label">{{ 'field.year_death' | translate }}:</span>
+				<span class="app-value">{{ author.year_death }}</span>
+			}
+		</div>
+		<div class="app-metadata-row">
+
+			
+			@if(editing()) {
+				<mat-form-field appearance="outline">
+				<mat-label>{{ 'field.note' | translate }}</mat-label>
+				<textarea matInput [(ngModel)]="author['note']" rows="3"></textarea>
+				</mat-form-field>
+			} @else {
+				<span class="app-label">{{ 'field.note' | translate }}:</span>
+				<span class="app-value">{{ author.note}}</span>
+			}
+		</div>
+		@if (author.nameIdentifier) {
+		<div class="app-metadata-row">
+			<span class="app-label" [title]="'field.nameIdentifier_desc' | translate">{{ 'field.nameIdentifier' | translate }}:</span>
+			<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+author.nameIdentifier" class="app-value">
+				<span>{{ author.nameIdentifier}}</span>
+				<mat-icon>open_in_new</mat-icon>
+			</a>
+		</div>
+		<div class="app-metadata-row">
+			<span class="app-label">{{ 'field.links' | translate }}:</span>
+			<!-- @if (loadingLinks()) {
+					<mat-progress-bar mode="indeterminate"></mat-progress-bar>
+				} -->
+			@for(w of linkTypes(); track $index) {
+			@for(l of links()[w]; track $index) {
+			<a target="_blank" [href]="l.url" class="app-value">
+				<span>{{ w }}</span>
+				<mat-icon>open_in_new</mat-icon>
+			</a>
+			}
+			}
+		</div>
+		} 
+		@if (state.hasLibraryRole()) {
+      <button matButton (click)="checkAutor()" class="app-mr-1">{{ 'action.check_author' | translate }}</button>
+      @for(a of aut(); track $index) {
+      <div class="app-metadata-row">
+        <span class="app-label">{{ a['datafield_100a'] }} {{ a['datafield_100d'] }} </span>
+        (<a target="_blank" [href]="'https://aleph.nkp.cz/dai/'+a['controlfield_001']" class="app-value">
+          <span>{{ a['controlfield_001'] }}</span>
+          <mat-icon>open_in_new</mat-icon>
+        </a>)
+        <button mat-icon-button (click)="setFromAut(a)" [title]="a.existing_author ? 'merge_author' : 'choose_author' | translate" ><mat-icon>{{ a.existing_author ? 'merge' : 'done' }}</mat-icon></button>
+      </div>
+      }
+    }
+		
+	</mat-card-content>
+	<mat-card-actions align="end">
+		<div class="app-fxLayout app-row app-gap-2">
+			@if(numTitles()) {<button matButton (click)="gotoTitles()" class="app-mr-1">{{ 'action.show_titles' | translate }} ({{ numTitles() }})</button>}
+			@if (state.hasLibraryRole()) {
+			<button matButton="outlined" [disabled]="loading()" (click)="onSave()">{{ 'action.save' | translate }}<mat-icon matSuffix>save</mat-icon></button>
+			<button matButton="outlined" (click)="toggleEdit()" >{{ 'action.edit' | translate }}<mat-icon matSuffix>edit</mat-icon></button>
+			}
+		</div>
+	</mat-card-actions>
+}
+</mat-card>

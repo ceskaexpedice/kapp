@@ -1,0 +1,35 @@
+.app-cards-wrapper {
+	margin: -16px;
+
+	.mat-mdc-card {
+		width: 300px;
+		margin: 16px;
+		min-height: 200px;
+
+		.mat-mdc-card-header {
+			margin-bottom: 16px;
+
+			.app-count {
+				font-weight: 100;
+			}
+		}
+
+		.mat-mdc-card-content {
+			flex: 1 1 1e-09px; 
+			box-sizing: border-box;
+
+			.mat-mdc-form-field {
+				width: 100%;
+			} 
+		}
+	}
+}
+
+	.app-mat-card-logo {
+		margin-top: 60px;
+		align-items: center;
+
+		img {
+			vertical-align: middle;
+		}
+	}

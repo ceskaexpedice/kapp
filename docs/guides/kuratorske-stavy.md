@@ -25,7 +25,7 @@ Aktuální stav je v `state`, výsledek licenčního rozhodnutí v `assigned_lic
 - `CONTROLLED_BLOCKED`
 
 Web používá stejné stavové hodnoty jako backend. České a anglické názvy zobrazené uživateli jsou pouze překlady těchto enum hodnot. Konkrétní volby ve webu určuje webová konfigurace; uživatelské významy jsou v
-[uživatelské dokumentaci webu](https://gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/-/blob/main/kuratorska-aplikace-web/UZIVATELSKA_DOKUMENTACE.md#ruční-kurátorské-stavy).
+[uživatelské dokumentaci webu](https://gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/-/blob/main/web-services/kuratorska-aplikace-web/UZIVATELSKA_DOKUMENTACE.md#ruční-kurátorské-stavy).
 
 ### Hierarchické
 

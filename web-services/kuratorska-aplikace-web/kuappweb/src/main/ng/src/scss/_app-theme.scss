@@ -1,0 +1,11 @@
+/* @use 'sass:map';
+@use '@angular/material' as mat;
+
+
+@include mat.theme((color: (theme-type: light,
+    primary: mat.$cyan-palette,
+    tertiary: mat.$blue-palette,
+  ),
+  typography: Roboto,
+  density: 0,
+)); */

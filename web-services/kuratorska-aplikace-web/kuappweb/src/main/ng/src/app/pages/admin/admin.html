@@ -1,0 +1,104 @@
+<div class="app-container-fluid app-h-100">
+	<div class="app-fxLayout app-row">
+		<mat-card appearance="outlined">
+			<mat-card-header class="app-mb-4">
+				<mat-card-title> {{ 'admin.labels' | translate}} </mat-card-title>
+			</mat-card-header>
+			<mat-card-content>
+				<mat-form-field appearance="outline">
+					<mat-label>{{ 'admin.labels_visible_to' | translate }}</mat-label>
+					<mat-select [(ngModel)]="labelScope" (selectionChange)="selectLabelScope()">
+						@for(scope of labelScopes; track scope.id) {
+							<mat-option [value]="scope.id">
+								@if(scope.visibility === 'everyone') {
+									{{ 'admin.labels_everyone' | translate }}
+								} @else if(scope.visibility === 'private') {
+									{{ 'admin.labels_private' | translate }}
+								} @else {
+									{{ scope.library }}
+								}
+							</mat-option>
+						}
+					</mat-select>
+				</mat-form-field>
+				@for(l of labels; let idx = $index; track $index) {
+					<div class="app-fxLayout app-row app-baseline-v app-gap-2">
+						<mat-form-field appearance="outline">
+							<mat-label>Name</mat-label>
+							<input matInput [(ngModel)]="l.name" [title]="l.name | translate" />
+						</mat-form-field>
+						<mat-form-field appearance="outline">
+							<mat-label>Note</mat-label>
+							<input matInput [(ngModel)]="l.note"  />
+						</mat-form-field>
+						<mat-form-field appearance="outline">
+							<mat-label>Color</mat-label>
+							<input matInput [(ngModel)]="l.color" [disabled]="l.name === 'test'" />
+						</mat-form-field>
+						<mat-chip class="app-fxFlex" [style.background-color]="l.color" style="--mat-chip-label-text-color: {{l.text_color}};" (removed)="removeLabel(idx)" [matTooltip]="'remove_this_record' | translate">
+							{{ l.name }}
+							@if(!l.inconfig) {
+								<button matChipRemove [attr.aria-label]="'remove ' + l.name">
+									<mat-icon class="app-close">close</mat-icon>
+									<mat-icon class="app-cancel">cancel</mat-icon>
+								</button>						
+							}
+						</mat-chip>
+					</div>
+				}	
+				<div class="app-fxLayout app-row app-gap-2">
+					<mat-form-field appearance="outline">
+						<mat-label>{{ 'admin.new_label_name' | translate }}</mat-label>
+						<input matInput [(ngModel)]="nl.name" />
+						@if(isNewPublicLabelInvalid(nl.name)) {
+							<mat-error>{{ 'admin.label_underscore_not_allowed' | translate }}</mat-error>
+						}
+					</mat-form-field>
+					<mat-form-field appearance="outline" class="app-set-color">
+						<mat-label>{{ 'admin.new_label_color' | translate }}</mat-label>
+						<input matInput [(ngModel)]="nl.color" />
+						<div matSuffix class="app-color" [style.background-color]="nl.color"></div>
+					</mat-form-field>
+					<button matButton="outlined" (click)="addLabel(nl)" class="app-btn-add"
+						[disabled]="isNewPublicLabelInvalid(nl.name)"><!--[style.background-color]="nl.color" [style.color]="nl.text_color"-->
+						<mat-icon>add_circle</mat-icon>Přidat
+					</button>
+				</div>
+			</mat-card-content>
+			<mat-card-actions class="app-mat-card-actions">
+				<button matButton="filled" (click)="saveLabels()">{{ 'action.save' | translate }}</button>
+			</mat-card-actions>
+		</mat-card>
+
+		<mat-card appearance="outlined" class="app-fxFlex app-ml-4">
+			<mat-card-header class="app-mb-4">
+				<mat-card-title> {{ 'admin.licenses' | translate}} </mat-card-title>
+			</mat-card-header>
+			<mat-card-content class="app-fxLayout app-column">
+				@for(l of licenses; track $index) {
+					<mat-form-field appearance="outline" disabled="true">
+						<mat-label>{{ 'field.license' | translate }}</mat-label>
+						<input matInput [value]="l" [disabled]="l === 'onsite' || l === 'public'" />
+						@if(l !== 'onsite' && l !== 'public') {
+							<button matIconButton matSuffix (click)="removeLicense()" class="app-btn-remove" [matTooltip]="'remove_this_record' | translate">
+								<mat-icon>close</mat-icon>
+							</button>
+						}
+					</mat-form-field>
+				}	
+				<div class="app-fxLayout app-row app-gap-2">
+					<mat-form-field appearance="outline" class="app-fxFlex">
+						<mat-label>{{ 'admin.new_license' | translate }}</mat-label>
+						<input matInput [(ngModel)]="new_license" />
+					</mat-form-field>
+					<button matButton="outlined"  (click)="addLicense()" class="app-btn-add">
+						<mat-icon>add_circle</mat-icon>Přidat
+					</button>
+				</div>
+			</mat-card-content>
+			<mat-card-actions class="app-mat-card-actions">
+				<button matButton="filled" (click)="saveLicenses()">{{ 'action.save' | translate }}</button>
+			</mat-card-actions>
+		</mat-card>
+	</div>
+</div>
