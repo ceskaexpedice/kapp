@@ -6,7 +6,7 @@ Nejde o nový paralelní způsob běžné kurátorské práce. Po převedení p�
 
 Backend obsahuje dvě navazující cesty:
 
-- `services:init` importuje kurátorské TSV tabulky do `titles`,
+- `services:excel-importer` importuje kurátorské TSV tabulky do `titles`,
 - `services:last-author-updater` následně páruje hodnoty posledních autorů s core `authors`.
 
 Nejde o webový upload. Nástroje jsou určené pro řízené jednorázové backendové běhy.
@@ -30,7 +30,7 @@ Výchozí vstupy:
 Jiný adresář lze předat jako první argument:
 
 ```powershell
-.\gradlew :services:init:run --args="C:\cesta\k\tsv"
+.\gradlew :services:excel-importer:run --args="C:\cesta\k\tsv"
 ```
 
 ## Mapování souborů a sloupců

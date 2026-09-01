@@ -21,9 +21,9 @@ Harvester tedy data z Krameria čte. Po automatickém nebo ručním rozhodnutí 
 
 - `kuratorska-aplikace-web` je webové UI a servletová API vrstva. Její uživatelská a technická dokumentace zůstává v submodulu.
 - `services:harvester` sklízí metadata z API Krameria v5/v7, načítá MODS, počítá počáteční workflow a zapisuje tituly a autory.
-- `services:Updater` znovu vyhodnocuje workflow, dopočítává rok uvolnění, označuje chybějící data a aplikuje licence ze smluv.
+- `services:updater` znovu vyhodnocuje workflow, dopočítává rok uvolnění, označuje chybějící data a aplikuje licence ze smluv.
 - `services:scheduler` spouští harvester nebo updater jako dlouho běžící Quartz službu.
-- `services:init` importuje kurátorské tabulky TSV a obsahuje import posledních autorů z Excelu.
+- `services:excel-importer` importuje kurátorské tabulky TSV a obsahuje import posledních autorů z Excelu.
 - `services:last-author-updater` páruje údaje o posledním autorovi z Excelu s autory a tituly v Solru.
 - `services:common` obsahuje sdílené datové modely, normalizaci, parsování a Solr helpery.
 - `nkp-deploy` skládá celý systém pomocí Docker Compose a obsahuje provozní konfiguraci i Solr cores.

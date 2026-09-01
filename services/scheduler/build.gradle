@@ -37,9 +37,9 @@ jib {
 }
 dependencies {
 
-    api project(':services:init')
+    api project(':services:excel-importer')
     api project(':services:harvester')
-    api project(':services:Updater')
+    api project(':services:updater')
 
     implementation("org.quartz-scheduler:quartz:2.5.2")
 

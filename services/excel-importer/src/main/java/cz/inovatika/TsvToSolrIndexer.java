@@ -31,7 +31,7 @@ public class TsvToSolrIndexer {
     private static final String SOLR_URL = "http://localhost:8983/solr";//"http://solr-kappScheduler:8983/solr";//
 
     private static String DIRECTORY_PATH = System.getProperty("user.home") + "/.kapp/Data";//"../Data"; // change this
-    private static final String TSV_MAPPINGS = System.getProperty("user.home") + "/.kapp/tsv-mappings.json";//"services/init/src/main/resources/tsv-mappings.json"
+    private static final String TSV_MAPPINGS = System.getProperty("user.home") + "/.kapp/tsv-mappings.json";//"services/excel-importer/src/main/resources/tsv-mappings.json"
     private final static SolrClient solrClient = new Http2SolrClient.Builder(SOLR_URL).withConnectionTimeout(100, TimeUnit.SECONDS).build();
     static ApplicationConfig applicationConfig;
 
