@@ -37,7 +37,7 @@ jib {
 }
 dependencies {
 
-    api project(':services:excel-importer')
+    api project(':single-use-services:excel-importer')
     api project(':services:harvester')
     api project(':services:updater')
 

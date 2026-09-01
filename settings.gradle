@@ -8,9 +8,9 @@
  */
 
 rootProject.name = 'nkp-kuratorska-aplikace'
-include 'services:excel-importer',
+include 'single-use-services:excel-importer',
         'services:harvester',
         'services:scheduler',
         'services:common',
         'services:updater',
-        'services:last-author-updater'
+        'single-use-services:last-author-updater'

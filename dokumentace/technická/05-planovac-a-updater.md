@@ -102,7 +102,7 @@ Kód obsahuje builder kandidátního filtru podle roků a příznaků. V aktuál
 
 ## Last-author updater
 
-`services:last-author-updater` je samostatná jednorázová aplikace, nikoli Quartz job. Páruje hodnoty `last_author_excel` s core `authors`, zapisuje upravená autoritní data k titulům a může připravit podklady pro další workflow přepočet.
+`single-use-services:last-author-updater` je samostatná jednorázová aplikace, nikoli Quartz job. Páruje hodnoty `last_author_excel` s core `authors`, zapisuje upravená autoritní data k titulům a může připravit podklady pro další workflow přepočet.
 
 Spuštění a volby jsou popsané v [04-import-tsv.md](./04-import-tsv.md).
 
@@ -114,7 +114,7 @@ Pro lokální Gradle běh:
 .\gradlew :services:scheduler:run --args="harvester"
 .\gradlew :services:scheduler:run --args="updater"
 .\gradlew :services:scheduler:run --args="updater-once"
-.\gradlew :services:last-author-updater:run --args="<volby>"
+.\gradlew :single-use-services:last-author-updater:run --args="<volby>"
 ```
 
 V produkci preferujte příslušnou Compose službu, protože používá správné volume a síťové názvy.
