@@ -1,9 +1,9 @@
 site_name: Kurátorská aplikace – dokumentace
 site_description: Technická a provozní dokumentace Kurátorské aplikace
-site_url: https://inovatika.gitlab.io/nkp/nkp-kuratorska-aplikace/
-repo_url: https://gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace
-repo_name: inovatika/nkp/nkp-kuratorska-aplikace
-edit_uri: -/edit/main/docs/
+site_url: https://ceskaexpedice.github.io/kapp/
+repo_url: https://github.com/ceskaexpedice/kapp
+repo_name: ceskaexpedice/kapp
+edit_uri: edit/main/docs/
 
 theme:
   name: material
@@ -62,7 +62,9 @@ nav:
       - Přehled: reference/index.md
       - Solr data: reference/solr-data.md
       - Otevřené otázky: reference/otevrene-otazky.md
-  - Nasazení dokumentace: deployment/index.md
+  - Nasazení dokumentace:
+      - Dokumentační web: deployment/index.md
+      - GitHub Actions a registry: deployment/github-actions.md
 
 extra_css:
   - stylesheets/extra.css
@@ -73,9 +75,9 @@ extra_javascript:
 extra:
   generator: false
   social:
-    - icon: fontawesome/brands/gitlab
-      link: https://gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace
-      name: Projekt na GitLabu
+    - icon: fontawesome/brands/github
+      link: https://github.com/ceskaexpedice/kapp
+      name: Projekt na GitHubu
 
 copyright: Copyright &copy; 2026 Národní knihovna České republiky
 

@@ -16,7 +16,7 @@ Z adresáře `kuappweb` spusťte:
 mvn clean verify
 ```
 
-Web má vlastní definici GitLab CI a není součástí kořenového backendového Maven reactoru. Kořenový pipeline tuto definici načítá přes `include`: `web_build` běží souběžně s `backend_build` ve fázi `build` a `web_image_publish` souběžně s backendovým publikováním ve fázi `publish`.
+Web má vlastní GitHub Actions workflow `.github/workflows/web.yml` a není součástí kořenového backendového Maven reactoru. Build běží pro relevantní push změny a pull requesty; po úspěšném pushi do výchozí větve publikuje image `ghcr.io/ceskaexpedice/kapp/web-build`.
 
 ## Nasazení
 

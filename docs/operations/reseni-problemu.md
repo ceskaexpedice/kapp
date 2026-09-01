@@ -6,7 +6,7 @@ Produkční jednotkou je repozitář `nkp-deploy`. Aktuální `docker-compose.ym
 
 - `solr` na hostitelském portu `8983`,
 - `tomcat` s webem/API na portu `8088`,
-- `harvester` z image `kappscheduler:latest` s argumentem `harvester`,
+- `harvester` z image `backend-build:latest` s argumentem `harvester`,
 - `updater` ze stejného image s argumentem `updater`.
 
 Oba backendové kontejnery čekají na healthcheck Solru. Všechny aplikační kontejnery sdílejí `./.kapp:/root/.kapp`.
@@ -22,7 +22,7 @@ docker compose up -d
 docker compose ps
 ```
 
-Přihlášení do registru je nutné podle nastavení GitLab registry. Hostitelský Tomcat není potřeba; web běží v kontejneru služby `tomcat`.
+Pro neveřejné GHCR image se deployment server přihlašuje pomocí provozního GitHub účtu a personal access tokenu classic s oprávněním `read:packages`; podrobnosti jsou v [návodu pro GitHub Actions a GHCR](../deployment/github-actions.md). Hostitelský Tomcat není potřeba; web běží v kontejneru služby `tomcat`.
 
 ## Před spuštěním
 

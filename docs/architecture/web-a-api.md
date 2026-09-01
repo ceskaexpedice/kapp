@@ -23,7 +23,9 @@ cd web-services/kuratorska-aplikace-web/kuappweb
 mvn clean verify
 ```
 
-Web má samostatnou definici GitLab CI, kterou kořenový pipeline načítá přes `include`. Při změnách webu běží `web_build` souběžně s `backend_build` ve fázi `build`; po úspěšném sestavení se ve fázi `publish` automaticky publikuje image `registry.gitlab.com/inovatika/nkp/nkp-kuratorska-aplikace/kuappweb`. Web přitom zůstává mimo backendový Maven reactor a sestavuje se vlastním Maven jobem.
+Web má samostatné GitHub Actions workflow `.github/workflows/web.yml`. Pull requesty a relevantní push změny spouštějí vlastní Maven build; po úspěšném pushi do výchozí větve se automaticky publikuje image `ghcr.io/ceskaexpedice/kapp/web-build`. Web zůstává mimo backendový Maven reactor, takže jeho build může běžet souběžně s backendovým workflow.
+
+Nastavení GitHub Actions, GHCR a potřebných oprávnění popisuje [migrační a provozní návod](../deployment/github-actions.md).
 
 ## Konfigurace
 

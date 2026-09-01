@@ -13,7 +13,9 @@ Backend vyžaduje Javu 21 a používá Maven Wrapper 3.9.9. Z kořenové složky
 .\mvnw.cmd clean verify
 ```
 
-Kořenový Maven reactor obsahuje moduly v `services/` a `single-use-services/`. Knihovna `services/common` není samostatně spustitelná služba. Webová aplikace v `web-services/kuratorska-aplikace-web` má vlastní Maven build a samostatnou definici GitLab CI; její joby se přes `include` zapojují do společného pipeline, ale není součástí backendového reactoru.
+Kořenový Maven reactor obsahuje moduly v `services/` a `single-use-services/`. Knihovna `services/common` není samostatně spustitelná služba. Webová aplikace v `web-services/kuratorska-aplikace-web` má vlastní Maven build a vlastní GitHub Actions workflow; není součástí backendového reactoru.
+
+GitHub Actions sestaví backend a web pro relevantní push změny a pull requesty. Po úspěšném pushi do výchozí větve publikuje obrazy `backend-build` a `web-build` do GitHub Container Registry repozitáře `ceskaexpedice/kapp`. Nastavení repozitáře, GHCR, Pages a deployment přihlášení popisuje [migrační návod](docs/deployment/github-actions.md).
 
 ## Dokumentace
 
@@ -24,7 +26,7 @@ Technická a provozní dokumentace je připravená jako statický web pomocí Mk
 - `mkdocs.local.yml` přepíná chat na lokální Documentation Chat API.
 - `requirements.txt` připíná verzi MkDocs Material.
 - `tools/` obsahuje build dokumentu pro LLM, publisher, build chatovacího UI a spouštěcí skript MkDocs.
-- `.gitlab-ci.yml` sestaví a publikuje web přes GitLab Pages.
+- `.github/workflows/documentation.yml` sestaví a publikuje web přes GitHub Pages.
 
 Složka `docs/` je jediným zdrojem udržované technické i uživatelské dokumentace a publikuje se jako jeden web.
 
@@ -38,7 +40,7 @@ py -m venv '.venv'
 .\tools\run_mkdocs.ps1
 ```
 
-Web bude dostupný na adrese [http://127.0.0.1:8000/nkp/nkp-kuratorska-aplikace/](http://127.0.0.1:8000/nkp/nkp-kuratorska-aplikace/).
+Web bude dostupný na adrese [http://127.0.0.1:8000/kapp/](http://127.0.0.1:8000/kapp/).
 
 Výchozí konfigurace používá vzdálené Documentation Chat API. Pro lokální API spusťte:
 
@@ -70,23 +72,23 @@ Angular Web Component a jeho profilové assety sestavíte a zkopírujete do `doc
 .\tools\build_documentation_chat_ui.ps1
 ```
 
-Skript používá Angular projekt v `C:\VA\Projects\VA\documentation-chat\documentation-chat-ui`. Vygenerovaný JavaScript i profilová loga zůstávají verzované, protože GitLab Pages job spouští pouze MkDocs.
+Skript používá Angular projekt v `C:\VA\Projects\VA\documentation-chat\documentation-chat-ui`. Vygenerovaný JavaScript i profilová loga zůstávají verzované, protože GitHub Pages workflow spouští pouze MkDocs.
 
-Přísnou kontrolu shodnou s GitLab CI spustíte příkazem:
+Přísnou kontrolu shodnou s GitHub Actions spustíte příkazem:
 
 ```powershell
 .\.venv\Scripts\python.exe -m mkdocs build --strict --site-dir 'public'
 ```
 
-### Publikování na GitLab Pages
+### Publikování na GitHub Pages
 
-Job `deploy-pages` se automaticky spustí po odeslání změn do výchozí větve. Po prvním úspěšném běhu:
+Workflow `Documentation` se automaticky spustí po odeslání změn dokumentace do větve `main`. Před prvním během:
 
-1. Otevřete v projektu **Deploy → Pages**.
-2. Vypněte **Use unique domain**, pokud chcete používat předvídatelnou adresu.
-3. Pro veřejný web v privátním repozitáři nastavte v **Settings → General → Visibility, project features, permissions** přístup k Pages na **Everyone**.
+1. Otevřete **Settings → Pages**.
+2. V části **Build and deployment** nastavte **Source: GitHub Actions**.
+3. Zkontrolujte prostředí `github-pages` a jeho ochranu výchozí větve.
 
-Web pak bude dostupný na adrese [https://inovatika.gitlab.io/nkp/nkp-kuratorska-aplikace/](https://inovatika.gitlab.io/nkp/nkp-kuratorska-aplikace/). Podrobnější návod je součástí dokumentačního webu v `docs/deployment/index.md`.
+Web pak bude dostupný na adrese [https://ceskaexpedice.github.io/kapp/](https://ceskaexpedice.github.io/kapp/). Podrobnější postup je v [dokumentaci nasazení](docs/deployment/index.md) a [návodu pro GitHub Actions a GHCR](docs/deployment/github-actions.md).
 
 
 ## Import dokumentů

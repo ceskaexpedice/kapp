@@ -48,11 +48,11 @@ Dokumentace je určená především kurátorům, administrátorům a vývojář
 
     [:octicons-arrow-right-24: Zobrazit referenci](reference/index.md)
 
--   :fontawesome-brands-gitlab:{ .lg .middle } __Dokumentační web__
+-   :fontawesome-brands-github:{ .lg .middle } __Dokumentační web__
 
     ---
 
-    Lokální spuštění MkDocs a automatické publikování přes GitLab Pages.
+    Lokální spuštění MkDocs a automatické publikování přes GitHub Pages.
 
     [:octicons-arrow-right-24: Zobrazit postup nasazení](deployment/index.md)
 
