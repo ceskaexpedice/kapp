@@ -13,7 +13,7 @@ Backend vyžaduje Javu 21 a používá Maven Wrapper 3.9.9. Z kořenové složky
 .\mvnw.cmd clean verify
 ```
 
-Kořenový Maven reactor obsahuje moduly v `services/` a `single-use-services/`. Knihovna `services/common` není samostatně spustitelná služba. Webová aplikace v `web-services/kuratorska-aplikace-web` má vlastní Maven build a samostatný GitLab child pipeline; není součástí backendového reactoru.
+Kořenový Maven reactor obsahuje moduly v `services/` a `single-use-services/`. Knihovna `services/common` není samostatně spustitelná služba. Webová aplikace v `web-services/kuratorska-aplikace-web` má vlastní Maven build a samostatnou definici GitLab CI; její joby se přes `include` zapojují do společného pipeline, ale není součástí backendového reactoru.
 
 ## Dokumentace
 

@@ -1,3 +1,6 @@
+include:
+  - local: web-services/kuratorska-aplikace-web/.gitlab-ci.yml
+
 stages:
   - build
   - publish
@@ -43,19 +46,7 @@ backend_image_publish:
     - ./mvnw --batch-mode --no-transfer-progress -f services/scheduler/pom.xml jib:build -DskipTests "-Djib.to.auth.username=$CI_REGISTRY_USER" "-Djib.to.auth.password=$CI_JOB_TOKEN"
   rules:
     - changes: *backend_changes
-      when: manual
   allow_failure: false
-
-web_application_pipeline:
-  stage: publish
-  trigger:
-    include:
-      - local: web-services/kuratorska-aplikace-web/.gitlab-ci.yml
-    strategy: mirror
-  rules:
-    - changes:
-        - .gitlab-ci.yml
-        - web-services/kuratorska-aplikace-web/**/*
 
 deploy-pages:
   stage: publish

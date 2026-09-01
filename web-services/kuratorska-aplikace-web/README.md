@@ -16,7 +16,7 @@ Z adresáře `kuappweb` spusťte:
 mvn clean verify
 ```
 
-Web má vlastní GitLab child pipeline a není součástí kořenového backendového Maven reactoru.
+Web má vlastní definici GitLab CI a není součástí kořenového backendového Maven reactoru. Kořenový pipeline tuto definici načítá přes `include`: `web_build` běží souběžně s `backend_build` ve fázi `build` a `web_image_publish` souběžně s backendovým publikováním ve fázi `publish`.
 
 ## Nasazení
 

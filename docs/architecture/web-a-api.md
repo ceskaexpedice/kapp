@@ -23,7 +23,7 @@ cd web-services/kuratorska-aplikace-web/kuappweb
 mvn clean verify
 ```
 
-Změny pod `web-services/kuratorska-aplikace-web` spouštějí samostatný GitLab child pipeline. Ten ověří webový Maven build a nabízí ruční publikování image `registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb`. Backendový pipeline webovou aplikaci nesestavuje.
+Web má samostatnou definici GitLab CI, kterou kořenový pipeline načítá přes `include`. Při změnách webu běží `web_build` souběžně s `backend_build` ve fázi `build`; po úspěšném sestavení se ve fázi `publish` automaticky publikuje image `registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb`. Web přitom zůstává mimo backendový Maven reactor a sestavuje se vlastním Maven jobem.
 
 ## Konfigurace
 

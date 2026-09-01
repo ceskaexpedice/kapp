@@ -1,42 +1,39 @@
-stages:
-  - build
-  - publish
-
-variables:
-  MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
-  APP_DIR: "web-services/kuratorska-aplikace-web/kuappweb"
-
-image: maven:3.9.9-eclipse-temurin-21
-
-cache:
-  key: "web-$CI_COMMIT_REF_SLUG"
-  paths:
-    - .m2/repository
-    - ${APP_DIR}/src/main/ng/node_modules/
-
-before_script:
-  - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
-  - apt-get install -y nodejs
-  - echo "<settings><servers><server><id>gitlab-maven</id><username>gitlab-ci-token</username><password>${CI_JOB_TOKEN}</password></server></servers></settings>" > "$CI_PROJECT_DIR/settings.xml"
+.web_job:
+  image: maven:3.9.9-eclipse-temurin-21
+  variables:
+    WEB_APP_DIR: "web-services/kuratorska-aplikace-web/kuappweb"
+  cache:
+    key: "web-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .m2/repository
+      - ${WEB_APP_DIR}/src/main/ng/node_modules/
+  before_script:
+    - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+    - apt-get install -y nodejs
+    - echo "<settings><servers><server><id>gitlab-maven</id><username>gitlab-ci-token</username><password>${CI_JOB_TOKEN}</password></server></servers></settings>" > "$CI_PROJECT_DIR/settings.xml"
+  rules:
+    - changes: &web_changes
+        - .gitlab-ci.yml
+        - web-services/kuratorska-aplikace-web/**/*
 
 web_build:
+  extends: .web_job
   stage: build
   script:
-    - echo "Spoustim kontrolni build webove aplikace v $APP_DIR..."
-    - cd "$APP_DIR"
+    - echo "Spoustim kontrolni build webove aplikace v $WEB_APP_DIR..."
+    - cd "$WEB_APP_DIR"
     - mvn --batch-mode --no-transfer-progress clean verify -s "$CI_PROJECT_DIR/settings.xml"
   artifacts:
     when: always
     reports:
       junit: web-services/kuratorska-aplikace-web/kuappweb/target/surefire-reports/TEST-*.xml
-  
+
 web_image_publish:
+  extends: .web_job
   stage: publish
   script:
     - echo "Target - registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb"
-    - cd "$APP_DIR"
+    - cd "$WEB_APP_DIR"
     - mvn --batch-mode --no-transfer-progress clean install -s "$CI_PROJECT_DIR/settings.xml" -DskipTests
     - mvn --batch-mode --no-transfer-progress jib:build -DskipTests "-Djib.to.auth.username=gitlab-ci-token" "-Djib.to.auth.password=$CI_JOB_TOKEN"
-  when: manual
   allow_failure: false
-  
