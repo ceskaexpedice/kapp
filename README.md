@@ -5,6 +5,16 @@ Kramerius.
 
 Data jsou importováná z jednotlivých instancí krameria a dokumenty postupují nasledující stavy
 
+## Sestavení
+
+Backend vyžaduje Javu 21 a používá Maven Wrapper 3.9.9. Z kořenové složky repozitáře jej sestavíte a otestujete příkazem:
+
+```powershell
+.\mvnw.cmd clean verify
+```
+
+Kořenový Maven reactor obsahuje moduly v `services/` a `single-use-services/`. Knihovna `services/common` není samostatně spustitelná služba. Webová aplikace v `web-services/kuratorska-aplikace-web` má vlastní Maven build a samostatný GitLab child pipeline; není součástí backendového reactoru.
+
 ## Dokumentace
 
 Technická a provozní dokumentace je připravená jako statický web pomocí MkDocs Material.
@@ -16,7 +26,7 @@ Technická a provozní dokumentace je připravená jako statický web pomocí Mk
 - `tools/` obsahuje build dokumentu pro LLM, publisher, build chatovacího UI a spouštěcí skript MkDocs.
 - `.gitlab-ci.yml` sestaví a publikuje web přes GitLab Pages.
 
-Původní složka `dokumentace/` zůstává beze změn; publikovaný web se generuje pouze z `docs/`.
+Složka `dokumentace/` obsahuje paralelně udržovanou technickou dokumentaci; publikovaný web se generuje pouze z `docs/`.
 
 ### Lokální spuštění ve Windows 11
 

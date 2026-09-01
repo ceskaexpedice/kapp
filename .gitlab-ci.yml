@@ -3,39 +3,59 @@ stages:
   - publish
 
 variables:
-  GRADLE_USER_HOME: $CI_PROJECT_DIR/.gradle
-  PIP_CACHE_DIR: $CI_PROJECT_DIR/.cache/pip
+  MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
+  PIP_CACHE_DIR: "$CI_PROJECT_DIR/.cache/pip"
 
-image: eclipse-temurin:21-jdk-jammy
+default:
+  image: eclipse-temurin:21-jdk-jammy
+  cache:
+    key: "maven-$CI_COMMIT_REF_SLUG"
+    paths:
+      - .m2/repository
 
-cache:
-  key: "$CI_COMMIT_REF_NAME"
-  paths:
-    - .gradle/caches
-    - .gradle/wrapper
-
-gradle_build:
+backend_build:
   stage: build
   script:
-    - echo "Java version:"
-    - java -version 
-    - chmod +x gradlew
-    - echo "Gradlew"
-    - ./gradlew clean build -x test
-    - echo "Build hotov."
+    - java -version
+    - chmod +x mvnw
+    - ./mvnw --batch-mode --no-transfer-progress clean verify
   artifacts:
     when: always
     reports:
-      junit: build/test-results/**/*.xml
+      junit:
+        - services/*/target/surefire-reports/TEST-*.xml
+        - single-use-services/*/target/surefire-reports/TEST-*.xml
+  rules:
+    - changes: &backend_changes
+        - .gitlab-ci.yml
+        - .mvn/**/*
+        - mvnw
+        - mvnw.cmd
+        - pom.xml
+        - services/**/*
+        - single-use-services/**/*
 
-docker_image_publish:
+backend_image_publish:
   stage: publish
   script:
-    - chmod +x gradlew
-    - echo "JIB - docker publish"
-    - ./gradlew jib -Djib.to.auth.username=$CI_REGISTRY_USER -Djib.to.auth.password=$CI_JOB_TOKEN
-  when: manual
+    - chmod +x mvnw
+    - ./mvnw --batch-mode --no-transfer-progress -pl services/scheduler -am install -DskipTests
+    - ./mvnw --batch-mode --no-transfer-progress -f services/scheduler/pom.xml jib:build -DskipTests "-Djib.to.auth.username=$CI_REGISTRY_USER" "-Djib.to.auth.password=$CI_JOB_TOKEN"
+  rules:
+    - changes: *backend_changes
+      when: manual
   allow_failure: false
+
+web_application_pipeline:
+  stage: publish
+  trigger:
+    include:
+      - local: web-services/kuratorska-aplikace-web/.gitlab-ci.yml
+    strategy: mirror
+  rules:
+    - changes:
+        - .gitlab-ci.yml
+        - web-services/kuratorska-aplikace-web/**/*
 
 deploy-pages:
   stage: publish

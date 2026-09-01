@@ -3,13 +3,13 @@ stages:
   - publish
 
 variables:
-  GITLAB_PROJECT_ID: "NAHRAD_CISLEM_PROJEKTU"
-  MAVEN_OPTS: "-Dmaven.repo.local=.m2/repository"
-  APP_DIR: "kuappweb"
+  MAVEN_OPTS: "-Dmaven.repo.local=${CI_PROJECT_DIR}/.m2/repository"
+  APP_DIR: "web-services/kuratorska-aplikace-web/kuappweb"
 
-image: maven:3.9.6-eclipse-temurin-21
+image: maven:3.9.9-eclipse-temurin-21
 
 cache:
+  key: "web-$CI_COMMIT_REF_SLUG"
   paths:
     - .m2/repository
     - ${APP_DIR}/src/main/ng/node_modules/
@@ -17,27 +17,26 @@ cache:
 before_script:
   - curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
   - apt-get install -y nodejs
-  - echo "<settings><servers><server><id>gitlab-maven</id><username>gitlab-ci-token</username><password>${CI_JOB_TOKEN}</password></server></servers></settings>" > settings.xml
+  - echo "<settings><servers><server><id>gitlab-maven</id><username>gitlab-ci-token</username><password>${CI_JOB_TOKEN}</password></server></servers></settings>" > "$CI_PROJECT_DIR/settings.xml"
 
-
-build_job:
+web_build:
   stage: build
   script:
-    - echo "Spoustim kontrolni build aplikace v $APP_DIR..."
-    - cd $APP_DIR
-    - mvn clean install -s ../settings.xml -DskipTests
+    - echo "Spoustim kontrolni build webove aplikace v $APP_DIR..."
+    - cd "$APP_DIR"
+    - mvn --batch-mode --no-transfer-progress clean verify -s "$CI_PROJECT_DIR/settings.xml"
+  artifacts:
+    when: always
+    reports:
+      junit: web-services/kuratorska-aplikace-web/kuappweb/target/surefire-reports/TEST-*.xml
   
-publish_all_manual:
+web_image_publish:
   stage: publish
   script:
-    - echo "Registry - $CI_REGISTRY"
-    - echo "User - $CI_REGISTRY_USER"
-    - echo "JobToken - $CI_JOB_TOKEN"
-    - echo "Target- registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb"
-    - echo "Prepinam se do adresare $APP_DIR"
-    - cd $APP_DIR
-    - mvn clean install -s ../settings.xml -DskipTests
-    - mvn jib:build "-Djib.to.auth.username=gitlab-ci-token" "-Djib.to.auth.password=$CI_JOB_TOKEN" -DskipTests
+    - echo "Target - registry.gitlab.com/inovatika/nkp/kuratorska-aplikace-web/kuappweb"
+    - cd "$APP_DIR"
+    - mvn --batch-mode --no-transfer-progress clean install -s "$CI_PROJECT_DIR/settings.xml" -DskipTests
+    - mvn --batch-mode --no-transfer-progress jib:build -DskipTests "-Djib.to.auth.username=gitlab-ci-token" "-Djib.to.auth.password=$CI_JOB_TOKEN"
   when: manual
   allow_failure: false
   

@@ -8,10 +8,16 @@ Nejde o nový paralelní způsob běžné kurátorské práce. Po převedení p�
 
 Backend obsahuje dvě navazující cesty:
 
-- `single-use-services:excel-importer` importuje kurátorské TSV tabulky do `titles`,
-- `single-use-services:last-author-updater` následně páruje hodnoty posledních autorů s core `authors`.
+- `single-use-services/excel-importer` importuje kurátorské TSV tabulky do `titles`,
+- `single-use-services/last-author-updater` následně páruje hodnoty posledních autorů s core `authors`.
 
 Nejde o webový upload. Nástroje jsou určené pro řízené jednorázové backendové běhy.
+
+Před prvním lokálním spuštěním nainstalujte backendové moduly do lokálního Maven repozitáře:
+
+```powershell
+.\mvnw.cmd install -DskipTests
+```
 
 ## Excel TSV importer
 
@@ -34,7 +40,7 @@ Bez argumentu importer hledá vstupy v `<user-home>/.kapp/Data`. Vstupní soubor
 Jiný adresář lze předat jako první argument:
 
 ```powershell
-.\gradlew :single-use-services:excel-importer:run --args="C:\cesta\k\tsv"
+.\mvnw.cmd -f single-use-services/excel-importer/pom.xml exec:java '-Dexec.args=C:\cesta\k\tsv'
 ```
 
 ## Mapování souborů a sloupců
@@ -137,13 +143,13 @@ Volby:
 Bezpečný první běh:
 
 ```powershell
-.\gradlew :single-use-services:last-author-updater:run --args="--dry-run --verbose --limit=100"
+.\mvnw.cmd -f single-use-services/last-author-updater/pom.xml exec:java '-Dexec.args=--dry-run --verbose --limit=100'
 ```
 
 Produkční běh:
 
 ```powershell
-.\gradlew :single-use-services:last-author-updater:run --args="--rows=200 --batch-size=200"
+.\mvnw.cmd -f single-use-services/last-author-updater/pom.xml exec:java '-Dexec.args=--rows=200 --batch-size=200'
 ```
 
 Po zápisu spusťte updater workflow, aby se změna posledního autora promítla do stavu a `release_year`.

@@ -1,6 +1,6 @@
 # Import z Krameria
 
-Modul `services:harvester` sklízí metadata z více nakonfigurovaných instancí Krameria do společného Solru. Podporuje API v5 a v7.
+Modul `services/harvester` sklízí metadata z více nakonfigurovaných instancí Krameria do společného Solru. Podporuje API v5 a v7.
 
 ## Předpoklady
 
@@ -13,7 +13,8 @@ Modul `services:harvester` sklízí metadata z více nakonfigurovaných instanc�
 V produkci spouští harvester samostatná Compose služba. Lokálně:
 
 ```powershell
-.\gradlew :services:scheduler:run --args="harvester"
+.\mvnw.cmd -pl services/scheduler -am install -DskipTests
+.\mvnw.cmd -f services/scheduler/pom.xml exec:java '-Dexec.args=harvester'
 ```
 
 ## Běh přes instance

@@ -1,6 +1,6 @@
 # Plánovač a updater
 
-Modul `services:scheduler` používá Quartz. Stejný image se v `nkp-deploy` spouští dvakrát s jiným argumentem.
+Modul `services/scheduler` používá Quartz. Stejný image se v `nkp-deploy` spouští dvakrát s jiným argumentem.
 
 ## Režimy scheduleru
 
@@ -102,19 +102,25 @@ Kód obsahuje builder kandidátního filtru podle roků a příznaků. V aktuál
 
 ## Last-author updater
 
-`single-use-services:last-author-updater` je samostatná jednorázová aplikace, nikoli Quartz job. Páruje hodnoty `last_author_excel` s core `authors`, zapisuje upravená autoritní data k titulům a může připravit podklady pro další workflow přepočet.
+`single-use-services/last-author-updater` je samostatná jednorázová aplikace, nikoli Quartz job. Páruje hodnoty `last_author_excel` s core `authors`, zapisuje upravená autoritní data k titulům a může připravit podklady pro další workflow přepočet.
 
 Spuštění a volby jsou popsané v části [Tabulkové importy a poslední autor](../guides/import-tsv.md).
 
 ## Ruční spuštění
 
-Pro lokální Gradle běh:
+Před prvním lokálním spuštěním sestavte a nainstalujte backendové moduly:
 
 ```powershell
-.\gradlew :services:scheduler:run --args="harvester"
-.\gradlew :services:scheduler:run --args="updater"
-.\gradlew :services:scheduler:run --args="updater-once"
-.\gradlew :single-use-services:last-author-updater:run --args="<volby>"
+.\mvnw.cmd install -DskipTests
+```
+
+Jednotlivé režimy pak spustíte přes POM příslušného modulu:
+
+```powershell
+.\mvnw.cmd -f services/scheduler/pom.xml exec:java '-Dexec.args=harvester'
+.\mvnw.cmd -f services/scheduler/pom.xml exec:java '-Dexec.args=updater'
+.\mvnw.cmd -f services/scheduler/pom.xml exec:java '-Dexec.args=updater-once'
+.\mvnw.cmd -f single-use-services/last-author-updater/pom.xml exec:java '-Dexec.args=<volby>'
 ```
 
 V produkci preferujte příslušnou Compose službu, protože používá správné volume a síťové názvy.
