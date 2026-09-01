@@ -2,6 +2,8 @@
 
 TSV soubory jsou exporty ze starších Excelových tabulek, ve kterých uživatelé před vznikem současné webové aplikace evidovali stejný typ kurátorských údajů a prováděli obdobný rozhodovací workflow. Import proto slouží především jako převod historické práce z původního tabulkového postupu do datového modelu a workflow Kurátorské aplikace.
 
+Každý importovaný řádek simuluje příslušnou práci kurátora: přenáší jeho opravy, rozhodnutí, poznámky a identitu do stejných polí a stavových přechodů, které používá webová aplikace.
+
 Nejde o nový paralelní způsob běžné kurátorské práce. Po převedení původních tabulek uživatelé pokračují ve stejném procesu prostřednictvím webové aplikace; TSV nástroje zachovávají a převádějí výsledky práce provedené před jejím nasazením.
 
 Backend obsahuje dvě navazující cesty:
@@ -11,12 +13,12 @@ Backend obsahuje dvě navazující cesty:
 
 Nejde o webový upload. Nástroje jsou určené pro řízené jednorázové backendové běhy.
 
-## TSV importer
+## Excel TSV importer
 
 Hlavní třída:
 
 ```text
-cz.inovatika.TsvToSolrIndexer
+cz.inovatika.ExcelTsvImporter
 ```
 
 Výchozí vstupy:
@@ -26,6 +28,8 @@ Výchozí vstupy:
 <user-home>/.kapp/tsv-mappings.json
 <user-home>/.kapp/app.conf
 ```
+
+Bez argumentu importer hledá vstupy v `<user-home>/.kapp/Data`. Vstupní soubory musí ležet přímo ve zvoleném adresáři a jejich název musí končit příponou `.tsv` (bez ohledu na velikost písmen). Importer adresáře neprochází rekurzivně a soubory s jinou příponou ignoruje.
 
 Jiný adresář lze předat jako první argument:
 

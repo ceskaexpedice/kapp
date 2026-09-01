@@ -26,7 +26,7 @@ import java.nio.file.Path;
 import java.util.*;
 import java.util.concurrent.TimeUnit;
 
-public class TsvToSolrIndexer {
+public class ExcelTsvImporter {
 
     private static final String SOLR_URL = "http://localhost:8983/solr";//"http://solr-kappScheduler:8983/solr";//
 
