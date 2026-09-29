@@ -82,7 +82,7 @@ jobs:
       - name: Resolve image name
         id: image
         shell: bash
-        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/web-build" >> "$GITHUB_OUTPUT"
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/kapp-web-build" >> "$GITHUB_OUTPUT"
 
       - name: Build web image contents
         run: ./mvnw --batch-mode --no-transfer-progress -f "$WEB_APP_DIR/pom.xml" clean install -DskipTests

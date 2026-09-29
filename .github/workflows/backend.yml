@@ -75,7 +75,7 @@ jobs:
       - name: Resolve image name
         id: image
         shell: bash
-        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/backend-build" >> "$GITHUB_OUTPUT"
+        run: echo "name=ghcr.io/${GITHUB_REPOSITORY,,}/kapp-backend-build" >> "$GITHUB_OUTPUT"
 
       - name: Build backend dependencies
         run: ./mvnw --batch-mode --no-transfer-progress -pl services/scheduler -am install -DskipTests

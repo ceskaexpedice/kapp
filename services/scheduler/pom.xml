@@ -64,7 +64,7 @@
                         <image>eclipse-temurin:21-jre</image>
                     </from>
                     <to>
-                        <image>ghcr.io/ceskaexpedice/kapp/backend-build</image>
+                        <image>ghcr.io/ceskaexpedice/kapp/kapp-backend-build</image>
                         <tags>
                             <tag>latest</tag>
                             <tag>${project.version}</tag>

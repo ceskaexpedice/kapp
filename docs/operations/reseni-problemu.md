@@ -6,7 +6,7 @@ Produkční jednotkou je repozitář `nkp-deploy`. Aktuální `docker-compose.ym
 
 - `solr` na hostitelském portu `8983`,
 - `tomcat` s webem/API na portu `8088`,
-- `harvester` z image `backend-build:latest` s argumentem `harvester`,
+- `harvester` z image `kapp-backend-build:latest` s argumentem `harvester`,
 - `updater` ze stejného image s argumentem `updater`.
 
 Oba backendové kontejnery čekají na healthcheck Solru. Všechny aplikační kontejnery sdílejí `./.kapp:/root/.kapp`.
