@@ -23,7 +23,7 @@ cd web-services/kuratorska-aplikace-web/kuappweb
 mvn clean verify
 ```
 
-Web má samostatné GitHub Actions workflow `.github/workflows/web.yml`. Pull requesty a relevantní push změny spouštějí vlastní Maven build; po úspěšném pushi do výchozí větve se automaticky publikuje image `ghcr.io/ceskaexpedice/kapp/web-build`. Web zůstává mimo backendový Maven reactor, takže jeho build může běžet souběžně s backendovým workflow.
+Web má samostatné GitHub Actions workflow `.github/workflows/web.yml`. Pull requesty a relevantní push změny spouštějí vlastní Maven build; po úspěšném pushi do výchozí větve se automaticky publikuje image `ghcr.io/ceskaexpedice/kapp/kapp-web-build`. Web zůstává mimo backendový Maven reactor, takže jeho build může běžet souběžně s backendovým workflow.
 
 Nastavení GitHub Actions, GHCR a potřebných oprávnění popisuje [migrační a provozní návod](../deployment/github-actions.md).
 

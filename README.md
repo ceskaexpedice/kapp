@@ -15,7 +15,7 @@ Backend vyžaduje Javu 21 a používá Maven Wrapper 3.9.9. Z kořenové složky
 
 Kořenový Maven reactor obsahuje moduly v `services/` a `single-use-services/`. Knihovna `services/common` není samostatně spustitelná služba. Webová aplikace v `web-services/kuratorska-aplikace-web` má vlastní Maven build a vlastní GitHub Actions workflow; není součástí backendového reactoru.
 
-GitHub Actions sestaví backend a web pro relevantní push změny a pull requesty. Po úspěšném pushi do výchozí větve publikuje obrazy `backend-build` a `web-build` do GitHub Container Registry repozitáře `ceskaexpedice/kapp`. Nastavení repozitáře, GHCR, Pages a deployment přihlášení popisuje [migrační návod](docs/deployment/github-actions.md).
+GitHub Actions sestaví backend a web pro relevantní push změny a pull requesty. Po úspěšném pushi do výchozí větve publikuje obrazy `kapp-backend-build` a `kapp-web-build` do GitHub Container Registry repozitáře `ceskaexpedice/kapp`. Nastavení repozitáře, GHCR, Pages a deployment přihlášení popisuje [migrační návod](docs/deployment/github-actions.md).
 
 ## Dokumentace
 

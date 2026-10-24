@@ -4,8 +4,8 @@ Repozitář používá tři nezávislé workflow v `.github/workflows/`:
 
 | Workflow | Kontrola změn | Výsledek po pushi do výchozí větve |
 | --- | --- | --- |
-| `backend.yml` | backendový Maven reactor | image `ghcr.io/<owner>/<repo>/backend-build` |
-| `web.yml` | Maven a Angular web | image `ghcr.io/<owner>/<repo>/web-build` |
+| `backend.yml` | backendový Maven reactor | image `ghcr.io/<owner>/<repo>/kapp-backend-build` |
+| `web.yml` | Maven a Angular web | image `ghcr.io/<owner>/<repo>/kapp-web-build` |
 | `documentation.yml` | přísný MkDocs build | GitHub Pages |
 
 Buildy běží také pro pull requesty. Publikování image a nasazení Pages je omezené na push do výchozí větve. Workflow lze spustit i ručně přes **Actions → vybrané workflow → Run workflow**; ruční backendový nebo webový běh pouze ověří build a image nepublikuje.
@@ -22,8 +22,8 @@ Buildy běží také pro pull requesty. Publikování image a nasazení Pages je
 GHCR není potřeba předem zakládat. První úspěšný publish job vytvoří dva container packages:
 
 ```text
-ghcr.io/ceskaexpedice/kapp/backend-build:latest
-ghcr.io/ceskaexpedice/kapp/web-build:latest
+ghcr.io/ceskaexpedice/kapp/kapp-backend-build:latest
+ghcr.io/ceskaexpedice/kapp/kapp-web-build:latest
 ```
 
 Po prvním publikování otevřete profil organizace **Packages**, u každého package zkontrolujte:
@@ -33,7 +33,7 @@ Po prvním publikování otevřete profil organizace **Packages**, u každého p
 - požadovanou viditelnost package (`private`, `internal` nebo `public`),
 - pravidla uchovávání starých verzí, pokud je organizace používá.
 
-Workflow používá cestu odvozenou z `${{ github.repository }}`, převede ji na malá písmena, doplní `backend-build` nebo `web-build` a předá ji Jibu přes `jib.to.image`. Přejmenování nebo přesun repozitáře proto nevyžaduje úpravu workflow. Výchozí hodnoty v Maven POM odpovídají repozitáři `ceskaexpedice/kapp`.
+Workflow používá cestu odvozenou z `${{ github.repository }}`, převede ji na malá písmena, doplní `kapp-backend-build` nebo `kapp-web-build` a předá ji Jibu přes `jib.to.image`. Přejmenování nebo přesun repozitáře proto nevyžaduje úpravu workflow. Výchozí hodnoty v Maven POM odpovídají repozitáři `ceskaexpedice/kapp`.
 
 ### Přihlášení deployment serveru
 

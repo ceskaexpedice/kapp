@@ -16,7 +16,7 @@ Z adresáře `kuappweb` spusťte:
 mvn clean verify
 ```
 
-Web má vlastní GitHub Actions workflow `.github/workflows/web.yml` a není součástí kořenového backendového Maven reactoru. Build běží pro relevantní push změny a pull requesty; po úspěšném pushi do výchozí větve publikuje image `ghcr.io/ceskaexpedice/kapp/web-build`.
+Web má vlastní GitHub Actions workflow `.github/workflows/web.yml` a není součástí kořenového backendového Maven reactoru. Build běží pro relevantní push změny a pull requesty; po úspěšném pushi do výchozí větve publikuje image `ghcr.io/ceskaexpedice/kapp/kapp-web-build`.
 
 ## Nasazení
 
