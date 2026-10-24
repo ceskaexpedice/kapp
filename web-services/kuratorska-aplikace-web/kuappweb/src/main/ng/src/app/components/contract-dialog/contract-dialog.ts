@@ -164,13 +164,22 @@ export class ContractDialog {
           case HttpEventType.Response:
             this.progressMsg = 'Finished uploading!';
             this.loading.set(false);
-            const gemini = JSON.parse(event.body.candidates[0].content.parts[0].text);
-            gemini.filename = this.selectedFile.name;
-            gemini.name = this.name;
-            console.log(gemini)
-            this.contract.set(gemini);
+            if (event.body?.error) {
+              this.ui.showErrorSnackBar('snackbar.record_saved.error');
+              console.error(event.body.error);
+              return;
+            }
+            this.contract.set({
+              ...this.contract(),
+              filename: event.body?.filename ?? this.selectedFile.name
+            });
             break;
         }
+      }, error => {
+        this.loading.set(false);
+        this.progressMsg = 'Upload failed';
+        this.ui.showErrorSnackBar('snackbar.record_saved.error');
+        console.error('Contract upload failed', error);
       });
     }
   }

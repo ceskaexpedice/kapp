@@ -29,15 +29,16 @@
     <servlet>
         <servlet-name>IndexServlet</servlet-name>
         <servlet-class>cz.nkp.kuapp.kuappweb.IndexServlet</servlet-class>
+        <multipart-config>
+            <location>/tmp</location>
+            <max-file-size>52428800</max-file-size>
+            <max-request-size>52428800</max-request-size>
+            <file-size-threshold>1048576</file-size-threshold>
+        </multipart-config>
     </servlet>
     <servlet-mapping>
         <servlet-name>IndexServlet</servlet-name>
         <url-pattern>/index/*</url-pattern>
-        <multipart-config>
-            <location>/tmp</location>
-            <max-file-size>2000848820</max-file-size>
-            <file-size-threshold>1048576</file-size-threshold>
-        </multipart-config>
     </servlet-mapping>
     <servlet>
         <servlet-name>StaticServlet</servlet-name>

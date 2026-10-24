@@ -34,9 +34,9 @@ import org.json.JSONObject;
  * @author alberto
  */
 @WebServlet(name = "IndexServlet", urlPatterns = {"/index/*"})
-@MultipartConfig(location = "/tmp", fileSizeThreshold = 1024 * 1024 * 50,
-        maxFileSize = 1024 * 1024 * 50, // 10MB
-        maxRequestSize = 1024 * 1024 * 50)   // 50MB)
+@MultipartConfig(location = "/tmp", fileSizeThreshold = 1024 * 1024,
+    maxFileSize = 1024 * 1024 * 50,
+    maxRequestSize = 1024 * 1024 * 50)
 public class IndexServlet extends HttpServlet {
 
     public static final Logger LOGGER = Logger.getLogger(IndexServlet.class.getName());
@@ -721,12 +721,7 @@ public class IndexServlet extends HttpServlet {
                         JSONObject gemini = GeminiAnalyzer.analyze(base64Pdf);
 
                         // candidates[0].content.parts[0].text
-                        ret = new JSONObject(gemini.getJSONArray("candidates")
-                                .getJSONObject(0)
-                                .getJSONObject("content")
-                                .getJSONArray("parts")
-                                .getJSONObject(0)
-                                .getString("text"));
+                        ret = new JSONObject(getGeminiResponseText(gemini));
                     } else {
                         ret.put("filename", filename);
                     }
@@ -749,12 +744,7 @@ public class IndexServlet extends HttpServlet {
                     JSONObject gemini = GeminiAnalyzer.analyze(base64Pdf);
 
                     // candidates[0].content.parts[0].text
-                    ret = new JSONObject(gemini.getJSONArray("candidates")
-                            .getJSONObject(0)
-                            .getJSONObject("content")
-                            .getJSONArray("parts")
-                            .getJSONObject(0)
-                            .getString("text"));
+                        ret = new JSONObject(getGeminiResponseText(gemini));
 
                 } catch (Exception ex) {
                     ret.put("error", ex);
@@ -890,6 +880,22 @@ public class IndexServlet extends HttpServlet {
         };
 
         abstract JSONObject doPerform(HttpServletRequest req, HttpServletResponse resp) throws Exception;
+    }
+
+    private static String getGeminiResponseText(JSONObject gemini) {
+        JSONArray candidates = gemini.optJSONArray("candidates");
+        if (candidates == null || candidates.length() == 0) {
+            JSONObject error = gemini.optJSONObject("error");
+            String message = error == null
+                    ? "Gemini returned no analysis candidates"
+                    : error.optString("message", "Gemini API returned an error");
+            throw new IllegalStateException(message);
+        }
+        return candidates.getJSONObject(0)
+                .getJSONObject("content")
+                .getJSONArray("parts")
+                .getJSONObject(0)
+                .getString("text");
     }
 
     static String sanitizeUploadedFilename(String submittedFilename) {
