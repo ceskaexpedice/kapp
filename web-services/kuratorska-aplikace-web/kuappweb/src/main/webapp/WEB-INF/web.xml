@@ -8,6 +8,12 @@
     <servlet>
         <servlet-name>ApiServlet</servlet-name>
         <servlet-class>cz.nkp.kuapp.kuappweb.ApiServlet</servlet-class>
+        <multipart-config>
+            <location>/tmp</location>
+            <max-file-size>52428800</max-file-size>
+            <max-request-size>53477376</max-request-size>
+            <file-size-threshold>1048576</file-size-threshold>
+        </multipart-config>
     </servlet>
     <servlet-mapping>
         <servlet-name>ApiServlet</servlet-name>
